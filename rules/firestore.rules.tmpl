@@ -283,10 +283,9 @@ service cloud.firestore {
     // ── gameResults ──────────────────────────────────────────────────────
     match /gameResults/{resultId} {
       allow read: if allowed();
+      // Written once by whichever client finalises the game; never edited.
       allow create: if allowed() && uid() in incoming().players;
-      allow update: if allowed() && uid() in existing().players
-        && incoming().players == existing().players;
-      allow delete: if false;
+      allow update, delete: if false;
     }
 
     // ── quizzes (know-me) ────────────────────────────────────────────────

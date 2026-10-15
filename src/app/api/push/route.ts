@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     const result = await sendPushTo(toUid, type, {
       senderName: sender.nickname || "Your friend",
       payload: { title: payload.title, body: payload.body, data: payload.data },
-      skipWhenOnPage: type === "message" && !toSelf ? "/chat" : undefined,
+      skipWhenOnPage: toSelf ? undefined : type === "message" ? "/chat" : type === "yourTurn" && payload.data?.url ? payload.data.url : undefined,
     });
     return NextResponse.json({ sent: result.sent, failed: result.failed, pruned: result.pruned, reason: result.reason });
   } catch (err) {

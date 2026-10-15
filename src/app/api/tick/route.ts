@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
 import { questionFor } from "@/lib/daily";
-import { adminDb } from "@/lib/firebase/admin";
+import { adminDb, adminRtdb } from "@/lib/firebase/admin";
 import { resolveCountdown } from "@/lib/meetup";
 import { loadUser, pairUids, postSystemMessageAdmin, sendPushTo, type SendResult } from "@/lib/server/push";
 import type { MilestoneDoc, PairDoc } from "@/lib/types";
@@ -163,6 +163,20 @@ async function reminders(ctx: Ctx, minutes: number, pair: PairDoc) {
   });
 }
 
+const ABANDON_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Games nobody has touched for a week end with no winner. */
+async function abandonStaleGames(ctx: Ctx) {
+  const snap = await adminRtdb().ref("games").orderByChild("open").equalTo(true).get();
+  const games = (snap.val() ?? {}) as Record<string, { type?: string; lastMoveAt?: number; status?: string }>;
+  for (const [id, g] of Object.entries(games)) {
+    const last = g.lastMoveAt ?? 0;
+    if (ctx.now.getTime() - last < ABANDON_MS) continue;
+    ctx.actions.push({ job: "abandon-game", key: id, detail: `${g.type ?? "game"} (${g.status ?? "?"}) idle since ${new Date(last).toISOString()}` });
+    if (!ctx.dry) await adminRtdb().ref(`games/${id}`).update({ status: "finished", open: false, endReason: "abandoned", winnerId: null });
+  }
+}
+
 function petHunger(ctx: Ctx) {
   ctx.actions.push({ job: "pet-hungry", key: "stub", detail: "no-op until phase 12", result: { note: "skipped" } });
 }
@@ -199,6 +213,7 @@ export async function GET(req: Request) {
     await streakRisk(ctx, minutes, pair);
     await capsulesUnlocked(ctx);
     await reminders(ctx, minutes, pair);
+    await abandonStaleGames(ctx);
     petHunger(ctx);
 
     return NextResponse.json({ dry, now: now.toISOString(), roomTz, today: ctx.today, localMinutes: minutes, actions: ctx.actions });

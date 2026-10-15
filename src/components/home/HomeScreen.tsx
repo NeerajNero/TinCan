@@ -2,6 +2,7 @@
 
 import { CountdownCard } from "@/components/home/CountdownCard";
 import { DailyQuestionCard } from "@/components/home/DailyQuestionCard";
+import { GameInvitesCard } from "@/components/home/GameInvitesCard";
 import { Lamps } from "@/components/home/Lamps";
 import { LastMessageCard } from "@/components/home/LastMessageCard";
 import { MoodCheckin } from "@/components/home/MoodCheckin";
@@ -56,6 +57,7 @@ export function HomeScreen() {
       <Header nickname={me.nickname} />
       <PresenceCard friend={friend} />
       <LastMessageCard friendName={friend.nickname} />
+      <GameInvitesCard friendName={friend.nickname} />
       <PushNudgeCard />
       <PingRow friendUid={friendUid} friendName={friend.nickname} />
       <Lamps friendUid={friendUid} friendName={friend.nickname} />

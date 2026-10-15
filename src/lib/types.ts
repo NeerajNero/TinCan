@@ -110,6 +110,8 @@ export interface PairDoc {
   tripsSummary?: TripSummary[];
   /** Preset id from src/content/relationships.ts; absent means "friends". */
   relationship?: string;
+  /** Head-to-head per game: { [uid]: wins, draws }. */
+  records?: Record<string, Record<string, number>>;
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }

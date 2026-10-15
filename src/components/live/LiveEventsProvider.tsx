@@ -13,6 +13,7 @@ import { usePair } from "@/hooks/usePair";
 import { useVisible } from "@/hooks/useVisible";
 import { roomDateKey } from "@/lib/dates";
 import { backfillDateKey, dailyRef } from "@/lib/db/daily";
+import { subscribeOpenGames, type LiveGame } from "@/lib/db/games";
 import { mediaLabel } from "@/lib/db/messages";
 import { lampPath, rtdbRef } from "@/lib/rtdb";
 import { PINGS, type DailyQuestionDoc, type LampNode } from "@/lib/types";
@@ -24,6 +25,8 @@ interface LiveEvents {
   /** Today's daily-question doc (room day), shared with the Home card. */
   today: string;
   daily: DailyQuestionDoc | null;
+  /** Invited + active games (one bounded listener for Play and Home). */
+  games: LiveGame[];
 }
 
 const LiveEventsContext = createContext<LiveEvents | null>(null);
@@ -136,8 +139,19 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     };
   }, [today, friendUid, friendName, toast]);
 
+  /* ── open games ────────────────────────────────────────────────────── */
+  const [games, setGames] = useState<LiveGame[]>([]);
+  useEffect(() => {
+    if (!friendUid) return;
+    const unsub = subscribeOpenGames(setGames);
+    return () => {
+      unsub();
+      setGames([]);
+    };
+  }, [friendUid]);
+
   const activePing = incoming && incoming !== dismissed ? incoming : null;
-  const value = useMemo<LiveEvents>(() => ({ ping: activePing, dismissPing, today, daily }), [activePing, dismissPing, today, daily]);
+  const value = useMemo<LiveEvents>(() => ({ ping: activePing, dismissPing, today, daily, games }), [activePing, dismissPing, today, daily, games]);
   return <LiveEventsContext.Provider value={value}>{children}</LiveEventsContext.Provider>;
 }
 

@@ -58,7 +58,17 @@
     },
     "games": {
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
-      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".indexOn": ["open"],
+      "$gameId": {
+        ".validate": "newData.hasChildren(['type', 'state', 'turn', 'players', 'status', 'open'])",
+        "type": { ".validate": "newData.val() === 'tictactoe' || newData.val() === 'connectfour' || newData.val() === 'chess' || newData.val() === 'checkers'" },
+        "state": { ".validate": "newData.isString() && newData.val().length < 20000" },
+        "turn": { ".validate": "newData.val() === 'first' || newData.val() === 'second'" },
+        "status": { ".validate": "newData.val() === 'invited' || newData.val() === 'active' || newData.val() === 'finished' || newData.val() === 'declined'" },
+        "open": { ".validate": "newData.isBoolean()" },
+        "players": { ".validate": "newData.hasChildren(['first', 'second'])" }
+      }
     },
     "cards": {
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
