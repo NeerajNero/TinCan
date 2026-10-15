@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useState } from "react";
-
 import { CountdownCard } from "@/components/home/CountdownCard";
 import { DailyQuestionCard } from "@/components/home/DailyQuestionCard";
 import { Lamps } from "@/components/home/Lamps";
@@ -16,8 +14,8 @@ import { StreakPlant } from "@/components/home/StreakPlant";
 import { WaitingCard } from "@/components/home/WaitingCard";
 import { Splash } from "@/components/ui/Splash";
 import { useHomeData } from "@/hooks/useHomeData";
-import { useIncomingPings, type IncomingPing } from "@/hooks/useIncomingPings";
 import { usePair } from "@/hooks/usePair";
+import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 
 function Header({ nickname }: { nickname: string }) {
   return (
@@ -33,12 +31,9 @@ function Header({ nickname }: { nickname: string }) {
 }
 
 export function HomeScreen() {
-  const { uid, me, friend, friendUid, pair, loading } = usePair();
+  const { me, friend, friendUid, pair, loading } = usePair();
   const data = useHomeData();
-  const incoming = useIncomingPings(uid);
-  const [dismissed, setDismissed] = useState<IncomingPing | null>(null);
-  const dismiss = useCallback(() => setDismissed(incoming), [incoming]);
-  const activePing = incoming && incoming !== dismissed ? incoming : null;
+  const { ping: activePing, dismissPing } = useLiveEvents();
 
   if (pair.uids.length < 2 || !friendUid) {
     return (
@@ -68,7 +63,7 @@ export function HomeScreen() {
       <StreakPlant today={data.today} checkins={data.checkins} friendUid={friendUid} friendName={friend.nickname} />
       <CountdownCard meetup={pair.nextMeetup} today={data.today} />
       <SleepToggle />
-      <PingOverlay ping={activePing} fromName={friend.nickname} onDone={dismiss} />
+      <PingOverlay ping={activePing} fromName={friend.nickname} onDone={dismissPing} />
     </div>
   );
 }

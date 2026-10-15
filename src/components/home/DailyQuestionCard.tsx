@@ -1,33 +1,24 @@
 "use client";
 
-import { onSnapshot } from "firebase/firestore";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { questionFor } from "@/lib/daily";
-import { answerDaily, dailyRef } from "@/lib/db/daily";
+import { answerDaily } from "@/lib/db/daily";
 import { notify } from "@/lib/notify";
-import type { DailyQuestionDoc } from "@/lib/types";
 
 /** Today's prompt (ROOM_TZ). My answer is editable all day; theirs is blurred until I've answered. */
 export function DailyQuestionCard({ today, friendUid, friendName }: { today: string; friendUid: string | null; friendName: string | null }) {
   const { uid } = usePair();
-  const [docData, setDocData] = useState<DailyQuestionDoc | null>(null);
+  const { daily: docData } = useLiveEvents();
   const [draft, setDraft] = useState("");
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    const unsub = onSnapshot(dailyRef(today), (snap) => setDocData(snap.exists() ? snap.data() : null));
-    return () => {
-      unsub();
-      setDocData(null);
-    };
-  }, [today]);
 
   const question = questionFor(today);
   const mine = docData?.answers?.[uid]?.text ?? null;
