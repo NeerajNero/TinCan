@@ -1,0 +1,602 @@
+[
+  {
+    "depth": "light",
+    "text": "What's the best thing you ate this week?"
+  },
+  {
+    "depth": "light",
+    "text": "What song do you want played when you walk into a room?"
+  },
+  {
+    "depth": "light",
+    "text": "If you could have any animal as a sidekick, what would it be?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the last thing that made you laugh?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a small thing that always improves your day?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your perfect lazy Sunday?"
+  },
+  {
+    "depth": "light",
+    "text": "If you had a food truck, what would it sell?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite smell?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a film you could watch any day?"
+  },
+  {
+    "depth": "light",
+    "text": "Tea or coffee, and how exactly?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite word to say?"
+  },
+  {
+    "depth": "light",
+    "text": "What's one app you couldn't live without?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a snack you'd bring to a desert island?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your current favourite outfit?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the best thing about your city?"
+  },
+  {
+    "depth": "light",
+    "text": "If you had to teach a one-hour class, what would it be on?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite kind of weather?"
+  },
+  {
+    "depth": "light",
+    "text": "What's one thing you always pack when travelling?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite room in your home?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your most-played song this year?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a hobby you'd try if you had time?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the last photo you took?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your go-to karaoke song?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite thing to cook?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a board game you always win at?"
+  },
+  {
+    "depth": "light",
+    "text": "What's one thing you'd buy if you won a small prize?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite kind of bread?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a show you'd recommend to anyone?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the best gift you've ever given?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a tradition you love?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite time of day?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a sound that relaxes you?"
+  },
+  {
+    "depth": "light",
+    "text": "What would you name a pet turtle?"
+  },
+  {
+    "depth": "light",
+    "text": "What's one thing you're looking forward to?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite kind of fruit?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a place nearby you love walking through?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite kind of holiday?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a joke you keep retelling?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the best thing about your job or studies?"
+  },
+  {
+    "depth": "light",
+    "text": "What's one thing you'd want on a pizza always?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite kind of silence?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a book you'd lend to a stranger?"
+  },
+  {
+    "depth": "light",
+    "text": "What do you do on a long train ride?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite thing about weekends?"
+  },
+  {
+    "depth": "light",
+    "text": "What's one thing you collect, even by accident?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the best compliment you've received recently?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite ice cream flavour?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your go-to comfort show?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a tiny ritual you do every morning?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite kind of sweet?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a food you'd eat every day if you could?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a word you find funny?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite thing to do when it rains?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the oldest thing you own?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the best thing you've seen on a walk?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite seat in a cafe?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a game you played as a kid?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite colour and why?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the best thing about the season you're in?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite kind of surprise?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite way to spend a free hour?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a memory that always makes you smile?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the funniest thing a kid has said to you?"
+  },
+  {
+    "depth": "light",
+    "text": "What's one thing you'd want in your dream kitchen?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite way to say hello?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a small thing you're good at?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a dish you'd want to learn to cook?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a smell from childhood you still love?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite thing about a sunset?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a tiny thing that makes a hotel room great?"
+  },
+  {
+    "depth": "light",
+    "text": "What's your favourite street food?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the best sandwich you've ever had?"
+  },
+  {
+    "depth": "light",
+    "text": "What's the most comfortable thing you own?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a song that always gets you dancing?"
+  },
+  {
+    "depth": "light",
+    "text": "What's a film that always makes you cry?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you've changed your mind about recently?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's one thing you'd want to be remembered for?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a fear you've grown out of?"
+  },
+  {
+    "depth": "deep",
+    "text": "When do you feel most like yourself?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you're proud of that nobody knows?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a lesson you learned the hard way?"
+  },
+  {
+    "depth": "deep",
+    "text": "What does a good life look like to you right now?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you need to hear more often?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a belief you hold that most people don't?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a time you felt truly seen?"
+  },
+  {
+    "depth": "deep",
+    "text": "What do you think our friendship will look like in ten years?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's one thing you'd tell your younger self?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a mistake you're grateful for?"
+  },
+  {
+    "depth": "deep",
+    "text": "What does rest look like for you?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you're still figuring out?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a kindness you've never forgotten?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's one thing you'd like to be braver about?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you're mourning, big or small?"
+  },
+  {
+    "depth": "deep",
+    "text": "What makes you feel safe?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a dream you quietly gave up, and should you pick it back up?"
+  },
+  {
+    "depth": "deep",
+    "text": "Who has shaped you the most, and how?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's one thing you'd want me to understand about you?"
+  },
+  {
+    "depth": "deep",
+    "text": "What does home mean to you?"
+  },
+  {
+    "depth": "deep",
+    "text": "When did you last feel really proud of yourself?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a question you're scared to answer honestly?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you wish people asked you about?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a moment that changed your direction?"
+  },
+  {
+    "depth": "deep",
+    "text": "What do you want more of this year?"
+  },
+  {
+    "depth": "deep",
+    "text": "What do you want less of this year?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a compliment you find hard to accept?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's the hardest thing about being far apart?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's the best thing about being far apart?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you've forgiven?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you haven't forgiven yet?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a way you've surprised yourself?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a value you'd never compromise on?"
+  },
+  {
+    "depth": "deep",
+    "text": "What do you hope for me?"
+  },
+  {
+    "depth": "deep",
+    "text": "What do you hope for yourself?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a time you felt lonely, and what helped?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you're learning to accept?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a story about your family you love?"
+  },
+  {
+    "depth": "deep",
+    "text": "What would you do if you weren't afraid?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something that always grounds you?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a boundary you've learned to keep?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you miss about the past?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you're excited about in the future?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a time you were wrong about someone?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's one thing you'd like to let go of?"
+  },
+  {
+    "depth": "deep",
+    "text": "How do you want to grow old?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a feeling you find hard to put into words?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a moment you'd freeze if you could?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's the kindest thing you've done for yourself?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you've always wanted to ask me?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a way I've changed since we met?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a way you've changed since we met?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's one thing you'd want to do together before anything else?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a question you'd ask your future self?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a quiet thing you're grateful for today?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a hope you've never said out loud?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something you've been carrying alone?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a time you chose yourself?"
+  },
+  {
+    "depth": "deep",
+    "text": "What do you think love looks like in everyday life?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a small way you'd like to be a better friend?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a moment of pure joy you remember?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a thing you're afraid to want?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's one thing I could do to make your week easier?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something about yourself you've only recently understood?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a decision you keep putting off?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a part of your day you'd like to protect?"
+  },
+  {
+    "depth": "deep",
+    "text": "What would you do with a year off?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a truth you'd want to tell someone you've lost?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's a time you felt truly at peace?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's something that helps you when nothing else does?"
+  },
+  {
+    "depth": "deep",
+    "text": "What's one thing you'd want written on a note to open in a decade?"
+  },
+  {
+    "depth": "deep",
+    "text": "What makes our friendship work?"
+  }
+]

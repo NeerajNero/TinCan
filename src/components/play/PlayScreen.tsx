@@ -4,14 +4,20 @@ import { formatDistanceToNowStrict } from "date-fns";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
+import { onSnapshot } from "firebase/firestore";
+
 import { acceptGame, declineGame, gameRoute, inviteGame, isLive, loadRecentResults, recordFor, rematch, uidOf, type GameResultDoc } from "@/lib/db/games";
+import { quizzesFrom } from "@/lib/db/quizzes";
+import { wordleRef } from "@/lib/db/wordle";
+import { DECK_KINDS, DECK_META } from "@/lib/decks";
+import { roomDateKey } from "@/lib/dates";
 import { GAME_META, GAME_TYPES, type GameType } from "@/lib/games";
 
 export function PlayScreen() {
@@ -19,6 +25,22 @@ export function PlayScreen() {
   const { games } = useLiveEvents();
   const router = useRouter();
   const [busy, setBusy] = useState<GameType | null>(null);
+  const today = roomDateKey(pair);
+  const [wordMine, setWordMine] = useState<{ done: boolean; solved: boolean } | null>(null);
+  const [wordTheirs, setWordTheirs] = useState<{ done: boolean } | null>(null);
+  const [newQuizzes, setNewQuizzes] = useState(0);
+
+  // Bounded extras: today's two wordle docs + the friend's published quizzes (≤5), filtered to untaken.
+  useEffect(() => {
+    const a = onSnapshot(wordleRef(today, uid), (snap) => setWordMine(snap.exists() ? snap.data() : null));
+    const b = friendUid ? onSnapshot(wordleRef(today, friendUid), (snap) => setWordTheirs(snap.exists() ? snap.data() : null)) : () => undefined;
+    const c = friendUid ? onSnapshot(quizzesFrom(friendUid), (snap) => setNewQuizzes(snap.docs.filter((d) => !d.data().takenBy?.[uid]).length)) : () => undefined;
+    return () => {
+      a();
+      b();
+      c();
+    };
+  }, [today, uid, friendUid]);
   const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
 
   const openByType = (type: GameType) => games.find((g) => g.type === type && isLive(g));
@@ -71,6 +93,20 @@ export function PlayScreen() {
         })}
       </div>
       {!friendUid && <p className="px-2 text-center text-xs text-muted">Games unlock once your friend joins.</p>}
+
+      <section className="flex flex-col gap-2">
+        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Quick play</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <Tile href="/play/word" emoji="🟩" title="Daily word" badge={wordMine?.done ? (wordMine.solved ? "Today's word ✓" : "Done for today") : wordTheirs?.done ? "They've played" : "Same word for both"} hot={!wordMine?.done && Boolean(wordTheirs?.done)} />
+          <Tile href="/play/trivia" emoji="🧠" title="Trivia duel" badge="10 questions, 15 s each" />
+          <Tile href="/play/quiz" emoji="🪞" title="Know-me quiz" badge={newQuizzes > 0 ? `New quiz${newQuizzes > 1 ? ` ×${newQuizzes}` : ""}` : "Write or take one"} hot={newQuizzes > 0} />
+          <Tile href="/play/twenty" emoji="🔍" title="20 Questions" badge="Yes, no, sort of" />
+          <Tile href="/play/wheel" emoji="🎡" title="Hangout wheel" badge="Spin for an idea" />
+          {DECK_KINDS.map((k) => (
+            <Tile key={k} href={`/play/deck/${k}`} emoji={DECK_META[k].emoji} title={DECK_META[k].name} badge={DECK_META[k].blurb} />
+          ))}
+        </div>
+      </section>
 
       {(invitesForMe.length > 0 || active.length > 0) && (
         <section className="flex flex-col gap-2">
@@ -199,5 +235,17 @@ function RecentGames({ nameOf }: { nameOf: (uid: string) => string }) {
           </div>
         ))}
     </div>
+  );
+}
+
+function Tile({ href, emoji, title, badge, hot }: { href: string; emoji: string; title: string; badge: string; hot?: boolean }) {
+  return (
+    <Link href={href} className="card tap flex flex-col items-start gap-1.5 rounded-[24px] p-4">
+      <span className="text-3xl" aria-hidden>
+        {emoji}
+      </span>
+      <span className="font-heading text-lg font-semibold leading-tight">{title}</span>
+      <span className={cn("text-xs", hot ? "font-bold text-[var(--accent)]" : "text-muted")}>{badge}</span>
+    </Link>
   );
 }

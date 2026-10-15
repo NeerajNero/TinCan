@@ -68,6 +68,8 @@ export interface UserDoc {
   lng: number;
   fcmTokens: string[];
   notif: NotifPrefs;
+  /** Days the daily word was solved (bumped client-side). */
+  wordleSolved?: number;
   createdAt: Timestamp | null;
 }
 

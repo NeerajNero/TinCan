@@ -1,0 +1,606 @@
+[
+  {
+    "a": "Have a week of perfect weather",
+    "b": "Have a week of perfect sleep"
+  },
+  {
+    "a": "Only eat sweet food for a year",
+    "b": "Only eat savoury food for a year"
+  },
+  {
+    "a": "Be able to teleport once a day",
+    "b": "Be able to pause time for ten minutes a day"
+  },
+  {
+    "a": "Live in a city with no traffic",
+    "b": "Live in a village with perfect internet"
+  },
+  {
+    "a": "Have a lifetime supply of chai",
+    "b": "Have a lifetime supply of coffee"
+  },
+  {
+    "a": "Always know what time it is",
+    "b": "Always know which direction is north"
+  },
+  {
+    "a": "Be fluent in five languages",
+    "b": "Play five instruments"
+  },
+  {
+    "a": "Relive your best day once a year",
+    "b": "Get one extra birthday a year"
+  },
+  {
+    "a": "Have a pet dragon the size of a cat",
+    "b": "Have a pet cat that can talk"
+  },
+  {
+    "a": "Never queue again",
+    "b": "Never be stuck in traffic again"
+  },
+  {
+    "a": "Give up music for a month",
+    "b": "Give up films and shows for a month"
+  },
+  {
+    "a": "Only be able to whisper",
+    "b": "Only be able to shout"
+  },
+  {
+    "a": "Have a house by the sea",
+    "b": "Have a house in the hills"
+  },
+  {
+    "a": "Win every board game forever",
+    "b": "Never lose anything you own ever again"
+  },
+  {
+    "a": "Be famous online",
+    "b": "Be famous in your neighbourhood"
+  },
+  {
+    "a": "Have breakfast for every meal",
+    "b": "Have dinner for every meal"
+  },
+  {
+    "a": "Travel to the past with a camera",
+    "b": "Travel to the future with a notebook"
+  },
+  {
+    "a": "Have a robot that cooks",
+    "b": "Have a robot that cleans"
+  },
+  {
+    "a": "Be able to read minds for a day",
+    "b": "Be invisible for a day"
+  },
+  {
+    "a": "Only use voice notes forever",
+    "b": "Only use text forever"
+  },
+  {
+    "a": "Have unlimited books",
+    "b": "Have unlimited films"
+  },
+  {
+    "a": "Always be slightly too warm",
+    "b": "Always be slightly too cold"
+  },
+  {
+    "a": "Sing everything you say",
+    "b": "Rhyme everything you say"
+  },
+  {
+    "a": "Have a treehouse",
+    "b": "Have a rooftop garden"
+  },
+  {
+    "a": "Be the best cook in your city",
+    "b": "Be the best dancer in your city"
+  },
+  {
+    "a": "Eat street food every day",
+    "b": "Eat home-cooked food every day"
+  },
+  {
+    "a": "Have one long holiday a year",
+    "b": "Have one long weekend every month"
+  },
+  {
+    "a": "Lose your phone for a week",
+    "b": "Lose your wallet for a week"
+  },
+  {
+    "a": "Have a secret tunnel to my house",
+    "b": "Have a secret tunnel to the nearest bakery"
+  },
+  {
+    "a": "Be able to fly at walking speed",
+    "b": "Be able to run at car speed"
+  },
+  {
+    "a": "Only drink water for a year",
+    "b": "Only drink juice for a year"
+  },
+  {
+    "a": "Know every song lyric",
+    "b": "Know every film quote"
+  },
+  {
+    "a": "Be woken by birds every day",
+    "b": "Be woken by rain every day"
+  },
+  {
+    "a": "Have a map that shows lost things",
+    "b": "Have a watch that shows free time"
+  },
+  {
+    "a": "Live without a fridge",
+    "b": "Live without a washing machine"
+  },
+  {
+    "a": "Be able to talk to animals",
+    "b": "Be able to talk to plants"
+  },
+  {
+    "a": "Get a free flight every month",
+    "b": "Get a free dinner every week"
+  },
+  {
+    "a": "Have a photographic memory",
+    "b": "Have perfect pitch"
+  },
+  {
+    "a": "Never feel cold again",
+    "b": "Never feel sleepy again"
+  },
+  {
+    "a": "Have a pocket-sized elephant",
+    "b": "Have a dog-sized hamster"
+  },
+  {
+    "a": "Only wear one colour forever",
+    "b": "Only wear one outfit forever"
+  },
+  {
+    "a": "Be stuck in a lift with a comedian",
+    "b": "Be stuck in a lift with a magician"
+  },
+  {
+    "a": "Have a lifetime of free desserts",
+    "b": "Have a lifetime of free snacks"
+  },
+  {
+    "a": "Always have perfect hair",
+    "b": "Always have perfect shoes"
+  },
+  {
+    "a": "Live in a bookshop",
+    "b": "Live in a cinema"
+  },
+  {
+    "a": "Be able to skip ads in real life",
+    "b": "Be able to fast-forward boring chats"
+  },
+  {
+    "a": "Have a reset button for one bad day a year",
+    "b": "Have a replay button for one good day a year"
+  },
+  {
+    "a": "Explore the deep sea",
+    "b": "Explore outer space"
+  },
+  {
+    "a": "Have an endless playlist you never chose",
+    "b": "Have a playlist you made but can never change"
+  },
+  {
+    "a": "Receive a handwritten letter every week",
+    "b": "Receive a surprise parcel every month"
+  },
+  {
+    "a": "Have a personal weather forecast that's always right",
+    "b": "Have a personal traffic forecast that's always right"
+  },
+  {
+    "a": "Grow a vegetable garden",
+    "b": "Grow a flower garden"
+  },
+  {
+    "a": "Be able to taste colours",
+    "b": "Be able to see music"
+  },
+  {
+    "a": "Have one wish granted today",
+    "b": "Have three wishes granted in ten years"
+  },
+  {
+    "a": "Only watch comedies",
+    "b": "Only watch thrillers"
+  },
+  {
+    "a": "Have the power to find any parking spot",
+    "b": "Have the power to find any lost sock"
+  },
+  {
+    "a": "Have a never-ending notebook",
+    "b": "Have a never-ending pen"
+  },
+  {
+    "a": "Be good at every sport",
+    "b": "Be good at every video game"
+  },
+  {
+    "a": "Always have a window seat",
+    "b": "Always have extra legroom"
+  },
+  {
+    "a": "Spend a day as a cat",
+    "b": "Spend a day as a bird"
+  },
+  {
+    "a": "Have a holiday home in the snow",
+    "b": "Have a holiday home in the desert"
+  },
+  {
+    "a": "Be able to nap anywhere",
+    "b": "Never need naps"
+  },
+  {
+    "a": "Get every joke immediately",
+    "b": "Tell jokes everyone laughs at"
+  },
+  {
+    "a": "Have a chef for a week",
+    "b": "Have a driver for a month"
+  },
+  {
+    "a": "Be able to speak to your younger self once",
+    "b": "Be able to hear from your older self once"
+  },
+  {
+    "a": "Have a secret handshake with everyone you meet",
+    "b": "Have a secret nickname from everyone you meet"
+  },
+  {
+    "a": "Have a garden full of fireflies",
+    "b": "Have a sky full of shooting stars every night"
+  },
+  {
+    "a": "Spend a rainy day indoors",
+    "b": "Spend a rainy day walking outside"
+  },
+  {
+    "a": "Live in a world with no mosquitoes",
+    "b": "Live in a world with no spam calls"
+  },
+  {
+    "a": "Have a free bakery next door",
+    "b": "Have a free gym next door"
+  },
+  {
+    "a": "Be able to learn anything in a day",
+    "b": "Be able to teach anything in a day"
+  },
+  {
+    "a": "Swap lives with me for a day",
+    "b": "Swap voices with me for a day"
+  },
+  {
+    "a": "Have a boat",
+    "b": "Have a bicycle that never gets a flat"
+  },
+  {
+    "a": "Be super strong",
+    "b": "Be super fast"
+  },
+  {
+    "a": "Only eat with chopsticks",
+    "b": "Only eat with a spoon"
+  },
+  {
+    "a": "Have a magic mirror that gives compliments",
+    "b": "Have a magic mirror that gives advice"
+  },
+  {
+    "a": "Watch a sunrise every day",
+    "b": "Watch a sunset every day"
+  },
+  {
+    "a": "Find a 500-rupee note every week",
+    "b": "Find a lost memory every month"
+  },
+  {
+    "a": "Have a door to any beach",
+    "b": "Have a door to any mountain"
+  },
+  {
+    "a": "Be a morning person",
+    "b": "Be a night owl"
+  },
+  {
+    "a": "Own a tiny cafe",
+    "b": "Own a tiny bookshop"
+  },
+  {
+    "a": "Have everything taste like your favourite food",
+    "b": "Have your favourite food taste better every time"
+  },
+  {
+    "a": "Have a bottomless bag",
+    "b": "Have a bottomless cup"
+  },
+  {
+    "a": "Always be ten minutes early",
+    "b": "Always arrive exactly on time"
+  },
+  {
+    "a": "Take a hot-air balloon ride",
+    "b": "Take a submarine ride"
+  },
+  {
+    "a": "Live in a lighthouse",
+    "b": "Live in a windmill"
+  },
+  {
+    "a": "Have a lifetime of free train travel",
+    "b": "Have a lifetime of free buses"
+  },
+  {
+    "a": "Be able to draw anything",
+    "b": "Be able to write anything"
+  },
+  {
+    "a": "Have your dreams recorded",
+    "b": "Have your laughs recorded"
+  },
+  {
+    "a": "Give up spicy food",
+    "b": "Give up fried food"
+  },
+  {
+    "a": "Sleep in a hammock",
+    "b": "Sleep in a tent"
+  },
+  {
+    "a": "Have a surprise picnic",
+    "b": "Have a surprise movie night"
+  },
+  {
+    "a": "Be able to change the weather for one hour a day",
+    "b": "Be able to change the traffic lights"
+  },
+  {
+    "a": "Live without music",
+    "b": "Live without pictures"
+  },
+  {
+    "a": "Have a koala",
+    "b": "Have an otter"
+  },
+  {
+    "a": "Be stuck on a long train with good snacks",
+    "b": "Be stuck at a long airport with good wifi"
+  },
+  {
+    "a": "Get a text from your future self every morning",
+    "b": "Get a photo from your past self every morning"
+  },
+  {
+    "a": "Dance in the rain",
+    "b": "Walk in the snow"
+  },
+  {
+    "a": "Have dinner with a historical figure",
+    "b": "Have dinner with your favourite fictional character"
+  },
+  {
+    "a": "Only be able to text in emoji",
+    "b": "Only be able to text in GIFs"
+  },
+  {
+    "a": "Have every meal cooked by a grandmother",
+    "b": "Have every meal cooked by a famous chef"
+  },
+  {
+    "a": "Travel by train everywhere",
+    "b": "Travel by boat everywhere"
+  },
+  {
+    "a": "Have a room that is always tidy",
+    "b": "Have a room that is always cosy"
+  },
+  {
+    "a": "Always find money in your pocket",
+    "b": "Always find a parking spot"
+  },
+  {
+    "a": "Be able to remember every dream",
+    "b": "Be able to forget every nightmare"
+  },
+  {
+    "a": "Have a day where everything is free",
+    "b": "Have a day where you need no sleep"
+  },
+  {
+    "a": "Learn to surf",
+    "b": "Learn to ski"
+  },
+  {
+    "a": "Only eat one cuisine forever",
+    "b": "Try a new cuisine every day forever"
+  },
+  {
+    "a": "Have the world's comfiest sofa",
+    "b": "Have the world's comfiest bed"
+  },
+  {
+    "a": "Meet your favourite musician",
+    "b": "Meet your favourite author"
+  },
+  {
+    "a": "Have a personal firework show once a year",
+    "b": "Have a personal concert once a year"
+  },
+  {
+    "a": "Know every word in the dictionary",
+    "b": "Know every street in your city"
+  },
+  {
+    "a": "Get to rename one planet",
+    "b": "Get to rename one animal"
+  },
+  {
+    "a": "Have a pet that lives forever",
+    "b": "Have a plant that never dies"
+  },
+  {
+    "a": "Hold a sloth",
+    "b": "Hold a baby elephant's trunk"
+  },
+  {
+    "a": "Be able to hear music in your head whenever you like",
+    "b": "Be able to see films in your head whenever you like"
+  },
+  {
+    "a": "Live near a river",
+    "b": "Live near a forest"
+  },
+  {
+    "a": "Have a magic kettle that's always just boiled",
+    "b": "Have a magic fridge that's always full"
+  },
+  {
+    "a": "Only ever eat at home",
+    "b": "Only ever eat out"
+  },
+  {
+    "a": "Find out how every film ends before watching",
+    "b": "Never know how any film ends"
+  },
+  {
+    "a": "Receive a compliment every hour",
+    "b": "Give a compliment every hour"
+  },
+  {
+    "a": "Have an hour more each day",
+    "b": "Have a day more each year"
+  },
+  {
+    "a": "Go on a road trip with no map",
+    "b": "Go on a road trip with no music"
+  },
+  {
+    "a": "Be able to instantly clean any room",
+    "b": "Be able to instantly cook any meal"
+  },
+  {
+    "a": "Have a tiny house on wheels",
+    "b": "Have a big house in one place"
+  },
+  {
+    "a": "Get a new hobby every month",
+    "b": "Master one hobby forever"
+  },
+  {
+    "a": "Have a bird that sings your favourite songs",
+    "b": "Have a cat that purrs your favourite songs"
+  },
+  {
+    "a": "Always have a cold drink nearby",
+    "b": "Always have a warm blanket nearby"
+  },
+  {
+    "a": "Be able to speak to anyone in the world for one minute",
+    "b": "Listen to anyone in the world for one minute"
+  },
+  {
+    "a": "Never have to charge your phone",
+    "b": "Never have to wait for a page to load"
+  },
+  {
+    "a": "Live in a world where it's always spring",
+    "b": "Live in a world where it's always autumn"
+  },
+  {
+    "a": "Learn to make bread",
+    "b": "Learn to make cheese"
+  },
+  {
+    "a": "Be able to pause any conversation",
+    "b": "Be able to rewind any conversation"
+  },
+  {
+    "a": "Have a video call with me every day",
+    "b": "Have a weekend with me every month"
+  },
+  {
+    "a": "Have a window into my city",
+    "b": "Have a window into your childhood home"
+  },
+  {
+    "a": "Swap playlists with me for a week",
+    "b": "Swap wardrobes with me for a week"
+  },
+  {
+    "a": "Have a candle that smells like my city",
+    "b": "Have a candle that smells like our last trip"
+  },
+  {
+    "a": "Play a board game online with me every Sunday",
+    "b": "Watch a film with me every Friday"
+  },
+  {
+    "a": "Get a postcard from me every week",
+    "b": "Get a voice note from me every day"
+  },
+  {
+    "a": "Cook the same recipe as me at the same time",
+    "b": "Order the same takeaway as me at the same time"
+  },
+  {
+    "a": "Have me pick your outfit for a week",
+    "b": "Have me pick your meals for a week"
+  },
+  {
+    "a": "Learn a dance with me over video",
+    "b": "Learn a song with me over video"
+  },
+  {
+    "a": "Start a tiny book club with me",
+    "b": "Start a tiny podcast with me"
+  },
+  {
+    "a": "Have a shared diary with me",
+    "b": "Have a shared playlist with me"
+  },
+  {
+    "a": "Send me a photo every morning",
+    "b": "Receive a photo from me every morning"
+  },
+  {
+    "a": "Have us wear matching socks",
+    "b": "Have us wear matching hats"
+  },
+  {
+    "a": "Play 20 questions with me",
+    "b": "Play would-you-rather with me"
+  },
+  {
+    "a": "Visit my city first",
+    "b": "Have me visit your city first"
+  },
+  {
+    "a": "Watch the sunrise together over a call",
+    "b": "Watch the sunset together over a call"
+  },
+  {
+    "a": "Have a secret code word with me",
+    "b": "Have a secret handshake with me"
+  },
+  {
+    "a": "Plan our next trip tonight",
+    "b": "Plan our next call tonight"
+  }
+]

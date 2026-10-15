@@ -271,3 +271,24 @@ export async function fetchGame(id: string): Promise<LiveGame | null> {
   const snap = await get(child(ref(getRtdb()), gamePath(id)));
   return snap.exists() ? { id, ...(snap.val() as GameNode) } : null;
 }
+
+/** Results for non-board games (trivia): gameResults doc + pair.records bump + chat line. */
+export async function recordGenericResult(game: string, players: string[], winnerId: string | null, startedAtMs: number, moves: number, nameOf: (uid: string) => string): Promise<void> {
+  const id = `${game}-${startedAtMs}`;
+  try {
+    await setDoc(doc(resultsCol(), id), { game: game as GameType, players, winnerId, endReason: winnerId ? "win" : "draw", startedAt: Timestamp.fromMillis(startedAtMs), endedAt: serverTimestamp(), moves });
+  } catch {
+    return;
+  }
+  await fsTransaction(getDb(), async (tx) => {
+    const snap = await tx.get(pairRef());
+    const pair = snap.data() as PairDoc | undefined;
+    const records = { ...(pair?.records ?? {}) };
+    const rec = { ...(records[game] ?? {}) };
+    if (winnerId) rec[winnerId] = (rec[winnerId] ?? 0) + 1;
+    else rec.draws = (rec.draws ?? 0) + 1;
+    records[game] = rec;
+    tx.update(pairRef(), { records });
+  }).catch(() => undefined);
+  void postSystemMessage(players[0], winnerId ? `🧠 ${nameOf(winnerId)} won the trivia duel` : "🧠 The trivia duel was a tie");
+}

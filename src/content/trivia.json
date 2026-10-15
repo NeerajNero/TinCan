@@ -1,0 +1,3662 @@
+[
+ {
+  "id": 0,
+  "category": "Geography",
+  "q": "What is the capital of Australia?",
+  "options": [
+   "Canberra",
+   "Sydney",
+   "Melbourne",
+   "Perth"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 1,
+  "category": "Geography",
+  "q": "Which is the longest river in Africa?",
+  "options": [
+   "Nile",
+   "Congo",
+   "Niger",
+   "Zambezi"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 2,
+  "category": "Geography",
+  "q": "Which country has the most natural lakes?",
+  "options": [
+   "Canada",
+   "Russia",
+   "Finland",
+   "Brazil"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 3,
+  "category": "Geography",
+  "q": "Mount Kilimanjaro is in which country?",
+  "options": [
+   "Tanzania",
+   "Kenya",
+   "Uganda",
+   "Ethiopia"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 4,
+  "category": "Geography",
+  "q": "What is the capital of Canada?",
+  "options": [
+   "Ottawa",
+   "Toronto",
+   "Vancouver",
+   "Montreal"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 5,
+  "category": "Geography",
+  "q": "Which desert is the largest hot desert in the world?",
+  "options": [
+   "Sahara",
+   "Gobi",
+   "Kalahari",
+   "Arabian"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 6,
+  "category": "Geography",
+  "q": "Which city is known as the City of Canals?",
+  "options": [
+   "Venice",
+   "Amsterdam",
+   "Bruges",
+   "Stockholm"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 7,
+  "category": "Geography",
+  "q": "The Andes mountains run along which continent?",
+  "options": [
+   "South America",
+   "Africa",
+   "Asia",
+   "Europe"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 8,
+  "category": "Geography",
+  "q": "What is the smallest country in the world by area?",
+  "options": [
+   "Vatican City",
+   "Monaco",
+   "San Marino",
+   "Liechtenstein"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 9,
+  "category": "Geography",
+  "q": "Which ocean lies between Africa and Australia?",
+  "options": [
+   "Indian Ocean",
+   "Pacific Ocean",
+   "Atlantic Ocean",
+   "Southern Ocean"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 10,
+  "category": "Geography",
+  "q": "Which country is home to the Taj Mahal?",
+  "options": [
+   "India",
+   "Pakistan",
+   "Bangladesh",
+   "Nepal"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 11,
+  "category": "Geography",
+  "q": "What is the capital of Japan?",
+  "options": [
+   "Tokyo",
+   "Kyoto",
+   "Osaka",
+   "Nagoya"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 12,
+  "category": "Geography",
+  "q": "Which river flows through Paris?",
+  "options": [
+   "Seine",
+   "Thames",
+   "Rhine",
+   "Danube"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 13,
+  "category": "Geography",
+  "q": "Which country has the largest population?",
+  "options": [
+   "India",
+   "China",
+   "USA",
+   "Indonesia"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 14,
+  "category": "Geography",
+  "q": "Which is the largest continent?",
+  "options": [
+   "Asia",
+   "Africa",
+   "North America",
+   "Europe"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 15,
+  "category": "Geography",
+  "q": "What is the capital of Egypt?",
+  "options": [
+   "Cairo",
+   "Alexandria",
+   "Giza",
+   "Luxor"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 16,
+  "category": "Geography",
+  "q": "Which country is both in Europe and Asia?",
+  "options": [
+   "Turkey",
+   "Greece",
+   "Iran",
+   "Austria"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 17,
+  "category": "Geography",
+  "q": "The Great Barrier Reef is off the coast of which country?",
+  "options": [
+   "Australia",
+   "Indonesia",
+   "Philippines",
+   "New Zealand"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 18,
+  "category": "Geography",
+  "q": "What is the capital of Brazil?",
+  "options": [
+   "Brasília",
+   "Rio de Janeiro",
+   "São Paulo",
+   "Salvador"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 19,
+  "category": "Geography",
+  "q": "Which country has the city of Marrakech?",
+  "options": [
+   "Morocco",
+   "Egypt",
+   "Tunisia",
+   "Algeria"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 20,
+  "category": "Geography",
+  "q": "Which is the deepest ocean trench?",
+  "options": [
+   "Mariana Trench",
+   "Tonga Trench",
+   "Java Trench",
+   "Puerto Rico Trench"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 21,
+  "category": "Geography",
+  "q": "What is the capital of South Korea?",
+  "options": [
+   "Seoul",
+   "Busan",
+   "Incheon",
+   "Daegu"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 22,
+  "category": "Geography",
+  "q": "Which European city is famous for the Eiffel Tower?",
+  "options": [
+   "Paris",
+   "Lyon",
+   "Brussels",
+   "Geneva"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 23,
+  "category": "Geography",
+  "q": "Which country is Mount Everest's southern base camp in?",
+  "options": [
+   "Nepal",
+   "India",
+   "Bhutan",
+   "Tibet region of China"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 24,
+  "category": "Geography",
+  "q": "What is the largest island in the world?",
+  "options": [
+   "Greenland",
+   "Borneo",
+   "Madagascar",
+   "New Guinea"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 25,
+  "category": "Geography",
+  "q": "Which Indian state is Jaipur the capital of?",
+  "options": [
+   "Rajasthan",
+   "Gujarat",
+   "Punjab",
+   "Haryana"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 26,
+  "category": "Geography",
+  "q": "Which sea is the saltiest body of water commonly listed?",
+  "options": [
+   "Dead Sea",
+   "Red Sea",
+   "Black Sea",
+   "Caspian Sea"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 27,
+  "category": "Geography",
+  "q": "What is the capital of Kenya?",
+  "options": [
+   "Nairobi",
+   "Mombasa",
+   "Kisumu",
+   "Nakuru"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 28,
+  "category": "Geography",
+  "q": "Which country has the most time zones including territories?",
+  "options": [
+   "France",
+   "Russia",
+   "USA",
+   "China"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 29,
+  "category": "Geography",
+  "q": "The Amazon river mostly flows through which country?",
+  "options": [
+   "Brazil",
+   "Peru",
+   "Colombia",
+   "Venezuela"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 30,
+  "category": "Geography",
+  "q": "Which city is the capital of Italy?",
+  "options": [
+   "Rome",
+   "Milan",
+   "Naples",
+   "Florence"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 31,
+  "category": "Geography",
+  "q": "Which country is Bali part of?",
+  "options": [
+   "Indonesia",
+   "Thailand",
+   "Malaysia",
+   "Philippines"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 32,
+  "category": "Geography",
+  "q": "What is the capital of Argentina?",
+  "options": [
+   "Buenos Aires",
+   "Córdoba",
+   "Rosario",
+   "Mendoza"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 33,
+  "category": "Geography",
+  "q": "Which strait separates Spain from Morocco?",
+  "options": [
+   "Strait of Gibraltar",
+   "Bosporus",
+   "Strait of Hormuz",
+   "Strait of Malacca"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 34,
+  "category": "Geography",
+  "q": "Which country is known as the Land of the Rising Sun?",
+  "options": [
+   "Japan",
+   "China",
+   "Thailand",
+   "South Korea"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 35,
+  "category": "Geography",
+  "q": "Which mountain range separates Europe and Asia?",
+  "options": [
+   "Urals",
+   "Alps",
+   "Carpathians",
+   "Caucasus only"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 36,
+  "category": "Geography",
+  "q": "What is the capital of Thailand?",
+  "options": [
+   "Bangkok",
+   "Chiang Mai",
+   "Phuket",
+   "Pattaya"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 37,
+  "category": "Geography",
+  "q": "Which African country has Addis Ababa as its capital?",
+  "options": [
+   "Ethiopia",
+   "Eritrea",
+   "Somalia",
+   "Sudan"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 38,
+  "category": "Geography",
+  "q": "Which US state is the largest by area?",
+  "options": [
+   "Alaska",
+   "Texas",
+   "California",
+   "Montana"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 39,
+  "category": "Geography",
+  "q": "What is the capital of Portugal?",
+  "options": [
+   "Lisbon",
+   "Porto",
+   "Madrid",
+   "Faro"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 40,
+  "category": "Science",
+  "q": "What gas do plants absorb from the air?",
+  "options": [
+   "Carbon dioxide",
+   "Oxygen",
+   "Nitrogen",
+   "Hydrogen"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 41,
+  "category": "Science",
+  "q": "What is the chemical symbol for gold?",
+  "options": [
+   "Au",
+   "Ag",
+   "Gd",
+   "Go"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 42,
+  "category": "Science",
+  "q": "How many bones are in the adult human body?",
+  "options": [
+   "206",
+   "201",
+   "212",
+   "198"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 43,
+  "category": "Science",
+  "q": "What is the hardest natural substance?",
+  "options": [
+   "Diamond",
+   "Quartz",
+   "Steel",
+   "Granite"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 44,
+  "category": "Science",
+  "q": "What planet is known as the Red Planet?",
+  "options": [
+   "Mars",
+   "Venus",
+   "Jupiter",
+   "Mercury"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 45,
+  "category": "Science",
+  "q": "What is H2O more commonly called?",
+  "options": [
+   "Water",
+   "Hydrogen peroxide",
+   "Salt",
+   "Ozone"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 46,
+  "category": "Science",
+  "q": "Which organ pumps blood through the body?",
+  "options": [
+   "Heart",
+   "Liver",
+   "Lungs",
+   "Kidney"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 47,
+  "category": "Science",
+  "q": "What is the boiling point of water at sea level in Celsius?",
+  "options": [
+   "100",
+   "90",
+   "110",
+   "120"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 48,
+  "category": "Science",
+  "q": "What force keeps us on the ground?",
+  "options": [
+   "Gravity",
+   "Magnetism",
+   "Friction",
+   "Inertia"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 49,
+  "category": "Science",
+  "q": "What is the largest organ of the human body?",
+  "options": [
+   "Skin",
+   "Liver",
+   "Brain",
+   "Intestine"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 50,
+  "category": "Science",
+  "q": "Which gas makes up most of Earth's atmosphere?",
+  "options": [
+   "Nitrogen",
+   "Oxygen",
+   "Carbon dioxide",
+   "Argon"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 51,
+  "category": "Science",
+  "q": "What is the centre of an atom called?",
+  "options": [
+   "Nucleus",
+   "Electron",
+   "Proton cloud",
+   "Orbital"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 52,
+  "category": "Science",
+  "q": "How many legs does a spider have?",
+  "options": [
+   "8",
+   "6",
+   "10",
+   "12"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 53,
+  "category": "Science",
+  "q": "What is the chemical symbol for sodium?",
+  "options": [
+   "Na",
+   "So",
+   "Sd",
+   "S"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 54,
+  "category": "Science",
+  "q": "What do bees collect from flowers?",
+  "options": [
+   "Nectar",
+   "Sap",
+   "Dew",
+   "Resin"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 55,
+  "category": "Science",
+  "q": "Which blood cells fight infection?",
+  "options": [
+   "White blood cells",
+   "Red blood cells",
+   "Platelets",
+   "Plasma cells"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 56,
+  "category": "Science",
+  "q": "What is the speed of light, roughly, in km per second?",
+  "options": [
+   "300,000",
+   "150,000",
+   "30,000",
+   "3,000,000"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 57,
+  "category": "Science",
+  "q": "What is the study of weather called?",
+  "options": [
+   "Meteorology",
+   "Geology",
+   "Astronomy",
+   "Ecology"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 58,
+  "category": "Science",
+  "q": "What part of the plant conducts photosynthesis?",
+  "options": [
+   "Leaves",
+   "Roots",
+   "Stem",
+   "Flower"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 59,
+  "category": "Science",
+  "q": "Which metal is liquid at room temperature?",
+  "options": [
+   "Mercury",
+   "Lead",
+   "Tin",
+   "Aluminium"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 60,
+  "category": "Science",
+  "q": "What is the pH of pure water?",
+  "options": [
+   "7",
+   "0",
+   "14",
+   "5"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 61,
+  "category": "Science",
+  "q": "What type of animal is a frog?",
+  "options": [
+   "Amphibian",
+   "Reptile",
+   "Mammal",
+   "Fish"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 62,
+  "category": "Science",
+  "q": "What is the powerhouse of the cell?",
+  "options": [
+   "Mitochondria",
+   "Nucleus",
+   "Ribosome",
+   "Chloroplast"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 63,
+  "category": "Science",
+  "q": "Which vitamin do we get from sunlight?",
+  "options": [
+   "Vitamin D",
+   "Vitamin C",
+   "Vitamin A",
+   "Vitamin B12"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 64,
+  "category": "Science",
+  "q": "What is the freezing point of water in Fahrenheit?",
+  "options": [
+   "32",
+   "0",
+   "100",
+   "212"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 65,
+  "category": "Science",
+  "q": "What is the chemical symbol for iron?",
+  "options": [
+   "Fe",
+   "Ir",
+   "In",
+   "I"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 66,
+  "category": "Science",
+  "q": "Sound travels fastest through which medium?",
+  "options": [
+   "Solids",
+   "Liquids",
+   "Gases",
+   "Vacuum"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 67,
+  "category": "Science",
+  "q": "What is the name for animals that eat only plants?",
+  "options": [
+   "Herbivores",
+   "Carnivores",
+   "Omnivores",
+   "Insectivores"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 68,
+  "category": "Science",
+  "q": "How many chambers does the human heart have?",
+  "options": [
+   "4",
+   "2",
+   "3",
+   "5"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 69,
+  "category": "Science",
+  "q": "What instrument measures atmospheric pressure?",
+  "options": [
+   "Barometer",
+   "Thermometer",
+   "Hygrometer",
+   "Anemometer"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 70,
+  "category": "Science",
+  "q": "What is the most abundant element in the universe?",
+  "options": [
+   "Hydrogen",
+   "Helium",
+   "Oxygen",
+   "Carbon"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 71,
+  "category": "Science",
+  "q": "Which planet has the most moons as of recent counts?",
+  "options": [
+   "Saturn",
+   "Jupiter",
+   "Uranus",
+   "Neptune"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 72,
+  "category": "Science",
+  "q": "What is the main gas in the Sun?",
+  "options": [
+   "Hydrogen",
+   "Oxygen",
+   "Nitrogen",
+   "Carbon dioxide"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 73,
+  "category": "Science",
+  "q": "What does DNA stand for?",
+  "options": [
+   "Deoxyribonucleic acid",
+   "Dinucleic acid",
+   "Deoxyribose nitrogen acid",
+   "Dynamic nucleic acid"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 74,
+  "category": "Science",
+  "q": "What is the unit of electrical resistance?",
+  "options": [
+   "Ohm",
+   "Volt",
+   "Ampere",
+   "Watt"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 75,
+  "category": "Science",
+  "q": "Which scientist proposed the theory of general relativity?",
+  "options": [
+   "Albert Einstein",
+   "Isaac Newton",
+   "Niels Bohr",
+   "Galileo"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 76,
+  "category": "Science",
+  "q": "What is the smallest unit of life?",
+  "options": [
+   "Cell",
+   "Atom",
+   "Molecule",
+   "Organ"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 77,
+  "category": "Science",
+  "q": "What do we call molten rock below the Earth's surface?",
+  "options": [
+   "Magma",
+   "Lava",
+   "Basalt",
+   "Ash"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 78,
+  "category": "Science",
+  "q": "Which part of the eye controls how much light enters?",
+  "options": [
+   "Iris",
+   "Retina",
+   "Cornea",
+   "Lens"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 79,
+  "category": "Science",
+  "q": "How many planets are in our solar system?",
+  "options": [
+   "8",
+   "9",
+   "7",
+   "10"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 80,
+  "category": "Space",
+  "q": "What is the closest star to Earth?",
+  "options": [
+   "The Sun",
+   "Proxima Centauri",
+   "Sirius",
+   "Alpha Centauri A"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 81,
+  "category": "Space",
+  "q": "Who was the first human in space?",
+  "options": [
+   "Yuri Gagarin",
+   "Neil Armstrong",
+   "Buzz Aldrin",
+   "John Glenn"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 82,
+  "category": "Space",
+  "q": "Which planet is famous for its rings?",
+  "options": [
+   "Saturn",
+   "Jupiter",
+   "Mars",
+   "Venus"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 83,
+  "category": "Space",
+  "q": "What is a light year a measure of?",
+  "options": [
+   "Distance",
+   "Time",
+   "Brightness",
+   "Speed"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 84,
+  "category": "Space",
+  "q": "Which is the largest planet in our solar system?",
+  "options": [
+   "Jupiter",
+   "Saturn",
+   "Neptune",
+   "Earth"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 85,
+  "category": "Space",
+  "q": "What was the name of the first artificial satellite?",
+  "options": [
+   "Sputnik 1",
+   "Explorer 1",
+   "Vostok 1",
+   "Apollo 1"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 86,
+  "category": "Space",
+  "q": "How long does Earth take to orbit the Sun?",
+  "options": [
+   "About 365 days",
+   "About 30 days",
+   "About 24 hours",
+   "About 1,000 days"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 87,
+  "category": "Space",
+  "q": "What is the name of India's Mars orbiter mission?",
+  "options": [
+   "Mangalyaan",
+   "Chandrayaan",
+   "Gaganyaan",
+   "Aditya"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 88,
+  "category": "Space",
+  "q": "Which planet is closest to the Sun?",
+  "options": [
+   "Mercury",
+   "Venus",
+   "Earth",
+   "Mars"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 89,
+  "category": "Space",
+  "q": "What is the name of our galaxy?",
+  "options": [
+   "Milky Way",
+   "Andromeda",
+   "Triangulum",
+   "Whirlpool"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 90,
+  "category": "Space",
+  "q": "Which planet spins on its side?",
+  "options": [
+   "Uranus",
+   "Neptune",
+   "Saturn",
+   "Mars"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 91,
+  "category": "Space",
+  "q": "What causes a solar eclipse?",
+  "options": [
+   "The Moon passing between Earth and the Sun",
+   "Earth passing between the Moon and the Sun",
+   "The Sun dimming",
+   "Clouds in space"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 92,
+  "category": "Space",
+  "q": "Which is the hottest planet in the solar system?",
+  "options": [
+   "Venus",
+   "Mercury",
+   "Mars",
+   "Jupiter"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 93,
+  "category": "Space",
+  "q": "What is the Moon's gravity compared to Earth's, roughly?",
+  "options": [
+   "About one sixth",
+   "About half",
+   "About one third",
+   "The same"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 94,
+  "category": "Space",
+  "q": "What is the name of the first dog in orbit?",
+  "options": [
+   "Laika",
+   "Belka",
+   "Strelka",
+   "Rex"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 95,
+  "category": "History",
+  "q": "In which year did the first person land on the Moon?",
+  "options": [
+   "1969",
+   "1965",
+   "1972",
+   "1959"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 96,
+  "category": "History",
+  "q": "Who was the first Prime Minister of India?",
+  "options": [
+   "Jawaharlal Nehru",
+   "Mahatma Gandhi",
+   "Sardar Patel",
+   "Rajendra Prasad"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 97,
+  "category": "History",
+  "q": "Which ancient wonder was in Alexandria?",
+  "options": [
+   "The Lighthouse",
+   "The Colossus",
+   "The Hanging Gardens",
+   "The Mausoleum"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 98,
+  "category": "History",
+  "q": "The Great Wall is in which country?",
+  "options": [
+   "China",
+   "Mongolia",
+   "Japan",
+   "Korea"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 99,
+  "category": "History",
+  "q": "Who painted the Mona Lisa?",
+  "options": [
+   "Leonardo da Vinci",
+   "Michelangelo",
+   "Raphael",
+   "Donatello"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 100,
+  "category": "History",
+  "q": "In which year did World War II end?",
+  "options": [
+   "1945",
+   "1944",
+   "1946",
+   "1939"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 101,
+  "category": "History",
+  "q": "Which empire built Machu Picchu?",
+  "options": [
+   "Inca",
+   "Aztec",
+   "Maya",
+   "Olmec"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 102,
+  "category": "History",
+  "q": "Who was the first woman to win a Nobel Prize?",
+  "options": [
+   "Marie Curie",
+   "Rosalind Franklin",
+   "Jane Addams",
+   "Mother Teresa"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 103,
+  "category": "History",
+  "q": "The Olympic Games originated in which country?",
+  "options": [
+   "Greece",
+   "Italy",
+   "Egypt",
+   "Turkey"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 104,
+  "category": "History",
+  "q": "Which civilisation built the pyramids of Giza?",
+  "options": [
+   "Ancient Egyptians",
+   "Romans",
+   "Greeks",
+   "Babylonians"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 105,
+  "category": "History",
+  "q": "Who wrote the Indian national anthem?",
+  "options": [
+   "Rabindranath Tagore",
+   "Bankim Chandra",
+   "Sarojini Naidu",
+   "Subhas Bose"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 106,
+  "category": "History",
+  "q": "In which year did India gain independence?",
+  "options": [
+   "1947",
+   "1950",
+   "1945",
+   "1942"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 107,
+  "category": "History",
+  "q": "Which ship sank in 1912 after hitting an iceberg?",
+  "options": [
+   "Titanic",
+   "Lusitania",
+   "Britannic",
+   "Olympic"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 108,
+  "category": "History",
+  "q": "Who was the first President of the United States?",
+  "options": [
+   "George Washington",
+   "Thomas Jefferson",
+   "Abraham Lincoln",
+   "John Adams"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 109,
+  "category": "History",
+  "q": "Which wall fell in 1989?",
+  "options": [
+   "Berlin Wall",
+   "Great Wall",
+   "Hadrian's Wall",
+   "Western Wall"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 110,
+  "category": "History",
+  "q": "Which explorer is credited with the first circumnavigation expedition?",
+  "options": [
+   "Ferdinand Magellan",
+   "Christopher Columbus",
+   "Vasco da Gama",
+   "James Cook"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 111,
+  "category": "History",
+  "q": "The Renaissance began in which country?",
+  "options": [
+   "Italy",
+   "France",
+   "Spain",
+   "England"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 112,
+  "category": "History",
+  "q": "Who invented the telephone, as commonly credited?",
+  "options": [
+   "Alexander Graham Bell",
+   "Thomas Edison",
+   "Nikola Tesla",
+   "Guglielmo Marconi"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 113,
+  "category": "History",
+  "q": "Which city was the first capital of independent India?",
+  "options": [
+   "Delhi",
+   "Kolkata",
+   "Mumbai",
+   "Chennai"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 114,
+  "category": "History",
+  "q": "In which century did the printing press spread across Europe?",
+  "options": [
+   "15th",
+   "12th",
+   "17th",
+   "19th"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 115,
+  "category": "History",
+  "q": "Who led the Salt March in 1930?",
+  "options": [
+   "Mahatma Gandhi",
+   "Jawaharlal Nehru",
+   "Bhagat Singh",
+   "B. R. Ambedkar"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 116,
+  "category": "History",
+  "q": "Which country gifted the Statue of Liberty to the USA?",
+  "options": [
+   "France",
+   "Britain",
+   "Spain",
+   "Italy"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 117,
+  "category": "History",
+  "q": "The Cold War was mainly between the USA and which country?",
+  "options": [
+   "Soviet Union",
+   "China",
+   "Germany",
+   "Japan"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 118,
+  "category": "History",
+  "q": "Which ancient city was buried by Mount Vesuvius?",
+  "options": [
+   "Pompeii",
+   "Athens",
+   "Carthage",
+   "Troy"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 119,
+  "category": "History",
+  "q": "Who was known as the Iron Lady?",
+  "options": [
+   "Margaret Thatcher",
+   "Indira Gandhi",
+   "Golda Meir",
+   "Angela Merkel"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 120,
+  "category": "History",
+  "q": "What year did the first iPhone launch?",
+  "options": [
+   "2007",
+   "2005",
+   "2009",
+   "2010"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 121,
+  "category": "History",
+  "q": "Who is known as the father of the Indian Constitution?",
+  "options": [
+   "B. R. Ambedkar",
+   "Jawaharlal Nehru",
+   "Rajendra Prasad",
+   "Sardar Patel"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 122,
+  "category": "History",
+  "q": "Which empire was ruled by Akbar?",
+  "options": [
+   "Mughal",
+   "Maurya",
+   "Gupta",
+   "Chola"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 123,
+  "category": "History",
+  "q": "Which language was Latin's main successor in Spain?",
+  "options": [
+   "Spanish",
+   "Portuguese",
+   "French",
+   "Italian"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 124,
+  "category": "History",
+  "q": "The Suez Canal connects the Mediterranean to which sea?",
+  "options": [
+   "Red Sea",
+   "Black Sea",
+   "Arabian Sea",
+   "Caspian Sea"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 125,
+  "category": "Food",
+  "q": "Which country is the origin of sushi?",
+  "options": [
+   "Japan",
+   "China",
+   "Korea",
+   "Thailand"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 126,
+  "category": "Food",
+  "q": "What is the main ingredient in guacamole?",
+  "options": [
+   "Avocado",
+   "Tomato",
+   "Cucumber",
+   "Pea"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 127,
+  "category": "Food",
+  "q": "Which spice is the most expensive by weight?",
+  "options": [
+   "Saffron",
+   "Vanilla",
+   "Cardamom",
+   "Cinnamon"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 128,
+  "category": "Food",
+  "q": "What is paneer made from?",
+  "options": [
+   "Milk",
+   "Soy",
+   "Wheat",
+   "Rice"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 129,
+  "category": "Food",
+  "q": "Which nut is used to make marzipan?",
+  "options": [
+   "Almond",
+   "Cashew",
+   "Peanut",
+   "Walnut"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 130,
+  "category": "Food",
+  "q": "What is the main ingredient of hummus?",
+  "options": [
+   "Chickpeas",
+   "Lentils",
+   "Beans",
+   "Peas"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 131,
+  "category": "Food",
+  "q": "Which fruit is known as the king of fruits in India?",
+  "options": [
+   "Mango",
+   "Durian",
+   "Jackfruit",
+   "Banana"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 132,
+  "category": "Food",
+  "q": "What type of pastry is used for croissants?",
+  "options": [
+   "Laminated",
+   "Shortcrust",
+   "Choux",
+   "Filo"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 133,
+  "category": "Food",
+  "q": "Which country does the dish paella come from?",
+  "options": [
+   "Spain",
+   "Italy",
+   "Portugal",
+   "Mexico"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 134,
+  "category": "Food",
+  "q": "What is the main ingredient of dal?",
+  "options": [
+   "Lentils",
+   "Rice",
+   "Wheat",
+   "Potato"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 135,
+  "category": "Food",
+  "q": "Which grain is used to make sourdough bread?",
+  "options": [
+   "Wheat",
+   "Rice",
+   "Maize",
+   "Barley"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 136,
+  "category": "Food",
+  "q": "What is tofu made from?",
+  "options": [
+   "Soybeans",
+   "Chickpeas",
+   "Milk",
+   "Rice"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 137,
+  "category": "Food",
+  "q": "Which country is famous for kimchi?",
+  "options": [
+   "South Korea",
+   "Japan",
+   "China",
+   "Vietnam"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 138,
+  "category": "Food",
+  "q": "What is the main flavour of pesto?",
+  "options": [
+   "Basil",
+   "Mint",
+   "Coriander",
+   "Parsley"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 139,
+  "category": "Food",
+  "q": "Which Italian cheese is used on classic pizza Margherita?",
+  "options": [
+   "Mozzarella",
+   "Parmesan",
+   "Ricotta",
+   "Gorgonzola"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 140,
+  "category": "Food",
+  "q": "What is a dosa made from?",
+  "options": [
+   "Rice and lentil batter",
+   "Wheat flour",
+   "Corn",
+   "Chickpea flour only"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 141,
+  "category": "Food",
+  "q": "Which vegetable is the base of a traditional ratatouille?",
+  "options": [
+   "Aubergine",
+   "Potato",
+   "Cabbage",
+   "Pumpkin"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 142,
+  "category": "Food",
+  "q": "What drink is made from fermented tea?",
+  "options": [
+   "Kombucha",
+   "Kefir",
+   "Lassi",
+   "Cider"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 143,
+  "category": "Food",
+  "q": "Which bean is chocolate made from?",
+  "options": [
+   "Cacao",
+   "Coffee",
+   "Vanilla",
+   "Soy"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 144,
+  "category": "Food",
+  "q": "What is the Japanese word for a rice ball?",
+  "options": [
+   "Onigiri",
+   "Sashimi",
+   "Tempura",
+   "Ramen"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 145,
+  "category": "Food",
+  "q": "Which fruit has its seeds on the outside?",
+  "options": [
+   "Strawberry",
+   "Raspberry",
+   "Blueberry",
+   "Cherry"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 146,
+  "category": "Food",
+  "q": "What is the main ingredient in falafel?",
+  "options": [
+   "Chickpeas",
+   "Potato",
+   "Rice",
+   "Corn"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 147,
+  "category": "Food",
+  "q": "Which country is the largest producer of coffee?",
+  "options": [
+   "Brazil",
+   "Vietnam",
+   "Colombia",
+   "Ethiopia"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 148,
+  "category": "Food",
+  "q": "What is the sweet syrup from maple trees called?",
+  "options": [
+   "Maple syrup",
+   "Molasses",
+   "Treacle",
+   "Honey"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 149,
+  "category": "Food",
+  "q": "Which Indian bread is cooked in a tandoor?",
+  "options": [
+   "Naan",
+   "Chapati",
+   "Puri",
+   "Dosa"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 150,
+  "category": "Food",
+  "q": "Which cheese is traditionally used in Greek salad?",
+  "options": [
+   "Feta",
+   "Halloumi",
+   "Brie",
+   "Cheddar"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 151,
+  "category": "Food",
+  "q": "What is gelato?",
+  "options": [
+   "Italian-style ice cream",
+   "A pasta sauce",
+   "A Spanish soup",
+   "A type of bread"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 152,
+  "category": "Food",
+  "q": "Which fruit is dried to make raisins?",
+  "options": [
+   "Grapes",
+   "Plums",
+   "Apricots",
+   "Dates"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 153,
+  "category": "Food",
+  "q": "What is the key ingredient in a traditional masala chai besides tea?",
+  "options": [
+   "Spices like cardamom and ginger",
+   "Cocoa",
+   "Lemon",
+   "Mint only"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 154,
+  "category": "Food",
+  "q": "Which country gave the world the croissant in its modern form?",
+  "options": [
+   "France",
+   "Austria",
+   "Italy",
+   "Belgium"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 155,
+  "category": "Animals",
+  "q": "What is the largest mammal?",
+  "options": [
+   "Blue whale",
+   "Elephant",
+   "Giraffe",
+   "Hippopotamus"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 156,
+  "category": "Animals",
+  "q": "How many hearts does an octopus have?",
+  "options": [
+   "3",
+   "1",
+   "2",
+   "4"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 157,
+  "category": "Animals",
+  "q": "Which bird is known for mimicking human speech?",
+  "options": [
+   "Parrot",
+   "Crow",
+   "Pigeon",
+   "Sparrow"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 158,
+  "category": "Animals",
+  "q": "What is the fastest land animal?",
+  "options": [
+   "Cheetah",
+   "Lion",
+   "Horse",
+   "Antelope"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 159,
+  "category": "Animals",
+  "q": "Which animal is the national animal of India?",
+  "options": [
+   "Bengal tiger",
+   "Lion",
+   "Elephant",
+   "Peacock"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 160,
+  "category": "Animals",
+  "q": "What do pandas mainly eat?",
+  "options": [
+   "Bamboo",
+   "Fish",
+   "Fruit",
+   "Insects"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 161,
+  "category": "Animals",
+  "q": "Which animal sleeps standing up?",
+  "options": [
+   "Horse",
+   "Dog",
+   "Cat",
+   "Rabbit"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 162,
+  "category": "Animals",
+  "q": "How many legs does an insect have?",
+  "options": [
+   "6",
+   "8",
+   "4",
+   "10"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 163,
+  "category": "Animals",
+  "q": "Which is the tallest animal?",
+  "options": [
+   "Giraffe",
+   "Elephant",
+   "Camel",
+   "Ostrich"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 164,
+  "category": "Animals",
+  "q": "What is a group of lions called?",
+  "options": [
+   "Pride",
+   "Pack",
+   "Herd",
+   "Flock"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 165,
+  "category": "Animals",
+  "q": "Which bird cannot fly?",
+  "options": [
+   "Penguin",
+   "Pigeon",
+   "Eagle",
+   "Swan"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 166,
+  "category": "Animals",
+  "q": "What is the largest reptile?",
+  "options": [
+   "Saltwater crocodile",
+   "Komodo dragon",
+   "Anaconda",
+   "Alligator"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 167,
+  "category": "Animals",
+  "q": "Which mammal can truly fly?",
+  "options": [
+   "Bat",
+   "Flying squirrel",
+   "Sugar glider",
+   "Colugo"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 168,
+  "category": "Animals",
+  "q": "What is a baby kangaroo called?",
+  "options": [
+   "Joey",
+   "Cub",
+   "Kit",
+   "Pup"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 169,
+  "category": "Animals",
+  "q": "Which animal has the longest lifespan among mammals?",
+  "options": [
+   "Bowhead whale",
+   "Elephant",
+   "Human",
+   "Blue whale"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 170,
+  "category": "Animals",
+  "q": "What colour is a polar bear's skin?",
+  "options": [
+   "Black",
+   "White",
+   "Pink",
+   "Grey"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 171,
+  "category": "Animals",
+  "q": "Which sea creature has blue blood?",
+  "options": [
+   "Horseshoe crab",
+   "Dolphin",
+   "Shark",
+   "Tuna"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 172,
+  "category": "Animals",
+  "q": "How many stomach compartments does a cow have?",
+  "options": [
+   "4",
+   "1",
+   "2",
+   "3"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 173,
+  "category": "Animals",
+  "q": "What is the national bird of India?",
+  "options": [
+   "Peacock",
+   "Eagle",
+   "Parrot",
+   "Crane"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 174,
+  "category": "Animals",
+  "q": "Which animal is known as the ship of the desert?",
+  "options": [
+   "Camel",
+   "Horse",
+   "Donkey",
+   "Llama"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 175,
+  "category": "Animals",
+  "q": "What do you call a female deer?",
+  "options": [
+   "Doe",
+   "Mare",
+   "Ewe",
+   "Hen"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 176,
+  "category": "Animals",
+  "q": "Which animal is the slowest mammal?",
+  "options": [
+   "Sloth",
+   "Koala",
+   "Tortoise",
+   "Snail"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 177,
+  "category": "Animals",
+  "q": "Which insect produces honey?",
+  "options": [
+   "Bee",
+   "Wasp",
+   "Ant",
+   "Butterfly"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 178,
+  "category": "Animals",
+  "q": "What is the largest species of big cat?",
+  "options": [
+   "Tiger",
+   "Lion",
+   "Jaguar",
+   "Leopard"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 179,
+  "category": "Animals",
+  "q": "Which bird lays the largest eggs?",
+  "options": [
+   "Ostrich",
+   "Emu",
+   "Eagle",
+   "Swan"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 180,
+  "category": "Animals",
+  "q": "What is a group of crows called?",
+  "options": [
+   "Murder",
+   "Flock",
+   "Pack",
+   "Parliament"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 181,
+  "category": "Animals",
+  "q": "Which animal can change colour to blend in?",
+  "options": [
+   "Chameleon",
+   "Frog",
+   "Lizard",
+   "Snake"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 182,
+  "category": "Animals",
+  "q": "Dolphins are what kind of animal?",
+  "options": [
+   "Mammals",
+   "Fish",
+   "Reptiles",
+   "Amphibians"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 183,
+  "category": "Animals",
+  "q": "What is the largest living bird?",
+  "options": [
+   "Ostrich",
+   "Emu",
+   "Albatross",
+   "Condor"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 184,
+  "category": "Animals",
+  "q": "Which animal has the best sense of smell among common pets?",
+  "options": [
+   "Dog",
+   "Cat",
+   "Rabbit",
+   "Hamster"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 185,
+  "category": "Sport",
+  "q": "How many players are on a football team on the pitch?",
+  "options": [
+   "11",
+   "10",
+   "12",
+   "9"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 186,
+  "category": "Sport",
+  "q": "In which sport would you perform a slam dunk?",
+  "options": [
+   "Basketball",
+   "Volleyball",
+   "Tennis",
+   "Badminton"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 187,
+  "category": "Sport",
+  "q": "How many overs are in a T20 cricket innings?",
+  "options": [
+   "20",
+   "50",
+   "10",
+   "40"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 188,
+  "category": "Sport",
+  "q": "Which country hosts the Wimbledon tennis championships?",
+  "options": [
+   "England",
+   "USA",
+   "Australia",
+   "France"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 189,
+  "category": "Sport",
+  "q": "How often are the Summer Olympics held?",
+  "options": [
+   "Every 4 years",
+   "Every 2 years",
+   "Every 5 years",
+   "Every 3 years"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 190,
+  "category": "Sport",
+  "q": "What is the national sport of Japan?",
+  "options": [
+   "Sumo wrestling",
+   "Judo",
+   "Baseball",
+   "Karate"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 191,
+  "category": "Sport",
+  "q": "How many points is a touchdown worth in American football?",
+  "options": [
+   "6",
+   "3",
+   "7",
+   "1"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 192,
+  "category": "Sport",
+  "q": "Which sport uses a shuttlecock?",
+  "options": [
+   "Badminton",
+   "Tennis",
+   "Squash",
+   "Table tennis"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 193,
+  "category": "Sport",
+  "q": "How many rings are on the Olympic flag?",
+  "options": [
+   "5",
+   "4",
+   "6",
+   "7"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 194,
+  "category": "Sport",
+  "q": "What is the maximum score in a single frame of ten-pin bowling?",
+  "options": [
+   "30",
+   "10",
+   "20",
+   "50"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 195,
+  "category": "Sport",
+  "q": "Which country won the first FIFA World Cup in 1930?",
+  "options": [
+   "Uruguay",
+   "Brazil",
+   "Argentina",
+   "Italy"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 196,
+  "category": "Sport",
+  "q": "In chess, which piece can only move diagonally?",
+  "options": [
+   "Bishop",
+   "Rook",
+   "Knight",
+   "King"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 197,
+  "category": "Sport",
+  "q": "How long is a marathon in kilometres?",
+  "options": [
+   "42.195",
+   "40",
+   "45",
+   "50"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 198,
+  "category": "Sport",
+  "q": "Which sport is played at Lord's in London?",
+  "options": [
+   "Cricket",
+   "Tennis",
+   "Football",
+   "Rugby"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 199,
+  "category": "Sport",
+  "q": "How many players are on a basketball team on court?",
+  "options": [
+   "5",
+   "6",
+   "7",
+   "4"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 200,
+  "category": "Sport",
+  "q": "What colour belt is the highest in most karate schools?",
+  "options": [
+   "Black",
+   "Red",
+   "Brown",
+   "White"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 201,
+  "category": "Sport",
+  "q": "Which country is famous for the sport of kabaddi?",
+  "options": [
+   "India",
+   "Japan",
+   "Brazil",
+   "Spain"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 202,
+  "category": "Sport",
+  "q": "What is a score of zero called in tennis?",
+  "options": [
+   "Love",
+   "Nil",
+   "Duck",
+   "Blank"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 203,
+  "category": "Sport",
+  "q": "How many holes are on a standard golf course?",
+  "options": [
+   "18",
+   "9",
+   "12",
+   "21"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 204,
+  "category": "Sport",
+  "q": "Which sport features the Tour de France?",
+  "options": [
+   "Cycling",
+   "Running",
+   "Sailing",
+   "Motor racing"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 205,
+  "category": "Sport",
+  "q": "In cricket, what is a score of 100 runs by a batter called?",
+  "options": [
+   "Century",
+   "Half-century",
+   "Hat-trick",
+   "Duck"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 206,
+  "category": "Sport",
+  "q": "What is the diameter of a basketball hoop in inches?",
+  "options": [
+   "18",
+   "15",
+   "20",
+   "24"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 207,
+  "category": "Sport",
+  "q": "Which sport uses the terms 'ollie' and 'kickflip'?",
+  "options": [
+   "Skateboarding",
+   "Surfing",
+   "Snowboarding",
+   "BMX"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 208,
+  "category": "Sport",
+  "q": "How many players are on a volleyball team on court?",
+  "options": [
+   "6",
+   "5",
+   "7",
+   "8"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 209,
+  "category": "Sport",
+  "q": "In which sport do you use a puck?",
+  "options": [
+   "Ice hockey",
+   "Field hockey",
+   "Lacrosse",
+   "Curling"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 210,
+  "category": "Tech",
+  "q": "What does CPU stand for?",
+  "options": [
+   "Central Processing Unit",
+   "Computer Power Unit",
+   "Central Program Utility",
+   "Core Processing Unit"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 211,
+  "category": "Tech",
+  "q": "What does 'www' stand for?",
+  "options": [
+   "World Wide Web",
+   "World Web Wide",
+   "Wide World Web",
+   "Web World Wide"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 212,
+  "category": "Tech",
+  "q": "Which company makes the Android operating system?",
+  "options": [
+   "Google",
+   "Apple",
+   "Microsoft",
+   "Samsung"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 213,
+  "category": "Tech",
+  "q": "What does USB stand for?",
+  "options": [
+   "Universal Serial Bus",
+   "United System Bus",
+   "Universal System Base",
+   "Unified Serial Bridge"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 214,
+  "category": "Tech",
+  "q": "What is the binary number for the decimal 5?",
+  "options": [
+   "101",
+   "110",
+   "100",
+   "111"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 215,
+  "category": "Tech",
+  "q": "Who co-founded Microsoft with Bill Gates?",
+  "options": [
+   "Paul Allen",
+   "Steve Jobs",
+   "Steve Wozniak",
+   "Larry Page"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 216,
+  "category": "Tech",
+  "q": "What does HTML stand for?",
+  "options": [
+   "HyperText Markup Language",
+   "High Tech Modern Language",
+   "Hyper Transfer Markup Language",
+   "Home Tool Markup Language"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 217,
+  "category": "Tech",
+  "q": "Which company created the iPhone?",
+  "options": [
+   "Apple",
+   "Samsung",
+   "Nokia",
+   "Google"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 218,
+  "category": "Tech",
+  "q": "What does 'Wi-Fi' let devices do?",
+  "options": [
+   "Connect to a network wirelessly",
+   "Charge wirelessly",
+   "Print documents",
+   "Store files"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 219,
+  "category": "Tech",
+  "q": "What is the name of the first widely used web browser?",
+  "options": [
+   "Mosaic",
+   "Chrome",
+   "Netscape",
+   "Firefox"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 220,
+  "category": "Tech",
+  "q": "How many bits are in a byte?",
+  "options": [
+   "8",
+   "4",
+   "16",
+   "32"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 221,
+  "category": "Tech",
+  "q": "Which social app is known for 280-character posts?",
+  "options": [
+   "X (Twitter)",
+   "Instagram",
+   "LinkedIn",
+   "Snapchat"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 222,
+  "category": "Tech",
+  "q": "What does GPS stand for?",
+  "options": [
+   "Global Positioning System",
+   "General Position Service",
+   "Global Path System",
+   "Geographic Position Signal"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 223,
+  "category": "Tech",
+  "q": "Which programming language is named after a snake?",
+  "options": [
+   "Python",
+   "Cobra",
+   "Viper",
+   "Boa"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 224,
+  "category": "Tech",
+  "q": "What is the term for a program that infects computers?",
+  "options": [
+   "Virus",
+   "Bug",
+   "Cookie",
+   "Patch"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 225,
+  "category": "Tech",
+  "q": "Which company owns YouTube?",
+  "options": [
+   "Google",
+   "Meta",
+   "Amazon",
+   "Microsoft"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 226,
+  "category": "Tech",
+  "q": "What does PDF stand for?",
+  "options": [
+   "Portable Document Format",
+   "Printable Data File",
+   "Public Document File",
+   "Personal Data Format"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 227,
+  "category": "Tech",
+  "q": "What does RAM stand for?",
+  "options": [
+   "Random Access Memory",
+   "Read Access Memory",
+   "Rapid Application Memory",
+   "Run And Manage"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 228,
+  "category": "Tech",
+  "q": "Which key combination is commonly used to copy on a PC?",
+  "options": [
+   "Ctrl + C",
+   "Ctrl + V",
+   "Ctrl + X",
+   "Ctrl + Z"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 229,
+  "category": "Tech",
+  "q": "What is the name of Apple's voice assistant?",
+  "options": [
+   "Siri",
+   "Alexa",
+   "Cortana",
+   "Bixby"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 230,
+  "category": "Language",
+  "q": "How many letters are in the English alphabet?",
+  "options": [
+   "26",
+   "24",
+   "25",
+   "28"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 231,
+  "category": "Language",
+  "q": "What is the plural of 'mouse' (the animal)?",
+  "options": [
+   "Mice",
+   "Mouses",
+   "Meese",
+   "Mousen"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 232,
+  "category": "Language",
+  "q": "Which language has the most native speakers?",
+  "options": [
+   "Mandarin Chinese",
+   "English",
+   "Spanish",
+   "Hindi"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 233,
+  "category": "Language",
+  "q": "What is a word that reads the same backwards called?",
+  "options": [
+   "Palindrome",
+   "Anagram",
+   "Synonym",
+   "Homonym"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 234,
+  "category": "Language",
+  "q": "What is the opposite of 'ancient'?",
+  "options": [
+   "Modern",
+   "Old",
+   "Antique",
+   "Historic"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 235,
+  "category": "Language",
+  "q": "Which is the official language of Brazil?",
+  "options": [
+   "Portuguese",
+   "Spanish",
+   "Brazilian",
+   "French"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 236,
+  "category": "Language",
+  "q": "What do we call words with the same meaning?",
+  "options": [
+   "Synonyms",
+   "Antonyms",
+   "Homophones",
+   "Acronyms"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 237,
+  "category": "Language",
+  "q": "How many official languages does Switzerland have?",
+  "options": [
+   "4",
+   "1",
+   "2",
+   "3"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 238,
+  "category": "Language",
+  "q": "What is the collective noun for a group of fish?",
+  "options": [
+   "School",
+   "Herd",
+   "Flock",
+   "Pack"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 239,
+  "category": "Language",
+  "q": "Which punctuation mark ends a question?",
+  "options": [
+   "Question mark",
+   "Full stop",
+   "Comma",
+   "Colon"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 240,
+  "category": "Language",
+  "q": "What does the Latin phrase 'carpe diem' mean?",
+  "options": [
+   "Seize the day",
+   "Time flies",
+   "Know yourself",
+   "Be strong"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 241,
+  "category": "Language",
+  "q": "The word 'piano' comes from which language?",
+  "options": [
+   "Italian",
+   "French",
+   "Spanish",
+   "German"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 242,
+  "category": "Language",
+  "q": "What is the most common letter in English?",
+  "options": [
+   "E",
+   "A",
+   "T",
+   "S"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 243,
+  "category": "Language",
+  "q": "Which script is Hindi usually written in?",
+  "options": [
+   "Devanagari",
+   "Latin",
+   "Arabic",
+   "Tamil"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 244,
+  "category": "Language",
+  "q": "What is the study of word origins called?",
+  "options": [
+   "Etymology",
+   "Entomology",
+   "Phonology",
+   "Semantics"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 245,
+  "category": "Language",
+  "q": "In which language does 'Namaste' originate?",
+  "options": [
+   "Sanskrit",
+   "Tamil",
+   "Urdu",
+   "Persian"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 246,
+  "category": "Language",
+  "q": "What is a 'haiku'?",
+  "options": [
+   "A three-line Japanese poem",
+   "A Chinese painting",
+   "A Korean dance",
+   "A Thai dish"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 247,
+  "category": "Language",
+  "q": "Which word means 'fear of spiders'?",
+  "options": [
+   "Arachnophobia",
+   "Claustrophobia",
+   "Agoraphobia",
+   "Acrophobia"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 248,
+  "category": "Language",
+  "q": "What does 'bon appétit' wish you?",
+  "options": [
+   "A good meal",
+   "A good trip",
+   "Good luck",
+   "Good night"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 249,
+  "category": "Language",
+  "q": "How many vowels are in the English alphabet, counting A E I O U?",
+  "options": [
+   "5",
+   "6",
+   "4",
+   "7"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 250,
+  "category": "Arts",
+  "q": "Who composed the Four Seasons?",
+  "options": [
+   "Antonio Vivaldi",
+   "Mozart",
+   "Beethoven",
+   "Bach"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 251,
+  "category": "Arts",
+  "q": "Which instrument has 88 keys?",
+  "options": [
+   "Piano",
+   "Organ",
+   "Harpsichord",
+   "Accordion"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 252,
+  "category": "Arts",
+  "q": "What are the three primary colours of paint?",
+  "options": [
+   "Red, yellow, blue",
+   "Red, green, blue",
+   "Yellow, green, purple",
+   "Blue, orange, green"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 253,
+  "category": "Arts",
+  "q": "Who painted 'The Starry Night'?",
+  "options": [
+   "Vincent van Gogh",
+   "Claude Monet",
+   "Pablo Picasso",
+   "Salvador Dalí"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 254,
+  "category": "Arts",
+  "q": "Which dance is known as the national dance of Argentina?",
+  "options": [
+   "Tango",
+   "Salsa",
+   "Samba",
+   "Flamenco"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 255,
+  "category": "Arts",
+  "q": "How many strings does a standard guitar have?",
+  "options": [
+   "6",
+   "4",
+   "5",
+   "7"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 256,
+  "category": "Arts",
+  "q": "Which Indian classical dance comes from Tamil Nadu?",
+  "options": [
+   "Bharatanatyam",
+   "Kathak",
+   "Odissi",
+   "Kathakali"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 257,
+  "category": "Arts",
+  "q": "What is the name of the famous ballet with a swan?",
+  "options": [
+   "Swan Lake",
+   "The Nutcracker",
+   "Giselle",
+   "Coppélia"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 258,
+  "category": "Arts",
+  "q": "Who wrote 'Romeo and Juliet'?",
+  "options": [
+   "William Shakespeare",
+   "Charles Dickens",
+   "Jane Austen",
+   "Oscar Wilde"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 259,
+  "category": "Arts",
+  "q": "Which instrument is Ravi Shankar famous for?",
+  "options": [
+   "Sitar",
+   "Tabla",
+   "Flute",
+   "Sarod"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 260,
+  "category": "Arts",
+  "q": "What is origami?",
+  "options": [
+   "The art of paper folding",
+   "Japanese flower arranging",
+   "Ink painting",
+   "Clay sculpture"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 261,
+  "category": "Arts",
+  "q": "Which colour do you get by mixing blue and yellow?",
+  "options": [
+   "Green",
+   "Purple",
+   "Orange",
+   "Brown"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 262,
+  "category": "Arts",
+  "q": "What is the name of Michelangelo's famous ceiling?",
+  "options": [
+   "Sistine Chapel ceiling",
+   "Louvre ceiling",
+   "Pantheon ceiling",
+   "Vatican dome"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 263,
+  "category": "Arts",
+  "q": "Who wrote 'Pride and Prejudice'?",
+  "options": [
+   "Jane Austen",
+   "Emily Brontë",
+   "Mary Shelley",
+   "George Eliot"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 264,
+  "category": "Arts",
+  "q": "Which musical note comes after 'fa'?",
+  "options": [
+   "So",
+   "La",
+   "Mi",
+   "Ti"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 265,
+  "category": "Arts",
+  "q": "What is a sculpture carved from a single block called?",
+  "options": [
+   "Monolith",
+   "Mosaic",
+   "Fresco",
+   "Relief"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 266,
+  "category": "Arts",
+  "q": "Which artist is famous for soup-can paintings?",
+  "options": [
+   "Andy Warhol",
+   "Jackson Pollock",
+   "Roy Lichtenstein",
+   "Mark Rothko"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 267,
+  "category": "Arts",
+  "q": "How many players are in a string quartet?",
+  "options": [
+   "4",
+   "3",
+   "5",
+   "6"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 268,
+  "category": "Arts",
+  "q": "Which author created Sherlock Holmes?",
+  "options": [
+   "Arthur Conan Doyle",
+   "Agatha Christie",
+   "Charles Dickens",
+   "Edgar Allan Poe"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 269,
+  "category": "Arts",
+  "q": "What is the Indian festival of colours called?",
+  "options": [
+   "Holi",
+   "Diwali",
+   "Onam",
+   "Pongal"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 270,
+  "category": "Everyday",
+  "q": "How many minutes are in a day?",
+  "options": [
+   "1,440",
+   "1,200",
+   "1,600",
+   "2,400"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 271,
+  "category": "Everyday",
+  "q": "How many days are in a leap year?",
+  "options": [
+   "366",
+   "365",
+   "364",
+   "367"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 272,
+  "category": "Everyday",
+  "q": "Which month has 28 days in a non-leap year?",
+  "options": [
+   "February",
+   "April",
+   "June",
+   "September"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 273,
+  "category": "Everyday",
+  "q": "What is the largest denomination of Indian rupee note currently in circulation?",
+  "options": [
+   "500",
+   "1000",
+   "2000",
+   "100"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 274,
+  "category": "Everyday",
+  "q": "What do you call a baby cat?",
+  "options": [
+   "Kitten",
+   "Puppy",
+   "Cub",
+   "Calf"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 275,
+  "category": "Everyday",
+  "q": "How many sides does a hexagon have?",
+  "options": [
+   "6",
+   "5",
+   "7",
+   "8"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 276,
+  "category": "Everyday",
+  "q": "What is 15% of 200?",
+  "options": [
+   "30",
+   "25",
+   "35",
+   "20"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 277,
+  "category": "Everyday",
+  "q": "Which direction does the sun rise?",
+  "options": [
+   "East",
+   "West",
+   "North",
+   "South"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 278,
+  "category": "Everyday",
+  "q": "How many seconds are in an hour?",
+  "options": [
+   "3,600",
+   "360",
+   "6,000",
+   "1,800"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 279,
+  "category": "Everyday",
+  "q": "What is the square root of 144?",
+  "options": [
+   "12",
+   "14",
+   "11",
+   "13"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 280,
+  "category": "Everyday",
+  "q": "How many millilitres are in a litre?",
+  "options": [
+   "1,000",
+   "100",
+   "10",
+   "10,000"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 281,
+  "category": "Everyday",
+  "q": "What colour do you get when you mix red and white?",
+  "options": [
+   "Pink",
+   "Orange",
+   "Purple",
+   "Brown"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 282,
+  "category": "Everyday",
+  "q": "How many zeros are in one million?",
+  "options": [
+   "6",
+   "5",
+   "7",
+   "9"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 283,
+  "category": "Everyday",
+  "q": "What is the next prime number after 7?",
+  "options": [
+   "11",
+   "9",
+   "10",
+   "13"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 284,
+  "category": "Everyday",
+  "q": "How many hours are in a week?",
+  "options": [
+   "168",
+   "144",
+   "120",
+   "192"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 285,
+  "category": "Everyday",
+  "q": "What is 7 multiplied by 8?",
+  "options": [
+   "56",
+   "54",
+   "64",
+   "48"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 286,
+  "category": "Everyday",
+  "q": "Which is heavier: a kilogram of feathers or a kilogram of stones?",
+  "options": [
+   "They weigh the same",
+   "Feathers",
+   "Stones",
+   "Depends on the bag"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 287,
+  "category": "Everyday",
+  "q": "How many degrees are in a right angle?",
+  "options": [
+   "90",
+   "45",
+   "180",
+   "360"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 288,
+  "category": "Everyday",
+  "q": "What is the Roman numeral for 50?",
+  "options": [
+   "L",
+   "C",
+   "D",
+   "X"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 289,
+  "category": "Everyday",
+  "q": "How many centimetres are in a metre?",
+  "options": [
+   "100",
+   "10",
+   "1,000",
+   "50"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 290,
+  "category": "Everyday",
+  "q": "What's the name for a shape with eight sides?",
+  "options": [
+   "Octagon",
+   "Hexagon",
+   "Pentagon",
+   "Decagon"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 291,
+  "category": "Everyday",
+  "q": "How many teaspoons are in a tablespoon?",
+  "options": [
+   "3",
+   "2",
+   "4",
+   "5"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 292,
+  "category": "Everyday",
+  "q": "Which planet do we live on?",
+  "options": [
+   "Earth",
+   "Mars",
+   "Venus",
+   "Jupiter"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 293,
+  "category": "Everyday",
+  "q": "What number comes after 999?",
+  "options": [
+   "1,000",
+   "990",
+   "1,001",
+   "9,999"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 294,
+  "category": "Everyday",
+  "q": "How many weeks are in a year?",
+  "options": [
+   "52",
+   "50",
+   "48",
+   "54"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 295,
+  "category": "Everyday",
+  "q": "What is half of 250?",
+  "options": [
+   "125",
+   "120",
+   "130",
+   "150"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 296,
+  "category": "Everyday",
+  "q": "How many players in a game of chess?",
+  "options": [
+   "2",
+   "4",
+   "3",
+   "1"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 297,
+  "category": "Everyday",
+  "q": "How many cards are in a standard deck without jokers?",
+  "options": [
+   "52",
+   "54",
+   "48",
+   "50"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 298,
+  "category": "Everyday",
+  "q": "What is 100 divided by 4?",
+  "options": [
+   "25",
+   "20",
+   "30",
+   "24"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 299,
+  "category": "Everyday",
+  "q": "Which is the first month of the year?",
+  "options": [
+   "January",
+   "March",
+   "December",
+   "February"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 300,
+  "category": "Everyday",
+  "q": "How many colours are in a rainbow, traditionally?",
+  "options": [
+   "7",
+   "6",
+   "8",
+   "5"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 301,
+  "category": "Everyday",
+  "q": "What is the capital letter that follows 'J'?",
+  "options": [
+   "K",
+   "I",
+   "L",
+   "H"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 302,
+  "category": "Everyday",
+  "q": "How many dots are on a standard die in total?",
+  "options": [
+   "21",
+   "24",
+   "18",
+   "20"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 303,
+  "category": "Everyday",
+  "q": "What tool tells you which way is north?",
+  "options": [
+   "Compass",
+   "Thermometer",
+   "Barometer",
+   "Protractor"
+  ],
+  "answer": 0
+ },
+ {
+  "id": 304,
+  "category": "Everyday",
+  "q": "What is 9 squared?",
+  "options": [
+   "81",
+   "72",
+   "99",
+   "18"
+  ],
+  "answer": 0
+ }
+]
