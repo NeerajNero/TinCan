@@ -9,6 +9,7 @@ import { MoodCheckin } from "@/components/home/MoodCheckin";
 import { PingOverlay } from "@/components/home/PingOverlay";
 import { PingRow } from "@/components/home/PingRow";
 import { PresenceCard } from "@/components/home/PresenceCard";
+import { PushNudgeCard } from "@/components/home/PushNudgeCard";
 import { SleepToggle } from "@/components/home/SleepToggle";
 import { StreakPlant } from "@/components/home/StreakPlant";
 import { WaitingCard } from "@/components/home/WaitingCard";
@@ -43,6 +44,7 @@ export function HomeScreen() {
       <div className="flex flex-col gap-4">
         <Header nickname={me.nickname} />
         <WaitingCard />
+        <PushNudgeCard />
         <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={null} friendName={null} />
         <CountdownCard meetup={pair.nextMeetup} today={data.today} />
       </div>
@@ -56,6 +58,7 @@ export function HomeScreen() {
       <Header nickname={me.nickname} />
       <PresenceCard friend={friend} />
       <LastMessageCard friendName={friend.nickname} />
+      <PushNudgeCard />
       <PingRow friendUid={friendUid} friendName={friend.nickname} />
       <Lamps friendUid={friendUid} friendName={friend.nickname} />
       <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={data.friendMood} friendName={friend.nickname} />

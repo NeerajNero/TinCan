@@ -20,12 +20,30 @@ export const NOTIF_KEYS = [
 ] as const;
 
 export type NotifKey = (typeof NOTIF_KEYS)[number];
-export type NotifPrefs = Record<NotifKey, boolean>;
 
-/** All on by default. */
+/** Per-type toggles plus the master switch. `enabled` stays false until the user opts in. */
+export type NotifPrefs = Record<NotifKey, boolean> & { enabled: boolean };
+
+/** Every type on, master off. */
 export function defaultNotifPrefs(): NotifPrefs {
-  return Object.fromEntries(NOTIF_KEYS.map((k) => [k, true])) as NotifPrefs;
+  return { ...(Object.fromEntries(NOTIF_KEYS.map((k) => [k, true])) as Record<NotifKey, boolean>), enabled: false };
 }
+
+export const NOTIF_LABELS: Record<NotifKey, string> = {
+  message: "New messages",
+  ping: "Pings (hugs, waves…)",
+  lamp: "Lamp lit",
+  yourTurn: "Your turn in a game",
+  dailyQuestion: "Friend answered the daily question",
+  jar: "New jar note",
+  capsule: "Time capsule unlocked",
+  scheduled: "Scheduled messages",
+  petHungry: "Pet is hungry",
+  streak: "Streak at risk",
+  milestone: "Milestones",
+  meetup: "Meetup countdown (7 and 1 day)",
+  invite: "Game invites",
+};
 
 /* ── users/{uid} ───────────────────────────────────────────────────────── */
 

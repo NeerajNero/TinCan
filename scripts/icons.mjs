@@ -39,6 +39,17 @@ function tinCanSvg({ bg, pad }) {
 </svg>`;
 }
 
+/** Monochrome badge for Android's status bar: white silhouette on transparent. */
+function badgeSvg() {
+  return `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="96" height="96">
+  <path d="M50 8 C 62 14, 40 22, 50 30" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <rect x="24" y="28" width="52" height="60" rx="12" fill="#fff"/>
+  <ellipse cx="50" cy="29" rx="26" ry="8" fill="#fff"/>
+  <path d="M50 66 C 43 60, 36 55, 40 49 C 43 45, 48 46, 50 50 C 52 46, 57 45, 60 49 C 64 55, 57 60, 50 66 Z" fill="#000" fill-opacity="0.35"/>
+</svg>`;
+}
+
 const jobs = [
   // Transparent-background "any" icons with a soft rounded tile behind the art.
   { file: "public/icons/icon-192.png", size: 192, bg: true, pad: 0.06 },
@@ -57,6 +68,9 @@ for (const job of jobs) {
   await sharp(svg).resize(job.size, job.size).png().toFile(path.join(root, job.file));
   console.log("✓", job.file);
 }
+
+await sharp(Buffer.from(badgeSvg())).resize(96, 96).png().toFile(path.join(root, "public/icons/badge-96.png"));
+console.log("✓ public/icons/badge-96.png");
 
 // Favicon: Next picks up src/app/icon.svg.
 await writeFile(path.join(root, "src/app/icon.svg"), tinCanSvg({ bg: true, pad: 0.04 }).trim() + "\n");

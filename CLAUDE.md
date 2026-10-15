@@ -182,6 +182,8 @@ radio stations (6 public stream URLs with names).
 ## Push notifications (FCM)
 - The Serwist worker (`src/app/sw.ts`) handles background messages; foreground messages show an
   in-app toast (no system notification when the app is open on that screen).
+- Master switch `users/{uid}.notif.enabled` (default false until the user turns it on in
+  More → Notifications). While off the user holds no tokens and `/api/push` never sends to them.
 - Token registration on first grant, stored in `users/{uid}.fcmTokens` (array, dedupe, prune
   invalid tokens on send failure).
 - `POST /api/push` — verifies the caller's Firebase ID token, loads the friend's tokens, sends.

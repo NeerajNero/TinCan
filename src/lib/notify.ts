@@ -1,33 +1,26 @@
 /**
- * Push notification hook point. Phase 3 only records the intent; phase 5 wires
- * this to POST /api/push. Keep call sites in place so nothing needs re-threading.
+ * Client → POST /api/push. Fire-and-forget: the caller never waits on the
+ * network and never sees an error. The server decides who gets what.
  */
-export type NotifyType =
-  | "message"
-  | "ping"
-  | "lamp"
-  | "yourTurn"
-  | "dailyQuestion"
-  | "jar"
-  | "capsule"
-  | "scheduled"
-  | "petHungry"
-  | "streak"
-  | "milestone"
-  | "meetup"
-  | "invite";
+import { authedFetch } from "@/lib/api";
+import type { NotifKey } from "@/lib/types";
+
+export type NotifyType = NotifKey | "test";
 
 export interface NotifyPayload {
-  /** Who should receive it. */
-  toUid: string;
+  /** Recipient. Ignored by the server except as a sanity check; the friend is derived from pair/main. */
+  toUid?: string;
   title?: string;
   body?: string;
   /** Extra data for the push (e.g. ping kind, message id). */
   data?: Record<string, string>;
+  /** Only for the "send me a test notification" button. */
+  toSelf?: boolean;
 }
 
-export async function notify(type: NotifyType, payload: NotifyPayload): Promise<void> {
-  if (process.env.NODE_ENV === "development") {
-    console.debug("[notify] (no-op until phase 5)", type, payload);
-  }
+export function notify(type: NotifyType, payload: NotifyPayload): Promise<void> {
+  void authedFetch("/api/push", { method: "POST", body: JSON.stringify({ type, payload, toSelf: payload.toSelf === true }) }).catch(
+    () => undefined,
+  );
+  return Promise.resolve();
 }

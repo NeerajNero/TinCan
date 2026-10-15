@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { PresenceController } from "@/components/auth/PresenceController";
+import { PushController } from "@/components/push/PushController";
 import { SetupScreen } from "@/components/auth/SetupScreen";
 import { TakenScreen } from "@/components/auth/TakenScreen";
 import { Splash } from "@/components/ui/Splash";
@@ -29,6 +30,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         <>
           <PresenceController />
           <PairProvider>
+            <PushController />
             <ChatMetaProvider>{children}</ChatMetaProvider>
           </PairProvider>
         </>
