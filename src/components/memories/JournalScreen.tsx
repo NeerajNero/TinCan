@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/Card";
 import { usePagedCollection } from "@/hooks/usePagedCollection";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
+import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { addJournalEntry, deleteJournalEntry, editJournalEntry, JOURNAL_PAGE, journalQuery } from "@/lib/db/journal";
 import { uploadImages } from "@/lib/media/uploadImages";
 import { MOOD_EMOJI, type JournalDoc } from "@/lib/types";
@@ -77,7 +78,7 @@ export function JournalScreen() {
                   <button type="button" onClick={() => setEditing(e)} aria-label="Edit entry" className="tap grid size-10 place-items-center rounded-full text-muted hover:bg-surface-2">
                     <Pencil size={16} />
                   </button>
-                  <button type="button" onClick={() => void deleteJournalEntry(e.id)} aria-label="Delete entry" className="tap grid size-10 place-items-center rounded-full text-muted hover:bg-surface-2">
+                  <button type="button" onClick={() => void deleteViaServer("journal", e.id).catch(() => deleteJournalEntry(e.id))} aria-label="Delete entry" className="tap grid size-10 place-items-center rounded-full text-muted hover:bg-surface-2">
                     <Trash2 size={16} />
                   </button>
                 </div>

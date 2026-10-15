@@ -15,6 +15,7 @@ import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { capsulesQuery, createCapsule, isUnlocked, MIN_LOCK_MS, openCapsule, readCapsuleBody } from "@/lib/db/capsules";
+import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { uploadImages } from "@/lib/media/uploadImages";
 import type { CapsuleBody, CapsuleDoc } from "@/lib/types";
 
@@ -114,11 +115,18 @@ function CapsuleCard({ capsule, uid, now, authorName, openerName }: { capsule: C
         </div>
       </div>
 
-      {!body && (unlocked || mine) && (
-        <Button onClick={open} disabled={busy} variant={unlocked ? "primary" : "soft"} className="self-start px-5">
-          {busy ? "Opening…" : opened || mine ? "Read" : "Open"}
-        </Button>
-      )}
+      <div className="flex flex-wrap gap-2">
+        {!body && (unlocked || mine) && (
+          <Button onClick={open} disabled={busy} variant={unlocked ? "primary" : "soft"} className="px-5">
+            {busy ? "Opening…" : opened || mine ? "Read" : "Open"}
+          </Button>
+        )}
+        {mine && !unlocked && (
+          <Button variant="ghost" disabled={busy} onClick={() => void deleteViaServer("capsule", capsule.id).catch(() => setError("Couldn't unseal it."))}>
+            Take it back
+          </Button>
+        )}
+      </div>
       {error && <p className="text-xs text-red-500">{error}</p>}
       <AnimatePresence>
         {body && (

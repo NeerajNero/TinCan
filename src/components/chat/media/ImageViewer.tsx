@@ -10,22 +10,26 @@ import { fullUrl } from "@/lib/cloudinary";
 interface ImageViewerProps {
   src: string | null;
   caption?: string;
+  /** Small line under the caption, e.g. "Added by Neeraj · 3 Oct 2026". */
+  meta?: string;
+  /** Buttons for the bottom bar (save, edit, delete…). */
+  actions?: React.ReactNode;
   onClose: () => void;
 }
 
 const MAX_SCALE = 4;
 
 /** Full-screen photo: pinch (or double-tap) to zoom, drag to pan when zoomed, swipe down to close. */
-export function ImageViewer({ src, caption, onClose }: ImageViewerProps) {
+export function ImageViewer({ src, caption, meta, actions, onClose }: ImageViewerProps) {
   return (
     <AnimatePresence>
-      {src && <Viewer key={src} src={src} caption={caption} onClose={onClose} />}
+      {src && <Viewer key={src} src={src} caption={caption} meta={meta} actions={actions} onClose={onClose} />}
     </AnimatePresence>
   );
 }
 
 /** Keyed on `src`, so zoom and pan start fresh for every photo. */
-function Viewer({ src, caption, onClose }: ImageViewerProps & { src: string }) {
+function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { src: string }) {
   const [scale, setScale] = useState(1);
   const [pinching, setPinching] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -126,7 +130,13 @@ function Viewer({ src, caption, onClose }: ImageViewerProps & { src: string }) {
               style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`, transition: pinching ? "none" : "transform 0.15s" }}
             />
           </motion.div>
-          {caption && <p className="bg-black/60 px-4 py-3 pb-[max(env(safe-area-inset-bottom),12px)] text-center text-sm text-white">{caption}</p>}
+          {(caption || meta || actions) && (
+            <div className="flex flex-col items-center gap-2 bg-black/60 px-4 py-3 pb-[max(env(safe-area-inset-bottom),12px)] text-center text-white">
+              {caption && <p className="text-sm">{caption}</p>}
+              {meta && <p className="text-xs text-white/70">{meta}</p>}
+              {actions && <div className="flex flex-wrap justify-center gap-2 pt-1">{actions}</div>}
+            </div>
+          )}
         </motion.div>
   );
 }

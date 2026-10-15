@@ -3,11 +3,15 @@
 import Link from "next/link";
 
 const SECTIONS = [
-  { href: "/memories/questions", emoji: "💭", title: "Daily questions", blurb: "Every answer, side by side" },
-  { href: "/memories/journal", emoji: "📓", title: "Journal", blurb: "Entries from both of you" },
-  { href: "/memories/capsules", emoji: "⏳", title: "Time capsules", blurb: "Sealed until the day comes" },
-  { href: "/memories/envelopes", emoji: "💌", title: "Open when…", blurb: "Letters for the hard days" },
-  { href: "/memories/jar", emoji: "🫙", title: "Jar", blurb: "Little notes to draw at random" },
+  { href: "/memories/photos", emoji: "📷", title: "Photos", blurb: "Your timeline" },
+  { href: "/memories/map", emoji: "🗺️", title: "Map", blurb: "Been & want to go" },
+  { href: "/memories/milestones", emoji: "🎉", title: "Milestones", blurb: "Dates that matter" },
+  { href: "/memories/journal", emoji: "📓", title: "Journal", blurb: "Both your entries" },
+  { href: "/memories/jar", emoji: "🫙", title: "Jar", blurb: "Notes to draw" },
+  { href: "/memories/capsules", emoji: "⏳", title: "Capsules", blurb: "Sealed for later" },
+  { href: "/memories/envelopes", emoji: "💌", title: "Envelopes", blurb: "Open when…" },
+  { href: "/memories/questions", emoji: "💭", title: "Daily questions", blurb: "Every answer" },
+  { href: "/memories/moods", emoji: "🗓️", title: "Moods", blurb: "Month by month" },
 ];
 
 export function MemoriesHub() {
@@ -19,19 +23,16 @@ export function MemoriesHub() {
         </span>
         <h1 className="text-3xl font-semibold">Memories</h1>
       </header>
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {SECTIONS.map((s) => (
-          <Link key={s.href} href={s.href} className="card tap flex items-center gap-4 rounded-[24px] px-4 py-3">
-            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-accent-soft text-2xl" aria-hidden>
+          <Link key={s.href} href={s.href} className="card tap flex flex-col items-start gap-2 rounded-[24px] p-4">
+            <span className="grid size-12 place-items-center rounded-full bg-accent-soft text-2xl" aria-hidden>
               {s.emoji}
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-heading text-lg font-semibold">{s.title}</span>
-              <span className="block text-sm text-muted">{s.blurb}</span>
-            </span>
+            <span className="font-heading text-lg font-semibold leading-tight">{s.title}</span>
+            <span className="text-xs text-muted">{s.blurb}</span>
           </Link>
         ))}
-        <p className="px-2 text-center text-xs text-muted">Photos, the map, milestones and mood history arrive next.</p>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { DailyQuestionCard } from "@/components/home/DailyQuestionCard";
 import { Lamps } from "@/components/home/Lamps";
 import { LastMessageCard } from "@/components/home/LastMessageCard";
 import { MoodCheckin } from "@/components/home/MoodCheckin";
+import { NextUpCard } from "@/components/home/NextUpCard";
 import { PingOverlay } from "@/components/home/PingOverlay";
 import { PingRow } from "@/components/home/PingRow";
 import { PresenceCard } from "@/components/home/PresenceCard";
@@ -62,6 +63,7 @@ export function HomeScreen() {
       <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={data.friendMood} friendName={friend.nickname} />
       <StreakPlant today={data.today} checkins={data.checkins} friendUid={friendUid} friendName={friend.nickname} />
       <CountdownCard meetup={pair.nextMeetup} today={data.today} />
+      <NextUpCard today={data.today} />
       <SleepToggle />
       <PingOverlay ping={activePing} fromName={friend.nickname} onDone={dismissPing} />
     </div>

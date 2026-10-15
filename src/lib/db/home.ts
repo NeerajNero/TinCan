@@ -62,7 +62,7 @@ export const moodRef = (dateKey: DateKey, uid: string) =>
   doc(getDb(), "moods", dayUserId(dateKey, uid)) as DocumentReference<MoodDoc>;
 
 export function setMood(dateKey: DateKey, uid: string, emoji: string, note: string): Promise<void> {
-  return setDoc(moodRef(dateKey, uid), { emoji, note: note.trim().slice(0, 80), at: serverTimestamp() });
+  return setDoc(moodRef(dateKey, uid), { emoji, note: note.trim().slice(0, 80), at: serverTimestamp(), dateKey, uid });
 }
 
 /* ── system messages ───────────────────────────────────────────────────── */

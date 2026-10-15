@@ -104,8 +104,18 @@ export interface PairDoc {
   nextMeetup: NextMeetup | null;
   streak?: Streak;
   plant?: Plant;
+  /** Compact mirror of the milestones collection so Home needs no extra listener. */
+  milestonesSummary?: MilestoneSummary[];
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
+}
+
+export interface MilestoneSummary {
+  id: string;
+  title: string;
+  emoji: string;
+  date: DateKey;
+  repeatYearly: boolean;
 }
 
 /* ── moods/{dateKey}_{uid} ─────────────────────────────────────────────── */
@@ -117,6 +127,9 @@ export interface MoodDoc {
   emoji: string;
   note: string;
   at: Timestamp | null;
+  /** Written from phase 7 on; older docs lack these and simply don't show in history. */
+  dateKey?: DateKey;
+  uid?: string;
 }
 
 /* ── messages/{id} (only what phase 3 writes; chat fills this in) ─────── */
@@ -320,4 +333,36 @@ export interface MilestoneDoc {
   date: DateKey;
   repeatYearly: boolean;
   emoji: string;
+  createdAt?: Timestamp | null;
+}
+
+/* ── memories/{id} ─────────────────────────────────────────────────────── */
+
+export interface MemoryDoc {
+  uploaderId: string;
+  url: string;
+  publicId: string;
+  w: number;
+  h: number;
+  caption: string;
+  takenAt: Timestamp;
+  placeId: string | null;
+  /** The asset also belongs to a chat message; deleting the memory must not destroy it. */
+  sharedAsset?: boolean;
+  createdAt: Timestamp | null;
+}
+
+/* ── places/{id} ───────────────────────────────────────────────────────── */
+
+export type PlaceKind = "been" | "want";
+
+export interface PlaceDoc {
+  name: string;
+  lat: number;
+  lng: number;
+  kind: PlaceKind;
+  note: string;
+  visitedAt: DateKey | null;
+  addedBy: string;
+  createdAt: Timestamp | null;
 }

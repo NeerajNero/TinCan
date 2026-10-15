@@ -10,7 +10,9 @@ import { MessageMenu } from "@/components/chat/MessageMenu";
 import { ScheduleSheet } from "@/components/chat/ScheduleSheet";
 import { WaitingCard } from "@/components/home/WaitingCard";
 import { Splash } from "@/components/ui/Splash";
+import { ViewerButton } from "@/components/memories/PhotosScreen";
 import { useMessages } from "@/hooks/useMessages";
+import { saveMessageToMemories } from "@/lib/db/memories";
 import { usePair } from "@/hooks/usePair";
 import { useUploads } from "@/hooks/useUploads";
 import { useVisible } from "@/hooks/useVisible";
@@ -64,6 +66,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
   const [viewing, setViewing] = useState<Message | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(() => new Set());
   const [schedule, setSchedule] = useState<{ open: boolean; draft: string }>({ open: false, draft: "" });
+  const [savedToMemories, setSavedToMemories] = useState<string | null>(null);
   const uploads = useUploads(uid, friendUid);
 
   // Read receipts: only while this screen is mounted and the tab is visible.
@@ -192,7 +195,25 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
         onClose={() => setSchedule({ open: false, draft: "" })}
         onScheduled={() => setSchedule({ open: false, draft: "" })}
       />
-      <ImageViewer src={viewing?.media?.url ?? null} caption={viewing?.text} onClose={() => setViewing(null)} />
+      <ImageViewer
+        src={viewing?.media?.url ?? null}
+        caption={viewing?.text}
+        actions={
+          viewing ? (
+            <ViewerButton
+              onClick={() => {
+                const target = viewing;
+                void saveMessageToMemories(uid, target)
+                  .then(() => setSavedToMemories(target.id))
+                  .catch(() => undefined);
+              }}
+            >
+              {savedToMemories === viewing.id ? "Saved ✓" : "Save to memories"}
+            </ViewerButton>
+          ) : undefined
+        }
+        onClose={() => setViewing(null)}
+      />
       <MessageMenu
         message={menuFor}
         uid={uid}
