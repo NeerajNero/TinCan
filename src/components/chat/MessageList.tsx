@@ -47,6 +47,7 @@ export function MessageList(props: MessageListProps) {
   const prepend = useRef<{ height: number; top: number } | null>(null);
   const lastId = useRef<string | null>(null);
   const [fabCount, setFabCount] = useState(0);
+  const [awayFromBottom, setAwayFromBottom] = useState(false);
 
   const visible = messages.filter((m) => !m.deletedFor.includes(uid));
   const today = dateKeyIn(tz);
@@ -106,6 +107,7 @@ export function MessageList(props: MessageListProps) {
     if (!el) return;
     const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
     nearBottom.current = distance < NEAR_BOTTOM_PX;
+    setAwayFromBottom(!nearBottom.current);
     if (nearBottom.current) {
       setFabCount(0);
       // Back at the bottom with deep history loaded: let the oldest pages go.
@@ -184,7 +186,7 @@ export function MessageList(props: MessageListProps) {
       </div>
 
       <AnimatePresence>
-        {fabCount > 0 && (
+        {(awayFromBottom || fabCount > 0) && (
           <motion.button
             key="fab"
             type="button"
@@ -192,13 +194,15 @@ export function MessageList(props: MessageListProps) {
               scrollToBottom("smooth");
               setFabCount(0);
             }}
-            aria-label={`${fabCount} new messages, jump to bottom`}
+            aria-label={fabCount > 0 ? `${fabCount} new messages, jump to latest` : "Jump to latest"}
             initial={{ opacity: 0, y: 12, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.8 }}
             className="tap absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-surface px-3 py-2 text-sm font-bold shadow-lg"
           >
-            <span className="min-w-5 rounded-full bg-[var(--accent)] px-1.5 text-center text-xs leading-5 text-white">{fabCount}</span>
+            {fabCount > 0 && (
+              <span className="min-w-5 rounded-full bg-[var(--accent)] px-1.5 text-center text-xs leading-5 text-white">{fabCount}</span>
+            )}
             <ArrowDown size={16} />
           </motion.button>
         )}
