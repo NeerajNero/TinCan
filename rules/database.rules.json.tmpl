@@ -71,7 +71,7 @@
         "open": { ".validate": "newData.isBoolean()" },
         "endReason": { ".validate": "!newData.exists() || newData.val() === 'win' || newData.val() === 'draw' || newData.val() === 'resign' || newData.val() === 'abandoned' || newData.val() === 'cancelled'" },
         "players": { ".validate": "newData.hasChildren(['first', 'second'])" },
-        "reaction": { ".validate": "newData.hasChildren(['by', 'emoji', 'at']) && newData.child('by').val() === auth.uid && newData.child('emoji').isString()" }
+        "reaction": { ".validate": "newData.hasChildren(['by', 'emoji', 'at']) && newData.child('emoji').isString() && (newData.child('by').val() === auth.uid || (data.exists() && newData.child('at').val() === data.child('at').val() && newData.child('by').val() === data.child('by').val()))" }
       }
     },
     "cards": {
