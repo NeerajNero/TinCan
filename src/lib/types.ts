@@ -114,6 +114,8 @@ export interface PairDoc {
   relationship?: string;
   /** Head-to-head per game: { [uid]: wins, draws }. */
   records?: Record<string, Record<string, number>>;
+  /** Completed focus sessions per room day. */
+  focusSessions?: Record<string, number>;
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }

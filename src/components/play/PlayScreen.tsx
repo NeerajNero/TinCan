@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
+import { useRtdbValue } from "@/hooks/useRtdbValue";
+import { presencePath } from "@/lib/rtdb";
+import type { PresenceNode } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
@@ -29,6 +32,8 @@ export function PlayScreen() {
   const [wordMine, setWordMine] = useState<{ done: boolean; solved: boolean } | null>(null);
   const [wordTheirs, setWordTheirs] = useState<{ done: boolean } | null>(null);
   const [newQuizzes, setNewQuizzes] = useState(0);
+  const { value: friendPresence } = useRtdbValue<PresenceNode>(friendUid ? presencePath(friendUid) : null);
+  const friendPage = friendPresence?.online ? (friendPresence.page ?? "") : "";
 
   // Bounded extras: today's two wordle docs + the friend's published quizzes (≤5), filtered to untaken.
   useEffect(() => {
@@ -178,6 +183,15 @@ export function PlayScreen() {
       )}
 
       <section className="flex flex-col gap-2">
+        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Together</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {TOGETHER.map((t) => (
+            <Tile key={t.href} href={t.href} emoji={t.emoji} title={t.title} badge={friendPage.startsWith(t.href) ? `${friend?.nickname ?? "Friend"} is here` : t.blurb} hot={friendPage.startsWith(t.href)} />
+          ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2">
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Record</h2>
         <Card className="grid grid-cols-4 gap-2 p-3">
           {GAME_TYPES.map((type) => {
@@ -237,6 +251,17 @@ function RecentGames({ nameOf }: { nameOf: (uid: string) => string }) {
     </div>
   );
 }
+
+const TOGETHER = [
+  { href: "/play/whiteboard", emoji: "🖍️", title: "Whiteboard", blurb: "Draw on one canvas" },
+  { href: "/play/pixel", emoji: "🟪", title: "Pixel art", blurb: "32×32, sixteen colours" },
+  { href: "/play/pictionary", emoji: "🎨", title: "Pictionary", blurb: "Three rounds, 60 s" },
+  { href: "/play/watch", emoji: "📺", title: "Watch together", blurb: "YouTube in sync" },
+  { href: "/play/listen", emoji: "🎧", title: "Listen together", blurb: "A shared queue" },
+  { href: "/play/radio", emoji: "📻", title: "Radio", blurb: "Six live stations" },
+  { href: "/play/timer", emoji: "⏱️", title: "Focus timer", blurb: "25 on, 5 off" },
+  { href: "/play/cook", emoji: "🍳", title: "Cook-along", blurb: "Same dish, same time" },
+];
 
 function Tile({ href, emoji, title, badge, hot }: { href: string; emoji: string; title: string; badge: string; hot?: boolean }) {
   return (

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "rp-main",
+    "name": "Radio Paradise · Main Mix",
+    "genre": "Eclectic, hand-picked",
+    "url": "https://stream.radioparadise.com/mp3-128",
+    "attribution": "Radio Paradise (radioparadise.com) — listener-supported, free to stream",
+    "verified": true
+  },
+  {
+    "id": "rp-mellow",
+    "name": "Radio Paradise · Mellow",
+    "genre": "Soft and slow",
+    "url": "https://stream.radioparadise.com/mellow-128",
+    "attribution": "Radio Paradise (radioparadise.com)",
+    "verified": true
+  },
+  {
+    "id": "rp-rock",
+    "name": "Radio Paradise · Rock",
+    "genre": "Guitars up",
+    "url": "https://stream.radioparadise.com/rock-128",
+    "attribution": "Radio Paradise (radioparadise.com)",
+    "verified": true
+  },
+  {
+    "id": "fip",
+    "name": "FIP",
+    "genre": "Paris, anything goes",
+    "url": "https://icecast.radiofrance.fr/fip-midfi.mp3",
+    "attribution": "FIP — Radio France (radiofrance.fr/fip)",
+    "verified": true
+  },
+  {
+    "id": "fip-jazz",
+    "name": "FIP Jazz",
+    "genre": "Late-night jazz",
+    "url": "https://icecast.radiofrance.fr/fipjazz-midfi.mp3",
+    "attribution": "FIP — Radio France",
+    "verified": true
+  },
+  {
+    "id": "fip-electro",
+    "name": "FIP Electro",
+    "genre": "Electronic, chill",
+    "url": "https://icecast.radiofrance.fr/fipelectro-midfi.mp3",
+    "attribution": "FIP — Radio France",
+    "verified": true
+  }
+]
