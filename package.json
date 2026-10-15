@@ -1,0 +1,45 @@
+{
+  "name": "tincan",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "icons": "node scripts/icons.mjs",
+    "rules:deploy": "echo '[phase 2] firestore.rules and database.rules.json are not written yet. This will run: firebase deploy --only firestore:rules,database' && exit 1"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^9.3.1",
+    "browser-image-compression": "^2.0.2",
+    "date-fns": "^4.4.0",
+    "date-fns-tz": "^3.2.0",
+    "firebase": "^13.0.0",
+    "firebase-admin": "^14.5.0",
+    "framer-motion": "^14.2.0",
+    "lucide-react": "^1.57.0",
+    "next": "16.4.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@serwist/turbopack": "^9.5.13",
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "esbuild": "^0.28.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.1",
+    "serwist": "^9.5.13",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.15.0"
+}

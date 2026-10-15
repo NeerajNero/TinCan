@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/* Dark mode is driven by <html data-theme>, stamped before first paint. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+
+  /* surfaces & text — warm pastel light */
+  --bg: #fff7f1;
+  --surface: #ffffff;
+  --surface-2: #fff0e6;
+  --text: #3b2f3a;
+  --muted: #8a7a86;
+  --border: rgba(59, 47, 58, 0.08);
+  --shadow-card: 0 10px 30px -14px rgba(59, 47, 58, 0.25);
+
+  /* one accent per tab */
+  --accent-home: #ff8fab;
+  --accent-chat: #6fb6ff;
+  --accent-play: #ffb454;
+  --accent-memories: #b48cff;
+  --accent-plan: #5fd3a4;
+  --accent-more: #8b97a8;
+
+  /* current accent (set per screen by the shell) */
+  --accent: var(--accent-home);
+  --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
+  --accent-ink: #3b2f3a;
+
+  --radius-card: 20px;
+  --tabbar-h: 68px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* cosy navy, never pure black */
+  --bg: #141a2e;
+  --surface: #1c2340;
+  --surface-2: #242d50;
+  --text: #eef0ff;
+  --muted: #9aa3c7;
+  --border: rgba(255, 255, 255, 0.08);
+  --shadow-card: 0 12px 32px -16px rgba(0, 0, 0, 0.6);
+
+  --accent-home: #ff9fba;
+  --accent-chat: #85c4ff;
+  --accent-play: #ffc46e;
+  --accent-memories: #c4a4ff;
+  --accent-plan: #7ae0b7;
+  --accent-more: #a6b1c4;
+
+  --accent-soft: color-mix(in oklab, var(--accent) 24%, transparent);
+  --accent-ink: #141a2e;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+
+  --font-sans: var(--font-nunito), "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: var(--font-fredoka), "Fredoka", ui-rounded, system-ui, sans-serif;
+
+  --radius-card: 20px;
+  --shadow-card: var(--shadow-card);
+}
+
+html {
+  height: 100%;
+  background: var(--bg);
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+h1,
+h2,
+h3,
+.font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: 0.01em;
+}
+
+/* Reusable bits */
+@utility card {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
+}
+
+@utility safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility tap {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
