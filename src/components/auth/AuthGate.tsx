@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { PresenceController } from "@/components/auth/PresenceController";
 import { SetupScreen } from "@/components/auth/SetupScreen";
 import { TakenScreen } from "@/components/auth/TakenScreen";
 import { Splash } from "@/components/ui/Splash";
@@ -23,7 +24,12 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   switch (status) {
     case "allowed":
-      return <PairProvider>{children}</PairProvider>;
+      return (
+        <>
+          <PresenceController />
+          <PairProvider>{children}</PairProvider>
+        </>
+      );
     case "denied":
       return <TakenScreen />;
     case "error":

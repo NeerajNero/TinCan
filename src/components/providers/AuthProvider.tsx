@@ -3,6 +3,7 @@
 import { getRedirectResult, onAuthStateChanged, type User } from "firebase/auth";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+import { markOffline } from "@/hooks/usePresence";
 import { signOut as doSignOut } from "@/lib/auth";
 import { firebaseConfigured } from "@/lib/env";
 import { getFirebaseAuth } from "@/lib/firebase/client";
@@ -116,6 +117,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
+    // Flip presence off while we still hold credentials; onDisconnect can't
+    // fire for a sign-out because the socket stays open.
+    if (user) await markOffline(user.uid);
     await doSignOut();
   }, [user]);
 

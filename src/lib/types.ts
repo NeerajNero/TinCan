@@ -57,6 +57,19 @@ export interface NextMeetup {
   place: string;
 }
 
+export interface Streak {
+  /** Consecutive room-days on which both friends opened the app. */
+  count: number;
+  /** The last room-day counted. */
+  lastDateKey: DateKey;
+}
+
+export interface Plant {
+  /** 1–10; only ever goes up. */
+  stage: number;
+  lastGrowthDate: DateKey;
+}
+
 export interface PairDoc {
   /** The two friends. Length 1 until the second one signs in. */
   uids: string[];
@@ -64,8 +77,69 @@ export interface PairDoc {
   roomTz: string;
   friendsSince: DateKey | null;
   nextMeetup: NextMeetup | null;
+  streak?: Streak;
+  plant?: Plant;
   createdAt: Timestamp | null;
-  // pet, plant, garden, streak and theme are added by later phases.
+  // pet, garden and theme are added by later phases.
+}
+
+/* ── moods/{dateKey}_{uid} ─────────────────────────────────────────────── */
+
+export const MOOD_EMOJI = ["😊", "🥳", "😍", "😐", "😴", "😢", "😤", "🤒"] as const;
+export type MoodEmoji = (typeof MOOD_EMOJI)[number];
+
+export interface MoodDoc {
+  emoji: string;
+  note: string;
+  at: Timestamp | null;
+}
+
+/* ── messages/{id} (only what phase 3 writes; chat fills this in) ─────── */
+
+export type MessageType = "text" | "image" | "voice" | "gif" | "sticker" | "system";
+
+/* ── RTDB ──────────────────────────────────────────────────────────────── */
+
+export type PresenceStatus = "awake" | "sleeping";
+
+export interface PresenceNode {
+  online: boolean;
+  /** Epoch ms (RTDB serverTimestamp). */
+  lastSeen: number;
+  status?: PresenceStatus;
+  page?: string;
+}
+
+export const PING_KINDS = ["thinking", "hug", "highfive", "wave"] as const;
+export type PingKind = (typeof PING_KINDS)[number];
+
+export const PINGS: Record<PingKind, { emoji: string; label: string; sentence: string }> = {
+  thinking: { emoji: "💭", label: "Thinking of you", sentence: "is thinking of you" },
+  hug: { emoji: "🤗", label: "Hug", sentence: "sent you a hug" },
+  highfive: { emoji: "✋", label: "High-five", sentence: "high-fived you" },
+  wave: { emoji: "👋", label: "Wave", sentence: "waved at you" },
+};
+
+export interface PingNode {
+  from: string;
+  kind: PingKind;
+  at: number;
+}
+
+export const LAMP_COLORS = [
+  { id: "amber", hex: "#ffb454", label: "Amber" },
+  { id: "pink", hex: "#ff8fab", label: "Pink" },
+  { id: "sky", hex: "#6fb6ff", label: "Sky" },
+  { id: "mint", hex: "#5fd3a4", label: "Mint" },
+  { id: "lilac", hex: "#b48cff", label: "Lilac" },
+  { id: "coral", hex: "#ff6b6b", label: "Coral" },
+] as const;
+
+export interface LampNode {
+  on: boolean;
+  color: string;
+  /** Epoch ms after which the lamp is dark again. */
+  until: number;
 }
 
 /* ── Places (Open-Meteo geocoding) ─────────────────────────────────────── */

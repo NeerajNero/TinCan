@@ -1,12 +1,5 @@
-import { Placeholder } from "@/components/placeholder/Placeholder";
+import { HomeScreen } from "@/components/home/HomeScreen";
 
 export default function HomePage() {
-  return (
-    <Placeholder
-      emoji="👋"
-      title="Hello"
-      blurb="Presence, pings, the lamp, moods and your little plant will live here."
-      phase={3}
-    />
-  );
+  return <HomeScreen />;
 }
