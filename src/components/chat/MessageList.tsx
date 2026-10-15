@@ -5,6 +5,7 @@ import { ArrowDown } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { MessageBubble } from "@/components/chat/MessageBubble";
+import { AUTO_LOAD_PAGES } from "@/hooks/useMessages";
 import { cn } from "@/lib/cn";
 import { dateKeyIn, dateKeyToLocalDate, previousDay } from "@/lib/dates";
 import { format } from "date-fns";
@@ -18,7 +19,9 @@ interface MessageListProps {
   ready: boolean;
   hasMore: boolean;
   loadingOlder: boolean;
+  pageCount: number;
   loadOlder: () => void;
+  prune: () => boolean;
   uid: string;
   tz: string;
   friendName: string;
@@ -36,7 +39,7 @@ function dayLabel(key: string, today: string): string {
 }
 
 export function MessageList(props: MessageListProps) {
-  const { messages, ready, hasMore, loadingOlder, loadOlder, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact } = props;
+  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact } = props;
   const scroller = useRef<HTMLDivElement>(null);
   const dividerRef = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
@@ -67,7 +70,7 @@ export function MessageList(props: MessageListProps) {
     lastId.current = visible[visible.length - 1]?.id ?? null;
   }, [ready, visible, firstUnreadId]);
 
-  // Keep the viewport steady when older messages are prepended.
+  // Keep the viewport steady when older messages are prepended (or pruned away).
   useLayoutEffect(() => {
     const el = scroller.current;
     const p = prepend.current;
@@ -89,16 +92,29 @@ export function MessageList(props: MessageListProps) {
     }
   }, [visible, uid]);
 
+  const autoLoad = pageCount < AUTO_LOAD_PAGES;
+
+  function requestOlder() {
+    const el = scroller.current;
+    if (!el || !hasMore || loadingOlder) return;
+    prepend.current = { height: el.scrollHeight, top: el.scrollTop };
+    loadOlder();
+  }
+
   function onScroll() {
     const el = scroller.current;
     if (!el) return;
     const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
     nearBottom.current = distance < NEAR_BOTTOM_PX;
-    if (nearBottom.current) setFabCount(0);
-    if (el.scrollTop < LOAD_OLDER_PX && hasMore && !loadingOlder && didInitialScroll.current) {
-      prepend.current = { height: el.scrollHeight, top: el.scrollTop };
-      loadOlder();
+    if (nearBottom.current) {
+      setFabCount(0);
+      // Back at the bottom with deep history loaded: let the oldest pages go.
+      if (!loadingOlder) {
+        const before = { height: el.scrollHeight, top: el.scrollTop };
+        if (prune()) prepend.current = before;
+      }
     }
+    if (autoLoad && el.scrollTop < LOAD_OLDER_PX && didInitialScroll.current) requestOlder();
   }
 
   const rows: Array<{ m: Message; dayLabel: string | null }> = [];
@@ -112,6 +128,17 @@ export function MessageList(props: MessageListProps) {
     <div className="relative min-h-0 flex-1">
       <div ref={scroller} onScroll={onScroll} className="h-full overflow-y-auto px-3 py-3 [overflow-anchor:none]">
         {loadingOlder && <p className="py-2 text-center text-xs text-muted">Loading older…</p>}
+        {ready && hasMore && !loadingOlder && !autoLoad && (
+          <div className="flex justify-center py-2">
+            <button
+              type="button"
+              onClick={requestOlder}
+              className="tap rounded-full bg-surface px-4 py-2 text-xs font-bold text-muted shadow-sm hover:bg-surface-2"
+            >
+              Load older messages
+            </button>
+          </div>
+        )}
         {ready && !hasMore && visible.length > 0 && (
           <p className="py-2 text-center text-xs text-muted">This is where it all began 🥫</p>
         )}

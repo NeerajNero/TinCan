@@ -48,7 +48,7 @@ interface ThreadProps {
 }
 
 function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
-  const { messages, initialUnread, ready, hasMore, loadingOlder, loadOlder } = useMessages(uid);
+  const { messages, initialUnread, ready, hasMore, loadingOlder, pageCount, loadOlder, prune } = useMessages(uid);
   const visible = useVisible();
   const [menuFor, setMenuFor] = useState<Message | null>(null);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
@@ -93,7 +93,9 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
         ready={ready}
         hasMore={hasMore}
         loadingOlder={loadingOlder}
+        pageCount={pageCount}
         loadOlder={loadOlder}
+        prune={prune}
         uid={uid}
         tz={tz}
         friendName={friendName}
