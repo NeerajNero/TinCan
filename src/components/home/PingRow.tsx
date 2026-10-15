@@ -41,7 +41,7 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
             aria-label={PINGS[kind].label}
             whileTap={{ scale: 0.85 }}
             animate={isSent ? { y: [0, -14, 0], rotate: [0, -8, 8, 0] } : { y: 0, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 500, damping: 18 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="card tap flex flex-col items-center gap-1 rounded-[24px] py-3"
           >
             <span className="text-3xl" aria-hidden>

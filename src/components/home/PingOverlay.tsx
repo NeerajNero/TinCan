@@ -54,7 +54,7 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
                   scale: [0, 1.2, 1],
                   opacity: [0, 1, 0.9],
                 }}
-                transition={{ delay: 0.15 + i * 0.04, type: "spring", stiffness: 180, damping: 14 }}
+                transition={{ delay: 0.15 + i * 0.04, duration: 0.7, ease: "easeOut" }}
               >
                 {p}
               </motion.span>
@@ -71,7 +71,7 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
                   ? { scale: [0, 1.3, 1], rotate: 0 }
                   : { scale: [0, 1.2, 1], rotate: 0 }
             }
-            transition={{ type: "spring", stiffness: 260, damping: 14, duration: 0.9 }}
+            transition={{ duration: 0.9, ease: "easeOut", times: ping.kind === "wave" ? [0, 0.25, 0.5, 0.75, 1] : [0, 0.6, 1] }}
           >
             {PINGS[ping.kind].emoji}
           </motion.span>
