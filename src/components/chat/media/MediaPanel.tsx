@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { STICKERS } from "@/content/stickers";
 import { cn } from "@/lib/cn";
 import { COMPOSER_EMOJI } from "@/lib/emoji";
-import { giphyEnabled, searchGifs, type Gif } from "@/lib/giphy";
+import { giphyEnabled, GiphyRateLimited, searchGifs, type Gif } from "@/lib/giphy";
 
 type Tab = "emoji" | "stickers" | "gifs";
 
@@ -69,7 +69,7 @@ export function MediaPanel({ onEmoji, onSticker, onGif }: MediaPanelProps) {
 function GifTab({ onGif }: { onGif: (gif: Gif) => void }) {
   const [query, setQuery] = useState("");
   const [gifs, setGifs] = useState<Gif[]>([]);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<"error" | "resting" | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -77,12 +77,13 @@ function GifTab({ onGif }: { onGif: (gif: Gif) => void }) {
       searchGifs(query, controller.signal)
         .then((g) => {
           setGifs(g);
-          setFailed(false);
+          setFailed(null);
         })
         .catch((err) => {
-          if (!(err instanceof DOMException && err.name === "AbortError")) setFailed(true);
+          if (err instanceof DOMException && err.name === "AbortError") return;
+          setFailed(err instanceof GiphyRateLimited ? "resting" : "error");
         });
-    }, 350);
+    }, 500);
     return () => {
       clearTimeout(timer);
       controller.abort();
@@ -98,7 +99,8 @@ function GifTab({ onGif }: { onGif: (gif: Gif) => void }) {
         aria-label="Search GIFs"
         className="tap w-full rounded-full border border-border bg-surface-2 px-4 text-sm focus:outline-none"
       />
-      {failed && <p className="text-center text-xs text-muted">GIPHY didn&apos;t answer. Try again?</p>}
+      {failed === "resting" && <p className="text-center text-xs text-muted">GIF search is resting, try again in a bit ☕</p>}
+      {failed === "error" && <p className="text-center text-xs text-muted">GIPHY didn&apos;t answer. Try again?</p>}
       <div className="grid grid-cols-3 gap-1">
         {gifs.map((g) => (
           <button key={g.id} type="button" onClick={() => onGif(g)} aria-label={`Send GIF: ${g.title}`} className="tap overflow-hidden rounded-xl bg-surface-2">

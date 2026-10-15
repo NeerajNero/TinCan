@@ -27,19 +27,30 @@ export interface Gif {
   previewUrl: string;
 }
 
+let trendingCache: Gif[] | null = null;
+
+export class GiphyRateLimited extends Error {
+  constructor() {
+    super("giphy_rate_limited");
+  }
+}
+
+/** Search, or trending for an empty query (trending is fetched once per session). */
 export async function searchGifs(query: string, signal?: AbortSignal): Promise<Gif[]> {
   if (!giphyEnabled) return [];
   const q = query.trim();
+  if (!q && trendingCache) return trendingCache;
   const url = new URL(`https://api.giphy.com/v1/gifs/${q ? "search" : "trending"}`);
   url.searchParams.set("api_key", publicEnv.giphyKey);
   if (q) url.searchParams.set("q", q);
   url.searchParams.set("limit", "24");
   url.searchParams.set("rating", "pg");
   const res = await fetch(url, { signal });
+  if (res.status === 429) throw new GiphyRateLimited();
   if (!res.ok) throw new Error(`giphy_${res.status}`);
   const parsed = schema.safeParse(await res.json());
   if (!parsed.success) throw new Error("giphy_bad_response");
-  return parsed.data.data.map((g) => ({
+  const gifs = parsed.data.data.map((g) => ({
     id: g.id,
     title: g.title ?? "GIF",
     url: g.images.fixed_height.url,
@@ -47,4 +58,6 @@ export async function searchGifs(query: string, signal?: AbortSignal): Promise<G
     h: Number(g.images.fixed_height.height),
     previewUrl: (g.images.fixed_height_small ?? g.images.fixed_width_small ?? g.images.fixed_height).url,
   }));
+  if (!q) trendingCache = gifs;
+  return gifs;
 }
