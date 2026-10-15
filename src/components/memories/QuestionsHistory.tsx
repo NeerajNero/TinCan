@@ -24,7 +24,7 @@ const byDateDesc = (a: Row, b: Row) => b.id.localeCompare(a.id);
 export function QuestionsHistory() {
   const { uid, friend, friendUid } = usePair();
   const makeQuery = useCallback((after: QueryDocumentSnapshot<DailyQuestionDoc> | null) => historyQuery(after), []);
-  const { items, ready, hasMore, loadingMore, loadMore } = usePagedCollection(makeQuery, HISTORY_PAGE, mapDoc, byDateDesc, true);
+  const { items, ready, hasMore, loadingMore, loadMore } = usePagedCollection(makeQuery, HISTORY_PAGE, mapDoc, byDateDesc);
 
   return (
     <div className="flex flex-col gap-4">

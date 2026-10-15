@@ -12,7 +12,7 @@ import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { useVisible } from "@/hooks/useVisible";
 import { roomDateKey } from "@/lib/dates";
-import { dailyRef } from "@/lib/db/daily";
+import { backfillDateKey, dailyRef } from "@/lib/db/daily";
 import { mediaLabel } from "@/lib/db/messages";
 import { lampPath, rtdbRef } from "@/lib/rtdb";
 import { PINGS, type DailyQuestionDoc, type LampNode } from "@/lib/types";
@@ -119,6 +119,7 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     const unsub = onSnapshot(dailyRef(today), (snap) => {
       const data = snap.exists() ? snap.data() : null;
       setDaily(data);
+      if (data && !data.dateKey && !snap.metadata.hasPendingWrites) void backfillDateKey(today).catch(() => undefined);
       const answered = Boolean(friendUid && data?.answers?.[friendUid]);
       if (friendAnswered.current === null) {
         friendAnswered.current = answered;

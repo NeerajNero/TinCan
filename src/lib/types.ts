@@ -258,6 +258,8 @@ export interface DailyAnswer {
 export interface DailyQuestionDoc {
   questionIndex: number;
   answers: Record<string, DailyAnswer>;
+  /** Equals the doc id; lets history order by date with an automatic index. */
+  dateKey?: DateKey;
 }
 
 /* ── journal/{id} ──────────────────────────────────────────────────────── */

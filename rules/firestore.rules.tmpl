@@ -111,14 +111,17 @@ service cloud.firestore {
 
     // ── dailyQuestions/{dateKey} ─────────────────────────────────────────
     match /dailyQuestions/{dateKey} {
+      function dateKeyOk() { return !('dateKey' in incoming()) || incoming().dateKey == dateKey; }
       allow read: if allowed();
       allow create: if allowed()
         && incoming().questionIndex is int
-        && incoming().get('answers', {}).keys().hasOnly([uid()]);
-      // Each person may only touch their own answer.
+        && incoming().get('answers', {}).keys().hasOnly([uid()])
+        && dateKeyOk();
+      // Each person may only touch their own answer (plus the id-mirroring dateKey).
       allow update: if allowed()
-        && onlyChanges(['answers'])
-        && mapDiffKeys('answers').hasOnly([uid()]);
+        && onlyChanges(['answers', 'dateKey'])
+        && mapDiffKeys('answers').hasOnly([uid()])
+        && dateKeyOk();
       allow delete: if false;
     }
 
