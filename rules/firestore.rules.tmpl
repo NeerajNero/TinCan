@@ -258,11 +258,14 @@ service cloud.firestore {
       allow write: if allowed() && kind in ['bucket', 'wishlist', 'gifts', 'todo'];
 
       match /items/{itemId} {
-        allow read: if allowed();
+        // Gift ideas are private to whoever wrote them; the other lists are shared.
+        function mineOrShared() { return kind != 'gifts' || existing().addedBy == uid(); }
+        allow read: if allowed() && mineOrShared();
         allow create: if allowed()
           && kind in ['bucket', 'wishlist', 'gifts', 'todo']
           && incoming().addedBy == uid();
-        allow update, delete: if allowed();
+        allow update: if allowed() && mineOrShared() && incoming().addedBy == existing().addedBy;
+        allow delete: if allowed() && mineOrShared();
       }
     }
 

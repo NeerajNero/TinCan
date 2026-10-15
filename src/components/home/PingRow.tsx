@@ -4,13 +4,16 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
+import { useRelationship } from "@/hooks/useRelationship";
 import { notify } from "@/lib/notify";
 import { sendPing } from "@/lib/rtdb";
-import { PING_KINDS, PINGS, type PingKind } from "@/lib/types";
+import { BASE_PING_KINDS, PINGS, type PingKind } from "@/lib/types";
 
 /** Four bouncy ping buttons. Sending bounces the button and flashes "Sent!". */
 export function PingRow({ friendUid, friendName }: { friendUid: string; friendName: string }) {
   const { uid, me } = usePair();
+  const preset = useRelationship();
+  const kinds: PingKind[] = preset.extraPing ? [...BASE_PING_KINDS, preset.extraPing] : [...BASE_PING_KINDS];
   const [sent, setSent] = useState<PingKind | null>(null);
 
   async function ping(kind: PingKind) {
@@ -30,8 +33,8 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
   }
 
   return (
-    <section aria-label={`Send ${friendName} a ping`} className="grid grid-cols-4 gap-2">
-      {PING_KINDS.map((kind) => {
+    <section aria-label={`Send ${friendName} a ping`} className={kinds.length === 5 ? "grid grid-cols-5 gap-1.5" : "grid grid-cols-4 gap-2"}>
+      {kinds.map((kind) => {
         const isSent = sent === kind;
         return (
           <motion.button

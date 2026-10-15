@@ -38,10 +38,16 @@ export function toUpcoming(m: MilestoneSummary, today: DateKey, derived = false)
   return { id: m.id, title: m.title, emoji: m.emoji, nextDate, daysToGo: daysBetween(today, nextDate), years, repeatYearly: m.repeatYearly, derived };
 }
 
-/** Friends-since becomes a yearly "Friends for N years" item without being stored. */
-export function friendsSinceMilestone(friendsSince: DateKey | null | undefined): MilestoneSummary | null {
+/** The since-date becomes a yearly anniversary item without being stored; wording comes from the relationship preset. */
+export function friendsSinceMilestone(friendsSince: DateKey | null | undefined, preset: { anniversaryLabel: string; emoji: string }): MilestoneSummary | null {
   if (!friendsSince || !isDateKey(friendsSince)) return null;
-  return { id: "friends-since", title: "Friendiversary", emoji: "🧵", date: friendsSince, repeatYearly: true };
+  return { id: "friends-since", title: preset.anniversaryLabel, emoji: preset.emoji, date: friendsSince, repeatYearly: true };
+}
+
+/** "Friends for 3 years", "Lovebirds for 1 year". */
+export function yearsLine(years: number, pairNoun: string): string {
+  const noun = pairNoun.charAt(0).toUpperCase() + pairNoun.slice(1);
+  return `${noun} for ${years} ${years === 1 ? "year" : "years"}`;
 }
 
 /** Upcoming first (soonest), then past one-offs (most recent first). */
@@ -54,9 +60,9 @@ export function sortUpcoming(list: Upcoming[]): Upcoming[] {
   });
 }
 
-export function nextUp(summary: MilestoneSummary[] | undefined, friendsSince: DateKey | null | undefined, today: DateKey): Upcoming | null {
+export function nextUp(summary: MilestoneSummary[] | undefined, friendsSince: DateKey | null | undefined, today: DateKey, preset: { anniversaryLabel: string; emoji: string }): Upcoming | null {
   const all = [...(summary ?? []).map((m) => toUpcoming(m, today))];
-  const fs = friendsSinceMilestone(friendsSince);
+  const fs = friendsSinceMilestone(friendsSince, preset);
   if (fs) all.push(toUpcoming(fs, today, true));
   return sortUpcoming(all).find((u) => u.daysToGo >= 0) ?? null;
 }

@@ -70,3 +70,7 @@ export function setFriendsSince(date: string | null): Promise<void> {
 export function setNextMeetup(meetup: NextMeetup | null): Promise<void> {
   return updateDoc(pairRef(), { nextMeetup: meetup });
 }
+
+export function setRelationship(id: string): Promise<void> {
+  return updateDoc(pairRef(), { relationship: id });
+}

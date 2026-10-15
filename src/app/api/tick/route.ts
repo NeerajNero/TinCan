@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
 import { questionFor } from "@/lib/daily";
 import { adminDb } from "@/lib/firebase/admin";
+import { resolveCountdown } from "@/lib/meetup";
 import { loadUser, pairUids, postSystemMessageAdmin, sendPushTo, type SendResult } from "@/lib/server/push";
 import type { MilestoneDoc, PairDoc } from "@/lib/types";
 
@@ -115,7 +116,7 @@ async function streakRisk(ctx: Ctx, minutes: number, pair: PairDoc) {
     if (present.length !== 1) return `checked in: ${present.length}, nothing to do`;
     const other = friendOf(ctx, present[0]);
     const count = pair.streak?.count ?? 0;
-    await push(ctx, other, "streak-risk", { body: count > 0 ? `Open Tincan today to keep your ${count}-day streak 🔥` : "Open Tincan today — your friend already did" });
+    await push(ctx, other, "streak-risk", { body: count > 0 ? `Open Tincan today to keep your ${count}-day streak 🔥` : `Open Tincan today — ${ctx.names[present[0]] ?? "they"} already did` });
     return `warned ${ctx.names[other] ?? other}`;
   });
 }
@@ -148,13 +149,14 @@ async function reminders(ctx: Ctx, minutes: number, pair: PairDoc) {
       for (const uid of ctx.uids) await push(ctx, uid, "milestone", { title: `${m.emoji ?? "🎉"} ${m.title ?? "Milestone"}`, body: "It's today!" });
       notes.push(`milestone “${m.title}”`);
     }
-    const meetup = pair.nextMeetup;
-    if (meetup?.date) {
-      const days = daysBetween(ctx.today, meetup.date);
+    // Same resolution as the app: nextMeetup, else the nearest upcoming trip.
+    const target = resolveCountdown(pair, ctx.today);
+    if (target) {
+      const days = daysBetween(ctx.today, target.date);
       if (days === 7 || days === 1) {
-        const where = [meetup.label, meetup.place].filter(Boolean).join(" · ");
+        const where = [target.label, target.place].filter(Boolean).join(" · ");
         for (const uid of ctx.uids) await push(ctx, uid, "meetup", { title: days === 1 ? "Meetup tomorrow ✈️" : "Meetup in a week ✈️", body: where || "Get ready!" });
-        notes.push(`meetup in ${days} day(s)`);
+        notes.push(`${target.source === "trip" ? "trip" : "meetup"} in ${days} day(s)`);
       }
     }
     return notes.length ? notes.join("; ") : "nothing today";

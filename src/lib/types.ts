@@ -106,6 +106,10 @@ export interface PairDoc {
   plant?: Plant;
   /** Compact mirror of the milestones collection so Home needs no extra listener. */
   milestonesSummary?: MilestoneSummary[];
+  /** Upcoming trips mirrored from the trips collection (countdown fallback, no extra listener). */
+  tripsSummary?: TripSummary[];
+  /** Preset id from src/content/relationships.ts; absent means "friends". */
+  relationship?: string;
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }
@@ -196,14 +200,17 @@ export interface PresenceNode {
   page?: string;
 }
 
-export const PING_KINDS = ["thinking", "hug", "highfive", "wave"] as const;
+/** The four everyday pings plus the relationship extra ("kiss"), shown only when the preset has it. */
+export const PING_KINDS = ["thinking", "hug", "highfive", "wave", "kiss"] as const;
 export type PingKind = (typeof PING_KINDS)[number];
+export const BASE_PING_KINDS: readonly PingKind[] = ["thinking", "hug", "highfive", "wave"];
 
 export const PINGS: Record<PingKind, { emoji: string; label: string; sentence: string }> = {
   thinking: { emoji: "💭", label: "Thinking of you", sentence: "is thinking of you" },
   hug: { emoji: "🤗", label: "Hug", sentence: "sent you a hug" },
   highfive: { emoji: "✋", label: "High-five", sentence: "high-fived you" },
   wave: { emoji: "👋", label: "Wave", sentence: "waved at you" },
+  kiss: { emoji: "😘", label: "Kiss", sentence: "blew you a kiss" },
 };
 
 export interface PingNode {
@@ -367,4 +374,63 @@ export interface PlaceDoc {
   visitedAt: DateKey | null;
   addedBy: string;
   createdAt: Timestamp | null;
+}
+
+/* ── availability/{uid} ────────────────────────────────────────────────── */
+
+export const WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+export type WeekdayKey = (typeof WEEKDAY_KEYS)[number];
+
+export interface AvailabilityDoc {
+  /** "HH:mm" half-hour slot starts, in the owner's own tz. */
+  slots: Partial<Record<WeekdayKey, string[]>>;
+  tz: string;
+  updatedAt: Timestamp | null;
+}
+
+/* ── lists/{kind}/items/{id} ───────────────────────────────────────────── */
+
+export const LIST_KINDS = ["bucket", "wishlist", "gifts", "todo"] as const;
+export type ListKind = (typeof LIST_KINDS)[number];
+
+export interface ListItemDoc {
+  text: string;
+  note: string;
+  url: string;
+  addedBy: string;
+  done: boolean;
+  doneAt: Timestamp | null;
+  order: number;
+  createdAt: Timestamp | null;
+}
+
+/* ── trips/{id} ────────────────────────────────────────────────────────── */
+
+export interface TripStop {
+  id: string;
+  time: string;
+  name: string;
+  note: string;
+}
+
+export interface TripDay {
+  date: DateKey;
+  stops: TripStop[];
+}
+
+export interface TripDoc {
+  title: string;
+  place: string;
+  startDate: DateKey;
+  endDate: DateKey;
+  days: TripDay[];
+  createdAt: Timestamp | null;
+}
+
+export interface TripSummary {
+  id: string;
+  title: string;
+  place: string;
+  startDate: DateKey;
+  endDate: DateKey;
 }

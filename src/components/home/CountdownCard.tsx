@@ -3,12 +3,14 @@
 import { format } from "date-fns";
 
 import { Card } from "@/components/ui/Card";
-import { dateKeyToLocalDate, daysBetween, isDateKey } from "@/lib/dates";
-import type { NextMeetup } from "@/lib/types";
+import { dateKeyToLocalDate, daysBetween } from "@/lib/dates";
+import { resolveCountdown } from "@/lib/meetup";
+import type { PairDoc } from "@/lib/types";
 
-/** Days until the next meetup. Renders nothing when none is set. */
-export function CountdownCard({ meetup, today }: { meetup: NextMeetup | null; today: string }) {
-  if (!meetup || !isDateKey(meetup.date)) return null;
+/** Days until the next meetup, or the nearest upcoming trip when none is set. Renders nothing otherwise. */
+export function CountdownCard({ pair, today }: { pair: Pick<PairDoc, "nextMeetup" | "tripsSummary">; today: string }) {
+  const meetup = resolveCountdown(pair, today);
+  if (!meetup) return null;
   const days = daysBetween(today, meetup.date);
   const where = [meetup.label, meetup.place].filter(Boolean).join(" · ");
 
@@ -18,7 +20,7 @@ export function CountdownCard({ meetup, today }: { meetup: NextMeetup | null; to
   return (
     <Card className="flex items-center gap-4">
       <span className="text-4xl" aria-hidden>
-        {days <= 0 ? "🎉" : "✈️"}
+        {days <= 0 ? "🎉" : meetup.source === "trip" ? "🧳" : "✈️"}
       </span>
       <div className="min-w-0 flex-1">
         <p className="font-heading text-2xl font-semibold">{headline}</p>

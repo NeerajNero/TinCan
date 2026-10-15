@@ -44,7 +44,7 @@ export function HomeScreen() {
         <PushNudgeCard />
         <DailyQuestionCard today={data.today} friendUid={null} friendName={null} />
         <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={null} friendName={null} />
-        <CountdownCard meetup={pair.nextMeetup} today={data.today} />
+        <CountdownCard pair={pair} today={data.today} />
       </div>
     );
   }
@@ -62,7 +62,7 @@ export function HomeScreen() {
       <DailyQuestionCard today={data.today} friendUid={friendUid} friendName={friend.nickname} />
       <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={data.friendMood} friendName={friend.nickname} />
       <StreakPlant today={data.today} checkins={data.checkins} friendUid={friendUid} friendName={friend.nickname} />
-      <CountdownCard meetup={pair.nextMeetup} today={data.today} />
+      <CountdownCard pair={pair} today={data.today} />
       <NextUpCard today={data.today} />
       <SleepToggle />
       <PingOverlay ping={activePing} fromName={friend.nickname} onDone={dismissPing} />

@@ -11,6 +11,7 @@ const PARTICLES: Record<PingKind, string[]> = {
   hug: ["🤗", "💞", "🧸", "💖", "🤗", "💝"],
   highfive: ["✋", "⚡", "🎉", "✨", "🙌", "⭐"],
   wave: ["👋", "🌊", "😊", "👋", "✨", "💙"],
+  kiss: ["💋", "💕", "😘", "💖", "💋", "✨"],
 };
 
 interface PingOverlayProps {
@@ -67,7 +68,9 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
             animate={
               ping.kind === "wave"
                 ? { scale: 1, rotate: [0, 20, -10, 20, 0] }
-                : ping.kind === "hug"
+                : ping.kind === "kiss"
+                  ? { scale: [0, 1.3, 1.1], rotate: [0, -10, 0], y: [0, -24, -12] }
+                  : ping.kind === "hug"
                   ? { scale: [0, 1.3, 1], rotate: 0 }
                   : { scale: [0, 1.2, 1], rotate: 0 }
             }

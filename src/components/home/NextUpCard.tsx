@@ -4,15 +4,17 @@ import { format } from "date-fns";
 import Link from "next/link";
 
 import { usePair } from "@/hooks/usePair";
+import { useRelationship } from "@/hooks/useRelationship";
 import { dateKeyToLocalDate } from "@/lib/dates";
-import { nextUp } from "@/lib/milestones";
+import { nextUp, yearsLine } from "@/lib/milestones";
 
 /** The nearest milestone or friendiversary, from the summary mirrored on pair/main (no extra reads). */
 export function NextUpCard({ today }: { today: string }) {
   const { pair } = usePair();
-  const next = nextUp(pair.milestonesSummary, pair.friendsSince, today);
+  const preset = useRelationship();
+  const next = nextUp(pair.milestonesSummary, pair.friendsSince, today, preset);
   if (!next) return null;
-  const title = next.derived && next.years !== null ? `Friends for ${next.years} ${next.years === 1 ? "year" : "years"}` : next.title;
+  const title = next.derived && next.years !== null ? yearsLine(next.years, preset.pairNoun) : next.title;
   return (
     <Link href="/memories/milestones" className="card tap flex items-center gap-3 rounded-[24px] px-4 py-3" style={{ "--accent": "var(--accent-memories)" } as React.CSSProperties}>
       <span className="text-3xl" aria-hidden>

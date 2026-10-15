@@ -63,6 +63,7 @@ const PING_LINES: Record<string, string> = {
   hug: "🤗 sent you a hug",
   highfive: "✋ high-fived you",
   wave: "👋 waved at you",
+  kiss: "😘 blew you a kiss",
 };
 
 /** Title/body/url per type. `senderName` is the other person's nickname. */

@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
-import { setFriendsSince, setNextMeetup } from "@/lib/db/pair";
+import { useRelationship } from "@/hooks/useRelationship";
+import { RELATIONSHIPS } from "@/content/relationships";
+import { cn } from "@/lib/cn";
+import { postSystemMessage } from "@/lib/db/home";
+import { setFriendsSince, setNextMeetup, setRelationship } from "@/lib/db/pair";
 import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
 import type { NextMeetup } from "@/lib/types";
 
@@ -18,7 +22,8 @@ function prettyDate(key: string | null | undefined): string | null {
 
 /** Us two: who's on the other end, friends-since, next meetup, and the pet's name (phase 12). */
 export function PairCard() {
-  const { pair, friend } = usePair();
+  const { uid, me, pair, friend } = usePair();
+  const preset = useRelationship();
 
   const meetupValue = pair.nextMeetup
     ? [prettyDate(pair.nextMeetup.date), pair.nextMeetup.label || pair.nextMeetup.place].filter(Boolean).join(" · ")
@@ -40,7 +45,22 @@ export function PairCard() {
         </span>
       </div>
 
-      <EditableRow emoji="🧵" label="Friends since" value={prettyDate(pair.friendsSince)} placeholder="Pick a date">
+      <EditableRow emoji={preset.emoji} label="We are" value={`${preset.label} · ${preset.pairNoun}`}>
+        {(close) => (
+          <RelationshipPicker
+            current={preset.id}
+            onPick={async (id) => {
+              if (id === preset.id) return close();
+              const next = RELATIONSHIPS.find((r) => r.id === id);
+              await setRelationship(id);
+              if (next) void postSystemMessage(uid, `${next.emoji} ${me.nickname} changed us to ${next.label}`);
+              close();
+            }}
+          />
+        )}
+      </EditableRow>
+
+      <EditableRow emoji="🧵" label={preset.sinceLabel} value={prettyDate(pair.friendsSince)} placeholder="Pick a date">
         {(close) => <FriendsSinceEditor initial={pair.friendsSince} onDone={close} />}
       </EditableRow>
 
@@ -92,7 +112,7 @@ function FriendsSinceEditor({ initial, onDone }: { initial: string | null; onDon
   );
 }
 
-function MeetupEditor({ initial, onDone }: { initial: NextMeetup | null; onDone: () => void }) {
+export function MeetupEditor({ initial, onDone }: { initial: NextMeetup | null; onDone: () => void }) {
   const [date, setDate] = useState(initial?.date ?? "");
   const [label, setLabel] = useState(initial?.label ?? "");
   const [place, setPlace] = useState(initial?.place ?? "");
@@ -152,5 +172,27 @@ function MeetupEditor({ initial, onDone }: { initial: NextMeetup | null; onDone:
         </Button>
       </div>
     </form>
+  );
+}
+
+function RelationshipPicker({ current, onPick }: { current: string; onPick: (id: string) => void | Promise<void> }) {
+  return (
+    <div role="radiogroup" aria-label="Relationship" className="grid grid-cols-2 gap-1.5">
+      {RELATIONSHIPS.map((r) => (
+        <button
+          key={r.id}
+          type="button"
+          role="radio"
+          aria-checked={current === r.id}
+          onClick={() => void onPick(r.id)}
+          className={cn("tap flex items-center gap-2 rounded-2xl px-3 py-2 text-left text-sm font-bold", current === r.id ? "bg-accent-soft" : "bg-surface-2 text-muted hover:text-text")}
+        >
+          <span className="text-xl" aria-hidden>
+            {r.emoji}
+          </span>
+          {r.label}
+        </button>
+      ))}
+    </div>
   );
 }

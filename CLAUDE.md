@@ -92,7 +92,8 @@ Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign
 
 ## Data model — Firestore
 `users/{uid}`: name, nickname, email, photoURL, tz, city, lat, lng, fcmTokens[], notif{...}, createdAt
-`pair/main`: uids[2], roomTz, friendsSince, nextMeetup{date,label,place}, theme,
+`pair/main`: uids[2], roomTz, friendsSince, nextMeetup{date,label,place}, relationship (preset id,
+  default "friends"; see `src/content/relationships.ts`), theme,
   pet{name,species,hungerAt,happyAt,sleepAt,level,bornAt}, plant{stage,lastGrowthDate},
   garden{stickers[]}, streak{count,lastDateKey}
 `messages/{id}`: senderId, type(text|image|voice|gif|sticker|system), text,
@@ -110,7 +111,8 @@ Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign
 `memories/{id}`: uploaderId, url, publicId, w, h, caption, takenAt, placeId?, createdAt
 `places/{id}`: name, lat, lng, kind(been|want), note, visitedAt, addedBy
 `milestones/{id}`: title, date, repeatYearly, emoji
-`lists/{kind}/items/{id}` (kind: bucket|wishlist|gifts|todo): text, addedBy, done, doneAt, note, url
+`lists/{kind}/items/{id}` (kind: bucket|wishlist|gifts|todo): text, addedBy, done, doneAt, note, url, order
+  — `gifts` items are private to their author (rule-enforced: read/write only by `addedBy`)
 `trips/{id}`: title, startDate, endDate, place, days[{date, stops[{time,name,note}]}]
 `availability/{uid}`: slots{ "mon": [ "09:00","09:30",...] } in that user's tz
 `gameResults/{id}`: game, players[], winnerId|null, score{}, startedAt, endedAt
@@ -237,7 +239,7 @@ radio stations (6 public stream URLs with names).
 - **Milestones**: list + "next up" on Home; yearly repeat; push on the day.
 - **Call-time finder**: each sets weekly 30-min availability in their tz; overlap shown in both
   tz; "Propose" posts a chat message with the slot.
-- **Lists**: four kinds, shared, check-off, reorder by drag, who-added avatar.
+- **Lists**: four kinds, shared (gift ideas private to the author), check-off, reorder by drag, who-added avatar.
 - **Trips**: simple day/stop planner; countdown on Home uses the nearest upcoming trip if
   `nextMeetup` is empty.
 - **Turn-based games** (tic-tac-toe, connect four, chess via chess.js, checkers): lobby creates a

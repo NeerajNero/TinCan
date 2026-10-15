@@ -12,10 +12,11 @@ import { Input, Label } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
+import { useRelationship } from "@/hooks/useRelationship";
 import { cn } from "@/lib/cn";
 import { dateKeyToLocalDate, isDateKey, roomDateKey } from "@/lib/dates";
 import { addMilestone, deleteMilestone, editMilestone, milestonesQuery, type MilestoneInput } from "@/lib/db/milestones";
-import { friendsSinceMilestone, sortUpcoming, toUpcoming, type Upcoming } from "@/lib/milestones";
+import { friendsSinceMilestone, sortUpcoming, toUpcoming, yearsLine, type Upcoming } from "@/lib/milestones";
 import type { MilestoneDoc } from "@/lib/types";
 
 interface Row extends MilestoneDoc {
@@ -26,6 +27,7 @@ const EMOJI = ["🎉", "🎂", "🧵", "✈️", "💖", "🎓", "🏠", "🌟",
 
 export function MilestonesScreen() {
   const { pair } = usePair();
+  const preset = useRelationship();
   const now = useNow(60_000);
   const today = roomDateKey(pair, now);
   const [rows, setRows] = useState<Row[]>([]);
@@ -38,10 +40,10 @@ export function MilestonesScreen() {
 
   const list = useMemo<Upcoming[]>(() => {
     const items = rows.map((r) => toUpcoming({ id: r.id, title: r.title, emoji: r.emoji, date: r.date, repeatYearly: r.repeatYearly }, today));
-    const fs = friendsSinceMilestone(pair.friendsSince);
+    const fs = friendsSinceMilestone(pair.friendsSince, preset);
     if (fs) items.push(toUpcoming(fs, today, true));
     return sortUpcoming(items);
-  }, [rows, pair.friendsSince, today]);
+  }, [rows, pair.friendsSince, today, preset]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -65,7 +67,7 @@ export function MilestonesScreen() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-heading text-lg font-semibold leading-tight">
-              {u.derived && u.years !== null ? `Friends for ${u.years} ${u.years === 1 ? "year" : "years"}` : u.title}
+              {u.derived && u.years !== null ? `${u.title} · ${yearsLine(u.years, preset.pairNoun)}` : u.title}
             </p>
             <p className="text-xs text-muted">
               {format(dateKeyToLocalDate(u.nextDate), "EEE, d MMM yyyy")}
@@ -87,7 +89,7 @@ export function MilestonesScreen() {
           )}
         </Card>
       ))}
-      {pair.friendsSince === null && <p className="px-2 text-center text-xs text-muted">Set your friends-since date in More to get a yearly friendiversary here.</p>}
+      {pair.friendsSince === null && <p className="px-2 text-center text-xs text-muted">Set your “{preset.sinceLabel}” date in More to get a yearly {preset.anniversaryLabel.toLowerCase()} here.</p>}
     </div>
   );
 }
