@@ -2,7 +2,7 @@
 
 import { motion, type PanInfo } from "framer-motion";
 import { formatInTimeZone } from "date-fns-tz";
-import { MoreHorizontal, Reply } from "lucide-react";
+import { Loader2, MoreHorizontal, Reply } from "lucide-react";
 import Image from "next/image";
 import { useRef } from "react";
 
@@ -27,9 +27,22 @@ interface MessageBubbleProps {
   onReply: (message: Message) => void;
   onReact: (message: Message, emoji: string) => void;
   onOpenImage: (message: Message) => void;
+  /** Delete-for-everyone in flight (server call for media). */
+  deleting?: boolean;
 }
 
-export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, onReply, onReact, onOpenImage }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  mine,
+  uid,
+  tz,
+  friendName,
+  onOpenMenu,
+  onReply,
+  onReact,
+  onOpenImage,
+  deleting = false,
+}: MessageBubbleProps) {
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressClick = useRef(false);
 
@@ -53,17 +66,21 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
   }
   function onDragEnd(_: unknown, info: PanInfo) {
     cancelPress();
-    if (info.offset.x > SWIPE_REPLY_PX && !message.deletedForEveryone) onReply(message);
+    if (info.offset.x > SWIPE_REPLY_PX && !message.deletedForEveryone)
+      onReply(message);
   }
 
   const time = formatInTimeZone(new Date(message.createdAtMs), tz, "h:mm a");
   const deleted = message.deletedForEveryone;
   /** Stickers float without a bubble; photos and GIFs fill the bubble edge to edge. */
   const bare = message.type === "sticker" && !deleted;
-  const visual = (message.type === "image" || message.type === "gif") && !deleted;
+  const visual =
+    (message.type === "image" || message.type === "gif") && !deleted;
 
   const reactions = Object.entries(
-    Object.entries(message.reactions).reduce<Record<string, { count: number; mine: boolean }>>((acc, [who, emoji]) => {
+    Object.entries(message.reactions).reduce<
+      Record<string, { count: number; mine: boolean }>
+    >((acc, [who, emoji]) => {
       acc[emoji] ??= { count: 0, mine: false };
       acc[emoji].count += 1;
       if (who === uid) acc[emoji].mine = true;
@@ -72,11 +89,28 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
   );
 
   return (
-    <div className={cn("group relative flex w-full items-end gap-1", mine ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        "group relative flex w-full items-end gap-1",
+        mine ? "justify-end" : "justify-start",
+      )}
+    >
       {/* swipe hint */}
-      <Reply size={16} aria-hidden className={cn("absolute top-1/2 -translate-y-1/2 text-muted opacity-0 transition-opacity", mine ? "right-full mr-2" : "left-0")} />
+      <Reply
+        size={16}
+        aria-hidden
+        className={cn(
+          "absolute top-1/2 -translate-y-1/2 text-muted opacity-0 transition-opacity",
+          mine ? "right-full mr-2" : "left-0",
+        )}
+      />
 
-      <div className={cn("flex max-w-[82%] flex-col gap-1", mine ? "items-end" : "items-start")}>
+      <div
+        className={cn(
+          "flex max-w-[82%] flex-col gap-1",
+          mine ? "items-end" : "items-start",
+        )}
+      >
         <motion.div
           drag="x"
           dragDirectionLock
@@ -99,7 +133,10 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
           className={cn(
             "relative max-w-full select-none",
             !bare && "rounded-[20px] shadow-sm",
-            !bare && (mine ? "rounded-br-md bg-accent-soft" : "rounded-bl-md bg-surface"),
+            !bare &&
+              (mine
+                ? "rounded-br-md bg-accent-soft"
+                : "rounded-bl-md bg-surface"),
             bare || visual ? "p-1" : "px-3.5 py-2",
             deleted && "opacity-80",
           )}
@@ -109,25 +146,57 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
               className={cn(
                 "mb-1.5 rounded-xl border-l-4 bg-bg/50 px-2.5 py-1.5 text-xs",
                 (visual || bare) && "mx-1 mt-1",
-                message.replyTo.senderId === uid ? "border-[var(--accent)]" : "border-muted",
+                message.replyTo.senderId === uid
+                  ? "border-[var(--accent)]"
+                  : "border-muted",
               )}
             >
-              <p className="font-bold">{message.replyTo.senderId === uid ? "You" : friendName}</p>
-              <p className="line-clamp-2 text-muted">{message.replyTo.preview}</p>
+              <p className="font-bold">
+                {message.replyTo.senderId === uid ? "You" : friendName}
+              </p>
+              <p className="line-clamp-2 text-muted">
+                {message.replyTo.preview}
+              </p>
             </div>
           )}
 
           {deleted ? (
-            <p className="text-sm italic text-muted">This message was deleted</p>
+            <p className="text-sm italic text-muted">
+              This message was deleted
+            </p>
           ) : (
-            <MediaBody message={message} mine={mine} onOpenImage={onOpenImage} />
+            <MediaBody
+              message={message}
+              mine={mine}
+              onOpenImage={onOpenImage}
+            />
           )}
 
-          <div className={cn("mt-0.5 flex items-center justify-end gap-1 text-[10px] text-muted", (visual || bare) && "px-2 pb-0.5")}>
+          <div
+            className={cn(
+              "mt-0.5 flex items-center justify-end gap-1 text-[10px] text-muted",
+              (visual || bare) && "px-2 pb-0.5",
+            )}
+          >
             {message.editedAt && !deleted && <span>edited</span>}
             <span>{time}</span>
-            {mine && <Ticks status={message.status} pending={message.pending} />}
+            {mine && (
+              <Ticks status={message.status} pending={message.pending} />
+            )}
           </div>
+
+          {deleting && (
+            <div
+              className="absolute inset-0 grid place-items-center rounded-[20px] bg-bg/70 backdrop-blur-[1px]"
+              role="status"
+              aria-live="polite"
+            >
+              <span className="flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-xs font-bold shadow">
+                <Loader2 size={14} className="animate-spin" aria-hidden />
+                Deleting…
+              </span>
+            </div>
+          )}
         </motion.div>
 
         {reactions.length > 0 && (
@@ -144,7 +213,9 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
                 aria-pressed={isMine}
                 className={cn(
                   "flex h-7 items-center gap-1 rounded-full border px-2 text-sm shadow-sm",
-                  isMine ? "border-[var(--accent)] bg-surface-2" : "border-border bg-surface",
+                  isMine
+                    ? "border-[var(--accent)] bg-surface-2"
+                    : "border-border bg-surface",
                 )}
               >
                 <span>{emoji}</span>
@@ -171,7 +242,15 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
   );
 }
 
-function MediaBody({ message, mine, onOpenImage }: { message: Message; mine: boolean; onOpenImage: (m: Message) => void }) {
+function MediaBody({
+  message,
+  mine,
+  onOpenImage,
+}: {
+  message: Message;
+  mine: boolean;
+  onOpenImage: (m: Message) => void;
+}) {
   const media = message.media ?? {};
   switch (message.type) {
     case "image": {
@@ -180,7 +259,12 @@ function MediaBody({ message, mine, onOpenImage }: { message: Message; mine: boo
       return (
         <>
           {media.url && (
-            <button type="button" onClick={() => onOpenImage(message)} aria-label="Open photo" className="block overflow-hidden rounded-[16px]">
+            <button
+              type="button"
+              onClick={() => onOpenImage(message)}
+              aria-label="Open photo"
+              className="block overflow-hidden rounded-[16px]"
+            >
               <Image
                 src={thumbUrl(media.url)}
                 alt={message.text || "Photo"}
@@ -204,15 +288,37 @@ function MediaBody({ message, mine, onOpenImage }: { message: Message; mine: boo
       const w = media.w ?? 200;
       const h = media.h ?? 200;
       return media.url ? (
-        <Image src={media.url} alt="GIF" width={w} height={h} unoptimized className="block max-h-72 w-60 max-w-full rounded-[16px] object-cover" style={{ aspectRatio: `${w} / ${h}` }} />
+        <Image
+          src={media.url}
+          alt="GIF"
+          width={w}
+          height={h}
+          unoptimized
+          className="block max-h-72 w-60 max-w-full rounded-[16px] object-cover"
+          style={{ aspectRatio: `${w} / ${h}` }}
+        />
       ) : null;
     }
     case "sticker": {
-      const sticker = media.stickerId ? STICKER_BY_ID[media.stickerId] : undefined;
-      return sticker ? <sticker.Svg width={140} height={140} /> : <p className="text-sm text-muted">Sticker</p>;
+      const sticker = media.stickerId
+        ? STICKER_BY_ID[media.stickerId]
+        : undefined;
+      return sticker ? (
+        <sticker.Svg width={140} height={140} />
+      ) : (
+        <p className="text-sm text-muted">Sticker</p>
+      );
     }
     case "voice":
-      return media.url ? <VoicePlayer url={media.url} durationMs={media.durationMs ?? 0} mine={mine} /> : <p className="text-sm text-muted">Voice note</p>;
+      return media.url ? (
+        <VoicePlayer
+          url={media.url}
+          durationMs={media.durationMs ?? 0}
+          mine={mine}
+        />
+      ) : (
+        <p className="text-sm text-muted">Voice note</p>
+      );
     default:
       return (
         <p className="text-[15px] leading-snug whitespace-pre-wrap break-words">

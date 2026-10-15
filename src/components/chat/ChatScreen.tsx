@@ -61,6 +61,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [editing, setEditing] = useState<Message | null>(null);
   const [viewing, setViewing] = useState<Message | null>(null);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(() => new Set());
   const uploads = useUploads(uid, friendUid);
 
   // Read receipts: only while this screen is mounted and the tab is visible.
@@ -119,15 +120,24 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
 
   /** Photos and voice notes go through the server so the Cloudinary asset is destroyed too. */
   const removeForEveryone = useCallback(async (m: Message) => {
-    if (hasCloudinaryAsset(m)) {
-      try {
-        const res = await authedFetch("/api/media", { method: "DELETE", body: JSON.stringify({ messageId: m.id }) });
-        if (res.ok) return;
-      } catch {
-        // Fall through to the client-side soft delete; the asset stays until retried.
+    setDeletingIds((ids) => new Set(ids).add(m.id));
+    try {
+      if (hasCloudinaryAsset(m)) {
+        try {
+          const res = await authedFetch("/api/media", { method: "DELETE", body: JSON.stringify({ messageId: m.id }) });
+          if (res.ok) return;
+        } catch {
+          // Fall through to the client-side soft delete; the asset stays until retried.
+        }
       }
+      await deleteForEveryone(m.id).catch(() => undefined);
+    } finally {
+      setDeletingIds((ids) => {
+        const next = new Set(ids);
+        next.delete(m.id);
+        return next;
+      });
     }
-    await deleteForEveryone(m.id).catch(() => undefined);
   }, []);
 
   return (
@@ -152,6 +162,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
         }}
         onReact={react}
         onOpenImage={setViewing}
+        deletingIds={deletingIds}
         uploads={uploads.uploads}
         onRetryUpload={uploads.retry}
         onDismissUpload={uploads.dismiss}
