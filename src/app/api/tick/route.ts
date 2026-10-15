@@ -165,11 +165,19 @@ async function reminders(ctx: Ctx, minutes: number, pair: PairDoc) {
 
 const ABANDON_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** Games nobody has touched for a week end with no winner. */
+const FINISHED_LISTED_MS = 6 * 60 * 60 * 1000;
+
+/** Finished games leave the Play list after six hours; games nobody has touched for a week end with no winner. */
 async function abandonStaleGames(ctx: Ctx) {
   const snap = await adminRtdb().ref("games").orderByChild("open").equalTo(true).get();
-  const games = (snap.val() ?? {}) as Record<string, { type?: string; lastMoveAt?: number; status?: string }>;
+  const games = (snap.val() ?? {}) as Record<string, { type?: string; lastMoveAt?: number; status?: string; finishedAt?: number }>;
   for (const [id, g] of Object.entries(games)) {
+    if (g.status === "finished") {
+      if (ctx.now.getTime() - (g.finishedAt ?? g.lastMoveAt ?? 0) < FINISHED_LISTED_MS) continue;
+      ctx.actions.push({ job: "close-game", key: id, detail: `${g.type ?? "game"} finished, unlisting` });
+      if (!ctx.dry) await adminRtdb().ref(`games/${id}`).update({ open: false });
+      continue;
+    }
     const last = g.lastMoveAt ?? 0;
     if (ctx.now.getTime() - last < ABANDON_MS) continue;
     ctx.actions.push({ job: "abandon-game", key: id, detail: `${g.type ?? "game"} (${g.status ?? "?"}) idle since ${new Date(last).toISOString()}` });

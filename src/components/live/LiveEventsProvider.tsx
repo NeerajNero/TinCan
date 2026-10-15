@@ -13,7 +13,7 @@ import { usePair } from "@/hooks/usePair";
 import { useVisible } from "@/hooks/useVisible";
 import { roomDateKey } from "@/lib/dates";
 import { backfillDateKey, dailyRef } from "@/lib/db/daily";
-import { subscribeOpenGames, type LiveGame } from "@/lib/db/games";
+import { gameRoute, resultForRecipient, subscribeOpenGames, type LiveGame } from "@/lib/db/games";
 import { mediaLabel } from "@/lib/db/messages";
 import { lampPath, rtdbRef } from "@/lib/rtdb";
 import { PINGS, type DailyQuestionDoc, type LampNode } from "@/lib/types";
@@ -141,14 +141,28 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
 
   /* ── open games ────────────────────────────────────────────────────── */
   const [games, setGames] = useState<LiveGame[]>([]);
+  const seenStatus = useRef<Map<string, string> | null>(null);
   useEffect(() => {
     if (!friendUid) return;
-    const unsub = subscribeOpenGames(setGames);
+    const unsub = subscribeOpenGames((list) => {
+      setGames(list);
+      const prev = seenStatus.current;
+      const next = new Map(list.map((g) => [g.id, g.status]));
+      if (prev) {
+        for (const g of list) {
+          if (g.status !== "finished" || prev.get(g.id) !== "active") continue;
+          if (pathRef.current === gameRoute(g.id) || !visibleRef.current) continue;
+          toast({ key: `game:${g.id}`, emoji: "🎲", title: resultForRecipient(g, uid, (id) => (id === uid ? "You" : friendName)), body: "Tap to see the board", url: gameRoute(g.id) });
+        }
+      }
+      seenStatus.current = next;
+    });
     return () => {
       unsub();
+      seenStatus.current = null;
       setGames([]);
     };
-  }, [friendUid]);
+  }, [friendUid, uid, friendName, toast]);
 
   const activePing = incoming && incoming !== dismissed ? incoming : null;
   const value = useMemo<LiveEvents>(() => ({ ping: activePing, dismissPing, today, daily, games }), [activePing, dismissPing, today, daily, games]);

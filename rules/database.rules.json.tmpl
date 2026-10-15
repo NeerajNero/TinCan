@@ -67,7 +67,8 @@
         "turn": { ".validate": "newData.val() === 'first' || newData.val() === 'second'" },
         "status": { ".validate": "newData.val() === 'invited' || newData.val() === 'active' || newData.val() === 'finished' || newData.val() === 'declined'" },
         "open": { ".validate": "newData.isBoolean()" },
-        "players": { ".validate": "newData.hasChildren(['first', 'second'])" }
+        "players": { ".validate": "newData.hasChildren(['first', 'second'])" },
+        "reaction": { ".validate": "newData.hasChildren(['by', 'emoji', 'at']) && newData.child('by').val() === auth.uid && newData.child('emoji').isString()" }
       }
     },
     "cards": {

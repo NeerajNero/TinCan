@@ -31,7 +31,16 @@ export interface GameNode {
   winnerId: string | null;
   endReason: EndReason | null;
   rematchOf?: string;
+  /** Set when finished; the game stays listed (open) for a few hours, then the tick closes it. */
+  finishedAt?: number;
+  /** Latest quick reaction from either player; clients animate on `at` change. */
+  reaction?: { by: string; emoji: string; at: number };
 }
+
+export const GAME_REACTIONS = ["👏", "😱", "🤔", "😂"] as const;
+export const FINISHED_LISTED_MS = 6 * 60 * 60 * 1000;
+
+export const isLive = (g: GameNode) => g.status === "invited" || g.status === "active";
 
 export interface LiveGame extends GameNode {
   id: string;
@@ -119,8 +128,14 @@ export async function rematch(from: LiveGame): Promise<string> {
     rematchOf: from.id,
   };
   await update(node, { ...g, createdAt: rtdbNow(), lastMoveAt: rtdbNow() });
+  await update(ref(getRtdb(), gamePath(from.id)), { open: false });
   void notify("yourTurn", { toUid: from.players.second === g.players.first ? from.players.first : from.players.second, body: `Rematch at ${GAME_META[from.type].name}! ${g.players.first === from.players.second ? "You move first." : "They move first."}`, data: { url: gameRoute(node.key as string) } });
   return node.key as string;
+}
+
+/** A quick 👏 / 😱 / 🤔 / 😂 for the other player; both boards animate it. */
+export function sendReaction(gameId: string, by: string, emoji: string): Promise<void> {
+  return update(ref(getRtdb(), gamePath(gameId)), { reaction: { by, emoji, at: rtdbNow() } });
 }
 
 /* ── moves ─────────────────────────────────────────────────────────────── */
@@ -157,7 +172,8 @@ export async function playMove(game: LiveGame, me: string, move: unknown, nameOf
       moves: (current.moves ?? 0) + 1,
       lastMoveAt: Date.now(),
       status: finished ? "finished" : "active",
-      open: !finished,
+      open: true,
+      ...(finished ? { finishedAt: Date.now() } : {}),
       winnerId,
       endReason: outcome.endReason,
     } satisfies GameNode;
@@ -175,7 +191,7 @@ export async function resign(game: LiveGame, me: string, nameOf: (uid: string) =
   const winnerId = uidOf(game, other(mine));
   const res = await runTransaction(ref(getRtdb(), gamePath(game.id)), (current: GameNode | null) => {
     if (!current || current.status !== "active") return;
-    return { ...current, status: "finished", open: false, winnerId, endReason: "resign", lastMoveAt: Date.now() } satisfies GameNode;
+    return { ...current, status: "finished", open: true, finishedAt: Date.now(), winnerId, endReason: "resign", lastMoveAt: Date.now() } satisfies GameNode;
   });
   if (res.committed) await recordResult({ id: game.id, ...(res.snapshot.val() as GameNode) }, me, nameOf);
 }
@@ -222,6 +238,18 @@ async function recordResult(game: LiveGame, by: string, nameOf: (uid: string) =>
     tx.update(pairRef(), { records });
   }).catch(() => undefined);
   void postSystemMessage(by, describeResult(game, nameOf));
+  const opponent = game.players.first === by ? game.players.second : game.players.first;
+  void notify("yourTurn", { toUid: opponent, body: resultForRecipient(game, opponent, nameOf), data: { url: gameRoute(game.id) } });
+}
+
+/** "Priya resigned at Chess — you win 🎉" / "Checkmate — Priya wins at Chess" / "Draw at Chess". */
+export function resultForRecipient(game: LiveGame, recipient: string, nameOf: (uid: string) => string): string {
+  const meta = GAME_META[game.type];
+  const otherUid = game.players.first === recipient ? game.players.second : game.players.first;
+  if (!game.winnerId) return `${meta.emoji} Draw at ${meta.name}`;
+  const won = game.winnerId === recipient;
+  if (game.endReason === "resign") return won ? `${meta.emoji} ${nameOf(otherUid)} resigned at ${meta.name} — you win 🎉` : `${meta.emoji} You resigned at ${meta.name}`;
+  return won ? `${meta.emoji} You won at ${meta.name} 🎉` : `${meta.emoji} ${nameOf(otherUid)} won at ${meta.name}`;
 }
 
 /** Nickname-aware line, posted from the UI where names are known. */
@@ -229,7 +257,8 @@ export function describeResult(game: LiveGame, nameOf: (uid: string) => string):
   const meta = GAME_META[game.type];
   if (!game.winnerId) return `${meta.emoji} ${nameOf(game.players.first)} and ${nameOf(game.players.second)} drew at ${meta.name}`;
   const loser = game.winnerId === game.players.first ? game.players.second : game.players.first;
-  return `${meta.emoji} ${nameOf(game.winnerId)} beat ${nameOf(loser)} at ${meta.name}${game.endReason === "resign" ? " (resigned)" : ""}`;
+  if (game.endReason === "resign") return `${meta.emoji} ${nameOf(loser)} conceded at ${meta.name} — ${nameOf(game.winnerId)} takes it`;
+  return `${meta.emoji} ${nameOf(game.winnerId)} beat ${nameOf(loser)} at ${meta.name}`;
 }
 
 /** The record strip: wins per uid and draws, from pair/main. */

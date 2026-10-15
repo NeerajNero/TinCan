@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
-import { acceptGame, declineGame, gameRoute, inviteGame, loadRecentResults, recordFor, uidOf, type GameResultDoc } from "@/lib/db/games";
+import { acceptGame, declineGame, gameRoute, inviteGame, isLive, loadRecentResults, recordFor, rematch, uidOf, type GameResultDoc } from "@/lib/db/games";
 import { GAME_META, GAME_TYPES, type GameType } from "@/lib/games";
 
 export function PlayScreen() {
@@ -21,7 +21,7 @@ export function PlayScreen() {
   const [busy, setBusy] = useState<GameType | null>(null);
   const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
 
-  const openByType = (type: GameType) => games.find((g) => g.type === type);
+  const openByType = (type: GameType) => games.find((g) => g.type === type && isLive(g));
 
   async function tapGame(type: GameType) {
     const existing = openByType(type);
@@ -41,6 +41,7 @@ export function PlayScreen() {
 
   const invitesForMe = games.filter((g) => g.status === "invited" && g.createdBy !== uid);
   const active = games.filter((g) => g.status === "active" || (g.status === "invited" && g.createdBy === uid));
+  const finished = games.filter((g) => g.status === "finished").sort((a, b) => (b.finishedAt ?? 0) - (a.finishedAt ?? 0));
 
   return (
     <div className="flex flex-col gap-4">
@@ -106,6 +107,35 @@ export function PlayScreen() {
                   {g.status === "invited" ? "Invited" : mine ? "Your turn" : "Their turn"}
                 </span>
               </Link>
+            );
+          })}
+        </section>
+      )}
+
+      {finished.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Just finished</h2>
+          {finished.map((g) => {
+            const won = g.winnerId === uid;
+            return (
+              <Card key={g.id} className="flex items-center gap-3 px-4 py-3">
+                <Link href={gameRoute(g.id)} className="flex min-w-0 flex-1 items-center gap-3">
+                  <span className="text-2xl" aria-hidden>
+                    {GAME_META[g.type].emoji}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">{g.winnerId ? (won ? "You won 🎉" : `${nameOf(g.winnerId)} won`) : g.endReason === "abandoned" ? "Abandoned" : "Draw"}</span>
+                    <span className="block text-xs text-muted">
+                      {GAME_META[g.type].name}
+                      {g.endReason === "resign" && (won ? " · they resigned" : " · you resigned")}
+                      {g.finishedAt && ` · ${formatDistanceToNowStrict(new Date(g.finishedAt), { addSuffix: true })}`}
+                    </span>
+                  </span>
+                </Link>
+                <Button onClick={() => void rematch(g).then((id) => router.push(gameRoute(id)))} disabled={Boolean(openByType(g.type))} className="px-4 py-2 text-sm">
+                  Rematch
+                </Button>
+              </Card>
             );
           })}
         </section>
