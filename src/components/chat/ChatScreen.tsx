@@ -7,6 +7,7 @@ import { Composer } from "@/components/chat/Composer";
 import { ImageViewer } from "@/components/chat/media/ImageViewer";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageMenu } from "@/components/chat/MessageMenu";
+import { ScheduleSheet } from "@/components/chat/ScheduleSheet";
 import { WaitingCard } from "@/components/home/WaitingCard";
 import { Splash } from "@/components/ui/Splash";
 import { useMessages } from "@/hooks/useMessages";
@@ -62,6 +63,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
   const [editing, setEditing] = useState<Message | null>(null);
   const [viewing, setViewing] = useState<Message | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(() => new Set());
+  const [schedule, setSchedule] = useState<{ open: boolean; draft: string }>({ open: false, draft: "" });
   const uploads = useUploads(uid, friendUid);
 
   // Read receipts: only while this screen is mounted and the tab is visible.
@@ -181,6 +183,14 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
         onSendVoice={sendVoice}
         onSendSticker={(id) => void sendSticker(id).catch(() => undefined)}
         onSendGif={(gif) => void sendGif(gif).catch(() => undefined)}
+        onSchedule={(draft) => setSchedule({ open: true, draft })}
+      />
+      <ScheduleSheet
+        open={schedule.open}
+        uid={uid}
+        draft={schedule.draft}
+        onClose={() => setSchedule({ open: false, draft: "" })}
+        onScheduled={() => setSchedule({ open: false, draft: "" })}
       />
       <ImageViewer src={viewing?.media?.url ?? null} caption={viewing?.text} onClose={() => setViewing(null)} />
       <MessageMenu

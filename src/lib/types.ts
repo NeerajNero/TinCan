@@ -225,3 +225,99 @@ export interface CityPick {
   lng: number;
   tz: string;
 }
+
+/* ── shared media item (journal, capsules) ─────────────────────────────── */
+
+export interface MediaItem {
+  url: string;
+  publicId: string;
+  w: number;
+  h: number;
+}
+
+/* ── dailyQuestions/{dateKey} ──────────────────────────────────────────── */
+
+export interface DailyAnswer {
+  text: string;
+  at: Timestamp | null;
+}
+
+export interface DailyQuestionDoc {
+  questionIndex: number;
+  answers: Record<string, DailyAnswer>;
+}
+
+/* ── journal/{id} ──────────────────────────────────────────────────────── */
+
+export interface JournalDoc {
+  authorId: string;
+  text: string;
+  mood: string;
+  media: MediaItem[];
+  createdAt: Timestamp | null;
+  editedAt?: Timestamp | null;
+}
+
+/* ── capsules/{id} (+ private/body) ────────────────────────────────────── */
+
+export interface CapsuleDoc {
+  authorId: string;
+  title: string;
+  unlockAt: Timestamp;
+  openedAt: Timestamp | null;
+  openedBy: string | null;
+  photoCount: number;
+  createdAt: Timestamp | null;
+}
+
+export interface CapsuleBody {
+  body: string;
+  media: MediaItem[];
+}
+
+/* ── envelopes/{id} (+ private/body) ───────────────────────────────────── */
+
+export const ENVELOPE_LABELS = ["sad", "bored", "miss me", "can't sleep", "need a laugh", "proud of you"] as const;
+
+export interface EnvelopeDoc {
+  authorId: string;
+  forUid: string;
+  label: string;
+  openedAt: Timestamp | null;
+  createdAt: Timestamp | null;
+}
+
+export interface EnvelopeBody {
+  body: string;
+}
+
+/* ── jar/{id} ──────────────────────────────────────────────────────────── */
+
+export interface JarDoc {
+  authorId: string;
+  forUid: string;
+  text: string;
+  drawnAt: Timestamp | null;
+  createdAt: Timestamp | null;
+}
+
+/* ── scheduled/{id} ────────────────────────────────────────────────────── */
+
+export interface ScheduledDoc {
+  senderId: string;
+  text: string;
+  sendAt: Timestamp;
+  sentAt: Timestamp | null;
+  messageId: string | null;
+  createdAt: Timestamp | null;
+}
+
+/* ── milestones/{id} (phase 7 UI; the tick job reads this shape) ───────── */
+
+export interface MilestoneDoc {
+  title: string;
+  /** yyyy-MM-dd */
+  date: DateKey;
+  repeatYearly: boolean;
+  emoji: string;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ImagePlus, Mic, Send, SmilePlus, X } from "lucide-react";
+import { Clock, ImagePlus, Mic, Send, SmilePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { AttachmentStrip } from "@/components/chat/media/AttachmentStrip";
@@ -31,6 +31,8 @@ interface ComposerProps {
   onSendVoice: (recording: Recording) => void;
   onSendSticker: (id: string) => void;
   onSendGif: (gif: Gif) => void;
+  /** Opens the "send later" sheet with the current draft; the parent owns the sheet. */
+  onSchedule: (draft: string) => void;
 }
 
 const MAX_ROWS = 6;
@@ -58,6 +60,7 @@ export function Composer(props: ComposerProps) {
     onSendVoice,
     onSendSticker,
     onSendGif,
+    onSchedule,
   } = props;
   // The parent re-keys this component per edit target, so the initial value is enough.
   const [text, setText] = useState(() => editing?.text ?? "");
@@ -244,6 +247,17 @@ export function Composer(props: ComposerProps) {
                     className="tap grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2"
                   >
                     <ImagePlus size={22} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSchedule(text);
+                      setText("");
+                    }}
+                    aria-label="Send later"
+                    className="tap grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2"
+                  >
+                    <Clock size={22} />
                   </button>
                   <input
                     ref={fileInput}

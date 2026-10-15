@@ -32,6 +32,11 @@ export function hourIn(tz: string, at: Date = new Date()): number {
   return Number(formatInTimeZone(at, tz, "H"));
 }
 
+/** Minutes since local midnight in a zone (0–1439). */
+export function minutesIntoDayIn(tz: string, at: Date = new Date()): number {
+  return Number(formatInTimeZone(at, tz, "H")) * 60 + Number(formatInTimeZone(at, tz, "m"));
+}
+
 export function isDateKey(value: unknown): value is DateKey {
   return typeof value === "string" && DATE_KEY_RE.test(value) && !Number.isNaN(dateKeyToUtcMs(value));
 }

@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 
 import { CountdownCard } from "@/components/home/CountdownCard";
+import { DailyQuestionCard } from "@/components/home/DailyQuestionCard";
 import { Lamps } from "@/components/home/Lamps";
 import { LastMessageCard } from "@/components/home/LastMessageCard";
 import { MoodCheckin } from "@/components/home/MoodCheckin";
@@ -45,6 +46,7 @@ export function HomeScreen() {
         <Header nickname={me.nickname} />
         <WaitingCard />
         <PushNudgeCard />
+        <DailyQuestionCard today={data.today} friendUid={null} friendName={null} />
         <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={null} friendName={null} />
         <CountdownCard meetup={pair.nextMeetup} today={data.today} />
       </div>
@@ -61,6 +63,7 @@ export function HomeScreen() {
       <PushNudgeCard />
       <PingRow friendUid={friendUid} friendName={friend.nickname} />
       <Lamps friendUid={friendUid} friendName={friend.nickname} />
+      <DailyQuestionCard today={data.today} friendUid={friendUid} friendName={friend.nickname} />
       <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={data.friendMood} friendName={friend.nickname} />
       <StreakPlant today={data.today} checkins={data.checkins} friendUid={friendUid} friendName={friend.nickname} />
       <CountdownCard meetup={pair.nextMeetup} today={data.today} />
