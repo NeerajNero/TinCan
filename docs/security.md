@@ -1,0 +1,44 @@
+# Security
+
+## Model
+
+Two allowlisted Google accounts are the only principals. Everything else is denied at three layers: the Firestore/RTDB rules (the real boundary), the API guard (server routes), and the client gate (UX only).
+
+## Allowlist
+
+`ALLOWED_EMAILS` (two emails) is read by the server (`lib/allowlist.ts`) and baked into the rules by `scripts/build-rules.mjs` from `rules/*.tmpl` (`__ALLOWED_EMAILS__`, `__CLOUDINARY_CLOUD__` placeholders). The generated `firestore.rules`, `database.rules.json` and `.firebaserc` are gitignored, so emails never land in git. Changing the allowlist = update env in all places + `pnpm rules:deploy` + redeploy Vercel.
+
+## Rules (`rules/firestore.rules.tmpl`, `rules/database.rules.json.tmpl`)
+
+Default deny. `allowed()` requires a signed-in, `email_verified`, allowlisted user. Then per collection (full table in data-model.md):
+
+- **Ownership**: `users/{uid}` own-write; `email`/`createdAt` immutable; no unknown top-level fields. `availability`, `moods`, `wordle` own-write.
+- **Messages**: create only as sender with `createdAt == request.time`, text ≤2000, type enum, media URLs must be `https://res.cloudinary.com/<cloud>/` (gif: `https://media*.giphy.com/`). Recipient may only touch `deliveredAt/readAt/status`; sender edits/deletes; either sets only its own `reactions.{uid}` / `deletedFor` entry.
+- **Private bodies**: `capsules/{id}/private/body` readable by author or when `request.time >= unlockAt`; `envelopes/{id}/private/body` readable by author, or by `forUid` once `openedAt` is set.
+- **Gifts list** is readable/writable only by whoever added the item.
+- **pair/main**: `uids` can only grow and never lose a uid.
+- **Admin only**: `push`, `tickLog`, `quota`, `scheduled` delivery fields.
+- **RTDB**: `presence/typing/cursors` own-write with validated shapes (presence page ≤100 chars, cursor coords 0–1); `pings/{uid}/{id}` created by the other user, deleted by owner; `games` validate `type/state/turn/status/open/endReason/players` and allow an unchanged opponent reaction on a transaction rewrite; `whiteboard`/`pictionary` strokes ≤24k chars; `pixel/grid` exactly 1024 chars.
+
+Covered by `tests/rules.test.ts` (emulator). Run `pnpm test:rules` after any rules change.
+
+## API guard (`src/lib/server/guard.ts`)
+
+ID token verified with revocation check → `email_verified` + allowlist → per-uid token bucket → Firestore daily cap (`quota/{uid}_{day}`: push 1000, media 300, sign 300) → 16 KB body → `.strict()` zod. `/api/tick` compares `x-tick-secret` with `timingSafeEqual`. Response bodies carry only an error code.
+
+## Media
+
+Uploads are **signed**: the browser asks `POST /api/media/sign` for a signature over a fixed parameter set (timestamp, folder, preset, incoming transformation for images), after a size check (5 MB / 3 MB). The Cloudinary presets `tincan_image` and `tincan_audio` must be in **Signed** mode in the console or the signature is pointless. Deletes go through `DELETE /api/media`, which checks the caller owns the doc. The app renders media only from our own cloud or GIPHY (`lib/safeUrl.ts`) and the rules enforce the same prefixes on write.
+
+## Headers (`next.config.ts`)
+
+- `Content-Security-Policy-Report-Only` listing exactly the origins we use (Firebase, Cloudinary, GIPHY, Open-Meteo, YouTube, OSM tiles, radio streams). **To enforce**: watch the browser console on the deployment for a few days of normal use; when no violations appear, rename the header key to `Content-Security-Policy`.
+- `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` allowing only microphone(self) and media playback. `/serwist/*` is `max-age=0, must-revalidate`.
+
+## Secrets handling
+
+- All env values live in `.env` / `.env.local` (gitignored) and on Vercel. Scripts read `.env.local` then `.env` and **never print values**; emails are masked in output.
+- `FIREBASE_SERVICE_ACCOUNT` is base64 JSON consumed only by `lib/firebase/admin.ts`; `CLOUDINARY_API_SECRET` only by `/api/media` and `/api/media/sign`; `TICK_SECRET` only by `/api/tick`.
+- `NEXT_PUBLIC_*` are public by design (Firebase web config, Cloudinary cloud name, GIPHY key). On Vercel, add `NEXT_PUBLIC_GIPHY_API_KEY` as a plain variable, not a Sensitive one, so it reaches the client bundle.
+- `/api/health` returns booleans only.
+- Dependency overrides in `package.json`: `jose@5.10.0` (firebase-admin ESM crash on Vercel) and `@grpc/grpc-js >= 1.13.6` (advisory). Run `pnpm audit --prod` after upgrades.

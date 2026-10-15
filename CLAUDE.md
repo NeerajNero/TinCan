@@ -305,6 +305,21 @@ radio stations (6 public stream URLs with names).
 - Rules are covered by emulator tests (`pnpm test:rules`). The service worker only opens
   same-origin URLs from notification clicks.
 
+## Documentation (keep in sync — this is a hard rule)
+The codebase is documented in `docs/` and `CHANGELOG.md`; this file is the spec, those describe
+the code as it is. Start at [`docs/README.md`](docs/README.md):
+- [architecture](docs/architecture.md) · [data model](docs/data-model.md) · [features → code](docs/features.md)
+- [API routes](docs/api.md) · [security](docs/security.md) · [operations](docs/operations.md)
+- [conventions](docs/conventions.md) · [adding a feature](docs/adding-a-feature.md) · [testing](docs/testing.md)
+  · [troubleshooting](docs/troubleshooting.md) · [CHANGELOG](CHANGELOG.md)
+
+Every change that adds, removes or alters behaviour, data, rules, an API route, an env var, a
+script or a convention MUST, in the same commit: update the relevant `docs/*.md` page(s), add a
+line to `CHANGELOG.md` under today's date, and update this spec if the product or rules changed.
+A fix that only touches internals still gets a changelog line. The GitHub `README.md` is the
+setup guide; update it when setup steps or scripts change. The phase summary printed at the end
+of a task must say which docs were updated.
+
 ## Engineering rules
 - Keep Firestore reads low: every listener is bounded (`limit`), Home subscribes to at most
   `pair/main`, `users/{friend}`, today's `checkins`, today's `moods`, today's `dailyQuestions`
@@ -318,6 +333,7 @@ radio stations (6 public stream URLs with names).
   `git push` after every commit — the remote is the backup.
 - Rules deploy via Firebase CLI: `pnpm rules:deploy` → `firebase deploy --only firestore:rules,database`.
 - Accessibility basics: buttons have labels, tap targets ≥ 44 px, colour is never the only signal.
+- Docs travel with code: no commit without the matching `docs/*` + `CHANGELOG.md` update (see Documentation).
 
 ## Env (`.env.example` must list all; `.env.local` is gitignored)
 ```
