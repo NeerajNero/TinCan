@@ -19,6 +19,7 @@ pnpm dev
 | `pnpm typecheck`    | `tsc --noEmit`                                            |
 | `pnpm lint`         | ESLint                                                    |
 | `pnpm icons`        | Regenerates PWA icons from the tin-can SVG                |
+| `pnpm cloudinary:presets` | Creates/updates the two unsigned Cloudinary upload presets from your env (one-time) |
 | `pnpm rules:build`  | Fills `rules/*.tmpl` with `ALLOWED_EMAILS` → `firestore.rules`, `database.rules.json`, `.firebaserc` |
 | `pnpm rules:deploy` | `rules:build`, then `firebase deploy --only firestore:rules,database` |
 

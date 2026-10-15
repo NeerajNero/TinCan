@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "icons": "node scripts/icons.mjs",
     "rules:deploy": "pnpm rules:build && firebase deploy --only firestore:rules,database",
-    "rules:build": "node scripts/build-rules.mjs"
+    "rules:build": "node scripts/build-rules.mjs",
+    "cloudinary:presets": "node scripts/cloudinary-presets.mjs"
   },
   "dependencies": {
     "@google-cloud/firestore": "^9.3.1",
