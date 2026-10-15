@@ -1,5 +1,5 @@
 import type { User } from "firebase/auth";
-import { arrayUnion, runTransaction, serverTimestamp, updateDoc } from "firebase/firestore";
+import { arrayUnion, runTransaction, serverTimestamp, updateDoc } from "@/lib/firebase/fs";
 
 import { pairRef, userRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";

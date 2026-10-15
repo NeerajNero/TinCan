@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { onValue } from "firebase/database";
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -16,6 +16,7 @@ import { backfillDateKey, dailyRef } from "@/lib/db/daily";
 import { gameRoute, resultForRecipient, subscribeOpenGames, type LiveGame } from "@/lib/db/games";
 import { mediaLabel } from "@/lib/db/messages";
 import { lampPath, presencePath, rtdbRef } from "@/lib/rtdb";
+import { playSound } from "@/lib/sounds";
 import { PINGS, type DailyQuestionDoc, type LampNode, type PresenceNode } from "@/lib/types";
 import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
 
@@ -67,6 +68,7 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!incoming || lastToastedPing.current === incoming.nonce) return;
     lastToastedPing.current = incoming.nonce;
+    playSound("ping");
     if (pathRef.current === "/" || !visibleRef.current) return; // Home plays it full-screen
     const p = PINGS[incoming.kind];
     toast({ key: "ping", emoji: p.emoji, title: `${friendName} ${p.sentence}`, url: "/", bounce: true, vibrate: false });
@@ -190,6 +192,7 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     for (const k of keys) {
       if (seenStickers.current.has(k)) continue;
       const st = STICKER_BY_ID[k as GardenEvent];
+      if (st) playSound("unlock");
       if (st) toast({ key: `garden:${k}`, emoji: st.emoji, title: `You two unlocked the ${st.name}!`, body: "Tap to see the garden", url: "/memories/garden", durationMs: 6000 });
     }
     seenStickers.current = keys;

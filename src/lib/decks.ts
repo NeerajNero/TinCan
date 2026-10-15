@@ -6,15 +6,8 @@ import truths from "@/content/truths.json";
 import wyr from "@/content/would-you-rather.json";
 import { seededOrder } from "@/lib/seeded";
 
-export type DeckKind = "wyr" | "nhie" | "tod" | "convo";
-export const DECK_KINDS: readonly DeckKind[] = ["wyr", "nhie", "tod", "convo"];
-
-export const DECK_META: Record<DeckKind, { name: string; emoji: string; blurb: string }> = {
-  wyr: { name: "Would You Rather", emoji: "🤔", blurb: "Pick A or B, then compare" },
-  nhie: { name: "Never Have I Ever", emoji: "🙈", blurb: "Confess and collect points" },
-  tod: { name: "Truth or Dare", emoji: "🎯", blurb: "Spin, then deliver" },
-  convo: { name: "Conversation cards", emoji: "💬", blurb: "Light and deep prompts" },
-};
+export { DECK_KINDS, DECK_META, type DeckKind } from "@/lib/deckMeta";
+import type { DeckKind } from "@/lib/deckMeta";
 
 export type WyrCard = { a: string; b: string };
 export type ConvoCard = { depth: string; text: string };

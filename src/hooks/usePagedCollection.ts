@@ -1,6 +1,6 @@
 "use client";
 
-import { getDocs, onSnapshot, type Query, type QueryDocumentSnapshot } from "firebase/firestore";
+import { getDocs, onSnapshot, type Query, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface Paged<T> {

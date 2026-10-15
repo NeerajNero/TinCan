@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

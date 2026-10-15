@@ -1,5 +1,5 @@
-import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, type CollectionReference, type DocumentReference, type Query } from "firebase/firestore";
-import type { Timestamp } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, type CollectionReference, type DocumentReference, type Query } from "@/lib/firebase/fs";
+import type { Timestamp } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 

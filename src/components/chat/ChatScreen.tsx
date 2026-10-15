@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ChatHeader } from "@/components/chat/ChatHeader";
@@ -12,7 +13,7 @@ import { WaitingCard } from "@/components/home/WaitingCard";
 import { Splash } from "@/components/ui/Splash";
 import { ViewerButton } from "@/components/memories/PhotosScreen";
 import { useMessages } from "@/hooks/useMessages";
-import { saveMessageToMemories } from "@/lib/db/memories";
+import { findMemoryByPublicId, saveMessageToMemories } from "@/lib/db/memories";
 import { usePair } from "@/hooks/usePair";
 import { useUploads } from "@/hooks/useUploads";
 import { useVisible } from "@/hooks/useVisible";
@@ -32,8 +33,9 @@ import type { Gif } from "@/lib/giphy";
 import type { Recording } from "@/lib/media/recorder";
 import { recordTogetherEvent } from "@/lib/garden";
 import { messagesCol } from "@/lib/db/messages";
-import { getCountFromServer } from "firebase/firestore";
+import { getCountFromServer } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
+import { playSound } from "@/lib/sounds";
 import type { Message } from "@/lib/types";
 
 export function ChatScreen() {
@@ -62,6 +64,7 @@ interface ThreadProps {
 }
 
 function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker }: ThreadProps) {
+  const router = useRouter();
   const { messages, initialUnread, ready, hasMore, loadingOlder, pageCount, loadOlder, prune } = useMessages(uid);
   const visible = useVisible();
   const [menuFor, setMenuFor] = useState<Message | null>(null);
@@ -71,6 +74,19 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
   const [deletingIds, setDeletingIds] = useState<Set<string>>(() => new Set());
   const [schedule, setSchedule] = useState<{ open: boolean; draft: string }>({ open: false, draft: "" });
   const [savedToMemories, setSavedToMemories] = useState<string | null>(null);
+  const [existingMemory, setExistingMemory] = useState<{ messageId: string; memoryId: string | null } | null>(null);
+  const viewingPublicId = viewing?.media?.publicId ?? null;
+  const viewingId = viewing?.id ?? null;
+  useEffect(() => {
+    if (!viewingId || !viewingPublicId) return;
+    let cancelled = false;
+    void findMemoryByPublicId(viewingPublicId)
+      .then((memoryId) => !cancelled && setExistingMemory({ messageId: viewingId, memoryId }))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [viewingId, viewingPublicId]);
   const uploads = useUploads(uid, friendUid);
 
   // Read receipts: only while this screen is mounted and the tab is visible.
@@ -92,6 +108,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
       const reply = replyTo ? replyPreview(replyTo) : null;
       setReplyTo(null);
       const id = await sendText(uid, text, reply);
+      playSound("send");
       await notify("message", { toUid: friendUid, body: text.slice(0, 120), data: { messageId: id } });
       if (needsMessageSticker) void getCountFromServer(messagesCol()).then((c) => c.data().count >= 100 && recordTogetherEvent("messages-100", uid)).catch(() => undefined);
     },
@@ -205,16 +222,30 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
         caption={viewing?.text}
         actions={
           viewing ? (
-            <ViewerButton
-              onClick={() => {
-                const target = viewing;
-                void saveMessageToMemories(uid, target)
-                  .then(() => setSavedToMemories(target.id))
-                  .catch(() => undefined);
-              }}
-            >
-              {savedToMemories === viewing.id ? "Saved ✓" : "Save to memories"}
-            </ViewerButton>
+            existingMemory?.messageId === viewing.id && existingMemory.memoryId ? (
+              <ViewerButton
+                onClick={() => {
+                  setViewing(null);
+                  router.push("/memories/photos");
+                }}
+              >
+                Already in memories · open
+              </ViewerButton>
+            ) : (
+              <ViewerButton
+                onClick={() => {
+                  const target = viewing;
+                  void saveMessageToMemories(uid, target)
+                    .then((id) => {
+                      setSavedToMemories(target.id);
+                      setExistingMemory({ messageId: target.id, memoryId: id });
+                    })
+                    .catch(() => undefined);
+                }}
+              >
+                {savedToMemories === viewing.id ? "Saved ✓" : "Save to memories"}
+              </ViewerButton>
+            )
           ) : undefined
         }
         onClose={() => setViewing(null)}

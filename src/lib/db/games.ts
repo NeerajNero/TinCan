@@ -3,7 +3,7 @@
  * State is stored as a JSON string so RTDB's array quirks never bite.
  */
 import { child, get, onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, update } from "firebase/database";
-import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "firebase/firestore";
+import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "@/lib/firebase/fs";
 
 import { postSystemMessage } from "@/lib/db/home";
 import { pairRef } from "@/lib/db/refs";

@@ -320,33 +320,33 @@ TICK_SECRET=
 NEXT_PUBLIC_GIPHY_API_KEY=           # optional
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each)
-1. **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
+## Build order (one Claude Code prompt per phase; stop at the end of each) — all 13 phases shipped
+1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
-2. **Identity & rules** — onboarding (nickname, city → Open-Meteo geocode → lat/lng/tz),
+2. ✅ **Identity & rules** — onboarding (nickname, city → Open-Meteo geocode → lat/lng/tz),
    `users` + `pair/main` creation, More tab (profile, theme, friends-since, next meetup, sign out),
    `firestore.rules`, `database.rules.json`, `firebase.json`, `pnpm rules:deploy`.
-3. **Presence & Home v1** — presence/heartbeat/onDisconnect, two clocks, distance, weather,
+3. ✅ **Presence & Home v1** — presence/heartbeat/onDisconnect, two clocks, distance, weather,
    pings with animation + vibrate, lamp, sleep/wake, mood check-in, check-ins + streak + plant.
-4. **Chat v1** — text messages, pagination, ticks, typing, reactions, reply, edit/delete,
+4. ✅ **Chat v1** — text messages, pagination, ticks, typing, reactions, reply, edit/delete,
    day separators, unread badge, offline queue.
-5. **Chat v2 + push** — images and voice via Cloudinary, stickers, optional GIFs,
+5. ✅ **Chat v2 + push** — images and voice via Cloudinary, stickers, optional GIFs,
    `/api/media` delete, FCM setup (background handler in the Serwist worker, token registration),
    `/api/push`, notification toggles, foreground toasts.
-6. **Daily & letters** — daily question, journal, time capsules, open-when envelopes, jar,
+6. ✅ **Daily & letters** — daily question, journal, time capsules, open-when envelopes, jar,
    scheduled messages, `/api/tick` with all jobs, `pnpm tick:dry`.
-7. **Memories** — photo timeline, memory map (Leaflet/OSM), milestones, mood history.
-8. **Plan** — countdown, call-time finder, four lists, trips.
-9. **Play v1** — game lobby/invites, tic-tac-toe, connect four, chess, checkers, your-turn
+7. ✅ **Memories** — photo timeline, memory map (Leaflet/OSM), milestones, mood history.
+8. ✅ **Plan** — countdown, call-time finder, four lists, trips.
+9. ✅ **Play v1** — game lobby/invites, tic-tac-toe, connect four, chess, checkers, your-turn
    push, results + head-to-head record, rematch.
-10. **Play v2** — deck games (WYR, NHIE, truth/dare, conversation cards), 20 Questions,
+10. ✅ **Play v2** — deck games (WYR, NHIE, truth/dare, conversation cards), 20 Questions,
     hangout wheel, trivia duel (live + async), know-me quiz, daily word.
-11. **Together** — whiteboard + shared cursors + snapshot, pixel art, pictionary,
+11. ✅ **Together** — whiteboard + shared cursors + snapshot, pixel art, pictionary,
     watch together, listen together + queue, radio, focus timer, cook-along.
-12. **Nurture** — pet (species, sprites, feed/play, levels, system messages, hungry push),
+12. ✅ **Nurture** — pet (species, sprites, feed/play, levels, system messages, hungry push),
     plant SVG stages and wilt, garden stickers + unlock triggers.
-13. **Polish & ship** — animations/sounds/confetti pass, empty states, usage meter, Firestore
+13. ✅ **Polish & ship** — animations/sounds/confetti pass, empty states, usage meter, Firestore
     read audit on every screen, Lighthouse PWA pass, Vercel deploy, env on Vercel, rules
     re-review, cron-job.org for `/api/tick`, README with the manual setup checklist.
 

@@ -1,5 +1,5 @@
 /** Shared deck state at RTDB cards/{deck}. Either person flips; responses are keyed by uid. */
-import { onValue, ref, runTransaction, serverTimestamp, update } from "firebase/database";
+import { onValue, ref, runTransaction, serverTimestamp, set, update } from "firebase/database";
 
 import { deckSize, type DeckKind } from "@/lib/decks";
 import { getRtdb } from "@/lib/firebase/client";
@@ -53,6 +53,12 @@ export function bumpTally(kind: DeckKind, patch: { agreed?: number; compared?: n
     for (const [u, p] of Object.entries(patch.points ?? {})) points[u] = (points[u] ?? 0) + p;
     return { ...cur, tally: { agreed: (t.agreed ?? 0) + (patch.agreed ?? 0), compared: (t.compared ?? 0) + (patch.compared ?? 0), points } };
   }).then(() => undefined);
+}
+
+/** Fresh seed, index 0, tallies and responses cleared. */
+export function resetDeck(kind: DeckKind, uid: string): Promise<void> {
+  const node: DeckNode = { seed: randomSeed(), index: 0, flippedBy: uid, at: Date.now(), turn: uid };
+  return set(deckRef(kind), node);
 }
 
 export function setPick(kind: DeckKind, pick: "truth" | "dare", turn: string): Promise<void> {

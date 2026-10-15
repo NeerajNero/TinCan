@@ -1,4 +1,4 @@
-import { collection, limit, query, where, type CollectionReference, type Query } from "firebase/firestore";
+import { collection, limit, query, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { MoodDoc } from "@/lib/types";

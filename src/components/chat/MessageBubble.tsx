@@ -271,6 +271,8 @@ function MediaBody({
                 width={w}
                 height={h}
                 unoptimized
+                sizes="240px"
+                loading="lazy"
                 className="block max-h-80 w-60 max-w-full object-cover"
                 style={{ aspectRatio: `${w} / ${h}` }}
               />
@@ -293,7 +295,7 @@ function MediaBody({
           alt="GIF"
           width={w}
           height={h}
-          unoptimized
+          unoptimized sizes="240px" loading="lazy"
           className="block max-h-72 w-60 max-w-full rounded-[16px] object-cover"
           style={{ aspectRatio: `${w} / ${h}` }}
         />

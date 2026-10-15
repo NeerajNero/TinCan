@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";

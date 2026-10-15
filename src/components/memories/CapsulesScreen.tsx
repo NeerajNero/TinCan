@@ -1,7 +1,7 @@
 "use client";
 
 import { format, formatDistanceStrict } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "firebase/firestore";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -10,6 +10,7 @@ import { PhotoPicker } from "@/components/memories/PhotoPicker";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input, Label } from "@/components/ui/Input";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
@@ -65,6 +66,7 @@ export function CapsulesScreen() {
         }
       />
       {composing && <CapsuleComposer uid={uid} onDone={() => setComposing(false)} />}
+      {!ready && <ListSkeleton />}
       {ready && items.length === 0 && !composing && <Card className="py-8 text-center text-muted">Nothing sealed yet. Write something for a future day?</Card>}
       {items.map((c) => (
         <CapsuleCard key={c.id} capsule={c} uid={uid} now={now} authorName={nameOf(c.authorId)} openerName={c.openedBy ? nameOf(c.openedBy) : null} />

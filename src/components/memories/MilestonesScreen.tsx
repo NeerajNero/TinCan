@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "firebase/firestore";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -59,7 +59,7 @@ export function MilestonesScreen() {
         }
       />
       {editing !== null && <MilestoneForm key={editing === "new" ? "new" : editing.id} row={editing === "new" ? null : editing} onDone={() => setEditing(null)} />}
-      {list.length === 0 && editing === null && <Card className="py-8 text-center text-muted">No dates yet. Add a birthday, an anniversary, the day you met…</Card>}
+      {list.length === 0 && editing === null && <Card className="py-8 text-center text-muted">No dates yet — add a birthday, an anniversary, or the day you met?</Card>}
       {list.map((u) => (
         <Card key={u.id} className={cn("flex items-center gap-3", u.daysToGo < 0 && "opacity-60")}>
           <span className="text-3xl" aria-hidden>

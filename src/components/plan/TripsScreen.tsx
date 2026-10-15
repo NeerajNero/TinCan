@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "firebase/firestore";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Reorder } from "framer-motion";
 import { ChevronDown, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input, Label } from "@/components/ui/Input";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
@@ -59,6 +60,7 @@ export function TripsScreen() {
         }
       />
       {form !== null && <TripForm key={form === "new" ? "new" : form.id} trip={form === "new" ? null : form} uid={uid} onDone={() => setForm(null)} />}
+      {!ready && <ListSkeleton />}
       {ready && trips.length === 0 && form === null && <Card className="py-8 text-center text-muted">No trips yet. Plan the next one?</Card>}
 
       {upcoming.map((t) => (

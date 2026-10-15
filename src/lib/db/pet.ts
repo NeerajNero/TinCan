@@ -1,4 +1,4 @@
-import { updateDoc } from "firebase/firestore";
+import { updateDoc } from "@/lib/firebase/fs";
 
 import { PET_SPECIES } from "@/content/pets";
 import { postSystemMessage } from "@/lib/db/home";

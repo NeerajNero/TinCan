@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { UploadBubble } from "@/components/chat/media/UploadBubble";
 import { MessageBubble } from "@/components/chat/MessageBubble";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import type { Upload } from "@/hooks/useUploads";
 import { AUTO_LOAD_PAGES } from "@/hooks/useMessages";
 import { cn } from "@/lib/cn";
@@ -157,6 +158,7 @@ export function MessageList(props: MessageListProps) {
         {ready && !hasMore && visible.length > 0 && (
           <p className="py-2 text-center text-xs text-muted">This is where it all began 🥫</p>
         )}
+        {!ready && <ListSkeleton rows={4} />}
         {ready && visible.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
             <span className="text-5xl" aria-hidden>

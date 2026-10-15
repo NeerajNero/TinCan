@@ -2,11 +2,12 @@
 
 import { format } from "date-fns";
 import { useCallback } from "react";
-import type { QueryDocumentSnapshot } from "firebase/firestore";
+import type { QueryDocumentSnapshot } from "@/lib/firebase/fs";
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { usePagedCollection } from "@/hooks/usePagedCollection";
 import { usePair } from "@/hooks/usePair";
 import { questionAt } from "@/lib/daily";
@@ -29,6 +30,7 @@ export function QuestionsHistory() {
   return (
     <div className="flex flex-col gap-4">
       <SubHeader emoji="💭" title="Daily questions" />
+      {!ready && <ListSkeleton tall />}
       {ready && items.length === 0 && <Card className="py-8 text-center text-muted">No answers yet — today&apos;s question is waiting on Home.</Card>}
       {items.map((row) => {
         const mine = row.answers?.[uid]?.text;

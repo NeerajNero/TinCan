@@ -6,7 +6,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { CheckersBoard } from "@/components/play/boards/CheckersBoard";
-import { ChessBoard } from "@/components/play/boards/ChessBoard";
+import dynamic from "next/dynamic";
+
+import { ListSkeleton } from "@/components/ui/Skeleton";
+
+const ChessBoard = dynamic(() => import("@/components/play/boards/ChessBoard").then((m) => m.ChessBoard), { ssr: false, loading: () => <ListSkeleton rows={1} tall /> });
 import { ConnectFourBoard } from "@/components/play/boards/ConnectFourBoard";
 import { TicTacToeBoard } from "@/components/play/boards/TicTacToeBoard";
 import { FriendHereBadge } from "@/components/play/FriendHereBadge";
@@ -19,6 +23,7 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { acceptGame, declineGame, describeResult, GAME_REACTIONS, gameRoute, playerOf, playMove, rematch, resign, sendReaction, subscribeGame, uidOf, type LiveGame } from "@/lib/db/games";
 import { engineFor, GAME_META } from "@/lib/games";
+import { playSound } from "@/lib/sounds";
 
 export function GameScreen({ gameId }: { gameId: string }) {
   const { uid, me, friend } = usePair();
@@ -67,6 +72,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
     if (game?.status === "finished" && game.winnerId === uid && !celebrated.current) {
       celebrated.current = true;
       setBurst((b) => b + 1);
+      playSound("win");
     }
   }, [game?.status, game?.winnerId, uid]);
 

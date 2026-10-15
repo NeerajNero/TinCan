@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, limit, query, serverTimestamp, Timestamp, where, type CollectionReference, type Query } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, limit, query, serverTimestamp, Timestamp, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { ScheduledDoc } from "@/lib/types";

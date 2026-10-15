@@ -1,4 +1,4 @@
-import { collection, doc, limit, orderBy, query, serverTimestamp, setDoc, startAfter, type CollectionReference, type DocumentReference, type Query, type QueryDocumentSnapshot } from "firebase/firestore";
+import { collection, doc, limit, orderBy, query, serverTimestamp, setDoc, startAfter, type CollectionReference, type DocumentReference, type Query, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import { questionIndexFor } from "@/lib/daily";

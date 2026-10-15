@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, limit, orderBy, query, serverTimestamp, startAfter, Timestamp, updateDoc, where, type CollectionReference, type Query, type QueryDocumentSnapshot } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, limit, orderBy, query, serverTimestamp, startAfter, Timestamp, updateDoc, where, type CollectionReference, type Query, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { MediaItem, MemoryDoc, Message } from "@/lib/types";
@@ -32,6 +32,12 @@ export async function addMemories(uploaderId: string, items: MediaItem[], captio
       }),
     ),
   );
+}
+
+/** The memory that already holds this Cloudinary asset, if any. */
+export async function findMemoryByPublicId(publicId: string): Promise<string | null> {
+  const snap = await getDocs(query(memoriesCol(), where("publicId", "==", publicId), limit(1)));
+  return snap.empty ? null : snap.docs[0].id;
 }
 
 /** From the chat viewer: reuse the message's Cloudinary asset, no re-upload. */

@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDocs, limit, query, serverTimestamp, updateDoc, where, type CollectionReference, type Query } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, limit, query, serverTimestamp, updateDoc, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { JarDoc } from "@/lib/types";

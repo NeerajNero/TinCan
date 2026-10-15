@@ -1,6 +1,6 @@
 /** Daily word docs at wordle/{dateKey}_{uid}: own-write, both-read. */
-import { doc, increment, serverTimestamp, setDoc, updateDoc, type DocumentReference } from "firebase/firestore";
-import type { Timestamp } from "firebase/firestore";
+import { doc, increment, serverTimestamp, setDoc, updateDoc, type DocumentReference } from "@/lib/firebase/fs";
+import type { Timestamp } from "@/lib/firebase/fs";
 
 import { userRef } from "@/lib/db/refs";
 import { dayUserId } from "@/lib/dates";

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { WhiteboardScreen } from "@/components/play/together/WhiteboardScreen";
+import { LazyWhiteboard } from "@/components/play/together/lazy";
 
 export const metadata: Metadata = { title: "Whiteboard" };
 
 export default function Page() {
-  return <WhiteboardScreen />;
+  return <LazyWhiteboard />;
 }

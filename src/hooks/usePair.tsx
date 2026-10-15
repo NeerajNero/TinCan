@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot, type DocumentSnapshot } from "firebase/firestore";
+import { onSnapshot, type DocumentSnapshot } from "@/lib/firebase/fs";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { OnboardingScreen } from "@/components/onboarding/OnboardingScreen";

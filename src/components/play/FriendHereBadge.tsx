@@ -8,7 +8,7 @@ import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { gameRoute } from "@/lib/db/games";
-import { DECK_META, type DeckKind } from "@/lib/decks";
+import { DECK_META, type DeckKind } from "@/lib/deckMeta";
 import { GAME_META } from "@/lib/games";
 import { notify } from "@/lib/notify";
 

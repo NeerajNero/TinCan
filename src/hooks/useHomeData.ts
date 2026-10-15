@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { useEffect, useRef, useState } from "react";
 
 import { useNow } from "@/hooks/useNow";

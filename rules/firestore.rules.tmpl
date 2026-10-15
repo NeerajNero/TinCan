@@ -36,7 +36,10 @@ service cloud.firestore {
         && incoming().tz is string && incoming().tz.size() > 0
         && incoming().fcmTokens is list;
       // Only the owner may write — this covers fcmTokens and notif prefs too.
-      allow update: if isMe(userId) && incoming().email == existing().email;
+      // Identity fields never change after onboarding.
+      allow update: if isMe(userId)
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt;
       allow delete: if false;
     }
 
@@ -103,9 +106,14 @@ service cloud.firestore {
 
     // ── moods/{dateKey}_{uid} ────────────────────────────────────────────
     match /moods/{moodId} {
+      // If the mirror fields are present they must match the doc id (history relies on them).
+      function mirrorsOk() {
+        return (!('uid' in incoming()) || incoming().uid == uid())
+          && (!('dateKey' in incoming()) || incoming().dateKey == moodId.split('_')[0]);
+      }
       allow read: if allowed();
       allow create, update: if allowed() && ownsDayDoc(moodId)
-        && incoming().emoji is string;
+        && incoming().emoji is string && mirrorsOk();
       allow delete: if allowed() && ownsDayDoc(moodId);
     }
 

@@ -20,7 +20,7 @@ import {
   type DocumentReference,
   type Query,
   type QueryDocumentSnapshot,
-} from "firebase/firestore";
+} from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { Message, MessageDoc, MessageMedia, MessageType, ReplyTo } from "@/lib/types";

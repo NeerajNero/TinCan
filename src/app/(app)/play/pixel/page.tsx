@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { PixelScreen } from "@/components/play/together/PixelScreen";
+import { LazyPixel } from "@/components/play/together/lazy";
 
 export const metadata: Metadata = { title: "Pixel art" };
 
 export default function Page() {
-  return <PixelScreen />;
+  return <LazyPixel />;
 }

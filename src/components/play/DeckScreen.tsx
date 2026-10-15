@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
-import { bumpTally, flipNext, respond, setPick, subscribeDeck, type DeckNode } from "@/lib/db/decks";
+import { bumpTally, flipNext, resetDeck, respond, setPick, subscribeDeck, type DeckNode } from "@/lib/db/decks";
 import { cardIndexAt, convoCard, dareCard, DECK_META, nhieCard, truthCard, wyrCard, type DeckKind } from "@/lib/decks";
 import { notify } from "@/lib/notify";
 
@@ -16,6 +16,7 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
   const { uid, me, friend, friendUid } = usePair();
   const [node, setNode] = useState<DeckNode | null | undefined>(undefined);
   const [nudged, setNudged] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const meta = DECK_META[kind];
   const friendName = friend?.nickname ?? "your friend";
 
@@ -94,6 +95,25 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
         </AnimatePresence>
       )}
 
+      {node && (
+        <div className="flex items-center justify-end gap-2 px-1 text-xs">
+          {!confirmReset ? (
+            <button type="button" onClick={() => setConfirmReset(true)} className="tap px-2 font-bold text-muted">
+              Reset deck
+            </button>
+          ) : (
+            <>
+              <span className="text-muted">Reshuffle and clear the tally?</span>
+              <button type="button" onClick={() => setConfirmReset(false)} className="tap px-2 font-bold text-muted">
+                Keep
+              </button>
+              <button type="button" onClick={() => { void resetDeck(kind, uid); setConfirmReset(false); }} className="tap rounded-full bg-red-500 px-3 font-bold text-white">
+                Reset
+              </button>
+            </>
+          )}
+        </div>
+      )}
       {node && (
         <div className="flex items-center justify-between px-1">
           <p className="text-xs text-muted">

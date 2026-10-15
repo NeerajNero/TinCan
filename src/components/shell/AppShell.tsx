@@ -1,24 +1,31 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
+import { OfflineBanner } from "@/components/shell/OfflineBanner";
 import { TabBar } from "@/components/shell/TabBar";
 import { activeTab } from "@/lib/tabs";
 
 /**
  * Centred 480px column: a scrolling <main> above the tab bar, sized to the
- * viewport so full-height screens (chat) can own their scrolling.
+ * viewport so full-height screens (chat) can own their scrolling. Tab
+ * switches cross-fade with a short spring so screens don't snap in.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const tab = activeTab(pathname);
 
   return (
-    <div
-      className="mx-auto flex h-dvh w-full max-w-[480px] flex-col safe-top"
-      style={{ "--accent": `var(${tab.accentVar})` } as React.CSSProperties}
-    >
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-6">{children}</main>
+    <div className="mx-auto flex h-dvh w-full max-w-[480px] flex-col safe-top" style={{ "--accent": `var(${tab.accentVar})` } as React.CSSProperties}>
+      <OfflineBanner />
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-6">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={tab.key} className="flex min-h-0 flex-1 flex-col" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ type: "spring", stiffness: 420, damping: 38, mass: 0.6 }}>
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </main>
       <TabBar />
     </div>
   );

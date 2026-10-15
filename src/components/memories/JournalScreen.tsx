@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDistanceToNowStrict } from "date-fns";
-import type { QueryDocumentSnapshot } from "firebase/firestore";
+import type { QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Pencil, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 
@@ -11,6 +11,7 @@ import { SubHeader } from "@/components/memories/SubHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { usePagedCollection } from "@/hooks/usePagedCollection";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
@@ -56,6 +57,7 @@ export function JournalScreen() {
           }}
         />
       )}
+      {!ready && <ListSkeleton tall />}
       {ready && items.length === 0 && !composing && <Card className="py-8 text-center text-muted">No entries yet — write the first one?</Card>}
       {items.map((e) => {
         const mine = e.authorId === uid;

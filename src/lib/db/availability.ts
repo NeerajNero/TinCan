@@ -1,4 +1,4 @@
-import { doc, serverTimestamp, setDoc, type DocumentReference } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc, type DocumentReference } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { AvailabilityDoc, WeekdayKey } from "@/lib/types";

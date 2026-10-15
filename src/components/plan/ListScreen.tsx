@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot, type QueryDocumentSnapshot } from "firebase/firestore";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Reorder, useDragControls } from "framer-motion";
 import { Check, ChevronDown, GripVertical, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -10,6 +10,7 @@ import { Confetti } from "@/components/plan/Confetti";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
@@ -89,6 +90,7 @@ export function ListScreen({ kind }: { kind: ListKind }) {
 
       {editing && <EditCard item={editing} kind={kind} onDone={() => setEditing(null)} />}
 
+      {!ready && <ListSkeleton />}
       {ready && items.length === 0 && <Card className="py-8 text-center text-muted">Nothing here yet — add the first one?</Card>}
 
       <Reorder.Group axis="y" values={openOrdered.map((i) => i.id)} onReorder={commitOrder} className="flex flex-col gap-2">

@@ -2,7 +2,7 @@
  * FCM token lifecycle in the browser. Always uses the Serwist worker's
  * registration (scope "/"), never Firebase's default firebase-messaging-sw.js.
  */
-import { arrayRemove, arrayUnion, updateDoc } from "firebase/firestore";
+import { arrayRemove, arrayUnion, updateDoc } from "@/lib/firebase/fs";
 import { deleteToken, getMessaging, getToken, isSupported, onMessage, type MessagePayload, type Messaging } from "firebase/messaging";
 
 import { userRef } from "@/lib/db/refs";

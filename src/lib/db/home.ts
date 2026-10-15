@@ -2,7 +2,7 @@
  * Firestore writes made from Home: check-ins, the streak/plant transaction,
  * mood check-ins and sleep/wake system messages.
  */
-import { addDoc, collection, doc, runTransaction, serverTimestamp, setDoc, type DocumentReference } from "firebase/firestore";
+import { addDoc, collection, doc, runTransaction, serverTimestamp, setDoc, type DocumentReference } from "@/lib/firebase/fs";
 
 import { pairRef } from "@/lib/db/refs";
 import { dayUserId, daysBetween, previousDay } from "@/lib/dates";

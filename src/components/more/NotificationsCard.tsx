@@ -1,6 +1,6 @@
 "use client";
 
-import { updateDoc } from "firebase/firestore";
+import { updateDoc } from "@/lib/firebase/fs";
 import { AnimatePresence, motion } from "framer-motion";
 import { BellRing, ChevronRight } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";

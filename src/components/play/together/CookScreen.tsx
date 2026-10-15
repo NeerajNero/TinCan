@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot, type QueryDocumentSnapshot } from "firebase/firestore";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Check, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input, Label } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
@@ -52,6 +53,7 @@ export function CookList() {
         }
       />
       {form !== null && <RecipeForm key={form === "new" ? "new" : form.id} uid={uid} recipe={form === "new" ? null : form} onDone={() => setForm(null)} />}
+      {!ready && <ListSkeleton />}
       {ready && recipes.length === 0 && form === null && <Card className="py-8 text-center text-muted">No recipes yet. Add one you both want to try.</Card>}
       {recipes.map((r) => (
         <Card key={r.id} className="flex items-center gap-3 px-4 py-3">

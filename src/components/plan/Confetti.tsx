@@ -10,7 +10,7 @@ export function Confetti({ burst }: { burst: number }) {
     <AnimatePresence>
       {burst > 0 && (
         <div key={burst} className="pointer-events-none fixed inset-0 z-[70] overflow-hidden" aria-hidden>
-          {Array.from({ length: 28 }, (_, i) => {
+          {Array.from({ length: 22 }, (_, i) => {
             const x = 10 + ((i * 37) % 80);
             const delay = (i % 7) * 0.05;
             return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot, type QueryDocumentSnapshot } from "firebase/firestore";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input, Label } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
@@ -17,7 +18,7 @@ import { createQuiz, deleteQuiz, MAX_QUIZ_QUESTIONS, MIN_QUESTIONS, quizzesCol, 
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { seededOrder } from "@/lib/seeded";
-import { doc, onSnapshot as onDoc } from "firebase/firestore";
+import { doc, onSnapshot as onDoc } from "@/lib/firebase/fs";
 
 interface Quiz extends QuizDoc {
   id: string;
@@ -56,6 +57,7 @@ export function QuizList() {
         }
       />
       <p className="-mt-2 px-2 text-xs text-muted">Write 5–10 questions about yourself. {friend?.nickname ?? "They"} answers, you both see the score.</p>
+      {!ready && <ListSkeleton />}
       {ready && quizzes.length === 0 && <Card className="py-8 text-center text-muted">No quizzes yet. Write the first one?</Card>}
       {quizzes.map((q) => {
         const mine = q.authorId === uid;

@@ -15,7 +15,7 @@ import { claimFocusCompletion, DEFAULT_TIMER, subscribeTimer, writeTimer, type T
 import { roomDateKey } from "@/lib/dates";
 import { recordTogetherEvent } from "@/lib/garden";
 import { formatClock } from "@/lib/media/recorder";
-import { increment, updateDoc } from "firebase/firestore";
+import { increment, updateDoc } from "@/lib/firebase/fs";
 
 /** Two short Web Audio tones; no asset needed. */
 function chime() {

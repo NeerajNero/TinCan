@@ -35,7 +35,7 @@ export const TOGGLE_FOR: Record<PushType, NotifKey | null> = {
   "daily-nudge": "dailyQuestion",
   "streak-risk": "streak",
   "capsule-unlocked": "capsule",
-  "envelope-opened": null,
+  "envelope-opened": "envelopeOpened",
   jar: "jar",
   scheduled: "scheduled",
   milestone: "milestone",

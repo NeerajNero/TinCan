@@ -1,4 +1,4 @@
-import type { Timestamp } from "firebase/firestore";
+import type { Timestamp } from "@/lib/firebase/fs";
 
 /* ── Notifications ─────────────────────────────────────────────────────── */
 
@@ -17,6 +17,7 @@ export const NOTIF_KEYS = [
   "milestone",
   "meetup",
   "invite",
+  "envelopeOpened",
 ] as const;
 
 export type NotifKey = (typeof NOTIF_KEYS)[number];
@@ -43,6 +44,7 @@ export const NOTIF_LABELS: Record<NotifKey, string> = {
   milestone: "Milestones",
   meetup: "Meetup countdown (7 and 1 day)",
   invite: "Game invites",
+  envelopeOpened: "Friend opened your envelope",
 };
 
 /* ── users/{uid} ───────────────────────────────────────────────────────── */

@@ -7,7 +7,7 @@ import { Play, Pause, Trash2 } from "lucide-react";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { ChatDrawer } from "@/components/play/together/ChatDrawer";
 import { useSyncedPlayer, VideoPicker } from "@/components/play/together/WatchScreen";
-import { YouTubePlayer } from "@/components/play/together/YouTubePlayer";
+import { LazyYouTubePlayer as YouTubePlayer } from "@/components/play/together/lazy";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";

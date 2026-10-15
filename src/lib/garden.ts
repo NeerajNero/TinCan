@@ -4,7 +4,7 @@
  * clients firing the same event still produce a single unlock; the toast
  * comes from the live layer watching the pair doc, so both people see it.
  */
-import { runTransaction, serverTimestamp } from "firebase/firestore";
+import { runTransaction, serverTimestamp } from "@/lib/firebase/fs";
 
 import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
 import { postSystemMessage } from "@/lib/db/home";

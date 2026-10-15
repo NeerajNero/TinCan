@@ -1,4 +1,4 @@
-import { doc, type DocumentReference } from "firebase/firestore";
+import { doc, type DocumentReference } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { PairDoc, UserDoc } from "@/lib/types";

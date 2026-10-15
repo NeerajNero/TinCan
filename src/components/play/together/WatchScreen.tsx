@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { ChatDrawer } from "@/components/play/together/ChatDrawer";
-import { YouTubePlayer } from "@/components/play/together/YouTubePlayer";
+import { LazyYouTubePlayer as YouTubePlayer } from "@/components/play/together/lazy";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";

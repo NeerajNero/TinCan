@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "firebase/firestore";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -10,6 +10,7 @@ import { PhotoPicker } from "@/components/memories/PhotoPicker";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input, Label } from "@/components/ui/Input";
 import { usePagedCollection } from "@/hooks/usePagedCollection";
 import { usePair } from "@/hooks/usePair";
@@ -17,7 +18,7 @@ import { thumbUrl } from "@/lib/cloudinary";
 import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { addMemories, editMemory, MEMORIES_PAGE, memoriesCol, memoriesQuery } from "@/lib/db/memories";
 import { recordTogetherEvent } from "@/lib/garden";
-import { getCountFromServer } from "firebase/firestore";
+import { getCountFromServer } from "@/lib/firebase/fs";
 import { placesQuery } from "@/lib/db/places";
 import { uploadImages } from "@/lib/media/uploadImages";
 import type { MemoryDoc, PlaceDoc } from "@/lib/types";
@@ -76,6 +77,7 @@ export function PhotosScreen() {
       />
       {adding && <Uploader uid={uid} places={places} onDone={() => setAdding(false)} />}
       {editing && <EditSheet memory={editing} places={places} onDone={() => setEditing(null)} />}
+      {!ready && <ListSkeleton rows={2} tall />}
       {ready && items.length === 0 && !adding && <Card className="py-8 text-center text-muted">No photos yet — add the first one?</Card>}
 
       {months.map((g) => (
@@ -84,7 +86,7 @@ export function PhotosScreen() {
           <div className="columns-2 gap-2 [column-fill:_balance]">
             {g.items.map((m) => (
               <button key={m.id} type="button" onClick={() => setViewing(m)} aria-label={m.caption || "Photo"} className="mb-2 block w-full break-inside-avoid overflow-hidden rounded-2xl bg-surface-2">
-                <Image src={thumbUrl(m.url)} alt={m.caption} width={m.w} height={m.h} unoptimized className="h-auto w-full" style={{ aspectRatio: `${m.w} / ${m.h}` }} />
+                <Image src={thumbUrl(m.url)} alt={m.caption} width={m.w} height={m.h} sizes="(max-width: 480px) 50vw, 224px" loading="lazy" unoptimized className="h-auto w-full" style={{ aspectRatio: `${m.w} / ${m.h}` }} />
               </button>
             ))}
           </div>

@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, where, writeBatch, type CollectionReference, type Query } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, where, writeBatch, type CollectionReference, type Query } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { ListItemDoc, ListKind } from "@/lib/types";

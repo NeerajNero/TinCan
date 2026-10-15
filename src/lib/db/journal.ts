@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, startAfter, updateDoc, type CollectionReference, type Query, type QueryDocumentSnapshot } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, startAfter, updateDoc, type CollectionReference, type Query, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { JournalDoc, MediaItem } from "@/lib/types";

@@ -1,6 +1,6 @@
 "use client";
 
-import { onSnapshot, Timestamp, type Query, type Unsubscribe } from "firebase/firestore";
+import { onSnapshot, Timestamp, type Query, type Unsubscribe } from "@/lib/firebase/fs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { latestQuery, olderQuery, PAGE_SIZE, toMessage } from "@/lib/db/messages";

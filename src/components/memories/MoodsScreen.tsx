@@ -1,7 +1,7 @@
 "use client";
 
 import { addMonths, format, subMonths } from "date-fns";
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 

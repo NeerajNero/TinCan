@@ -1,4 +1,4 @@
-import { deleteField, updateDoc } from "firebase/firestore";
+import { deleteField, updateDoc } from "@/lib/firebase/fs";
 
 import { BIO_MAX } from "@/components/ui/Avatar";
 import { authedFetch } from "@/lib/api";

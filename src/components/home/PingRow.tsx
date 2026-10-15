@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
 import { useRelationship } from "@/hooks/useRelationship";
-import { increment, updateDoc } from "firebase/firestore";
+import { increment, updateDoc } from "@/lib/firebase/fs";
 
 import { pairRef } from "@/lib/db/refs";
 import { recordTogetherEvent } from "@/lib/garden";

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { NotificationsCard } from "@/components/more/NotificationsCard";
+import { SoundsCard } from "@/components/more/SoundsCard";
+import { UsageCard } from "@/components/more/UsageCard";
 import { PairCard } from "@/components/more/PairCard";
 import { ProfileCard } from "@/components/more/ProfileCard";
 import { ThemeSwitch } from "@/components/more/ThemeSwitch";
@@ -45,9 +47,10 @@ export function MoreScreen() {
       </Card>
 
       <NotificationsCard />
+      <SoundsCard />
+      <UsageCard />
 
       <Card className="flex flex-col gap-3">
-        <p className="text-sm text-muted">The usage meter arrives in a later phase.</p>
         <Button variant="soft" onClick={handleSignOut} disabled={busy} className="self-start">
           <LogOut size={18} aria-hidden />
           {busy ? "Signing out…" : "Sign out"}

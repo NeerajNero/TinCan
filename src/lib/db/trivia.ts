@@ -3,7 +3,7 @@
  * trivia/{id}; live mode keeps the shared cursor at RTDB trivia/{id}.
  */
 import { onValue, ref, runTransaction, update } from "firebase/database";
-import { addDoc, collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, type CollectionReference, type DocumentReference } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, type CollectionReference, type DocumentReference } from "@/lib/firebase/fs";
 
 import { getDb, getRtdb } from "@/lib/firebase/client";
 import { randomSeed } from "@/lib/seeded";

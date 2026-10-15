@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, limit, orderBy, query, serverTimestamp, Timestamp, updateDoc, writeBatch, type CollectionReference, type DocumentReference, type Query } from "firebase/firestore";
+import { collection, doc, getDoc, limit, orderBy, query, serverTimestamp, Timestamp, updateDoc, writeBatch, type CollectionReference, type DocumentReference, type Query } from "@/lib/firebase/fs";
 
 import { getDb } from "@/lib/firebase/client";
 import type { CapsuleBody, CapsuleDoc, MediaItem } from "@/lib/types";

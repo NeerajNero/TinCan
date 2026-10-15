@@ -12,29 +12,30 @@ function tinCanSvg({ bg, pad }) {
   const size = 512;
   const inset = size * pad;
   const inner = size - inset * 2;
-  // The artwork is drawn in a 100×100 box and scaled into the safe area.
   const scale = inner / 100;
+  const can = (x, y, tilt) => `
+    <g transform="translate(${x} ${y}) rotate(${tilt})">
+      <rect x="-13" y="-20" width="26" height="40" rx="7" fill="#f4f6fb"/>
+      <rect x="-13" y="-10" width="26" height="20" fill="#dfe6f3"/>
+      <rect x="-13" y="-6" width="26" height="12" fill="#fff6e8"/>
+      <path d="M0 2 C -4 -1 -7 -3 -5 -6 C -4 -8 -1 -8 0 -6 C 1 -8 4 -8 5 -6 C 7 -3 4 -1 0 2 Z" fill="#ff6f91"/>
+      <ellipse cx="0" cy="-20" rx="13" ry="4.5" fill="#eef2fa"/>
+      <ellipse cx="0" cy="-20" rx="9" ry="2.6" fill="#cfd8ea"/>
+      <path d="M-13 20 a13 4.5 0 0 0 26 0" fill="#b7c3dc"/>
+      <rect x="-10" y="-11" width="3" height="24" rx="1.5" fill="#fff" opacity="0.7"/>
+    </g>`;
   return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
-  ${bg ? `<rect width="${size}" height="${size}" fill="${BG}"/>` : ""}
+  ${bg ? `<rect width="${size}" height="${size}" rx="${size * 0.22}" fill="${BG}"/>` : ""}
   <g transform="translate(${inset} ${inset}) scale(${scale})">
-    <!-- string -->
-    <path d="M50 8 C 62 14, 40 22, 50 30" fill="none" stroke="#fff3c4" stroke-width="3.2" stroke-linecap="round"/>
-    <!-- can body -->
-    <rect x="24" y="28" width="52" height="60" rx="12" fill="#f4f6fb"/>
-    <rect x="24" y="40" width="52" height="36" fill="#dfe6f3"/>
-    <rect x="24" y="46" width="52" height="24" fill="#c9d4ea"/>
-    <!-- label -->
-    <rect x="24" y="48" width="52" height="20" fill="#fff6e8"/>
-    <!-- heart on the label -->
-    <path d="M50 65 C 44 60, 38 56, 41 51 C 43 48, 48 48.5, 50 52 C 52 48.5, 57 48, 59 51 C 62 56, 56 60, 50 65 Z" fill="#ff6f91"/>
-    <!-- lid -->
-    <ellipse cx="50" cy="29" rx="26" ry="8" fill="#eef2fa"/>
-    <ellipse cx="50" cy="29" rx="19" ry="5" fill="#cfd8ea"/>
-    <!-- bottom rim -->
-    <path d="M24 84 a26 8 0 0 0 52 0" fill="#b7c3dc"/>
-    <!-- shine -->
-    <rect x="30" y="42" width="5" height="40" rx="2.5" fill="#ffffff" opacity="0.7"/>
+    <!-- the string, sagging between two cans -->
+    <path d="M30 40 C 42 62, 58 62, 70 40" fill="none" stroke="#fff3c4" stroke-width="3.4" stroke-linecap="round"/>
+    ${can(24, 58, -14)}
+    ${can(76, 58, 14)}
+    <!-- a little sparkle where the words travel -->
+    <circle cx="50" cy="50" r="2.6" fill="#fff3c4"/>
+    <circle cx="44" cy="47" r="1.4" fill="#fff3c4" opacity="0.8"/>
+    <circle cx="56" cy="47" r="1.4" fill="#fff3c4" opacity="0.8"/>
   </g>
 </svg>`;
 }
@@ -43,10 +44,9 @@ function tinCanSvg({ bg, pad }) {
 function badgeSvg() {
   return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="96" height="96">
-  <path d="M50 8 C 62 14, 40 22, 50 30" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
-  <rect x="24" y="28" width="52" height="60" rx="12" fill="#fff"/>
-  <ellipse cx="50" cy="29" rx="26" ry="8" fill="#fff"/>
-  <path d="M50 66 C 43 60, 36 55, 40 49 C 43 45, 48 46, 50 50 C 52 46, 57 45, 60 49 C 64 55, 57 60, 50 66 Z" fill="#000" fill-opacity="0.35"/>
+  <path d="M30 40 C 42 62, 58 62, 70 40" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <g transform="translate(24 58) rotate(-14)"><rect x="-13" y="-20" width="26" height="40" rx="7" fill="#fff"/><ellipse cx="0" cy="-20" rx="13" ry="4.5" fill="#fff"/></g>
+  <g transform="translate(76 58) rotate(14)"><rect x="-13" y="-20" width="26" height="40" rx="7" fill="#fff"/><ellipse cx="0" cy="-20" rx="13" ry="4.5" fill="#fff"/></g>
 </svg>`;
 }
 

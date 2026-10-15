@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot } from "@/lib/firebase/fs";
 
 import { acceptGame, declineGame, gameRoute, inviteGame, isLive, loadRecentResults, recordFor, rematch, uidOf, type GameResultDoc } from "@/lib/db/games";
 import { quizzesFrom } from "@/lib/db/quizzes";
 import { wordleRef } from "@/lib/db/wordle";
-import { DECK_KINDS, DECK_META } from "@/lib/decks";
+import { DECK_KINDS, DECK_META } from "@/lib/deckMeta";
 import { roomDateKey } from "@/lib/dates";
 import { GAME_META, GAME_TYPES, type GameType } from "@/lib/games";
 
