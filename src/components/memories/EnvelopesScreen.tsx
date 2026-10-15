@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { envelopesByMe, envelopesForMe, openEnvelope, readEnvelopeBody, writeEnvelope } from "@/lib/db/envelopes";
+import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { ENVELOPE_LABELS, type EnvelopeDoc } from "@/lib/types";
 
@@ -57,7 +58,7 @@ export function EnvelopesScreen() {
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">For you, from {friendName}</h2>
         {forMe.length === 0 && <Card className="py-6 text-center text-sm text-muted">No envelopes yet. They&apos;ll show up here, sealed.</Card>}
         {forMe.map((e) => (
-          <EnvelopeCard key={e.id} envelope={e} canOpen onOpened={() => void notify("envelope-opened", { toUid: e.authorId, body: `opened your “open when ${e.label}” envelope 💌` })} />
+          <EnvelopeCard key={e.id} envelope={e} uid={uid} canOpen onOpened={() => void notify("envelope-opened", { toUid: e.authorId, body: `opened your “open when ${e.label}” envelope 💌` })} />
         ))}
       </section>
 
@@ -65,14 +66,14 @@ export function EnvelopesScreen() {
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">You wrote for {friendName}</h2>
         {byMe.length === 0 && <Card className="py-6 text-center text-sm text-muted">Write one for a day they&apos;ll need it.</Card>}
         {byMe.map((e) => (
-          <EnvelopeCard key={e.id} envelope={e} canOpen={false} />
+          <EnvelopeCard key={e.id} envelope={e} uid={uid} canOpen={false} />
         ))}
       </section>
     </div>
   );
 }
 
-function EnvelopeCard({ envelope, canOpen, onOpened }: { envelope: Envelope; canOpen: boolean; onOpened?: () => void }) {
+function EnvelopeCard({ envelope, canOpen, onOpened, uid }: { envelope: Envelope; canOpen: boolean; onOpened?: () => void; uid: string }) {
   const opened = Boolean(envelope.openedAt);
   const [body, setBody] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -87,6 +88,7 @@ function EnvelopeCard({ envelope, canOpen, onOpened }: { envelope: Envelope; can
         const b = await openEnvelope(envelope.id);
         setBody(b?.body ?? "");
         onOpened?.();
+        void recordTogetherEvent("envelope", uid);
       } else {
         const b = await readEnvelopeBody(envelope.id);
         setBody(b?.body ?? "");

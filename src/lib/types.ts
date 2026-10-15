@@ -116,6 +116,11 @@ export interface PairDoc {
   records?: Record<string, Record<string, number>>;
   /** Completed focus sessions per room day. */
   focusSessions?: Record<string, number>;
+  pet?: PetDoc;
+  /** Unlocked garden stickers: id → when/why. */
+  garden?: { stickers?: Record<string, GardenUnlock> };
+  /** Small shared counters for threshold unlocks. */
+  counters?: { pings?: number };
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }
@@ -439,4 +444,26 @@ export interface TripSummary {
   place: string;
   startDate: DateKey;
   endDate: DateKey;
+}
+
+/* ── pet (on pair/main) ────────────────────────────────────────────────── */
+
+export type PetSpecies = "blob" | "sprout" | "puff";
+export type PetMood = "happy" | "hungry" | "sad" | "sleeping";
+
+export interface PetDoc {
+  name: string;
+  species: PetSpecies;
+  /** Epoch ms of the last feed / play / tuck-in. */
+  hungerAt: number;
+  happyAt: number;
+  sleepAt: number;
+  /** Stored so a level-up can be noticed and announced once. */
+  level: number;
+  bornAt: number;
+}
+
+export interface GardenUnlock {
+  at: Timestamp | null;
+  by: string;
 }

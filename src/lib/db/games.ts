@@ -9,6 +9,7 @@ import { postSystemMessage } from "@/lib/db/home";
 import { pairRef } from "@/lib/db/refs";
 import { getDb, getRtdb } from "@/lib/firebase/client";
 import { engineFor, GAME_META, other, type GameType, type Player } from "@/lib/games";
+import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import type { PairDoc } from "@/lib/types";
 
@@ -238,6 +239,8 @@ async function recordResult(game: LiveGame, by: string, nameOf: (uid: string) =>
     tx.update(pairRef(), { records });
   }).catch(() => undefined);
   void postSystemMessage(by, describeResult(game, nameOf));
+  if (game.winnerId && game.type === "chess") void recordTogetherEvent("chess-win", by);
+  if (game.winnerId && game.type === "connectfour") void recordTogetherEvent("c4-win", by);
   const opponent = game.players.first === by ? game.players.second : game.players.first;
   void notify("yourTurn", { toUid: opponent, body: resultForRecipient(game, opponent, nameOf), data: { url: gameRoute(game.id) } });
 }
@@ -291,4 +294,5 @@ export async function recordGenericResult(game: string, players: string[], winne
     tx.update(pairRef(), { records });
   }).catch(() => undefined);
   void postSystemMessage(players[0], winnerId ? `🧠 ${nameOf(winnerId)} won the trivia duel` : "🧠 The trivia duel was a tie");
+  if (game === "trivia") void recordTogetherEvent("trivia", players[0]);
 }

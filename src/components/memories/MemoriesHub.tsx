@@ -12,6 +12,7 @@ const SECTIONS = [
   { href: "/memories/envelopes", emoji: "💌", title: "Envelopes", blurb: "Open when…" },
   { href: "/memories/questions", emoji: "💭", title: "Daily questions", blurb: "Every answer" },
   { href: "/memories/moods", emoji: "🗓️", title: "Moods", blurb: "Month by month" },
+  { href: "/memories/garden", emoji: "🌻", title: "Garden", blurb: "Stickers you've grown" },
 ];
 
 export function MemoriesHub() {

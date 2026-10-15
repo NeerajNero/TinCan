@@ -7,6 +7,7 @@ import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { bumpStreak, checkIn, checkinRef, moodRef } from "@/lib/db/home";
 import { dateKeyIn, roomDateKey } from "@/lib/dates";
+import { recordTogetherEvent } from "@/lib/garden";
 import type { MoodDoc } from "@/lib/types";
 
 export interface HomeData {
@@ -56,6 +57,15 @@ export function useHomeData(): HomeData {
       bumpedFor.current = null;
     });
   }, [bothIn, lastCounted, today]);
+
+  // Streak stickers (the transaction no-ops once unlocked; guarded to avoid a read per open).
+  const streakCount = pair.streak?.count ?? 0;
+  const has7 = Boolean(pair.garden?.stickers?.["streak-7"]);
+  const has30 = Boolean(pair.garden?.stickers?.["streak-30"]);
+  useEffect(() => {
+    if (streakCount >= 7 && !has7) void recordTogetherEvent("streak-7", uid);
+    if (streakCount >= 30 && !has30) void recordTogetherEvent("streak-30", uid);
+  }, [streakCount, has7, has30, uid]);
 
   // My mood for my own "today".
   useEffect(() => {

@@ -7,9 +7,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
-import { useRtdbValue } from "@/hooks/useRtdbValue";
-import { presencePath } from "@/lib/rtdb";
-import type { PresenceNode } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
@@ -25,14 +22,13 @@ import { GAME_META, GAME_TYPES, type GameType } from "@/lib/games";
 
 export function PlayScreen() {
   const { uid, me, friend, friendUid, pair } = usePair();
-  const { games } = useLiveEvents();
+  const { games, friendPresence } = useLiveEvents();
   const router = useRouter();
   const [busy, setBusy] = useState<GameType | null>(null);
   const today = roomDateKey(pair);
   const [wordMine, setWordMine] = useState<{ done: boolean; solved: boolean } | null>(null);
   const [wordTheirs, setWordTheirs] = useState<{ done: boolean } | null>(null);
   const [newQuizzes, setNewQuizzes] = useState(0);
-  const { value: friendPresence } = useRtdbValue<PresenceNode>(friendUid ? presencePath(friendUid) : null);
   const friendPage = friendPresence?.online ? (friendPresence.page ?? "") : "";
 
   // Bounded extras: today's two wordle docs + the friend's published quizzes (≤5), filtered to untaken.

@@ -14,6 +14,7 @@ import { Input, Label } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { createQuiz, deleteQuiz, MAX_QUIZ_QUESTIONS, MIN_QUESTIONS, quizzesCol, recentQuizzes, submitQuiz, updateQuiz, type QuizDoc, type QuizQuestion } from "@/lib/db/quizzes";
+import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { seededOrder } from "@/lib/seeded";
 import { doc, onSnapshot as onDoc } from "firebase/firestore";
@@ -47,6 +48,7 @@ export function QuizList() {
         emoji="🪞"
         title="Know-me quiz"
         back="/play"
+        screenName="Know-me quiz"
         action={
           <Button onClick={() => router.push("/play/quiz/new")} className="px-4 py-2 text-sm">
             Write one
@@ -104,7 +106,7 @@ function AuthorView({ quiz, uid, friendUid, nameOf }: { quiz: Quiz; uid: string;
   if (editing) return <QuizEditor uid={uid} friendUid={friendUid} quiz={quiz} onDone={() => setEditing(false)} />;
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🪞" title={quiz.title || "Your quiz"} back="/play/quiz" />
+      <SubHeader emoji="🪞" title={quiz.title || "Your quiz"} back="/play/quiz" screenName="Know-me quiz" />
       <Card className="flex flex-col items-center gap-2 text-center">
         {taken ? (
           <>
@@ -167,7 +169,7 @@ function QuizEditor({ uid, friendUid, quiz, onDone }: { uid: string; friendUid: 
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🪞" title={quiz ? "Edit quiz" : "New quiz"} back="/play/quiz" />
+      <SubHeader emoji="🪞" title={quiz ? "Edit quiz" : "New quiz"} back="/play/quiz" screenName="Know-me quiz" />
       <Card className="flex flex-col gap-2">
         <Label htmlFor="quiz-title">Title (optional)</Label>
         <Input id="quiz-title" value={title} onChange={(e) => setTitle(e.target.value.slice(0, 60))} placeholder="How well do you know me?" />
@@ -262,6 +264,7 @@ function TakeQuiz({ quiz, uid, nameOf }: { quiz: Quiz; uid: string; nameOf: (u: 
       const score = nextAnswers.filter((a) => a === 0).length;
       if (score === quiz.questions.length) setBurst(1);
       await submitQuiz(quiz.id, uid, nextAnswers, score);
+      void recordTogetherEvent("quiz", uid);
       void notify("yourTurn", { toUid: quiz.authorId, body: `took your quiz and scored ${score}/${quiz.questions.length} 🪞`, data: { url: `/play/quiz/${quiz.id}` } });
     }
     setIndex(index + 1);

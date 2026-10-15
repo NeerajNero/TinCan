@@ -19,6 +19,14 @@ import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRo
 import { recordTogetherEvent } from "@/lib/garden";
 import { Eraser, Pen } from "lucide-react";
 
+function winnerIdOf(g: LivePictionary): string | null {
+  const a = g.players.first;
+  const b = g.players.second;
+  const sa = g.scores[a] ?? 0;
+  const sb = g.scores[b] ?? 0;
+  return sa === sb ? null : sa > sb ? a : b;
+}
+
 export function PictionaryLobby() {
   const { uid, me, friend, friendUid } = usePair();
   const router = useRouter();
@@ -41,7 +49,7 @@ export function PictionaryLobby() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🎨" title="Pictionary" back="/play" />
+      <SubHeader emoji="🎨" title="Pictionary" back="/play" screenName="Pictionary" />
       <Card className="flex flex-col gap-3">
         <p className="text-sm text-muted">Three rounds, 60 seconds each, drawer alternates. The guesser types; the drawer draws.</p>
         {live ? (
@@ -88,7 +96,8 @@ export function PictionaryGame({ id }: { id: string }) {
   useEffect(() => {
     if (!game || game.status !== "finished" || finished.current) return;
     finished.current = true;
-    recordTogetherEvent("pictionary");
+    void recordTogetherEvent("pictionary", uid);
+    if (winnerIdOf(game)) void recordTogetherEvent("pictionary-win", uid);
     const a = game.players.first;
     const b = game.players.second;
     const sa = game.scores[a] ?? 0;
@@ -115,7 +124,7 @@ export function PictionaryGame({ id }: { id: string }) {
 
   return (
     <div className="-mb-6 flex min-h-0 flex-1 flex-col gap-3">
-      <SubHeader emoji="🎨" title={`Pictionary · round ${Math.min(game.round, ROUNDS)}/${ROUNDS}`} back="/play/pictionary" />
+      <SubHeader emoji="🎨" title={`Pictionary · round ${Math.min(game.round, ROUNDS)}/${ROUNDS}`} back="/play/pictionary" screenName="Pictionary" />
 
       <div className="card flex items-center gap-3 rounded-[20px] px-3 py-2">
         <span className="min-w-0 flex-1 text-sm">

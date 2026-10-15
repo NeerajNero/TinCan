@@ -19,7 +19,7 @@ export function ListenScreen() {
   const [queue, setQueue] = useState<Array<QueueItem & { id: string }>>([]);
   const onEnded = useCallback(
     (videoId: string) => {
-      recordTogetherEvent("listen");
+      void recordTogetherEvent("listen", uid);
       void advanceQueue(videoId, uid);
     },
     [uid],
@@ -35,6 +35,7 @@ export function ListenScreen() {
         emoji="🎧"
         title="Listen together"
         back="/play"
+        screenName="Listen together"
         action={
           <Button variant="soft" onClick={syncToFriend} disabled={!node?.videoId} className="px-3 py-2 text-sm">
             Sync

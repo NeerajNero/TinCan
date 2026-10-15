@@ -108,7 +108,7 @@ export function VideoPicker({ onPick, label = "Paste a YouTube link or id" }: { 
 
 export function WatchScreen() {
   const { uid, friend } = usePair();
-  const { node, onReady, onStateChange, syncToFriend } = useSyncedPlayer("watch", uid, () => recordTogetherEvent("watch"));
+  const { node, onReady, onStateChange, syncToFriend } = useSyncedPlayer("watch", uid, () => void recordTogetherEvent("watch", uid));
 
   return (
     <div className="flex flex-col gap-3 pb-20">
@@ -116,6 +116,7 @@ export function WatchScreen() {
         emoji="📺"
         title="Watch together"
         back="/play"
+        screenName="Watch together"
         action={
           <Button variant="soft" onClick={syncToFriend} disabled={!node?.videoId} className="px-3 py-2 text-sm">
             Sync to {friend?.nickname ?? "friend"}

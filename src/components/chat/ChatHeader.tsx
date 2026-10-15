@@ -3,13 +3,12 @@
 import { formatDistanceToNowStrict } from "date-fns";
 import { Avatar } from "@/components/ui/Avatar";
 import { useFriendTyping } from "@/hooks/useTyping";
-import { useRtdbValue } from "@/hooks/useRtdbValue";
 import { cn } from "@/lib/cn";
-import { presencePath } from "@/lib/rtdb";
-import type { PresenceNode, UserDoc } from "@/lib/types";
+import type { UserDoc } from "@/lib/types";
+import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 
 export function ChatHeader({ friend, friendUid }: { friend: UserDoc; friendUid: string }) {
-  const { value: presence } = useRtdbValue<PresenceNode>(presencePath(friendUid));
+  const { friendPresence: presence } = useLiveEvents();
   const typing = useFriendTyping(friendUid);
   const online = presence?.online === true;
 

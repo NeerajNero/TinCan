@@ -13,6 +13,7 @@ import { RELATIONSHIPS } from "@/content/relationships";
 import { cn } from "@/lib/cn";
 import { postSystemMessage } from "@/lib/db/home";
 import { setFriendsSince, setNextMeetup, setRelationship } from "@/lib/db/pair";
+import { renamePet } from "@/lib/db/pet";
 import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
 import type { NextMeetup } from "@/lib/types";
 
@@ -68,7 +69,9 @@ export function PairCard() {
         {(close) => <MeetupEditor initial={pair.nextMeetup} onDone={close} />}
       </EditableRow>
 
-      <EditableRow emoji="🐾" label="Pet name" value={null} placeholder="Hatches in a later update" disabled />
+      <EditableRow emoji="🐾" label="Pet name" value={pair.pet?.name ?? null} placeholder="Adopt one on Home first" disabled={!pair.pet}>
+        {(close) => <PetNameEditor initial={pair.pet?.name ?? ""} onDone={close} />}
+      </EditableRow>
     </Card>
   );
 }
@@ -194,5 +197,36 @@ function RelationshipPicker({ current, onPick }: { current: string; onPick: (id:
         </button>
       ))}
     </div>
+  );
+}
+
+function PetNameEditor({ initial, onDone }: { initial: string; onDone: () => void }) {
+  const [value, setValue] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const trimmed = value.trim();
+  const canSave = trimmed.length > 0 && trimmed !== initial && !busy;
+  async function save() {
+    if (!canSave) return;
+    setBusy(true);
+    try {
+      await renamePet(trimmed);
+      onDone();
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <form
+      className="flex gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void save();
+      }}
+    >
+      <Input value={value} onChange={(e) => setValue(e.target.value.slice(0, 24))} maxLength={24} aria-label="Pet name" autoFocus />
+      <Button type="submit" disabled={!canSave} className="shrink-0 px-4">
+        {busy ? "…" : "Save"}
+      </Button>
+    </form>
   );
 }

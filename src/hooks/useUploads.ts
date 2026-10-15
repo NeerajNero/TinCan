@@ -6,6 +6,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import { sendMedia } from "@/lib/db/messages";
 import { compressImage } from "@/lib/media/compress";
 import type { Recording } from "@/lib/media/recorder";
+import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import type { ReplyTo } from "@/lib/types";
 
@@ -105,6 +106,7 @@ export function useUploads(uid: string, friendUid: string) {
           replyTo,
         );
         await notify("message", { toUid: friendUid, body: "🎤 Voice note", data: { messageId } });
+        void recordTogetherEvent("voice", uid);
       });
     },
     [enqueue, patch, uid, friendUid],

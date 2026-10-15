@@ -11,14 +11,12 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
-import { useRtdbValue } from "@/hooks/useRtdbValue";
 import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
 import { advanceLive, answerLive, createRound, recentRounds, startLive, submitAnswers, subscribeLive, triviaRef, type LiveCursor, type TriviaRoundDoc } from "@/lib/db/trivia";
 import { notify } from "@/lib/notify";
-import { presencePath } from "@/lib/rtdb";
 import { pointsFor, QUESTION_MS, ROUND_SIZE, shuffledOptions, totalScore, TRIVIA_BANK, type TriviaAnswer } from "@/lib/trivia";
-import type { PresenceNode } from "@/lib/types";
+import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 
 const route = (id: string) => `/play/trivia/${id}`;
 
@@ -27,7 +25,7 @@ const route = (id: string) => `/play/trivia/${id}`;
 export function TriviaLobby() {
   const { uid, me, friend, friendUid } = usePair();
   const router = useRouter();
-  const { value: presence } = useRtdbValue<PresenceNode>(friendUid ? presencePath(friendUid) : null);
+  const { friendPresence: presence } = useLiveEvents();
   const [rounds, setRounds] = useState<Array<TriviaRoundDoc & { id: string }> | null>(null);
   const [busy, setBusy] = useState(false);
   const online = presence?.online === true;
@@ -51,7 +49,7 @@ export function TriviaLobby() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🧠" title="Trivia duel" back="/play" />
+      <SubHeader emoji="🧠" title="Trivia duel" back="/play" screenName="Trivia duel" />
       <Card className="flex flex-col gap-3">
         <p className="text-sm text-muted">Ten questions, 15 seconds each. Right answers score 10, plus up to 5 for speed.</p>
         <div className="flex gap-2">
@@ -109,7 +107,7 @@ export function TriviaRound({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji={round.mode === "live" ? "⚡" : "🧠"} title={round.mode === "live" ? "Live duel" : "Trivia round"} back="/play/trivia" />
+      <SubHeader emoji={round.mode === "live" ? "⚡" : "🧠"} title={round.mode === "live" ? "Live duel" : "Trivia round"} back="/play/trivia" screenName="Trivia duel" />
       {mineDone && theirsDone && <Results round={round} uid={uid} friendUid={friendUid} nameOf={nameOf} />}
       {mineDone && !theirsDone && (
         <Card className="flex flex-col items-center gap-2 py-8 text-center">

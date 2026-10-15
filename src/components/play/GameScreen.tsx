@@ -9,6 +9,7 @@ import { CheckersBoard } from "@/components/play/boards/CheckersBoard";
 import { ChessBoard } from "@/components/play/boards/ChessBoard";
 import { ConnectFourBoard } from "@/components/play/boards/ConnectFourBoard";
 import { TicTacToeBoard } from "@/components/play/boards/TicTacToeBoard";
+import { FriendHereBadge } from "@/components/play/FriendHereBadge";
 import { Confetti } from "@/components/plan/Confetti";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -113,6 +114,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
           {game.status === "finished" && (game.winnerId ? (game.winnerId === uid ? "You won! 🎉" : `${nameOf(game.winnerId)} won`) : game.endReason === "abandoned" ? "Abandoned" : "Draw")}
           {game.status === "declined" && "Declined"}
         </p>
+        <FriendHereBadge screenName={meta.name} />
       </div>
 
       {game.status === "invited" && game.createdBy !== uid && (

@@ -13,6 +13,7 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
 import { saveGuesses, wordleRef, type WordleDoc } from "@/lib/db/wordle";
+import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { evaluate, isAllowedGuess, KEY_ROWS, keyboardStates, MAX_GUESSES, WORD_LEN, wordFor, type LetterState } from "@/lib/wordle";
 
@@ -57,7 +58,10 @@ export function WordleScreen() {
     const finished = solved || next.length >= MAX_GUESSES;
     setDraft("");
     await saveGuesses(today, uid, next, solved, finished);
-    if (solved) setBurst((b) => b + 1);
+    if (solved) {
+      setBurst((b) => b + 1);
+      void recordTogetherEvent("word", uid);
+    }
     if (finished && friendUid) {
       void notify("yourTurn", { toUid: friendUid, body: solved ? `solved today's word in ${next.length} 🟩 — your go` : "finished today's word — your go", data: { url: "/play/word" } });
     }
@@ -90,7 +94,7 @@ export function WordleScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🟩" title="Daily word" back="/play" />
+      <SubHeader emoji="🟩" title="Daily word" back="/play" screenName="Daily word" />
       {mine === undefined && <Card className="py-8 text-center text-muted">Loading…</Card>}
 
       {mine !== undefined && (

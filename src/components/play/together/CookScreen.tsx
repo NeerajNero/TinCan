@@ -42,6 +42,7 @@ export function CookList() {
         emoji="🍳"
         title="Cook-along"
         back="/play"
+        screenName="Cook-along"
         action={
           form === null ? (
             <Button onClick={() => setForm("new")} className="px-4 py-2 text-sm">
@@ -149,10 +150,10 @@ export function CookDetail({ id }: { id: string }) {
   useEffect(() => {
     if (all && !completed.current) {
       completed.current = true;
-      recordTogetherEvent("cook");
+      recordTogetherEvent("cook", uid);
     }
     if (!all) completed.current = false;
-  }, [all]);
+  }, [all, uid]);
 
   if (recipe === undefined) return <Card className="py-8 text-center text-muted">Loading…</Card>;
   if (recipe === null) return <Card className="py-8 text-center text-muted">This recipe is gone.</Card>;
@@ -165,7 +166,7 @@ export function CookDetail({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🍳" title={recipe.title} back="/play/cook" />
+      <SubHeader emoji="🍳" title={recipe.title} back="/play/cook" screenName={`cooking ${recipe.title}`} />
       <div className="flex gap-2">
         <Button onClick={nudge} disabled={!friendUid || nudged} className="flex-1">
           {nudged ? `Nudged ${friend?.nickname ?? ""}` : "Start cooking together"}

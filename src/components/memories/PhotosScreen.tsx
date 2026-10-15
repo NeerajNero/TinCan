@@ -15,7 +15,9 @@ import { usePagedCollection } from "@/hooks/usePagedCollection";
 import { usePair } from "@/hooks/usePair";
 import { thumbUrl } from "@/lib/cloudinary";
 import { deleteViaServer } from "@/lib/db/deleteViaServer";
-import { addMemories, editMemory, MEMORIES_PAGE, memoriesQuery } from "@/lib/db/memories";
+import { addMemories, editMemory, MEMORIES_PAGE, memoriesCol, memoriesQuery } from "@/lib/db/memories";
+import { recordTogetherEvent } from "@/lib/garden";
+import { getCountFromServer } from "firebase/firestore";
 import { placesQuery } from "@/lib/db/places";
 import { uploadImages } from "@/lib/media/uploadImages";
 import type { MemoryDoc, PlaceDoc } from "@/lib/types";
@@ -162,6 +164,7 @@ function Uploader({ uid, places, onDone }: { uid: string; places: Place[]; onDon
       const items = await uploadImages(files, setProgress);
       const takenAt = new Date(`${date}T12:00:00`);
       await addMemories(uid, items, caption, takenAt, placeId);
+      void getCountFromServer(memoriesCol()).then((c) => c.data().count >= 10 && recordTogetherEvent("photos-10", uid)).catch(() => undefined);
       onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't upload. Try again?");

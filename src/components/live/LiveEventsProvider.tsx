@@ -15,8 +15,9 @@ import { roomDateKey } from "@/lib/dates";
 import { backfillDateKey, dailyRef } from "@/lib/db/daily";
 import { gameRoute, resultForRecipient, subscribeOpenGames, type LiveGame } from "@/lib/db/games";
 import { mediaLabel } from "@/lib/db/messages";
-import { lampPath, rtdbRef } from "@/lib/rtdb";
-import { PINGS, type DailyQuestionDoc, type LampNode } from "@/lib/types";
+import { lampPath, presencePath, rtdbRef } from "@/lib/rtdb";
+import { PINGS, type DailyQuestionDoc, type LampNode, type PresenceNode } from "@/lib/types";
+import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
 
 interface LiveEvents {
   /** Latest ping from the friend since this session started; Home shows it full-screen. */
@@ -27,6 +28,8 @@ interface LiveEvents {
   daily: DailyQuestionDoc | null;
   /** Invited + active games (one bounded listener for Play and Home). */
   games: LiveGame[];
+  /** The friend's presence node — the one listener every screen reads. */
+  friendPresence: PresenceNode | null;
 }
 
 const LiveEventsContext = createContext<LiveEvents | null>(null);
@@ -164,8 +167,36 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     };
   }, [friendUid, uid, friendName, toast]);
 
+  /* ── friend presence (shared) ──────────────────────────────────────── */
+  const [friendPresence, setFriendPresence] = useState<PresenceNode | null>(null);
+  useEffect(() => {
+    if (!friendUid) return;
+    const unsub = onValue(rtdbRef(presencePath(friendUid)), (snap) => setFriendPresence((snap.val() as PresenceNode | null) ?? null));
+    return () => {
+      unsub();
+      setFriendPresence(null);
+    };
+  }, [friendUid]);
+
+  /* ── garden unlocks → toast for both ───────────────────────────────── */
+  const seenStickers = useRef<Set<string> | null>(null);
+  const stickerKeys = Object.keys(pair.garden?.stickers ?? {}).sort().join(",");
+  useEffect(() => {
+    const keys = new Set(stickerKeys ? stickerKeys.split(",") : []);
+    if (seenStickers.current === null) {
+      seenStickers.current = keys;
+      return;
+    }
+    for (const k of keys) {
+      if (seenStickers.current.has(k)) continue;
+      const st = STICKER_BY_ID[k as GardenEvent];
+      if (st) toast({ key: `garden:${k}`, emoji: st.emoji, title: `You two unlocked the ${st.name}!`, body: "Tap to see the garden", url: "/memories/garden", durationMs: 6000 });
+    }
+    seenStickers.current = keys;
+  }, [stickerKeys, toast]);
+
   const activePing = incoming && incoming !== dismissed ? incoming : null;
-  const value = useMemo<LiveEvents>(() => ({ ping: activePing, dismissPing, today, daily, games }), [activePing, dismissPing, today, daily, games]);
+  const value = useMemo<LiveEvents>(() => ({ ping: activePing, dismissPing, today, daily, games, friendPresence }), [activePing, dismissPing, today, daily, games, friendPresence]);
   return <LiveEventsContext.Provider value={value}>{children}</LiveEventsContext.Provider>;
 }
 

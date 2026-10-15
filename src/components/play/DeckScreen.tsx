@@ -54,6 +54,7 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
         emoji={meta.emoji}
         title={meta.name}
         back="/play"
+        screenName={meta.name}
         action={
           <Button variant="soft" onClick={nudge} disabled={!friendUid || nudged} className="px-3 py-2 text-sm">
             {nudged ? "Nudged" : "Nudge"}

@@ -44,13 +44,14 @@ export function WhiteboardScreen() {
         emoji="🖍️"
         title="Whiteboard"
         back="/play"
+        screenName="the whiteboard"
         action={
           <Button variant="soft" onClick={snapshot} disabled={snapping || !ctl || ctl.count === 0} className="px-3 py-2 text-sm">
             {snapping ? "Sending…" : "Snapshot"}
           </Button>
         }
       />
-      <SharedCanvas base="whiteboard" canDraw tool={tool} color={color} width={width} cursors page="/play/whiteboard" controls={controls} onFirstStroke={() => recordTogetherEvent("whiteboard")} />
+      <SharedCanvas base="whiteboard" canDraw tool={tool} color={color} width={width} cursors page="/play/whiteboard" controls={controls} onFirstStroke={() => void recordTogetherEvent("whiteboard", uid)} />
       <div className="card flex flex-col gap-2 rounded-[20px] p-2">
         <div className="flex items-center gap-1">
           <ToolBtn active={tool === "pen"} onClick={() => setTool("pen")} label="Pen">

@@ -6,12 +6,11 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
-import { useRtdbValue } from "@/hooks/useRtdbValue";
 import { useWeather } from "@/hooks/useWeather";
 import { cn } from "@/lib/cn";
 import { formatDistance, haversineKm } from "@/lib/geo";
-import { presencePath } from "@/lib/rtdb";
 import type { PresenceNode, UserDoc } from "@/lib/types";
+import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 
 function lastSeenLabel(presence: PresenceNode | null): string {
   if (!presence?.lastSeen) return "Not seen yet";
@@ -21,9 +20,9 @@ function lastSeenLabel(presence: PresenceNode | null): string {
 
 /** Friend's face, online dot or last-seen, sleep badge, local time + weather; then my time and the distance. */
 export function PresenceCard({ friend }: { friend: UserDoc }) {
-  const { me, friendUid } = usePair();
+  const { me } = usePair();
   const now = useNow(1000);
-  const { value: presence } = useRtdbValue<PresenceNode>(friendUid ? presencePath(friendUid) : null);
+  const { friendPresence: presence } = useLiveEvents();
   const weather = useWeather(friend.lat, friend.lng);
 
   const online = presence?.online === true;

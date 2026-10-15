@@ -15,6 +15,7 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { dateKeyToLocalDate, daysBetween, isDateKey, roomDateKey } from "@/lib/dates";
 import { addTrip, cleanStop, deleteTrip, editTrip, newStopId, saveDays, tripsQuery, type TripInput } from "@/lib/db/trips";
+import { recordTogetherEvent } from "@/lib/garden";
 import type { TripDay, TripDoc, TripStop } from "@/lib/types";
 
 interface Trip extends TripDoc {
@@ -23,7 +24,7 @@ interface Trip extends TripDoc {
 const mapDoc = (d: QueryDocumentSnapshot<TripDoc>): Trip => ({ id: d.id, ...d.data() });
 
 export function TripsScreen() {
-  const { pair } = usePair();
+  const { uid, pair } = usePair();
   const now = useNow(60_000);
   const today = roomDateKey(pair, now);
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -57,7 +58,7 @@ export function TripsScreen() {
           ) : null
         }
       />
-      {form !== null && <TripForm key={form === "new" ? "new" : form.id} trip={form === "new" ? null : form} onDone={() => setForm(null)} />}
+      {form !== null && <TripForm key={form === "new" ? "new" : form.id} trip={form === "new" ? null : form} uid={uid} onDone={() => setForm(null)} />}
       {ready && trips.length === 0 && form === null && <Card className="py-8 text-center text-muted">No trips yet. Plan the next one?</Card>}
 
       {upcoming.map((t) => (
@@ -194,7 +195,7 @@ function StopForm({ initial, onSave, onCancel }: { initial?: TripStop; onSave: (
   );
 }
 
-function TripForm({ trip, onDone }: { trip: Trip | null; onDone: () => void }) {
+function TripForm({ trip, uid, onDone }: { trip: Trip | null; uid: string; onDone: () => void }) {
   const [title, setTitle] = useState(trip?.title ?? "");
   const [place, setPlace] = useState(trip?.place ?? "");
   const [startDate, setStart] = useState(trip?.startDate ?? "");
@@ -208,7 +209,10 @@ function TripForm({ trip, onDone }: { trip: Trip | null; onDone: () => void }) {
     try {
       const input: TripInput = { title, place, startDate, endDate };
       if (trip) await editTrip(trip.id, input, trip.days);
-      else await addTrip(input);
+      else {
+        await addTrip(input);
+        void recordTogetherEvent("trip", uid);
+      }
       onDone();
     } finally {
       setBusy(false);

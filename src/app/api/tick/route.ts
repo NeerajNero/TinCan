@@ -185,8 +185,23 @@ async function abandonStaleGames(ctx: Ctx) {
   }
 }
 
-function petHunger(ctx: Ctx) {
-  ctx.actions.push({ job: "pet-hungry", key: "stub", detail: "no-op until phase 12", result: { note: "skipped" } });
+const PET_MIN_PER_POINT = 14.4;
+const PET_WARN_MS = 2 * 60 * 60 * 1000;
+
+/** Once a day: when hunger would hit zero within two hours, push both (petHungry toggle) and leave a chat line. */
+async function petHunger(ctx: Ctx, pair: PairDoc) {
+  const pet = pair.pet;
+  if (!pet) {
+    ctx.actions.push({ job: "pet-hungry", key: "none", detail: "no pet yet", result: { note: "skipped" } });
+    return;
+  }
+  const emptyAt = pet.hungerAt + 100 * PET_MIN_PER_POINT * 60_000;
+  if (emptyAt - ctx.now.getTime() > PET_WARN_MS) return;
+  await once(ctx, "pet-hungry", `pet-hungry-${ctx.today}`, async () => {
+    for (const uid of ctx.uids) await push(ctx, uid, "petHungry", { title: `${pet.name} is hungry 🍽️`, body: emptyAt <= ctx.now.getTime() ? `${pet.name}'s bowl has been empty for a while` : `${pet.name} runs out of food in under 2 hours` });
+    if (!ctx.dry) await postSystemMessageAdmin(ctx.uids[0], `🍽️ ${pet.name} is getting hungry — someone feed them?`);
+    return `warned about ${pet.name}`;
+  });
 }
 
 /* ── handler ───────────────────────────────────────────────────────────── */
@@ -222,7 +237,7 @@ export async function GET(req: Request) {
     await capsulesUnlocked(ctx);
     await reminders(ctx, minutes, pair);
     await abandonStaleGames(ctx);
-    petHunger(ctx);
+    await petHunger(ctx, pair);
 
     return NextResponse.json({ dry, now: now.toISOString(), roomTz, today: ctx.today, localMinutes: minutes, actions: ctx.actions });
   } catch (err) {

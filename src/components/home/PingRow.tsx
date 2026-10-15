@@ -5,13 +5,17 @@ import { useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
 import { useRelationship } from "@/hooks/useRelationship";
+import { increment, updateDoc } from "firebase/firestore";
+
+import { pairRef } from "@/lib/db/refs";
+import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { sendPing } from "@/lib/rtdb";
 import { BASE_PING_KINDS, PINGS, type PingKind } from "@/lib/types";
 
 /** Four bouncy ping buttons. Sending bounces the button and flashes "Sent!". */
 export function PingRow({ friendUid, friendName }: { friendUid: string; friendName: string }) {
-  const { uid, me } = usePair();
+  const { uid, me, pair } = usePair();
   const preset = useRelationship();
   const kinds: PingKind[] = preset.extraPing ? [...BASE_PING_KINDS, preset.extraPing] : [...BASE_PING_KINDS];
   const [sent, setSent] = useState<PingKind | null>(null);
@@ -27,6 +31,9 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
         body: `${PINGS[kind].emoji} ${me.nickname} ${PINGS[kind].sentence}`,
         data: { kind },
       });
+      const total = (pair.counters?.pings ?? 0) + 1;
+      void updateDoc(pairRef(), { "counters.pings": increment(1) }).catch(() => undefined);
+      if (total >= 100 && !pair.garden?.stickers?.["pings-100"]) void recordTogetherEvent("pings-100", uid);
     } catch {
       setSent(null);
     }

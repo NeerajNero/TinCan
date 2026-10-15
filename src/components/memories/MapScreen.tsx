@@ -20,6 +20,7 @@ import { memoriesAtPlace } from "@/lib/db/memories";
 import { addPlace, deletePlace, editPlace, placesQuery, type PlaceInput } from "@/lib/db/places";
 import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
 import { searchCities, type CityResult } from "@/lib/geocode";
+import { recordTogetherEvent } from "@/lib/garden";
 import type { MemoryDoc, PlaceDoc, PlaceKind } from "@/lib/types";
 
 const MemoryMap = dynamic(() => import("@/components/memories/map/MemoryMap"), {
@@ -166,7 +167,10 @@ function PlaceForm({ draft, uid, onClose }: { draft: Draft; uid: string; onClose
     try {
       const input: PlaceInput = { name, lat: draft.lat, lng: draft.lng, kind, note, visitedAt: visitedAt || null };
       if (draft.id) await editPlace(draft.id, input);
-      else await addPlace(uid, input);
+      else {
+        await addPlace(uid, input);
+        void recordTogetherEvent("map-pin", uid);
+      }
       onClose();
     } finally {
       setBusy(false);

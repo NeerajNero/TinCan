@@ -54,7 +54,7 @@ export function PixelScreen() {
     if (!flushTimer.current) flushTimer.current = setTimeout(flush, 50);
     if (!first.current) {
       first.current = true;
-      recordTogetherEvent("pixel");
+      void recordTogetherEvent("pixel", uid);
     }
   }
   function fill(start: number) {
@@ -83,7 +83,7 @@ export function PixelScreen() {
     void paintCells(changes);
     if (!first.current) {
       first.current = true;
-      recordTogetherEvent("pixel");
+      void recordTogetherEvent("pixel", uid);
     }
   }
   function cellAt(e: React.PointerEvent): number | null {
@@ -147,6 +147,7 @@ export function PixelScreen() {
         emoji="🟪"
         title="Pixel art"
         back="/play"
+        screenName="pixel art"
         action={
           <Button variant="soft" onClick={snapshot} disabled={snapping} className="px-3 py-2 text-sm">
             {snapping ? "Sending…" : "Snapshot"}

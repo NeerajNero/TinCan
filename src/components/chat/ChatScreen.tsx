@@ -30,11 +30,14 @@ import {
 } from "@/lib/db/messages";
 import type { Gif } from "@/lib/giphy";
 import type { Recording } from "@/lib/media/recorder";
+import { recordTogetherEvent } from "@/lib/garden";
+import { messagesCol } from "@/lib/db/messages";
+import { getCountFromServer } from "firebase/firestore";
 import { notify } from "@/lib/notify";
 import type { Message } from "@/lib/types";
 
 export function ChatScreen() {
-  const { uid, me, friend, friendUid, loading } = usePair();
+  const { uid, me, friend, friendUid, loading, pair } = usePair();
 
   if (!friendUid) {
     return (
@@ -46,7 +49,7 @@ export function ChatScreen() {
   }
   if (loading || !friend) return <Splash label="Finding your friend…" />;
 
-  return <Thread uid={uid} tz={me.tz} friendUid={friendUid} friendName={friend.nickname} friendDoc={friend} />;
+  return <Thread uid={uid} tz={me.tz} friendUid={friendUid} friendName={friend.nickname} friendDoc={friend} needsMessageSticker={!pair.garden?.stickers?.["messages-100"]} />;
 }
 
 interface ThreadProps {
@@ -55,9 +58,10 @@ interface ThreadProps {
   friendUid: string;
   friendName: string;
   friendDoc: NonNullable<ReturnType<typeof usePair>["friend"]>;
+  needsMessageSticker: boolean;
 }
 
-function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
+function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker }: ThreadProps) {
   const { messages, initialUnread, ready, hasMore, loadingOlder, pageCount, loadOlder, prune } = useMessages(uid);
   const visible = useVisible();
   const [menuFor, setMenuFor] = useState<Message | null>(null);
@@ -89,8 +93,9 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc }: ThreadProps) {
       setReplyTo(null);
       const id = await sendText(uid, text, reply);
       await notify("message", { toUid: friendUid, body: text.slice(0, 120), data: { messageId: id } });
+      if (needsMessageSticker) void getCountFromServer(messagesCol()).then((c) => c.data().count >= 100 && recordTogetherEvent("messages-100", uid)).catch(() => undefined);
     },
-    [uid, friendUid, replyTo],
+    [uid, friendUid, replyTo, needsMessageSticker],
   );
 
   const saveEdit = useCallback(async (m: Message, text: string) => {

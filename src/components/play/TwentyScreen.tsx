@@ -66,7 +66,7 @@ export function TwentyScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🔍" title="20 Questions" back="/play" />
+      <SubHeader emoji="🔍" title="20 Questions" back="/play" screenName="20 Questions" />
 
       {node === undefined && <Card className="py-8 text-center text-muted">Loading…</Card>}
 

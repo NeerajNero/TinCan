@@ -16,6 +16,7 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { capsulesQuery, createCapsule, isUnlocked, MIN_LOCK_MS, openCapsule, readCapsuleBody } from "@/lib/db/capsules";
 import { deleteViaServer } from "@/lib/db/deleteViaServer";
+import { recordTogetherEvent } from "@/lib/garden";
 import { uploadImages } from "@/lib/media/uploadImages";
 import type { CapsuleBody, CapsuleDoc } from "@/lib/types";
 
@@ -84,7 +85,10 @@ function CapsuleCard({ capsule, uid, now, authorName, openerName }: { capsule: C
     setBusy(true);
     setError(null);
     try {
-      if (!opened) await openCapsule(capsule.id, uid);
+      if (!opened) {
+        await openCapsule(capsule.id, uid);
+        void recordTogetherEvent("capsule", uid);
+      }
       setBody(await readCapsuleBody(capsule.id));
     } catch {
       setError("Couldn't open it. Is it unlocked yet?");
