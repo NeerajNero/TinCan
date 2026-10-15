@@ -53,7 +53,14 @@ export interface UserDoc {
   /** What the friend sees everywhere. */
   nickname: string;
   email: string;
+  /** Google photo, the fallback when no custom avatar is set. */
   photoURL: string | null;
+  /** Custom photo uploaded to Cloudinary; null/absent means use photoURL. */
+  avatar?: { url: string; publicId: string } | null;
+  /** Destroyed by the server after a replacement; see /api/media. */
+  previousAvatarPublicId?: string | null;
+  /** One short line about me (≤120 chars). */
+  bio?: string;
   /** IANA zone, e.g. "Asia/Kolkata". */
   tz: string;
   city: string;

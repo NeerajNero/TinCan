@@ -5,7 +5,11 @@ import { z } from "zod";
 import { isAllowedEmail } from "@/lib/allowlist";
 import { adminDb, AuthError, verifyBearer } from "@/lib/firebase/admin";
 
-const bodySchema = z.object({ messageId: z.string().min(1).max(128) });
+const bodySchema = z.union([
+  z.object({ messageId: z.string().min(1).max(128) }),
+  // Destroy the caller's stale avatar asset (previousAvatarPublicId on their own user doc).
+  z.object({ kind: z.literal("avatar") }),
+]);
 
 function configureCloudinary() {
   const cloud_name = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -28,6 +32,17 @@ export async function DELETE(req: Request) {
     }
     const parsed = bodySchema.safeParse(await req.json().catch(() => null));
     if (!parsed.success) return NextResponse.json({ error: "bad_request" }, { status: 400 });
+
+    if ("kind" in parsed.data) {
+      const userRef = adminDb().doc(`users/${token.uid}`);
+      const stale = ((await userRef.get()).data()?.previousAvatarPublicId as string | null | undefined) ?? null;
+      if (stale) {
+        configureCloudinary();
+        await cloudinary.uploader.destroy(stale, { resource_type: "image", invalidate: true }).catch(() => undefined);
+        await userRef.update({ previousAvatarPublicId: null });
+      }
+      return NextResponse.json({ ok: true, destroyed: Boolean(stale) });
+    }
 
     const ref = adminDb().collection("messages").doc(parsed.data.messageId);
     const snap = await ref.get();

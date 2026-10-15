@@ -22,12 +22,17 @@ export interface CompressedImage {
   h: number;
 }
 
-/** ≤1080 px on the long edge, ~0.3 MB, WebP when the browser can encode it. */
-export async function compressImage(file: File): Promise<CompressedImage> {
+interface CompressOptions {
+  maxWidthOrHeight?: number;
+  maxSizeMB?: number;
+}
+
+/** ≤1080 px on the long edge, ~0.3 MB by default, WebP when the browser can encode it. */
+export async function compressImage(file: File, options: CompressOptions = {}): Promise<CompressedImage> {
   const fileType = supportsWebP() ? "image/webp" : "image/jpeg";
   const blob = await imageCompression(file, {
-    maxSizeMB: 0.3,
-    maxWidthOrHeight: 1080,
+    maxSizeMB: options.maxSizeMB ?? 0.3,
+    maxWidthOrHeight: options.maxWidthOrHeight ?? 1080,
     useWebWorker: true,
     fileType,
     initialQuality: 0.82,

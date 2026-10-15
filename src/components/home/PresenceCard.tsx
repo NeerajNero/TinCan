@@ -2,8 +2,7 @@
 
 import { formatDistanceToNowStrict } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import Image from "next/image";
-
+import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
@@ -35,21 +34,7 @@ export function PresenceCard({ friend }: { friend: UserDoc }) {
     <Card className="flex flex-col gap-4">
       <div className="flex items-center gap-4">
         <div className="relative shrink-0">
-          {friend.photoURL ? (
-            <Image
-              src={friend.photoURL}
-              alt=""
-              width={64}
-              height={64}
-              unoptimized
-              referrerPolicy="no-referrer"
-              className="size-16 rounded-full bg-surface-2 object-cover"
-            />
-          ) : (
-            <div className="grid size-16 place-items-center rounded-full bg-accent-soft text-3xl" aria-hidden>
-              🙂
-            </div>
-          )}
+          <Avatar user={friend} size={64} />
           <span
             aria-hidden
             className={cn(
@@ -74,6 +59,7 @@ export function PresenceCard({ friend }: { friend: UserDoc }) {
           <p className={cn("text-sm", online ? "font-semibold text-emerald-600 dark:text-emerald-300" : "text-muted")}>
             {online ? "Online now" : lastSeenLabel(presence)}
           </p>
+          {friend.bio && <p className="mt-0.5 line-clamp-2 text-xs text-muted">{friend.bio}</p>}
         </div>
       </div>
 
