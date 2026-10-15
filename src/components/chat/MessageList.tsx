@@ -126,9 +126,8 @@ export function MessageList(props: MessageListProps) {
 
         <div className="flex flex-col gap-1.5">
           {rows.map(({ m, dayLabel: label }) => {
-            const hasReactions = Object.keys(m.reactions).length > 0;
             return (
-              <div key={m.id} className={cn("flex flex-col gap-1.5", hasReactions && "mb-3")}>
+              <div key={m.id} className="flex flex-col gap-1.5">
                 {label && <Separator label={label} />}
                 {m.id === firstUnreadId && (
                   <div ref={dividerRef} className="scroll-mt-2">

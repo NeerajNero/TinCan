@@ -24,7 +24,16 @@ interface MessageBubbleProps {
   onReact: (message: Message, emoji: string) => void;
 }
 
-export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, onReply, onReact }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  mine,
+  uid,
+  tz,
+  friendName,
+  onOpenMenu,
+  onReply,
+  onReact,
+}: MessageBubbleProps) {
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressClick = useRef(false);
 
@@ -48,12 +57,15 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
   }
   function onDragEnd(_: unknown, info: PanInfo) {
     cancelPress();
-    if (info.offset.x > SWIPE_REPLY_PX && !message.deletedForEveryone) onReply(message);
+    if (info.offset.x > SWIPE_REPLY_PX && !message.deletedForEveryone)
+      onReply(message);
   }
 
   const time = formatInTimeZone(new Date(message.createdAtMs), tz, "h:mm a");
   const reactions = Object.entries(
-    Object.entries(message.reactions).reduce<Record<string, { count: number; mine: boolean }>>((acc, [who, emoji]) => {
+    Object.entries(message.reactions).reduce<
+      Record<string, { count: number; mine: boolean }>
+    >((acc, [who, emoji]) => {
       acc[emoji] ??= { count: 0, mine: false };
       acc[emoji].count += 1;
       if (who === uid) acc[emoji].mine = true;
@@ -62,67 +74,94 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
   );
 
   return (
-    <div className={cn("group relative flex w-full items-end gap-1", mine ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        "group relative flex w-full items-end gap-1",
+        mine ? "justify-end" : "justify-start",
+      )}
+    >
       {/* swipe hint */}
       <Reply
         size={16}
         aria-hidden
-        className={cn("absolute top-1/2 -translate-y-1/2 text-muted opacity-0 transition-opacity", mine ? "right-full mr-2" : "left-0")}
+        className={cn(
+          "absolute top-1/2 -translate-y-1/2 text-muted opacity-0 transition-opacity",
+          mine ? "right-full mr-2" : "left-0",
+        )}
       />
 
-      <motion.div
-        drag="x"
-        dragDirectionLock
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={{ left: 0, right: 0.35 }}
-        dragSnapToOrigin
-        onDragStart={cancelPress}
-        onDragEnd={onDragEnd}
-        onPointerDown={startPress}
-        onPointerUp={cancelPress}
-        onPointerCancel={cancelPress}
-        onPointerLeave={cancelPress}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          onOpenMenu(message);
-        }}
-        onClick={() => {
-          if (suppressClick.current) suppressClick.current = false;
-        }}
+      <div
         className={cn(
-          "relative max-w-[82%] rounded-[20px] px-3.5 py-2 shadow-sm select-none",
-          mine ? "rounded-br-md bg-accent-soft" : "rounded-bl-md bg-surface",
-          message.deletedForEveryone && "opacity-80",
+          "flex max-w-[82%] flex-col gap-1",
+          mine ? "items-end" : "items-start",
         )}
       >
-        {message.replyTo && (
-          <div
-            className={cn(
-              "mb-1.5 rounded-xl border-l-4 bg-bg/50 px-2.5 py-1.5 text-xs",
-              message.replyTo.senderId === uid ? "border-[var(--accent)]" : "border-muted",
+        <motion.div
+          drag="x"
+          dragDirectionLock
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={{ left: 0, right: 0.35 }}
+          dragSnapToOrigin
+          onDragStart={cancelPress}
+          onDragEnd={onDragEnd}
+          onPointerDown={startPress}
+          onPointerUp={cancelPress}
+          onPointerCancel={cancelPress}
+          onPointerLeave={cancelPress}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            onOpenMenu(message);
+          }}
+          onClick={() => {
+            if (suppressClick.current) suppressClick.current = false;
+          }}
+          className={cn(
+            "relative max-w-full rounded-[20px] px-3.5 py-2 shadow-sm select-none",
+            mine ? "rounded-br-md bg-accent-soft" : "rounded-bl-md bg-surface",
+            message.deletedForEveryone && "opacity-80",
+          )}
+        >
+          {message.replyTo && (
+            <div
+              className={cn(
+                "mb-1.5 rounded-xl border-l-4 bg-bg/50 px-2.5 py-1.5 text-xs",
+                message.replyTo.senderId === uid
+                  ? "border-[var(--accent)]"
+                  : "border-muted",
+              )}
+            >
+              <p className="font-bold">
+                {message.replyTo.senderId === uid ? "You" : friendName}
+              </p>
+              <p className="line-clamp-2 text-muted">
+                {message.replyTo.preview}
+              </p>
+            </div>
+          )}
+
+          {message.deletedForEveryone ? (
+            <p className="text-sm italic text-muted">
+              This message was deleted
+            </p>
+          ) : (
+            <p className="text-[15px] leading-snug whitespace-pre-wrap break-words">
+              <Linkify text={message.text} />
+            </p>
+          )}
+
+          <div className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-muted">
+            {message.editedAt && !message.deletedForEveryone && (
+              <span>edited</span>
             )}
-          >
-            <p className="font-bold">{message.replyTo.senderId === uid ? "You" : friendName}</p>
-            <p className="line-clamp-2 text-muted">{message.replyTo.preview}</p>
+            <span>{time}</span>
+            {mine && (
+              <Ticks status={message.status} pending={message.pending} />
+            )}
           </div>
-        )}
-
-        {message.deletedForEveryone ? (
-          <p className="text-sm italic text-muted">This message was deleted</p>
-        ) : (
-          <p className="text-[15px] leading-snug whitespace-pre-wrap break-words">
-            <Linkify text={message.text} />
-          </p>
-        )}
-
-        <div className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-muted">
-          {message.editedAt && !message.deletedForEveryone && <span>edited</span>}
-          <span>{time}</span>
-          {mine && <Ticks status={message.status} pending={message.pending} />}
-        </div>
+        </motion.div>
 
         {reactions.length > 0 && (
-          <div className={cn("absolute -bottom-3 flex gap-1", mine ? "right-2" : "left-2")}>
+          <div className="flex flex-wrap gap-1 px-1">
             {reactions.map(([emoji, { count, mine: isMine }]) => (
               <button
                 key={emoji}
@@ -134,8 +173,10 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
                 aria-label={`${emoji} ${count}${isMine ? ", yours" : ""}`}
                 aria-pressed={isMine}
                 className={cn(
-                  "flex h-6 items-center gap-0.5 rounded-full border px-1.5 text-xs shadow-sm",
-                  isMine ? "border-[var(--accent)] bg-accent-soft" : "border-border bg-surface",
+                  "flex h-7 items-center gap-1 rounded-full border px-2 text-sm shadow-sm",
+                  isMine
+                    ? "border-[var(--accent)] bg-surface-2"
+                    : "border-border bg-surface",
                 )}
               >
                 <span>{emoji}</span>
@@ -144,7 +185,7 @@ export function MessageBubble({ message, mine, uid, tz, friendName, onOpenMenu, 
             ))}
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* desktop hover affordance */}
       <button
