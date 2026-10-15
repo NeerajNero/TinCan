@@ -7,8 +7,12 @@ import { SetupScreen } from "@/components/auth/SetupScreen";
 import { TakenScreen } from "@/components/auth/TakenScreen";
 import { Splash } from "@/components/ui/Splash";
 import { useAuth } from "@/hooks/useAuth";
+import { PairProvider } from "@/hooks/usePair";
 
-/** Wraps every in-app screen: only an allowlisted, signed-in user gets through. */
+/**
+ * Wraps every in-app screen: only an allowlisted, signed-in user gets through,
+ * and once through, the pair provider handles onboarding and the shared docs.
+ */
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { status, error } = useAuth();
   const router = useRouter();
@@ -19,7 +23,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   switch (status) {
     case "allowed":
-      return <>{children}</>;
+      return <PairProvider>{children}</PairProvider>;
     case "denied":
       return <TakenScreen />;
     case "error":

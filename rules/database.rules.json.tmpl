@@ -1,0 +1,92 @@
+{
+  "rules": {
+    "presence": {
+      "$uid": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid",
+        ".validate": "newData.hasChild('online') && newData.child('online').isBoolean()"
+      }
+    },
+    "typing": {
+      "$uid": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid",
+        ".validate": "newData.isNumber()"
+      }
+    },
+    "pings": {
+      "$uid": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid !== auth.uid",
+        ".validate": "newData.hasChildren(['from', 'kind', 'at']) && newData.child('from').val() === auth.uid && newData.child('kind').isString()"
+      }
+    },
+    "lamp": {
+      "$uid": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid",
+        ".validate": "newData.hasChildren(['on']) && newData.child('on').isBoolean()"
+      }
+    },
+    "cursors": {
+      "$uid": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid"
+      }
+    },
+    "whiteboard": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      "strokes": {
+        "$strokeId": {
+          ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'points']) && newData.child('uid').val() === auth.uid)"
+        }
+      }
+    },
+    "pixel": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      "cursor": {
+        "$uid": {
+          ".validate": "$uid === auth.uid"
+        }
+      }
+    },
+    "games": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "cards": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "pictionary": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "watch": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "listen": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "radio": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "timer": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "cook": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "twenty": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    }
+  }
+}

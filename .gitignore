@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firebase rules are generated from rules/*.tmpl by scripts/build-rules.mjs
+/firestore.rules
+/database.rules.json
+/.firebaserc

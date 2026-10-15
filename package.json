@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "icons": "node scripts/icons.mjs",
-    "rules:deploy": "echo '[phase 2] firestore.rules and database.rules.json are not written yet. This will run: firebase deploy --only firestore:rules,database' && exit 1"
+    "rules:deploy": "pnpm rules:build && firebase deploy --only firestore:rules,database",
+    "rules:build": "node scripts/build-rules.mjs"
   },
   "dependencies": {
     "@google-cloud/firestore": "^9.3.1",

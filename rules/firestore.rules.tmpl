@@ -1,0 +1,334 @@
+rules_version = '2';
+
+// Tincan — Firestore rules. Generated from rules/firestore.rules.tmpl by
+// scripts/build-rules.mjs; __ALLOWED_EMAILS__ becomes the two allowlisted emails.
+// Everything not matched below is denied.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── helpers ──────────────────────────────────────────────────────────
+    function allowed() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in __ALLOWED_EMAILS__;
+    }
+    function uid() { return request.auth.uid; }
+    function isMe(id) { return allowed() && uid() == id; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function changedKeys() { return incoming().diff(existing()).affectedKeys(); }
+    function onlyChanges(keys) { return changedKeys().hasOnly(keys); }
+    function mapDiffKeys(field) {
+      return incoming().get(field, {}).diff(existing().get(field, {})).affectedKeys();
+    }
+    function hasField(data, field) { return field in data && data[field] != null; }
+    /** Doc ids like `{dateKey}_{uid}` must end with the caller's uid. */
+    function ownsDayDoc(id) { return id.split('_')[1] == uid(); }
+    function isServerTime(value) { return value == request.time; }
+
+    // ── users/{uid} ──────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if allowed();
+      allow create: if isMe(userId)
+        && incoming().email.lower() == request.auth.token.email.lower()
+        && incoming().nickname is string && incoming().nickname.size() > 0
+        && incoming().tz is string && incoming().tz.size() > 0
+        && incoming().fcmTokens is list;
+      // Only the owner may write — this covers fcmTokens and notif prefs too.
+      allow update: if isMe(userId) && incoming().email == existing().email;
+      allow delete: if false;
+    }
+
+    // ── pair/main ────────────────────────────────────────────────────────
+    match /pair/main {
+      allow read: if allowed();
+      // First sign-in creates the pair with just this user.
+      allow create: if allowed()
+        && incoming().uids == [uid()]
+        && incoming().roomTz is string && incoming().roomTz.size() > 0;
+      // Either friend may update, but uids can only grow to two, never lose
+      // anyone, and must always include the writer.
+      allow update: if allowed()
+        && incoming().uids is list
+        && incoming().uids.size() <= 2
+        && incoming().uids.hasAll(existing().uids)
+        && uid() in incoming().uids
+        && incoming().roomTz is string && incoming().roomTz.size() > 0;
+      allow delete: if false;
+    }
+
+    // ── messages ─────────────────────────────────────────────────────────
+    match /messages/{messageId} {
+      function isSender() { return existing().senderId == uid(); }
+      function recipientMarks() {
+        return !isSender() && onlyChanges(['deliveredAt', 'readAt', 'status']);
+      }
+      function senderEdits() {
+        return isSender()
+          && onlyChanges(['text', 'editedAt', 'deletedForEveryone', 'media']);
+      }
+      function reacts() {
+        return onlyChanges(['reactions']) && mapDiffKeys('reactions').hasOnly([uid()]);
+      }
+      function hidesForSelf() {
+        return onlyChanges(['deletedFor'])
+          && incoming().deletedFor is list
+          && incoming().deletedFor.hasAll(existing().get('deletedFor', []))
+          && incoming().deletedFor.removeAll(existing().get('deletedFor', [])).hasOnly([uid()]);
+      }
+
+      allow read: if allowed();
+      allow create: if allowed()
+        && incoming().senderId == uid()
+        && incoming().status == 'sent'
+        && incoming().type in ['text', 'image', 'voice', 'gif', 'sticker', 'system']
+        && isServerTime(incoming().createdAt);
+      allow update: if allowed() && (recipientMarks() || senderEdits() || reacts() || hidesForSelf());
+      // Deleting is a flag (deletedForEveryone), never a hard delete.
+      allow delete: if false;
+    }
+
+    // ── checkins/{dateKey}: { uid: true } ────────────────────────────────
+    match /checkins/{dateKey} {
+      allow read: if allowed();
+      allow create: if allowed()
+        && incoming().keys().hasOnly([uid()])
+        && incoming()[uid()] == true;
+      allow update: if allowed()
+        && onlyChanges([uid()])
+        && incoming()[uid()] == true;
+      allow delete: if false;
+    }
+
+    // ── moods/{dateKey}_{uid} ────────────────────────────────────────────
+    match /moods/{moodId} {
+      allow read: if allowed();
+      allow create, update: if allowed() && ownsDayDoc(moodId)
+        && incoming().emoji is string;
+      allow delete: if allowed() && ownsDayDoc(moodId);
+    }
+
+    // ── dailyQuestions/{dateKey} ─────────────────────────────────────────
+    match /dailyQuestions/{dateKey} {
+      allow read: if allowed();
+      allow create: if allowed()
+        && incoming().questionIndex is int
+        && incoming().get('answers', {}).keys().hasOnly([uid()]);
+      // Each person may only touch their own answer.
+      allow update: if allowed()
+        && onlyChanges(['answers'])
+        && mapDiffKeys('answers').hasOnly([uid()]);
+      allow delete: if false;
+    }
+
+    // ── journal ──────────────────────────────────────────────────────────
+    match /journal/{entryId} {
+      allow read: if allowed();
+      allow create: if allowed() && incoming().authorId == uid();
+      allow update: if allowed() && existing().authorId == uid() && incoming().authorId == uid();
+      allow delete: if allowed() && existing().authorId == uid();
+    }
+
+    // ── capsules (+ time-gated body) ─────────────────────────────────────
+    match /capsules/{capsuleId} {
+      function isAuthor() { return existing().authorId == uid(); }
+      function unlocked() { return request.time >= existing().unlockAt; }
+
+      allow read: if allowed();
+      allow create: if allowed()
+        && incoming().authorId == uid()
+        && incoming().unlockAt is timestamp;
+      allow update: if allowed() && (
+        (isAuthor() && incoming().authorId == uid())
+        || (unlocked()
+            && onlyChanges(['openedAt', 'openedBy'])
+            && incoming().openedBy == uid())
+      );
+      allow delete: if allowed() && isAuthor();
+
+      // The letter itself lives here so the recipient can't read it early.
+      match /private/body {
+        function capsule() { return get(/databases/$(database)/documents/capsules/$(capsuleId)).data; }
+        function capsuleAfter() { return getAfter(/databases/$(database)/documents/capsules/$(capsuleId)).data; }
+        allow read: if allowed()
+          && (capsule().authorId == uid() || request.time >= capsule().unlockAt);
+        allow write: if allowed() && capsuleAfter().authorId == uid();
+      }
+    }
+
+    // ── envelopes (open-when letters; body in a subdoc, one-way opening) ─
+    match /envelopes/{envelopeId} {
+      function isAuthor() { return existing().authorId == uid(); }
+      function isRecipient() { return existing().forUid == uid(); }
+      function unopened() { return !hasField(existing(), 'openedAt'); }
+
+      allow read: if allowed();
+      allow create: if allowed()
+        && incoming().authorId == uid()
+        && incoming().forUid != uid()
+        && incoming().label is string;
+      allow update: if allowed() && (
+        // Author may edit while it's still sealed.
+        (isAuthor() && unopened() && incoming().authorId == uid() && !hasField(incoming(), 'openedAt'))
+        // Recipient may open it exactly once; opening stamps the server time.
+        || (isRecipient() && unopened()
+            && onlyChanges(['openedAt'])
+            && isServerTime(incoming().openedAt))
+      );
+      allow delete: if allowed() && isAuthor() && unopened();
+
+      match /private/body {
+        function envelope() { return get(/databases/$(database)/documents/envelopes/$(envelopeId)).data; }
+        function envelopeAfter() { return getAfter(/databases/$(database)/documents/envelopes/$(envelopeId)).data; }
+        allow read: if allowed() && (
+          envelope().authorId == uid()
+          || (envelope().forUid == uid() && hasField(envelope(), 'openedAt'))
+        );
+        allow write: if allowed() && envelopeAfter().authorId == uid();
+      }
+    }
+
+    // ── scheduled messages (delivered by the server) ─────────────────────
+    match /scheduled/{scheduledId} {
+      function isSender() { return existing().senderId == uid(); }
+      function unsent() { return !hasField(existing(), 'sentAt'); }
+
+      allow read: if allowed() && isSender();
+      allow create: if allowed()
+        && incoming().senderId == uid()
+        && incoming().sendAt is timestamp
+        && !hasField(incoming(), 'sentAt');
+      allow update: if allowed() && isSender() && unsent()
+        && incoming().senderId == uid() && !hasField(incoming(), 'sentAt');
+      allow delete: if allowed() && isSender() && unsent();
+    }
+
+    // ── jar ──────────────────────────────────────────────────────────────
+    match /jar/{noteId} {
+      function isAuthor() { return existing().authorId == uid(); }
+      function undrawn() { return !hasField(existing(), 'drawnAt'); }
+
+      allow read: if allowed();
+      allow create: if allowed()
+        && incoming().authorId == uid()
+        && incoming().forUid != uid()
+        && !hasField(incoming(), 'drawnAt');
+      allow update: if allowed() && (
+        (isAuthor() && undrawn() && incoming().authorId == uid() && !hasField(incoming(), 'drawnAt'))
+        || (existing().forUid == uid() && undrawn()
+            && onlyChanges(['drawnAt'])
+            && isServerTime(incoming().drawnAt))
+      );
+      allow delete: if allowed() && isAuthor() && undrawn();
+    }
+
+    // ── memories & places ────────────────────────────────────────────────
+    match /memories/{memoryId} {
+      allow read: if allowed();
+      allow create: if allowed() && incoming().uploaderId == uid();
+      // Captions and place links are shared; the upload itself is not.
+      allow update: if allowed()
+        && incoming().uploaderId == existing().uploaderId
+        && incoming().url == existing().url
+        && incoming().publicId == existing().publicId;
+      allow delete: if allowed() && existing().uploaderId == uid();
+    }
+
+    match /places/{placeId} {
+      allow read: if allowed();
+      allow create: if allowed() && incoming().addedBy == uid();
+      allow update, delete: if allowed();
+    }
+
+    // ── milestones ───────────────────────────────────────────────────────
+    match /milestones/{milestoneId} {
+      allow read, write: if allowed();
+    }
+
+    // ── lists/{kind}/items/{id} ──────────────────────────────────────────
+    match /lists/{kind} {
+      allow read: if allowed();
+      allow write: if allowed() && kind in ['bucket', 'wishlist', 'gifts', 'todo'];
+
+      match /items/{itemId} {
+        allow read: if allowed();
+        allow create: if allowed()
+          && kind in ['bucket', 'wishlist', 'gifts', 'todo']
+          && incoming().addedBy == uid();
+        allow update, delete: if allowed();
+      }
+    }
+
+    // ── trips ────────────────────────────────────────────────────────────
+    match /trips/{tripId} {
+      allow read, write: if allowed();
+    }
+
+    // ── availability/{uid} ───────────────────────────────────────────────
+    match /availability/{userId} {
+      allow read: if allowed();
+      allow write: if isMe(userId);
+    }
+
+    // ── gameResults ──────────────────────────────────────────────────────
+    match /gameResults/{resultId} {
+      allow read: if allowed();
+      allow create: if allowed() && uid() in incoming().players;
+      allow update: if allowed() && uid() in existing().players
+        && incoming().players == existing().players;
+      allow delete: if false;
+    }
+
+    // ── quizzes (know-me) ────────────────────────────────────────────────
+    match /quizzes/{quizId} {
+      function isAuthor() { return existing().authorId == uid(); }
+      allow read: if allowed();
+      allow create: if allowed() && incoming().authorId == uid();
+      allow update: if allowed() && (
+        (isAuthor() && incoming().authorId == uid())
+        // The taker may only write their own result.
+        || (!isAuthor()
+            && onlyChanges(['takenBy'])
+            && mapDiffKeys('takenBy').hasOnly([uid()]))
+      );
+      allow delete: if allowed() && isAuthor();
+    }
+
+    // ── wordle/{dateKey}_{uid} ───────────────────────────────────────────
+    match /wordle/{gameId} {
+      allow read: if allowed();
+      allow create, update: if allowed() && ownsDayDoc(gameId)
+        && incoming().guesses is list && incoming().guesses.size() <= 6;
+      allow delete: if false;
+    }
+
+    // ── trivia ───────────────────────────────────────────────────────────
+    match /trivia/{triviaId} {
+      allow read: if allowed();
+      allow create: if allowed()
+        && incoming().questionIds is list
+        && incoming().get('answers', {}).keys().hasOnly([uid()]);
+      // Either may update scores/timing, but only their own answers.
+      allow update: if allowed()
+        && incoming().questionIds == existing().questionIds
+        && mapDiffKeys('answers').hasOnly([uid()]);
+      allow delete: if false;
+    }
+
+    // ── recipes ──────────────────────────────────────────────────────────
+    match /recipes/{recipeId} {
+      allow read: if allowed();
+      allow create: if allowed() && incoming().addedBy == uid();
+      allow update, delete: if allowed();
+    }
+
+    // ── server-only (firebase-admin bypasses rules) ──────────────────────
+    match /push/{pushId} {
+      allow read, write: if false;
+    }
+    match /tickLog/{jobKey} {
+      allow read, write: if false;
+    }
+  }
+}
