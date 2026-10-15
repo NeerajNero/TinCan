@@ -13,14 +13,17 @@ interface Paged<T> {
 
 /**
  * First page is a live listener; older pages are one-time reads appended
- * below it. `makeQuery(after)` must order newest-first and apply the limit.
+ * below it. `makeQuery(cursor)` applies the page limit; the cursor is the
+ * oldest document of the previous page — the last doc for newest-first
+ * queries, or the first doc when `oldestFirst` (ascending + limitToLast).
  * Documents merge by id so an edit to a live-page item updates in place.
  */
 export function usePagedCollection<D, T extends { id: string }>(
-  makeQuery: (after: QueryDocumentSnapshot<D> | null) => Query<D> | null,
+  makeQuery: (cursor: QueryDocumentSnapshot<D> | null) => Query<D> | null,
   pageSize: number,
   mapDoc: (snap: QueryDocumentSnapshot<D>) => T,
   sort: (a: T, b: T) => number,
+  oldestFirst = false,
 ): Paged<T> {
   const [live, setLive] = useState<Map<string, T>>(() => new Map());
   const [older, setOlder] = useState<Map<string, T>>(() => new Map());
@@ -34,8 +37,8 @@ export function usePagedCollection<D, T extends { id: string }>(
     if (!firstQuery) return;
     const unsub = onSnapshot(firstQuery, (snap) => {
       setLive(new Map(snap.docs.map((d) => [d.id, mapDoc(d)])));
-      const last = snap.docs[snap.docs.length - 1] ?? null;
-      if (!cursor.current || !snap.metadata.fromCache) cursor.current = cursor.current ?? last;
+      const edge = (oldestFirst ? snap.docs[0] : snap.docs[snap.docs.length - 1]) ?? null;
+      if (!cursor.current || !snap.metadata.fromCache) cursor.current = cursor.current ?? edge;
       setReady(true);
       setHasMore((prev) => prev || snap.size >= pageSize);
     });
@@ -47,7 +50,7 @@ export function usePagedCollection<D, T extends { id: string }>(
       setReady(false);
       setHasMore(false);
     };
-  }, [firstQuery, mapDoc, pageSize]);
+  }, [firstQuery, mapDoc, pageSize, oldestFirst]);
 
   const loadMore = useCallback(async () => {
     const q = makeQuery(cursor.current);
@@ -60,12 +63,12 @@ export function usePagedCollection<D, T extends { id: string }>(
         snap.docs.forEach((d) => next.set(d.id, mapDoc(d)));
         return next;
       });
-      cursor.current = snap.docs[snap.docs.length - 1] ?? cursor.current;
+      cursor.current = (oldestFirst ? snap.docs[0] : snap.docs[snap.docs.length - 1]) ?? cursor.current;
       setHasMore(snap.size >= pageSize);
     } finally {
       setLoadingMore(false);
     }
-  }, [makeQuery, mapDoc, pageSize, hasMore, loadingMore]);
+  }, [makeQuery, mapDoc, pageSize, hasMore, loadingMore, oldestFirst]);
 
   const items = useMemo(() => {
     const merged = new Map(older);

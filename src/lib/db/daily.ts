@@ -1,4 +1,4 @@
-import { collection, doc, documentId, limit, orderBy, query, serverTimestamp, setDoc, startAfter, type CollectionReference, type DocumentReference, type Query, type QueryDocumentSnapshot } from "firebase/firestore";
+import { collection, doc, documentId, endBefore, limitToLast, orderBy, query, serverTimestamp, setDoc, type CollectionReference, type DocumentReference, type Query, type QueryDocumentSnapshot } from "firebase/firestore";
 
 import { getDb } from "@/lib/firebase/client";
 import { questionIndexFor } from "@/lib/daily";
@@ -18,8 +18,14 @@ export function answerDaily(dateKey: DateKey, uid: string, text: string): Promis
   );
 }
 
-/** Newest day first; ids are yyyy-MM-dd so document-id order is date order. */
-export function historyQuery(after: QueryDocumentSnapshot<DailyQuestionDoc> | null): Query<DailyQuestionDoc> {
-  const base = [orderBy(documentId(), "desc"), limit(HISTORY_PAGE)];
-  return after ? query(dailyCol(), orderBy(documentId(), "desc"), startAfter(after), limit(HISTORY_PAGE)) : query(dailyCol(), ...base);
+/**
+ * The newest 30 days. Ids are yyyy-MM-dd, so ascending document-id order is
+ * date order; `limitToLast` takes the newest without needing a descending
+ * index (Firestore only auto-indexes __name__ ascending). Older pages end
+ * before the oldest doc already loaded.
+ */
+export function historyQuery(before: QueryDocumentSnapshot<DailyQuestionDoc> | null): Query<DailyQuestionDoc> {
+  return before
+    ? query(dailyCol(), orderBy(documentId()), endBefore(before), limitToLast(HISTORY_PAGE))
+    : query(dailyCol(), orderBy(documentId()), limitToLast(HISTORY_PAGE));
 }
