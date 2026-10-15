@@ -1,13 +1,15 @@
 "use client";
 
 import { updateDoc } from "firebase/firestore";
-import { BellRing } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { BellRing, ChevronRight } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Switch } from "@/components/ui/Switch";
 import { usePair } from "@/hooks/usePair";
+import { cn } from "@/lib/cn";
 import { userRef } from "@/lib/db/refs";
 import { notify } from "@/lib/notify";
 import { disablePush, enablePush, permissionState, type EnableResult } from "@/lib/push";
@@ -31,6 +33,8 @@ export function NotificationsCard() {
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState<string | null>(permission === "denied" ? HINTS.denied : null);
   const [testState, setTestState] = useState<"idle" | "sent">("idle");
+  const [open, setOpen] = useState(false);
+  const offCount = NOTIF_KEYS.filter((k) => me.notif?.[k] === false).length;
 
   async function toggleMaster(next: boolean) {
     setBusy(true);
@@ -75,25 +79,57 @@ export function NotificationsCard() {
         </p>
       )}
 
-      <ul className={enabled ? "" : "opacity-50"}>
-        {NOTIF_KEYS.map((key) => {
-          const on = me.notif?.[key] !== false;
-          return (
-            <li key={key} className="flex items-center justify-between gap-3 py-2">
-              <label htmlFor={`notif-${key}`} className="text-sm font-semibold">
-                {NOTIF_LABELS[key]}
-              </label>
-              <Switch id={`notif-${key}`} checked={on} onChange={(v) => toggleType(key, v)} disabled={!enabled} />
-            </li>
-          );
-        })}
-      </ul>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="tap -mx-1 flex items-center gap-3 rounded-2xl px-1 py-2 text-left hover:bg-surface-2"
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold">Customise</span>
+          <span className="block text-xs text-muted">
+            {offCount === 0 ? "All types on" : `${offCount} ${offCount === 1 ? "type" : "types"} off`} · test notification
+          </span>
+        </span>
+        <ChevronRight size={18} aria-hidden className={cn("shrink-0 text-muted transition-transform", open && "rotate-90")} />
+      </button>
 
-      <Button variant="soft" onClick={sendTest} disabled={!enabled || testState === "sent"} className="self-start">
-        <BellRing size={18} aria-hidden />
-        {testState === "sent" ? "Sent — check in a moment" : "Send me a test notification"}
-      </Button>
-      {enabled && <p className="text-xs text-muted">Tip: background the app before the test arrives to see the system notification; in the foreground it shows as a toast.</p>}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="types"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 34 }}
+            className="overflow-hidden"
+          >
+            <ul className={enabled ? "" : "opacity-50"}>
+              {NOTIF_KEYS.map((key) => {
+                const on = me.notif?.[key] !== false;
+                return (
+                  <li key={key} className="flex items-center justify-between gap-3 py-2">
+                    <label htmlFor={`notif-${key}`} className="text-sm font-semibold">
+                      {NOTIF_LABELS[key]}
+                    </label>
+                    <Switch id={`notif-${key}`} checked={on} onChange={(v) => toggleType(key, v)} disabled={!enabled} />
+                  </li>
+                );
+              })}
+            </ul>
+
+            <Button variant="soft" onClick={sendTest} disabled={!enabled || testState === "sent"} className="mt-2 self-start">
+              <BellRing size={18} aria-hidden />
+              {testState === "sent" ? "Sent — check in a moment" : "Send me a test notification"}
+            </Button>
+            {enabled && (
+              <p className="mt-2 text-xs text-muted">
+                Tip: background the app before the test arrives to see the system notification; in the foreground it shows as a toast.
+              </p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   );
 }
