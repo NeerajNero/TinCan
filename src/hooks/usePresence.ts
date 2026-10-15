@@ -58,7 +58,6 @@ const swallow = () => undefined;
  */
 export function usePresence(uid: string | null, page: string): void {
   const pageRef = useRef(page);
-  pageRef.current = page;
 
   // Connection lifecycle: online + onDisconnect + heartbeat + visibility.
   useEffect(() => {
@@ -122,8 +121,9 @@ export function usePresence(uid: string | null, page: string): void {
     };
   }, [uid]);
 
-  // Which screen I'm on — a tiny write per route change.
+  // Which screen I'm on — a tiny write per route change, and remembered for reconnects.
   useEffect(() => {
+    pageRef.current = page;
     if (!uid) return;
     presencePage(uid, page).catch(swallow);
   }, [uid, page]);
