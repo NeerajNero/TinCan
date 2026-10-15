@@ -106,13 +106,18 @@ export interface ReplyTo {
   type: MessageType;
 }
 
+/**
+ * image: url, publicId, w, h, bytes · voice: url, publicId, durationMs, bytes
+ * gif: url, w, h · sticker: stickerId
+ */
 export interface MessageMedia {
-  url: string;
-  publicId: string;
+  url?: string;
+  publicId?: string;
   w?: number;
   h?: number;
   durationMs?: number;
   bytes?: number;
+  stickerId?: string;
 }
 
 export interface MessageDoc {

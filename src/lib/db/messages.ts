@@ -23,7 +23,7 @@ import {
 } from "firebase/firestore";
 
 import { getDb } from "@/lib/firebase/client";
-import type { Message, MessageDoc, ReplyTo } from "@/lib/types";
+import type { Message, MessageDoc, MessageMedia, MessageType, ReplyTo } from "@/lib/types";
 
 export const PAGE_SIZE = 50;
 export const MAX_TEXT = 2000;
@@ -86,6 +86,53 @@ export async function sendText(senderId: string, text: string, replyTo: ReplyTo 
   return ref.id;
 }
 
+/** Image, voice, gif or sticker. `text` is the optional caption. */
+export async function sendMedia(
+  senderId: string,
+  type: Exclude<MessageType, "text" | "system">,
+  media: MessageMedia,
+  text = "",
+  replyTo: ReplyTo | null = null,
+): Promise<string> {
+  const ref = await addDoc(messagesCol(), {
+    senderId,
+    type,
+    text: text.slice(0, MAX_TEXT),
+    media,
+    replyTo,
+    reactions: {},
+    status: "sent",
+    deliveredAt: null,
+    readAt: null,
+    deletedFor: [],
+    deletedForEveryone: false,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+/** Short label for a non-text message, used in previews, quotes and pushes. */
+export function mediaLabel(m: Pick<Message, "type" | "text" | "deletedForEveryone">): string {
+  if (m.deletedForEveryone) return "This message was deleted";
+  switch (m.type) {
+    case "image":
+      return m.text ? `📷 ${m.text}` : "📷 Photo";
+    case "voice":
+      return "🎤 Voice note";
+    case "gif":
+      return "GIF";
+    case "sticker":
+      return "Sticker";
+    default:
+      return m.text;
+  }
+}
+
+/** True when a Cloudinary asset is attached that the server must destroy on delete-for-everyone. */
+export function hasCloudinaryAsset(m: Pick<Message, "type" | "media">): boolean {
+  return (m.type === "image" || m.type === "voice") && Boolean(m.media?.publicId);
+}
+
 export function editText(id: string, text: string): Promise<void> {
   return updateDoc(messageRef(id), { text: text.slice(0, MAX_TEXT), editedAt: serverTimestamp() });
 }
@@ -104,8 +151,9 @@ export function deleteForMe(id: string, uid: string): Promise<void> {
   return updateDoc(messageRef(id), { deletedFor: arrayUnion(uid) });
 }
 
+/** Text-only soft delete. Media messages go through DELETE /api/media instead. */
 export function deleteForEveryone(id: string): Promise<void> {
-  return updateDoc(messageRef(id), { deletedForEveryone: true, text: "" });
+  return updateDoc(messageRef(id), { deletedForEveryone: true, text: "", media: null });
 }
 
 /** Set my reaction, or clear it when it's already the same emoji. */
@@ -117,17 +165,7 @@ export function toggleReaction(message: Message, uid: string, emoji: string): Pr
 }
 
 export function replyPreview(message: Message): ReplyTo {
-  const preview = message.deletedForEveryone
-    ? "This message was deleted"
-    : message.type === "text" || message.type === "system"
-      ? message.text.slice(0, 120)
-      : message.type === "image"
-        ? "📷 Photo"
-        : message.type === "voice"
-          ? "🎤 Voice note"
-          : message.type === "gif"
-            ? "GIF"
-            : "Sticker";
+  const preview = mediaLabel(message).slice(0, 120);
   return { id: message.id, preview, senderId: message.senderId, type: message.type };
 }
 

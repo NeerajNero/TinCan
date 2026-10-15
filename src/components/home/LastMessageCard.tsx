@@ -5,25 +5,14 @@ import Link from "next/link";
 
 import { useChatMeta } from "@/hooks/useChatMeta";
 import { usePair } from "@/hooks/usePair";
+import { mediaLabel } from "@/lib/db/messages";
 
 /** One-line peek at the latest message; taps through to the chat. */
 export function LastMessageCard({ friendName }: { friendName: string }) {
   const { uid } = usePair();
   const { lastMessage: m, unreadCount } = useChatMeta();
 
-  const body = !m
-    ? `No messages yet — say hi to ${friendName}?`
-    : m.deletedForEveryone
-      ? "This message was deleted"
-      : m.type === "system"
-        ? m.text
-        : m.type === "text"
-          ? m.text
-          : m.type === "image"
-            ? "📷 Photo"
-            : m.type === "voice"
-              ? "🎤 Voice note"
-              : m.type;
+  const body = !m ? `No messages yet — say hi to ${friendName}?` : mediaLabel(m);
   const who = !m || m.type === "system" ? "" : m.senderId === uid ? "You: " : `${friendName}: `;
 
   return (

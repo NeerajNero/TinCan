@@ -4,7 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import { UploadBubble } from "@/components/chat/media/UploadBubble";
 import { MessageBubble } from "@/components/chat/MessageBubble";
+import type { Upload } from "@/hooks/useUploads";
 import { AUTO_LOAD_PAGES } from "@/hooks/useMessages";
 import { cn } from "@/lib/cn";
 import { dateKeyIn, dateKeyToLocalDate, previousDay } from "@/lib/dates";
@@ -30,6 +32,10 @@ interface MessageListProps {
   onOpenMenu: (m: Message) => void;
   onReply: (m: Message) => void;
   onReact: (m: Message, emoji: string) => void;
+  onOpenImage: (m: Message) => void;
+  uploads: Upload[];
+  onRetryUpload: (id: string) => void;
+  onDismissUpload: (id: string) => void;
 }
 
 function dayLabel(key: string, today: string): string {
@@ -39,7 +45,7 @@ function dayLabel(key: string, today: string): string {
 }
 
 export function MessageList(props: MessageListProps) {
-  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact } = props;
+  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact, onOpenImage, uploads, onRetryUpload, onDismissUpload } = props;
   const scroller = useRef<HTMLDivElement>(null);
   const dividerRef = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
@@ -79,6 +85,12 @@ export function MessageList(props: MessageListProps) {
     prepend.current = null;
     el.scrollTop = el.scrollHeight - p.height + p.top;
   }, [visible.length]);
+
+  // An outgoing upload placeholder always brings us to the bottom.
+  const uploadCount = uploads.length;
+  useEffect(() => {
+    if (uploadCount > 0) scrollToBottom("smooth");
+  }, [uploadCount]);
 
   // New message at the end: follow it if we're near the bottom or it's ours; otherwise count it for the FAB.
   useEffect(() => {
@@ -177,11 +189,15 @@ export function MessageList(props: MessageListProps) {
                     onOpenMenu={onOpenMenu}
                     onReply={onReply}
                     onReact={onReact}
+                    onOpenImage={onOpenImage}
                   />
                 )}
               </div>
             );
           })}
+          {uploads.map((u) => (
+            <UploadBubble key={u.id} upload={u} onRetry={() => onRetryUpload(u.id)} onDismiss={() => onDismissUpload(u.id)} />
+          ))}
         </div>
       </div>
 
