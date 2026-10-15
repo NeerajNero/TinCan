@@ -24,8 +24,8 @@
     "lamp": {
       "$uid": {
         ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
-        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid",
-        ".validate": "newData.hasChildren(['on']) && newData.child('on').isBoolean()"
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        ".validate": "newData.hasChildren(['on', 'color', 'until']) && newData.child('on').isBoolean() && newData.child('color').isString() && newData.child('until').isNumber()"
       }
     },
     "cursors": {
