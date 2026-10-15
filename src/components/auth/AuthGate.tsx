@@ -8,6 +8,7 @@ import { SetupScreen } from "@/components/auth/SetupScreen";
 import { TakenScreen } from "@/components/auth/TakenScreen";
 import { Splash } from "@/components/ui/Splash";
 import { useAuth } from "@/hooks/useAuth";
+import { ChatMetaProvider } from "@/hooks/useChatMeta";
 import { PairProvider } from "@/hooks/usePair";
 
 /**
@@ -27,7 +28,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       return (
         <>
           <PresenceController />
-          <PairProvider>{children}</PairProvider>
+          <PairProvider>
+            <ChatMetaProvider>{children}</ChatMetaProvider>
+          </PairProvider>
         </>
       );
     case "denied":

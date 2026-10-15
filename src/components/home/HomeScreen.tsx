@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 
 import { CountdownCard } from "@/components/home/CountdownCard";
 import { Lamps } from "@/components/home/Lamps";
+import { LastMessageCard } from "@/components/home/LastMessageCard";
 import { MoodCheckin } from "@/components/home/MoodCheckin";
 import { PingOverlay } from "@/components/home/PingOverlay";
 import { PingRow } from "@/components/home/PingRow";
@@ -54,6 +55,7 @@ export function HomeScreen() {
     <div className="flex flex-col gap-4">
       <Header nickname={me.nickname} />
       <PresenceCard friend={friend} />
+      <LastMessageCard friendName={friend.nickname} />
       <PingRow friendUid={friendUid} friendName={friend.nickname} />
       <Lamps friendUid={friendUid} friendName={friend.nickname} />
       <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={data.friendMood} friendName={friend.nickname} />

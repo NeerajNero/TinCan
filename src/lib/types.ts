@@ -97,6 +97,49 @@ export interface MoodDoc {
 /* ── messages/{id} (only what phase 3 writes; chat fills this in) ─────── */
 
 export type MessageType = "text" | "image" | "voice" | "gif" | "sticker" | "system";
+export type MessageStatus = "sent" | "delivered" | "read";
+
+export interface ReplyTo {
+  id: string;
+  preview: string;
+  senderId: string;
+  type: MessageType;
+}
+
+export interface MessageMedia {
+  url: string;
+  publicId: string;
+  w?: number;
+  h?: number;
+  durationMs?: number;
+  bytes?: number;
+}
+
+export interface MessageDoc {
+  senderId: string;
+  type: MessageType;
+  text: string;
+  media?: MessageMedia | null;
+  replyTo?: ReplyTo | null;
+  /** uid → emoji */
+  reactions: Record<string, string>;
+  status: MessageStatus;
+  deliveredAt: Timestamp | null;
+  readAt: Timestamp | null;
+  editedAt?: Timestamp | null;
+  deletedFor: string[];
+  deletedForEveryone: boolean;
+  createdAt: Timestamp | null;
+}
+
+/** A message as the chat renders it. */
+export interface Message extends MessageDoc {
+  id: string;
+  /** Local write not yet acknowledged by the server (also the offline queue). */
+  pending: boolean;
+  /** Server time, or the SDK's estimate while pending. */
+  createdAtMs: number;
+}
 
 /* ── RTDB ──────────────────────────────────────────────────────────────── */
 

@@ -5,6 +5,7 @@ import { CalendarHeart, Gamepad2, House, Images, MessageCircle, Sparkles, type L
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useChatMeta } from "@/hooks/useChatMeta";
 import { cn } from "@/lib/cn";
 import { activeTab, TABS, type TabKey } from "@/lib/tabs";
 
@@ -20,6 +21,7 @@ const ICONS: Record<TabKey, LucideIcon> = {
 export function TabBar() {
   const pathname = usePathname();
   const current = activeTab(pathname);
+  const { unreadCount } = useChatMeta();
 
   return (
     <nav
@@ -34,7 +36,7 @@ export function TabBar() {
             <Link
               key={tab.key}
               href={tab.href}
-              aria-label={tab.label}
+              aria-label={tab.key === "chat" && unreadCount > 0 ? `${tab.label}, ${unreadCount} unread` : tab.label}
               aria-current={active ? "page" : undefined}
               style={{ "--accent": `var(${tab.accentVar})` } as React.CSSProperties}
               className={cn(
@@ -50,6 +52,14 @@ export function TabBar() {
                   className="absolute inset-0 rounded-[20px] bg-accent-soft"
                   transition={{ type: "spring", stiffness: 520, damping: 36, mass: 0.8 }}
                 />
+              )}
+              {tab.key === "chat" && unreadCount > 0 && (
+                <span
+                  aria-label={`${unreadCount} unread`}
+                  className="absolute top-0.5 right-[calc(50%-20px)] z-10 min-w-5 rounded-full bg-[var(--accent-chat)] px-1.5 text-center text-[10px] font-bold leading-5 text-white shadow-sm"
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
               )}
               <motion.span
                 className="relative"
