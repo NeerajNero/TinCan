@@ -33,6 +33,8 @@ interface ComposerProps {
   onSendGif: (gif: Gif) => void;
   /** Opens the "send later" sheet with the current draft; the parent owns the sheet. */
   onSchedule: (draft: string) => void;
+  /** The textarea got focus (the keyboard is about to open). */
+  onFocusInput?: () => void;
 }
 
 const MAX_ROWS = 6;
@@ -61,6 +63,7 @@ export function Composer(props: ComposerProps) {
     onSendSticker,
     onSendGif,
     onSchedule,
+    onFocusInput,
   } = props;
   // The parent re-keys this component per edit target, so the initial value is enough.
   const [text, setText] = useState(() => editing?.text ?? "");
@@ -282,7 +285,10 @@ export function Composer(props: ComposerProps) {
                   if (e.target.value.trim()) typing.ping();
                 }}
                 onKeyDown={onKeyDown}
-                onFocus={() => setPanel(false)}
+                onFocus={() => {
+                  setPanel(false);
+                  onFocusInput?.();
+                }}
                 onBlur={typing.clear}
                 className={cn(
                   "max-h-[164px] min-h-11 flex-1 resize-none rounded-[22px] border border-border bg-surface px-4 py-2.5 text-[15px] leading-[22px]",

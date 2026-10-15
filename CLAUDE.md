@@ -133,12 +133,13 @@ radio stations (6 public stream URLs with names).
 ## Data model — RTDB
 `presence/{uid}`: {online, lastSeen, status(awake|sleeping), page}
 `typing/{uid}`: timestamp (chat shows "typing…" while < 3 s old)
-`pings/{uid}`: {from, kind, at} — latest ping received; client animates on change
+`pings/{uid}/{pushId}`: {from, kind, at} — a queue; the receiver animates each child (older ones are
+  summarised in one toast) and deletes it after showing
 `lamp/{uid}`: {on, color, until}
 `cursors/{uid}`: {x, y, page, at} — only written on whiteboard/pixel pages, throttled 50 ms
 `whiteboard/strokes/{id}`: {uid, color, width, points[[x,y]...]} — cap 500 strokes, Clear deletes all
 `pixel/grid`: 32×32 as array of 1024 palette indices; `pixel/cursor/{uid}`
-`games/{gameId}`: {type, state, turn, players, status, lastMoveAt} — live boards
+`games/{gameId}`: {type, state, turn, players, status, lastMoveAt, endReason(win|draw|resign|abandoned|cancelled)} — live boards
 `cards/{deck}`: {index, flippedBy, at} — shared current card for deck games
 `pictionary/{gameId}`: {drawerUid, word, startedAt, strokes…, guesses[], solvedAt}
 `watch/main`: {videoId, playing, positionSec, updatedAt, by, title}

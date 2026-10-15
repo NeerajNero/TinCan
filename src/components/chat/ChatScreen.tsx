@@ -65,6 +65,35 @@ interface ThreadProps {
 
 function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker }: ThreadProps) {
   const router = useRouter();
+  const root = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | null>(null);
+  const [layoutTick, setLayoutTick] = useState(0);
+
+  // Android keyboards shrink the *visual* viewport without always resizing the
+  // layout; size the thread to whatever is actually visible and keep the
+  // composer at the visual bottom. The tab bar is honoured when it's on screen.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const measure = () => {
+      const el = root.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top;
+      const mainBottom = el.closest("main")?.getBoundingClientRect().bottom ?? window.innerHeight;
+      const vvBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+      setHeight(Math.max(240, Math.min(mainBottom, vvBottom) - top));
+      setLayoutTick((t) => t + 1);
+    };
+    const raf = requestAnimationFrame(measure);
+    vv?.addEventListener("resize", measure);
+    vv?.addEventListener("scroll", measure);
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      vv?.removeEventListener("resize", measure);
+      vv?.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
   const { messages, initialUnread, ready, hasMore, loadingOlder, pageCount, loadOlder, prune } = useMessages(uid);
   const visible = useVisible();
   const [menuFor, setMenuFor] = useState<Message | null>(null);
@@ -109,6 +138,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
       setReplyTo(null);
       const id = await sendText(uid, text, reply);
       playSound("send");
+      setLayoutTick((t) => t + 1);
       await notify("message", { toUid: friendUid, body: text.slice(0, 120), data: { messageId: id } });
       if (needsMessageSticker) void getCountFromServer(messagesCol()).then((c) => c.data().count >= 100 && recordTogetherEvent("messages-100", uid)).catch(() => undefined);
     },
@@ -168,7 +198,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
   }, []);
 
   return (
-    <div className="-mx-4 -mt-4 -mb-6 flex min-h-0 flex-1 flex-col">
+    <div ref={root} className="-mx-4 -mt-4 -mb-6 flex min-h-0 flex-1 flex-col" style={height ? { height, flex: "none" } : undefined}>
       <ChatHeader friend={friendDoc} friendUid={friendUid} />
       <MessageList
         messages={messages}
@@ -193,6 +223,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
         uploads={uploads.uploads}
         onRetryUpload={uploads.retry}
         onDismissUpload={uploads.dismiss}
+        layoutTick={layoutTick}
       />
       <Composer
         key={editing ? `edit:${editing.id}` : "compose"}
@@ -209,6 +240,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
         onSendSticker={(id) => void sendSticker(id).catch(() => undefined)}
         onSendGif={(gif) => void sendGif(gif).catch(() => undefined)}
         onSchedule={(draft) => setSchedule({ open: true, draft })}
+        onFocusInput={() => setLayoutTick((t) => t + 1)}
       />
       <ScheduleSheet
         open={schedule.open}

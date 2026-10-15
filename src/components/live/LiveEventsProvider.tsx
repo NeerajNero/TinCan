@@ -17,7 +17,7 @@ import { gameRoute, resultForRecipient, subscribeOpenGames, type LiveGame } from
 import { mediaLabel } from "@/lib/db/messages";
 import { lampPath, presencePath, rtdbRef } from "@/lib/rtdb";
 import { playSound } from "@/lib/sounds";
-import { PINGS, type DailyQuestionDoc, type LampNode, type PresenceNode } from "@/lib/types";
+import { PINGS, type DailyQuestionDoc, type LampNode, type PingKind, type PresenceNode } from "@/lib/types";
 import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
 
 interface LiveEvents {
@@ -61,10 +61,14 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
   }, [pathname, visible]);
 
   /* ── pings ─────────────────────────────────────────────────────────── */
-  const incoming = useIncomingPings(uid);
+  const missedToast = useCallback(
+    (kinds: PingKind[]) => toast({ key: "pings-missed", emoji: "📬", title: `While you were away: ${kinds.map((k) => PINGS[k].emoji).join("")}`, body: `${kinds.length} ${kinds.length === 1 ? "ping" : "pings"} from ${friendName}`, url: "/", durationMs: 6000 }),
+    [toast, friendName],
+  );
+  const incoming = useIncomingPings(uid, missedToast);
   const [dismissed, setDismissed] = useState<IncomingPing | null>(null);
   const dismissPing = useCallback(() => setDismissed(incoming), [incoming]);
-  const lastToastedPing = useRef<number | null>(null);
+  const lastToastedPing = useRef<string | null>(null);
   useEffect(() => {
     if (!incoming || lastToastedPing.current === incoming.nonce) return;
     lastToastedPing.current = incoming.nonce;

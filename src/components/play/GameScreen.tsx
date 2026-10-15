@@ -13,6 +13,7 @@ import { ListSkeleton } from "@/components/ui/Skeleton";
 const ChessBoard = dynamic(() => import("@/components/play/boards/ChessBoard").then((m) => m.ChessBoard), { ssr: false, loading: () => <ListSkeleton rows={1} tall /> });
 import { ConnectFourBoard } from "@/components/play/boards/ConnectFourBoard";
 import { TicTacToeBoard } from "@/components/play/boards/TicTacToeBoard";
+import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { FriendHereBadge } from "@/components/play/FriendHereBadge";
 import { Confetti } from "@/components/plan/Confetti";
 import { Avatar } from "@/components/ui/Avatar";
@@ -110,6 +111,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
       {/* sticky turn header */}
       <div className="sticky top-0 z-10 -mx-4 bg-bg/90 px-4 py-2 backdrop-blur-md">
         <div className="card flex items-center gap-3 rounded-[20px] px-3 py-2">
+          <CloseGameMenu game={game} onDone={() => router.push("/play")} className="tap grid size-9 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2" />
           <Seat uid={game.players.first} label={game.type === "chess" ? "White" : "First"} active={game.status === "active" && game.turn === "first"} me={uid} meDoc={me} friendDoc={friend} nameOf={nameOf} />
           <span className="text-xs font-bold text-muted">vs</span>
           <Seat uid={game.players.second} label={game.type === "chess" ? "Black" : "Second"} active={game.status === "active" && game.turn === "second"} me={uid} meDoc={me} friendDoc={friend} nameOf={nameOf} right />
@@ -117,7 +119,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
         <p className="pt-1 text-center text-sm font-bold" aria-live="polite">
           {game.status === "invited" && (game.createdBy === uid ? `Waiting for ${nameOf(game.players.second)} to accept…` : `${nameOf(game.createdBy)} invited you`)}
           {game.status === "active" && (myTurn ? "Your turn" : `${nameOf(uidOf(game, game.turn))}'s turn`)}
-          {game.status === "finished" && (game.winnerId ? (game.winnerId === uid ? "You won! 🎉" : `${nameOf(game.winnerId)} won`) : game.endReason === "abandoned" ? "Abandoned" : "Draw")}
+          {game.status === "finished" && (game.winnerId ? (game.winnerId === uid ? "You won! 🎉" : `${nameOf(game.winnerId)} won`) : game.endReason === "abandoned" ? "Abandoned" : game.endReason === "cancelled" ? "Cancelled" : "Draw")}
           {game.status === "declined" && "Declined"}
         </p>
         <FriendHereBadge screenName={meta.name} />

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
+import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
@@ -132,18 +133,21 @@ export function PlayScreen() {
           {active.map((g) => {
             const mine = g.status === "active" && uidOf(g, g.turn) === uid;
             return (
-              <Link key={g.id} href={gameRoute(g.id)} className="card tap flex items-center gap-3 rounded-[20px] px-4 py-3">
-                <span className="text-2xl" aria-hidden>
-                  {GAME_META[g.type].emoji}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{GAME_META[g.type].name}</span>
-                  <span className="block text-xs text-muted">{g.moves} moves{g.lastMoveAt ? ` · ${formatDistanceToNowStrict(new Date(g.lastMoveAt), { addSuffix: true })}` : ""}</span>
-                </span>
-                <span className={cn("rounded-full px-2.5 py-1 text-xs font-bold", g.status === "invited" ? "bg-surface-2 text-muted" : mine ? "bg-[var(--accent)] text-white" : "bg-accent-soft")}>
-                  {g.status === "invited" ? "Invited" : mine ? "Your turn" : "Their turn"}
-                </span>
-              </Link>
+              <div key={g.id} className="card flex items-center gap-2 rounded-[20px] px-3 py-3">
+                <Link href={gameRoute(g.id)} className="flex min-w-0 flex-1 items-center gap-3">
+                  <span className="text-2xl" aria-hidden>
+                    {GAME_META[g.type].emoji}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">{GAME_META[g.type].name}</span>
+                    <span className="block text-xs text-muted">{g.moves} moves{g.lastMoveAt ? ` · ${formatDistanceToNowStrict(new Date(g.lastMoveAt), { addSuffix: true })}` : ""}</span>
+                  </span>
+                  <span className={cn("rounded-full px-2.5 py-1 text-xs font-bold", g.status === "invited" ? "bg-surface-2 text-muted" : mine ? "bg-[var(--accent)] text-white" : "bg-accent-soft")}>
+                    {g.status === "invited" ? "Invited" : mine ? "Your turn" : "Their turn"}
+                  </span>
+                </Link>
+                <CloseGameMenu game={g} />
+              </div>
             );
           })}
         </section>

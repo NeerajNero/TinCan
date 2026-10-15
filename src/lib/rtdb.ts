@@ -2,7 +2,7 @@
  * Realtime Database paths and the small writes Home makes. Everything here is
  * ephemeral; nothing is read back except through `useRtdbValue`.
  */
-import { onDisconnect, ref, serverTimestamp, set, update, type DatabaseReference } from "firebase/database";
+import { onDisconnect, push, ref, serverTimestamp, set, update, type DatabaseReference } from "firebase/database";
 
 import { getRtdb } from "@/lib/firebase/client";
 import type { LampNode, PingKind, PresenceStatus } from "@/lib/types";
@@ -46,8 +46,9 @@ export function armPresenceOnDisconnect(uid: string): Promise<void> {
 
 /* ── pings ─────────────────────────────────────────────────────────────── */
 
+/** Queue a ping: one child per send, so a run of hugs animates one by one. */
 export function sendPing(toUid: string, fromUid: string, kind: PingKind): Promise<void> {
-  return set(rtdbRef(pingsPath(toUid)), { from: fromUid, kind, at: serverTimestamp() });
+  return set(push(rtdbRef(pingsPath(toUid))), { from: fromUid, kind, at: serverTimestamp() });
 }
 
 /* ── lamp ──────────────────────────────────────────────────────────────── */

@@ -14,7 +14,7 @@ import { notify } from "@/lib/notify";
 import type { PairDoc } from "@/lib/types";
 
 export type GameStatusKey = "invited" | "active" | "finished" | "declined";
-export type EndReason = "win" | "draw" | "resign" | "abandoned";
+export type EndReason = "win" | "draw" | "resign" | "abandoned" | "cancelled";
 
 export interface GameNode {
   type: GameType;
@@ -186,6 +186,16 @@ export async function playMove(game: LiveGame, me: string, move: unknown, nameOf
   return outcome;
 }
 
+/** A game nobody has moved in yet can be called off: no result, no record change. */
+export async function cancelGame(game: LiveGame, me: string, nameOf: (uid: string) => string): Promise<boolean> {
+  const res = await runTransaction(ref(getRtdb(), gamePath(game.id)), (current: GameNode | null) => {
+    if (!current || current.status !== "active" || (current.moves ?? 0) > 0) return;
+    return { ...current, status: "finished", open: false, winnerId: null, endReason: "cancelled", lastMoveAt: Date.now() } satisfies GameNode;
+  });
+  if (res.committed) void postSystemMessage(me, `✕ ${nameOf(me)} cancelled the ${GAME_META[game.type].name} game`);
+  return res.committed;
+}
+
 export async function resign(game: LiveGame, me: string, nameOf: (uid: string) => string): Promise<void> {
   const mine = playerOf(game, me);
   if (!mine) return;
@@ -258,6 +268,7 @@ export function resultForRecipient(game: LiveGame, recipient: string, nameOf: (u
 /** Nickname-aware line, posted from the UI where names are known. */
 export function describeResult(game: LiveGame, nameOf: (uid: string) => string): string {
   const meta = GAME_META[game.type];
+  if (game.endReason === "cancelled") return `✕ The ${meta.name} game was cancelled`;
   if (!game.winnerId) return `${meta.emoji} ${nameOf(game.players.first)} and ${nameOf(game.players.second)} drew at ${meta.name}`;
   const loser = game.winnerId === game.players.first ? game.players.second : game.players.first;
   if (game.endReason === "resign") return `${meta.emoji} ${nameOf(loser)} conceded at ${meta.name} — ${nameOf(game.winnerId)} takes it`;

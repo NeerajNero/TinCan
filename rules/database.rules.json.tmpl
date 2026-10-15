@@ -21,8 +21,10 @@
     "pings": {
       "$uid": {
         ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
-        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid !== auth.uid",
-        ".validate": "newData.hasChildren(['from', 'kind', 'at']) && newData.child('from').val() === auth.uid && newData.child('kind').isString()"
+        "$pushId": {
+          ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && ((!data.exists() && newData.exists() && $uid !== auth.uid) || (data.exists() && !newData.exists() && $uid === auth.uid))",
+          ".validate": "newData.hasChildren(['from', 'kind', 'at']) && newData.child('from').val() === auth.uid && newData.child('kind').isString()"
+        }
       }
     },
     "lamp": {
@@ -67,6 +69,7 @@
         "turn": { ".validate": "newData.val() === 'first' || newData.val() === 'second'" },
         "status": { ".validate": "newData.val() === 'invited' || newData.val() === 'active' || newData.val() === 'finished' || newData.val() === 'declined'" },
         "open": { ".validate": "newData.isBoolean()" },
+        "endReason": { ".validate": "!newData.exists() || newData.val() === 'win' || newData.val() === 'draw' || newData.val() === 'resign' || newData.val() === 'abandoned' || newData.val() === 'cancelled'" },
         "players": { ".validate": "newData.hasChildren(['first', 'second'])" },
         "reaction": { ".validate": "newData.hasChildren(['by', 'emoji', 'at']) && newData.child('by').val() === auth.uid && newData.child('emoji').isString()" }
       }

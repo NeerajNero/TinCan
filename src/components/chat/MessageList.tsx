@@ -38,6 +38,8 @@ interface MessageListProps {
   uploads: Upload[];
   onRetryUpload: (id: string) => void;
   onDismissUpload: (id: string) => void;
+  /** Bumped by the parent on visual-viewport resizes and composer focus. */
+  layoutTick: number;
 }
 
 function dayLabel(key: string, today: string): string {
@@ -47,7 +49,7 @@ function dayLabel(key: string, today: string): string {
 }
 
 export function MessageList(props: MessageListProps) {
-  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact, onOpenImage, deletingIds, uploads, onRetryUpload, onDismissUpload } = props;
+  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact, onOpenImage, deletingIds, uploads, onRetryUpload, onDismissUpload, layoutTick } = props;
   const scroller = useRef<HTMLDivElement>(null);
   const dividerRef = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
@@ -87,6 +89,19 @@ export function MessageList(props: MessageListProps) {
     prepend.current = null;
     el.scrollTop = el.scrollHeight - p.height + p.top;
   }, [visible.length]);
+
+  // Keyboard opened/closed or composer focused: if we were at the bottom, stay there (after layout settles).
+  useEffect(() => {
+    if (layoutTick === 0 || !nearBottom.current) return;
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => scrollToBottom());
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [layoutTick]);
 
   // An outgoing upload placeholder always brings us to the bottom.
   const uploadCount = uploads.length;
