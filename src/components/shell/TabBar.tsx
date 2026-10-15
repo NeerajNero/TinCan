@@ -2,9 +2,10 @@
 
 import { motion } from "framer-motion";
 import { CalendarHeart, Gamepad2, House, Images, MessageCircle, Sparkles, type LucideIcon } from "lucide-react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
+import { Spinner } from "@/components/ui/Spinner";
 import { useChatMeta } from "@/hooks/useChatMeta";
 import { cn } from "@/lib/cn";
 import { activeTab, TABS, type TabKey } from "@/lib/tabs";
@@ -61,23 +62,26 @@ export function TabBar() {
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
-              <motion.span
-                className="relative"
-                animate={active ? { y: -1, scale: 1.08 } : { y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 520, damping: 26 }}
-              >
-                <Icon
-                  size={22}
-                  strokeWidth={active ? 2.4 : 2}
-                  className={cn(active && "text-accent")}
-                  style={active ? { color: "var(--accent)" } : undefined}
-                />
-              </motion.span>
+              <TabIcon Icon={Icon} active={active} />
               <span className="relative text-[10px] font-bold leading-none">{tab.label}</span>
             </Link>
           );
         })}
       </div>
     </nav>
+  );
+}
+
+/** The icon, or a spinner while this link's navigation is pending. */
+function TabIcon({ Icon, active }: { Icon: LucideIcon; active: boolean }) {
+  const { pending } = useLinkStatus();
+  return (
+    <motion.span className="relative grid size-6 place-items-center" animate={active ? { y: -1, scale: 1.08 } : { y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 520, damping: 26 }}>
+      {pending ? (
+        <Spinner size={18} className="text-[var(--accent)]" />
+      ) : (
+        <Icon size={22} strokeWidth={active ? 2.4 : 2} style={active ? { color: "var(--accent)" } : undefined} />
+      )}
+    </motion.span>
   );
 }
