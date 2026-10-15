@@ -286,6 +286,25 @@ radio stations (6 public stream URLs with names).
 - RTDB: `presence/{uid}`, `typing/{uid}`, `cursors/{uid}`, `lamp/{uid}` writable only by `uid`;
   `pings/{uid}` writable by the other user; shared nodes writable by both allowlisted users.
 
+## Security (phase 15a)
+- API routes share one guard (`src/lib/server/guard.ts`): ID token verified with revocation
+  checking, `email_verified` + allowlist required, bodies ≤ 16 KB and zod `.strict()`, an in-memory
+  token bucket per uid per route, and a Firestore daily cap per uid (`quota/{uid}_{day}`, admin-only:
+  push 1000, media/sign 300). `/api/tick` compares its secret with `timingSafeEqual`. Error bodies
+  are minimal; details only in server logs.
+- Cloudinary uploads are **signed**: `POST /api/media/sign` returns a signature for a fixed param set
+  (timestamp, folder, preset, incoming transformation for images; 5 MB image / 3 MB audio cap
+  checked before signing). Both presets must be in Signed mode in the console. The app only renders
+  media from `https://res.cloudinary.com/<cloud>/` and GIFs from `https://media*.giphy.com/`; rules
+  enforce the same prefixes on write.
+- Security headers from `next.config.ts`: CSP (Report-Only until clean), nosniff, DENY framing,
+  strict referrer, Permissions-Policy allowing only microphone(self) and media playback.
+- Rules validate shapes and sizes (message text ≤ 2000, captions ≤ 500, notes ≤ 1000, no unknown
+  top-level fields on users/messages, `createdAt == request.time` on creates, immutable identity
+  fields; RTDB validates strokes, cursors, presence page length and canvas sizes).
+- Rules are covered by emulator tests (`pnpm test:rules`). The service worker only opens
+  same-origin URLs from notification clicks.
+
 ## Engineering rules
 - Keep Firestore reads low: every listener is bounded (`limit`), Home subscribes to at most
   `pair/main`, `users/{friend}`, today's `checkins`, today's `moods`, today's `dailyQuestions`

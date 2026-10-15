@@ -7,6 +7,7 @@ import { STICKERS } from "@/content/stickers";
 import { cn } from "@/lib/cn";
 import { COMPOSER_EMOJI } from "@/lib/emoji";
 import { giphyEnabled, GiphyRateLimited, searchGifs, type Gif } from "@/lib/giphy";
+import { isGiphyUrl } from "@/lib/safeUrl";
 
 type Tab = "emoji" | "stickers" | "gifs";
 
@@ -102,7 +103,7 @@ function GifTab({ onGif }: { onGif: (gif: Gif) => void }) {
       {failed === "resting" && <p className="text-center text-xs text-muted">GIF search is resting, try again in a bit ☕</p>}
       {failed === "error" && <p className="text-center text-xs text-muted">GIPHY didn&apos;t answer. Try again?</p>}
       <div className="grid grid-cols-3 gap-1">
-        {gifs.map((g) => (
+        {gifs.filter((g) => isGiphyUrl(g.url) && isGiphyUrl(g.previewUrl)).map((g) => (
           <button key={g.id} type="button" onClick={() => onGif(g)} aria-label={`Send GIF: ${g.title}`} className="tap overflow-hidden rounded-xl bg-surface-2">
             <Image src={g.previewUrl} alt="" width={120} height={100} unoptimized className="h-24 w-full object-cover" />
           </button>

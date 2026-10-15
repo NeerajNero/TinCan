@@ -66,7 +66,9 @@ if (firebaseConfig.apiKey && firebaseConfig.appId) {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target = new URL((event.notification.data as { url?: string } | undefined)?.url ?? "/", self.location.origin).href;
+  const requested = new URL((event.notification.data as { url?: string } | undefined)?.url ?? "/", self.location.origin);
+  // Never leave our origin from a notification click.
+  const target = requested.origin === self.location.origin ? requested.href : `${self.location.origin}/`;
   event.waitUntil(
     (async () => {
       const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });

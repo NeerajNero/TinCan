@@ -14,10 +14,11 @@
     "cloudinary:presets": "node scripts/cloudinary-presets.mjs",
     "tick:dry": "node scripts/tick-dry.mjs",
     "reset:dry": "node scripts/reset-data.mjs",
-    "reset": "node scripts/reset-data.mjs --yes"
+    "reset": "node scripts/reset-data.mjs --yes",
+    "test:rules": "pnpm rules:build && firebase emulators:exec --only firestore,database \"vitest run tests/rules.test.ts\"",
+    "test": "pnpm test:rules"
   },
   "dependencies": {
-    "@google-cloud/firestore": "^9.3.1",
     "browser-image-compression": "^2.0.2",
     "chess.js": "^1.4.0",
     "cloudinary": "^2.11.0",
@@ -36,6 +37,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@serwist/turbopack": "^9.5.13",
     "@tailwindcss/turbopack": "^4",
     "@types/leaflet": "^1.9.22",
@@ -48,8 +50,8 @@
     "serwist": "^9.5.13",
     "sharp": "^0.35.5",
     "tailwindcss": "^4",
-    "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.5"
   },
   "packageManager": "pnpm@10.15.0",
   "engines": {
@@ -57,7 +59,8 @@
   },
   "pnpm": {
     "overrides": {
-      "jose": "5.10.0"
+      "jose": "5.10.0",
+      "@grpc/grpc-js": ">=1.13.6"
     }
   }
 }

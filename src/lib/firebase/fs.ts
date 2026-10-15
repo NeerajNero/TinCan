@@ -74,11 +74,11 @@ export const updateDoc = write(F.updateDoc);
 export const addDoc = write(F.addDoc);
 export const deleteDoc = write(F.deleteDoc);
 
-export const writeBatch: typeof F.writeBatch = (db) => {
+export const writeBatch = ((db: F.Firestore) => {
   const batch = F.writeBatch(db);
   let ops = 0;
   const wrap = <K extends "set" | "update" | "delete">(k: K) => {
-    const orig = batch[k].bind(batch) as (...a: unknown[]) => F.WriteBatch;
+    const orig = (batch[k] as unknown as (...a: unknown[]) => F.WriteBatch).bind(batch);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (batch as any)[k] = (...a: unknown[]) => {
       ops++;
@@ -94,11 +94,12 @@ export const writeBatch: typeof F.writeBatch = (db) => {
     return commit();
   };
   return batch;
-};
+}) as typeof F.writeBatch;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const runTransaction: typeof F.runTransaction = (async (db: any, fn: any, opts?: any) => {
+export const runTransaction: typeof F.runTransaction = (async (...args: any[]) => {
   bump("reads", 1);
   bump("writes", 1);
-  return F.runTransaction(db, fn, opts);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (F.runTransaction as any)(...args);
 }) as typeof F.runTransaction;

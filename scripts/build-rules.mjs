@@ -56,6 +56,11 @@ for (const e of emails) {
 }
 
 const projectId = (env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "").trim();
+const cloudName = (env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "").trim();
+if (!/^[a-z0-9_-]+$/i.test(cloudName)) {
+  console.error("build-rules: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not set or not a plain cloud name.");
+  process.exit(1);
+}
 if (!projectId) {
   console.error("build-rules: NEXT_PUBLIC_FIREBASE_PROJECT_ID is not set.");
   process.exit(1);
@@ -74,7 +79,7 @@ function render(tmplName, outName, replacement) {
     console.error(`build-rules: ${tmplName} has no __ALLOWED_EMAILS__ placeholder.`);
     process.exit(1);
   }
-  const out = tmpl.replaceAll("__ALLOWED_EMAILS__", replacement);
+  const out = tmpl.replaceAll("__ALLOWED_EMAILS__", replacement).replaceAll("__CLOUDINARY_CLOUD__", cloudName);
   if (outName.endsWith(".json")) JSON.parse(out); // fail loudly on broken JSON
   writeFileSync(resolve(root, outName), out);
   console.log(`build-rules: wrote ${outName}`);

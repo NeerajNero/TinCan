@@ -2,14 +2,16 @@ import Image from "next/image";
 
 import { cn } from "@/lib/cn";
 import { transformUrl } from "@/lib/cloudinary";
+import { safeAvatar, safeCloudinary } from "@/lib/safeUrl";
 import type { UserDoc } from "@/lib/types";
 
 export const BIO_MAX = 120;
 
 /** Best available picture: the custom avatar (face-cropped by Cloudinary) else the Google photo. */
 export function avatarUrl(user: Pick<UserDoc, "photoURL" | "avatar">, px = 160): string | null {
-  if (user.avatar?.url) return transformUrl(user.avatar.url, `f_auto,q_auto,c_fill,g_face,w_${px},h_${px}`);
-  return user.photoURL ?? null;
+  const custom = safeCloudinary(user.avatar?.url);
+  if (custom) return transformUrl(custom, `f_auto,q_auto,c_fill,g_face,w_${px},h_${px}`);
+  return safeAvatar(user.photoURL);
 }
 
 interface AvatarProps {

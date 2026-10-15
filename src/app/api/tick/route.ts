@@ -5,6 +5,7 @@ import { daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
 import { questionFor } from "@/lib/daily";
 import { adminDb, adminRtdb } from "@/lib/firebase/admin";
 import { resolveCountdown } from "@/lib/meetup";
+import { secretMatches } from "@/lib/server/guard";
 import { loadUser, pairUids, postSystemMessageAdmin, sendPushTo, type SendResult } from "@/lib/server/push";
 import type { MilestoneDoc, PairDoc } from "@/lib/types";
 
@@ -211,8 +212,7 @@ async function petHunger(ctx: Ctx, pair: PairDoc) {
  * x-tick-secret must match TICK_SECRET. `?dry=1` reports without writing or sending.
  */
 export async function GET(req: Request) {
-  const secret = process.env.TICK_SECRET;
-  if (!secret || req.headers.get("x-tick-secret") !== secret) {
+  if (!secretMatches(req.headers.get("x-tick-secret"), process.env.TICK_SECRET)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const url = new URL(req.url);

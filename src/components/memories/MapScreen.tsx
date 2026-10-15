@@ -16,6 +16,7 @@ import { Input, Label } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { thumbUrl } from "@/lib/cloudinary";
+import { safeCloudinary } from "@/lib/safeUrl";
 import { memoriesAtPlace } from "@/lib/db/memories";
 import { addPlace, deletePlace, editPlace, placesQuery, type PlaceInput } from "@/lib/db/places";
 import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
@@ -237,7 +238,7 @@ function PlaceSheet({ pin, uid, me, friend, onEdit, onClose }: { pin: MapPin; ui
       </div>
       {photos.length > 0 && (
         <div className="grid grid-cols-3 gap-1">
-          {photos.map((p) => (
+          {photos.filter((p) => safeCloudinary(p.url)).map((p) => (
             <button key={p.id} type="button" onClick={() => setViewing(p)} aria-label={p.caption || "Photo"} className="overflow-hidden rounded-xl bg-surface-2">
               <Image src={thumbUrl(p.url)} alt="" width={120} height={120} unoptimized className="h-24 w-full object-cover" />
             </button>

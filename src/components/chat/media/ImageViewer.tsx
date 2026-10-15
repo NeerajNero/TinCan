@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import { fullUrl } from "@/lib/cloudinary";
+import { safeCloudinary } from "@/lib/safeUrl";
 
 interface ImageViewerProps {
   src: string | null;
@@ -23,7 +24,7 @@ const MAX_SCALE = 4;
 export function ImageViewer({ src, caption, meta, actions, onClose }: ImageViewerProps) {
   return (
     <AnimatePresence>
-      {src && <Viewer key={src} src={src} caption={caption} meta={meta} actions={actions} onClose={onClose} />}
+      {safeCloudinary(src) && <Viewer key={src} src={src as string} caption={caption} meta={meta} actions={actions} onClose={onClose} />}
     </AnimatePresence>
   );
 }

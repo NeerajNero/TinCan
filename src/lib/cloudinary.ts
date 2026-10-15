@@ -2,7 +2,29 @@
  * Cloudinary from the browser: unsigned uploads with progress, and delivery
  * URL transforms. The API secret never comes near this file.
  */
+import { authedFetch } from "@/lib/api";
 import { publicEnv } from "@/lib/env";
+
+export const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+export const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
+
+interface SignedUpload {
+  signature: string;
+  apiKey: string;
+  cloudName: string;
+  params: Record<string, string | number>;
+  resourceType: "image" | "video";
+}
+
+/** Ask the server for a one-off signature; the param set is fixed there. */
+async function sign(kind: UploadKind, bytes: number): Promise<SignedUpload> {
+  const res = await authedFetch("/api/media/sign", { method: "POST", body: JSON.stringify({ kind, bytes }) });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error === "too_large" ? `File is over the ${kind === "image" ? "5" : "3"} MB limit` : body.error === "rate_limited" || body.error === "daily_cap" ? "Too many uploads right now — try again in a bit" : "Couldn't prepare the upload");
+  }
+  return (await res.json()) as SignedUpload;
+}
 
 export type UploadKind = "image" | "audio";
 
@@ -26,21 +48,14 @@ interface UploadOptions {
 
 export const cloudinaryConfigured = Boolean(publicEnv.cloudinary.cloudName);
 
-function endpoint(kind: UploadKind) {
-  const resource = kind === "audio" ? "video" : "image";
-  return `https://api.cloudinary.com/v1_1/${publicEnv.cloudinary.cloudName}/${resource}/upload`;
-}
-
-function presetFor(kind: UploadKind) {
-  return kind === "audio" ? publicEnv.cloudinary.presetAudio : publicEnv.cloudinary.presetImage;
-}
-
-function uploadOnce(blob: Blob, { kind, onProgress, signal }: UploadOptions): Promise<UploadResult> {
+function uploadOnce(blob: Blob, signed: SignedUpload, { onProgress, signal }: UploadOptions): Promise<UploadResult> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const form = new FormData();
     form.append("file", blob);
-    form.append("upload_preset", presetFor(kind));
+    form.append("api_key", signed.apiKey);
+    form.append("signature", signed.signature);
+    for (const [k, v] of Object.entries(signed.params)) form.append(k, String(v));
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress?.(e.loaded / e.total);
@@ -75,19 +90,22 @@ function uploadOnce(blob: Blob, { kind, onProgress, signal }: UploadOptions): Pr
     };
 
     signal?.addEventListener("abort", () => xhr.abort(), { once: true });
-    xhr.open("POST", endpoint(kind));
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${signed.cloudName}/${signed.resourceType}/upload`);
     xhr.send(form);
   });
 }
 
-/** Unsigned upload with progress; retries once on a network/server failure. */
+/** Signed upload with progress; retries once (with a fresh signature) on a network/server failure. */
 export async function uploadToCloudinary(blob: Blob, options: UploadOptions): Promise<UploadResult> {
   if (!cloudinaryConfigured) throw new Error("cloudinary_not_configured");
+  const cap = options.kind === "image" ? IMAGE_MAX_BYTES : AUDIO_MAX_BYTES;
+  if (blob.size > cap) throw new Error(`File is over the ${options.kind === "image" ? "5" : "3"} MB limit`);
   const retries = options.retries ?? 1;
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      return await uploadOnce(blob, options);
+      const signed = await sign(options.kind, blob.size);
+      return await uploadOnce(blob, signed, options);
     } catch (err) {
       lastError = err;
       if (err instanceof DOMException && err.name === "AbortError") throw err;

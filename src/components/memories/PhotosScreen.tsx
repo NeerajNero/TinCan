@@ -15,6 +15,7 @@ import { Input, Label } from "@/components/ui/Input";
 import { usePagedCollection } from "@/hooks/usePagedCollection";
 import { usePair } from "@/hooks/usePair";
 import { thumbUrl } from "@/lib/cloudinary";
+import { safeCloudinary } from "@/lib/safeUrl";
 import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { addMemories, editMemory, MEMORIES_PAGE, memoriesCol, memoriesQuery } from "@/lib/db/memories";
 import { recordTogetherEvent } from "@/lib/garden";
@@ -84,7 +85,7 @@ export function PhotosScreen() {
         <section key={g.key} className="flex flex-col gap-2">
           <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">{g.label}</h2>
           <div className="columns-2 gap-2 [column-fill:_balance]">
-            {g.items.map((m) => (
+            {g.items.filter((m) => safeCloudinary(m.url)).map((m) => (
               <button key={m.id} type="button" onClick={() => setViewing(m)} aria-label={m.caption || "Photo"} className="mb-2 block w-full break-inside-avoid overflow-hidden rounded-2xl bg-surface-2">
                 <Image src={thumbUrl(m.url)} alt={m.caption} width={m.w} height={m.h} sizes="(max-width: 480px) 50vw, 224px" loading="lazy" unoptimized className="h-auto w-full" style={{ aspectRatio: `${m.w} / ${m.h}` }} />
               </button>

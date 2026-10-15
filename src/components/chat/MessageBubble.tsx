@@ -11,6 +11,7 @@ import { Ticks } from "@/components/chat/Ticks";
 import { STICKER_BY_ID } from "@/content/stickers";
 import { cn } from "@/lib/cn";
 import { thumbUrl } from "@/lib/cloudinary";
+import { safeCloudinary, safeGif } from "@/lib/safeUrl";
 import { Linkify } from "@/lib/linkify";
 import type { Message } from "@/lib/types";
 
@@ -252,13 +253,17 @@ function MediaBody({
   onOpenImage: (m: Message) => void;
 }) {
   const media = message.media ?? {};
+  const imageUrl = safeCloudinary(media.url);
+  const gifUrl = safeGif(media.url);
+  const voiceUrl = safeCloudinary(media.url);
   switch (message.type) {
     case "image": {
       const w = media.w ?? 4;
       const h = media.h ?? 3;
+      if (media.url && !imageUrl) return <Placeholder label="Photo unavailable" />;
       return (
         <>
-          {media.url && (
+          {imageUrl && (
             <button
               type="button"
               onClick={() => onOpenImage(message)}
@@ -266,7 +271,7 @@ function MediaBody({
               className="block overflow-hidden rounded-[16px]"
             >
               <Image
-                src={thumbUrl(media.url)}
+                src={thumbUrl(imageUrl)}
                 alt={message.text || "Photo"}
                 width={w}
                 height={h}
@@ -289,9 +294,10 @@ function MediaBody({
     case "gif": {
       const w = media.w ?? 200;
       const h = media.h ?? 200;
-      return media.url ? (
+      if (media.url && !gifUrl) return <Placeholder label="GIF unavailable" />;
+      return gifUrl ? (
         <Image
-          src={media.url}
+          src={gifUrl}
           alt="GIF"
           width={w}
           height={h}
@@ -312,14 +318,14 @@ function MediaBody({
       );
     }
     case "voice":
-      return media.url ? (
+      return voiceUrl ? (
         <VoicePlayer
-          url={media.url}
+          url={voiceUrl}
           durationMs={media.durationMs ?? 0}
           mine={mine}
         />
       ) : (
-        <p className="text-sm text-muted">Voice note</p>
+        <Placeholder label="Voice note unavailable" />
       );
     default:
       return (
@@ -328,4 +334,8 @@ function MediaBody({
         </p>
       );
   }
+}
+
+function Placeholder({ label }: { label: string }) {
+  return <p className="rounded-xl bg-surface-2 px-3 py-2 text-xs text-muted">🚫 {label}</p>;
 }

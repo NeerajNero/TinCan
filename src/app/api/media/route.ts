@@ -2,15 +2,15 @@ import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { isAllowedEmail } from "@/lib/allowlist";
-import { adminDb, AuthError, verifyBearer } from "@/lib/firebase/admin";
+import { adminDb } from "@/lib/firebase/admin";
+import { errorResponse, guard, readJson } from "@/lib/server/guard";
 
 const bodySchema = z.union([
-  z.object({ kind: z.enum(["message", "memory", "journal", "capsule"]), id: z.string().min(1).max(128) }),
+  z.object({ kind: z.enum(["message", "memory", "journal", "capsule"]), id: z.string().min(1).max(128) }).strict(),
   // Destroy the caller's stale avatar asset (previousAvatarPublicId on their own user doc).
-  z.object({ kind: z.literal("avatar") }),
+  z.object({ kind: z.literal("avatar") }).strict(),
   // Back-compat with the phase 5 client.
-  z.object({ messageId: z.string().min(1).max(128) }),
+  z.object({ messageId: z.string().min(1).max(128) }).strict(),
 ]);
 
 function configureCloudinary() {
@@ -45,15 +45,9 @@ type MediaList = Array<{ publicId?: string }> | undefined;
  */
 export async function DELETE(req: Request) {
   try {
-    const token = await verifyBearer(req);
-    if (!isAllowedEmail(token.email) || token.email_verified === false) {
-      return NextResponse.json({ error: "forbidden" }, { status: 403 });
-    }
-    const parsed = bodySchema.safeParse(await req.json().catch(() => null));
-    if (!parsed.success) return NextResponse.json({ error: "bad_request" }, { status: 400 });
-    const body = parsed.data;
+    const { uid } = await guard(req, "media");
+    const body = await readJson(req, bodySchema);
     const db = adminDb();
-    const uid = token.uid;
 
     if ("kind" in body && body.kind === "avatar") {
       const userRef = db.doc(`users/${uid}`);
@@ -119,8 +113,6 @@ export async function DELETE(req: Request) {
     await ref.delete();
     return NextResponse.json({ ok: true, destroyed });
   } catch (err) {
-    if (err instanceof AuthError) return NextResponse.json({ error: err.message }, { status: err.status });
-    console.error("[api/media]", err);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return errorResponse(err, "media");
   }
 }

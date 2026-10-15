@@ -7,7 +7,7 @@
         "online": { ".validate": "newData.isBoolean()" },
         "lastSeen": { ".validate": "newData.isNumber()" },
         "status": { ".validate": "newData.val() === 'awake' || newData.val() === 'sleeping'" },
-        "page": { ".validate": "newData.isString()" },
+        "page": { ".validate": "newData.isString() && newData.val().length <= 100" },
         "$other": { ".validate": false }
       }
     },
@@ -37,7 +37,8 @@
     "cursors": {
       "$uid": {
         ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
-        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid"
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid",
+        ".validate": "!newData.exists() || (newData.hasChildren(['x', 'y']) && newData.child('x').isNumber() && newData.child('x').val() >= 0 && newData.child('x').val() <= 1 && newData.child('y').isNumber() && newData.child('y').val() >= 0 && newData.child('y').val() <= 1)"
       }
     },
     "whiteboard": {
@@ -45,13 +46,19 @@
       ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
       "strokes": {
         "$strokeId": {
-          ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'points']) && newData.child('uid').val() === auth.uid)"
+          ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'points', 'color', 'width']) && newData.child('uid').val() === auth.uid && newData.child('points').isString() && newData.child('points').val().length <= 24000 && newData.child('color').isString() && newData.child('color').val().matches(/^#[0-9a-fA-F]{6}$/) && newData.child('width').isNumber())"
+        }
+      },
+      "live": {
+        "$uid": {
+          ".validate": "!newData.exists() || ($uid === auth.uid && newData.child('points').isString() && newData.child('points').val().length <= 24000)"
         }
       }
     },
     "pixel": {
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
       ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      "grid": { ".validate": "newData.isString() && newData.val().length === 1024" },
       "cursor": {
         "$uid": {
           ".validate": "$uid === auth.uid"
@@ -80,7 +87,19 @@
     },
     "pictionary": {
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
-      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+      ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      "$gameId": {
+        "strokes": {
+          "$strokeId": {
+            ".validate": "!newData.exists() || (newData.child('points').isString() && newData.child('points').val().length <= 24000 && newData.child('color').val().matches(/^#[0-9a-fA-F]{6}$/))"
+          }
+        },
+        "live": {
+          "$uid": {
+            ".validate": "!newData.exists() || ($uid === auth.uid && newData.child('points').val().length <= 24000)"
+          }
+        }
+      }
     },
     "watch": {
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",

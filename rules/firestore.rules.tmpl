@@ -26,20 +26,39 @@ service cloud.firestore {
     /** Doc ids like `{dateKey}_{uid}` must end with the caller's uid. */
     function ownsDayDoc(id) { return id.split('_')[1] == uid(); }
     function isServerTime(value) { return value == request.time; }
+    /** Size helpers: a string field, present or absent, never over `max` chars. */
+    function strMax(data, field, max) {
+      return !(field in data) || (data[field] is string && data[field].size() <= max);
+    }
+    /** Media we render must come from our own Cloudinary cloud (or GIPHY for gifs). */
+    function cloudinaryUrl(url) { return url is string && url.matches('^https://res\\.cloudinary\\.com/__CLOUDINARY_CLOUD__/.*'); }
+    function giphyUrl(url) { return url is string && url.matches('^https://media[0-9]*\\.giphy\\.com/.*'); }
 
     // ── users/{uid} ──────────────────────────────────────────────────────
     match /users/{userId} {
+      function userFields() {
+        return ['name', 'nickname', 'email', 'photoURL', 'avatar', 'previousAvatarPublicId', 'bio',
+                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'createdAt'];
+      }
+      function userShape() {
+        return incoming().keys().hasOnly(userFields())
+          && incoming().nickname is string && incoming().nickname.size() > 0 && incoming().nickname.size() <= 24
+          && strMax(incoming(), 'bio', 120) && strMax(incoming(), 'city', 80) && strMax(incoming(), 'name', 120)
+          && incoming().tz is string && incoming().tz.size() > 0 && incoming().tz.size() <= 64
+          && incoming().fcmTokens is list && incoming().fcmTokens.size() <= 10
+          && (!('avatar' in incoming()) || incoming().avatar == null || cloudinaryUrl(incoming().avatar.url));
+      }
       allow read: if allowed();
       allow create: if isMe(userId)
         && incoming().email.lower() == request.auth.token.email.lower()
-        && incoming().nickname is string && incoming().nickname.size() > 0
-        && incoming().tz is string && incoming().tz.size() > 0
-        && incoming().fcmTokens is list;
+        && isServerTime(incoming().createdAt)
+        && userShape();
       // Only the owner may write — this covers fcmTokens and notif prefs too.
       // Identity fields never change after onboarding.
       allow update: if isMe(userId)
         && incoming().email == existing().email
-        && incoming().createdAt == existing().createdAt;
+        && incoming().createdAt == existing().createdAt
+        && userShape();
       allow delete: if false;
     }
 
@@ -69,7 +88,9 @@ service cloud.firestore {
       }
       function senderEdits() {
         return isSender()
-          && onlyChanges(['text', 'editedAt', 'deletedForEveryone', 'media']);
+          && onlyChanges(['text', 'editedAt', 'deletedForEveryone', 'media'])
+          && incoming().text is string && incoming().text.size() <= 2000
+          && (!('media' in incoming()) || incoming().media == null || incoming().media == existing().media);
       }
       function reacts() {
         return onlyChanges(['reactions']) && mapDiffKeys('reactions').hasOnly([uid()]);
@@ -81,11 +102,25 @@ service cloud.firestore {
           && incoming().deletedFor.removeAll(existing().get('deletedFor', [])).hasOnly([uid()]);
       }
 
+      function messageFields() {
+        return ['senderId', 'type', 'text', 'media', 'replyTo', 'reactions', 'status',
+                'deliveredAt', 'readAt', 'editedAt', 'deletedFor', 'deletedForEveryone', 'createdAt'];
+      }
+      function mediaOk() {
+        return !('media' in incoming()) || incoming().media == null
+          || (incoming().type == 'gif' && giphyUrl(incoming().media.url))
+          || (incoming().type == 'sticker' && incoming().media.stickerId is string)
+          || (incoming().type in ['image', 'voice'] && cloudinaryUrl(incoming().media.url));
+      }
+
       allow read: if allowed();
       allow create: if allowed()
+        && incoming().keys().hasOnly(messageFields())
         && incoming().senderId == uid()
         && incoming().status == 'sent'
         && incoming().type in ['text', 'image', 'voice', 'gif', 'sticker', 'system']
+        && incoming().text is string && incoming().text.size() <= 2000
+        && mediaOk()
         && isServerTime(incoming().createdAt);
       allow update: if allowed() && (recipientMarks() || senderEdits() || reacts() || hidesForSelf());
       // Deleting is a flag (deletedForEveryone), never a hard delete.
@@ -106,6 +141,7 @@ service cloud.firestore {
 
     // ── moods/{dateKey}_{uid} ────────────────────────────────────────────
     match /moods/{moodId} {
+      // note ≤ 80, emoji short
       // If the mirror fields are present they must match the doc id (history relies on them).
       function mirrorsOk() {
         return (!('uid' in incoming()) || incoming().uid == uid())
@@ -113,7 +149,8 @@ service cloud.firestore {
       }
       allow read: if allowed();
       allow create, update: if allowed() && ownsDayDoc(moodId)
-        && incoming().emoji is string && mirrorsOk();
+        && incoming().emoji is string && incoming().emoji.size() <= 8
+        && strMax(incoming(), 'note', 80) && mirrorsOk();
       allow delete: if allowed() && ownsDayDoc(moodId);
     }
 
@@ -136,7 +173,8 @@ service cloud.firestore {
     // ── journal ──────────────────────────────────────────────────────────
     match /journal/{entryId} {
       allow read: if allowed();
-      allow create: if allowed() && incoming().authorId == uid();
+      allow create: if allowed() && incoming().authorId == uid()
+        && isServerTime(incoming().createdAt) && strMax(incoming(), 'text', 4000);
       allow update: if allowed() && existing().authorId == uid() && incoming().authorId == uid();
       allow delete: if allowed() && existing().authorId == uid();
     }
@@ -226,6 +264,7 @@ service cloud.firestore {
       allow create: if allowed()
         && incoming().authorId == uid()
         && incoming().forUid != uid()
+        && strMax(incoming(), 'text', 500)
         && !hasField(incoming(), 'drawnAt');
       allow update: if allowed() && (
         (isAuthor() && undrawn() && incoming().authorId == uid() && !hasField(incoming(), 'drawnAt'))
@@ -239,20 +278,24 @@ service cloud.firestore {
     // ── memories & places ────────────────────────────────────────────────
     match /memories/{memoryId} {
       allow read: if allowed();
-      allow create: if allowed() && incoming().uploaderId == uid();
+      allow create: if allowed() && incoming().uploaderId == uid()
+        && cloudinaryUrl(incoming().url) && strMax(incoming(), 'caption', 500)
+        && isServerTime(incoming().createdAt);
       // Only the uploader edits caption/date/place; the asset fields never change.
       allow update: if allowed()
         && existing().uploaderId == uid()
         && incoming().uploaderId == existing().uploaderId
         && incoming().url == existing().url
-        && incoming().publicId == existing().publicId;
+        && incoming().publicId == existing().publicId
+        && strMax(incoming(), 'caption', 500);
       allow delete: if allowed() && existing().uploaderId == uid();
     }
 
     match /places/{placeId} {
       allow read: if allowed();
-      allow create: if allowed() && incoming().addedBy == uid();
-      allow update, delete: if allowed();
+      allow create: if allowed() && incoming().addedBy == uid() && strMax(incoming(), 'note', 1000) && strMax(incoming(), 'name', 80);
+      allow update: if allowed() && strMax(incoming(), 'note', 1000) && strMax(incoming(), 'name', 80);
+      allow delete: if allowed();
     }
 
     // ── milestones ───────────────────────────────────────────────────────
@@ -271,8 +314,10 @@ service cloud.firestore {
         allow read: if allowed() && mineOrShared();
         allow create: if allowed()
           && kind in ['bucket', 'wishlist', 'gifts', 'todo']
-          && incoming().addedBy == uid();
-        allow update: if allowed() && mineOrShared() && incoming().addedBy == existing().addedBy;
+          && incoming().addedBy == uid()
+          && strMax(incoming(), 'text', 200) && strMax(incoming(), 'note', 1000) && strMax(incoming(), 'url', 500);
+        allow update: if allowed() && mineOrShared() && incoming().addedBy == existing().addedBy
+          && strMax(incoming(), 'text', 200) && strMax(incoming(), 'note', 1000) && strMax(incoming(), 'url', 500);
         allow delete: if allowed() && mineOrShared();
       }
     }
@@ -344,6 +389,9 @@ service cloud.firestore {
       allow read, write: if false;
     }
     match /tickLog/{jobKey} {
+      allow read, write: if false;
+    }
+    match /quota/{entry} {
       allow read, write: if false;
     }
   }
