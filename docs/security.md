@@ -32,7 +32,9 @@ Uploads are **signed**: the browser asks `POST /api/media/sign` for a signature 
 
 ## Headers (`next.config.ts`)
 
-- `Content-Security-Policy` is **enforced**, listing exactly the origins we use (Firebase, Cloudinary, GIPHY, Open-Meteo, YouTube, OSM tiles, radio streams). If something breaks, set `CSP_REPORT_ONLY=1` on Vercel to switch the header back to report-only, fix the directive in `next.config.ts`, then unset it.
+- `Content-Security-Policy` is **enforced** and built in `csp.ts`. `src/proxy.ts` generates a nonce per page request; `script-src` is `'self' 'nonce-…'` plus YouTube, `s.ytimg.com` and `apis.google.com`, with no `'unsafe-inline'`. Next stamps the nonce on its inline bootstrap scripts and the root layout on the theme script. Hashes and SRI were tried and don't work: SRI only covers external files, and Next's inline scripts differ per route and per build. The cost is that every page is dynamically rendered.
+- The service worker has its own policy, from the `/serwist/*` response headers: `default-src 'self'; script-src 'self'; connect-src <same list>`. Its runtime-cache fetches count as connect-src, so every cached host (Cloudinary, OSM tiles, GIPHY, ytimg) is in connect-src as well as img-src. Serwist's two cross-origin catch-all routes are removed, so avatars, YouTube scripts and radio streams no longer pass through the worker.
+- If something breaks, set `CSP_REPORT_ONLY=1` on Vercel to send both policies as report-only, fix `csp.ts`, then unset it. `pnpm test:e2e` checks that the header is enforced and nonce-based, and that loading `/signin` and every cached image host raises no violation in the page or the worker.
 - `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` allowing only microphone(self) and media playback. `/serwist/*` is `max-age=0, must-revalidate`.
 
 ## Secrets handling

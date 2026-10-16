@@ -10,7 +10,7 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { gameRoute } from "@/lib/db/games";
 import { DECK_META, type DeckKind } from "@/lib/deckMeta";
-import { GAME_META } from "@/lib/games";
+import { gameInfo } from "@/lib/games/catalog";
 import { notify } from "@/lib/notify";
 
 const NUDGE_EVERY_MS = 60_000;
@@ -58,7 +58,7 @@ export function FriendHereBadge({ screenName }: { screenName: string }) {
     const deck = p.match(/^\/play\/deck\/(\w+)/)?.[1] as DeckKind | undefined;
     if (deck && DECK_META[deck]) return `playing ${DECK_META[deck].name}`;
     const game = games.find((g) => gameRoute(g.id) === p);
-    if (game) return `playing ${GAME_META[game.type].name}`;
+    if (game) return `playing ${gameInfo(game.type).name}`;
     return LABELS.find(([re]) => re.test(p))?.[1] ?? "somewhere in Tincan";
   }
 

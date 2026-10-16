@@ -33,6 +33,8 @@ Pages under `src/app/(app)/**` are thin: they render one screen component. Logic
 
 ## Play (`/play`) — `components/play/PlayScreen.tsx`
 
+**Game catalogue** (`lib/games/catalog.ts`): names, emoji, routes and result wording for every game that writes `gameResults` (the four board games, trivia, pictionary), with `gameInfo()` falling back to a neutral entry for unknown types. Used by Recent games (`RecentGamesList`, inside an `ErrorBoundary`), the record strip (now six games), Home's game card, invites, result toasts and the system messages.
+
 **Board games** (`/play/[gameId]`, `GameScreen`, `boards/*`): engines in `lib/games/*` implement `Engine<S, M>` (`initial`, `apply`, `status`, serialise). Live state in RTDB `games/{id}` (JSON string, transactions) via `lib/db/games.ts`; results to `gameResults` and `pair.records`; `yourTurn`/`invite` pushes; `CloseGameMenu` (cancel invite / cancel 0-move game / resign); `FriendHereBadge`.
 
 **Deck games** (`/play/deck/[deck]`, `DeckScreen`): WYR, NHIE, truth/dare, conversation cards. Shared card in RTDB `cards/{deck}`; decks from `src/content/*.json` via `lib/decks.ts`; metadata in `lib/deckMeta.ts`.

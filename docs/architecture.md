@@ -38,6 +38,10 @@ Nothing under `src/components`, `src/hooks` or the client half of `src/lib` may 
 
 Every screen reads shared data through these hooks: `usePair()`, `useChatMeta()`, `useLiveEvents()`, `useFriendPresence()`, `useToast()`. **Never re-subscribe per component to something a provider already holds.**
 
+## Rendering and CSP
+
+Every page is **dynamically rendered**: `src/proxy.ts` puts a fresh CSP nonce on each page request and the root layout reads it (`headers()`), which opts all routes out of static prerendering. That is the price of a `script-src` without `'unsafe-inline'`. Each navigation is a Vercel function invocation, well inside Hobby's free allowance for two users. The service worker still precaches `/offline` and the static assets. The policy itself lives in `csp.ts`.
+
 ## Layout
 
 The document never scrolls. `html`/`body` are clamped in `globals.css`; `AppShell` is `fixed inset-0` (centred 480 px column) whose `<main>` is the only scroller, with the tab bar as the last flex row. Pages outside the shell use the `screen-fixed` utility. `useDocumentScrollLock` (mounted in `Providers`) snaps the layout viewport back to 0,0 on any `visualViewport` scroll/resize, and focus goes through `focusNoScroll` so Android's scroll-into-view can't move the page. Sheets and overlays are portalled to `<body>` (`ui/Sheet`, `ui/Portal`) with one z-index scale (`Z`). `tests/e2e/layout.spec.ts` guards the lock.

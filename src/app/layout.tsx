@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito } from "next/font/google";
+import { headers } from "next/headers";
 
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
@@ -44,12 +45,18 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * Async because it reads the per-request CSP nonce (src/proxy.ts). That makes
+ * every page dynamically rendered, the price of a script-src without
+ * 'unsafe-inline': Next's inline bootstrap scripts can only be allowed by nonce.
+ */
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="en" className={`${fredoka.variable} ${nunito.variable}`} suppressHydrationWarning>
       <head>
         {/* Applies the saved/OS theme before first paint to avoid a flash. */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         <WebVitals />

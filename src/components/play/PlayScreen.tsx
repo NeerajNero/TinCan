@@ -9,8 +9,10 @@ import { useEffect, useState } from "react";
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { CloseGameMenu } from "@/components/play/CloseGameMenu";
+import { RecentGamesList } from "@/components/play/RecentGamesList";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
@@ -19,8 +21,8 @@ import { quizzesFrom } from "@/lib/db/quizzes";
 import { wordleRef } from "@/lib/db/wordle";
 import { DECK_KINDS, DECK_META } from "@/lib/deckMeta";
 import { onSnapshot } from "@/lib/firebase/fs";
-import { GAME_META, GAME_TYPES, type GameType } from "@/lib/games";
-
+import type { GameType } from "@/lib/games";
+import { BOARD_GAMES, gameInfo, RECORD_GAMES } from "@/lib/games/catalog";
 export function PlayScreen() {
   const { uid, me, friend, friendUid, pair } = usePair();
   const { games } = useLiveEvents();
@@ -78,9 +80,9 @@ export function PlayScreen() {
       </header>
 
       <div className="grid grid-cols-2 gap-3">
-        {GAME_TYPES.map((type) => {
+        {BOARD_GAMES.map((type) => {
           const open = openByType(type);
-          const meta = GAME_META[type];
+          const meta = gameInfo(type);
           const mine = open && open.status === "active" && uidOf(open, open.turn) === uid;
           return (
             <button key={type} type="button" onClick={() => void tapGame(type)} disabled={!friendUid || busy !== null} className="card tap flex flex-col items-start gap-1.5 rounded-[24px] p-4 text-left disabled:opacity-60">
@@ -117,11 +119,11 @@ export function PlayScreen() {
           {invitesForMe.map((g) => (
             <Card key={g.id} className="flex items-center gap-3 px-4 py-3">
               <span className="text-2xl" aria-hidden>
-                {GAME_META[g.type].emoji}
+                {gameInfo(g.type).emoji}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{nameOf(g.createdBy)} invited you</span>
-                <span className="block text-xs text-muted">{GAME_META[g.type].name}</span>
+                <span className="block text-xs text-muted">{gameInfo(g.type).name}</span>
               </span>
               <Button variant="ghost" onClick={() => void declineGame(g.id)} className="px-3 py-2 text-sm">
                 Decline
@@ -137,10 +139,10 @@ export function PlayScreen() {
               <div key={g.id} className="card flex items-center gap-2 rounded-[20px] px-3 py-3">
                 <Link href={gameRoute(g.id)} className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="text-2xl" aria-hidden>
-                    {GAME_META[g.type].emoji}
+                    {gameInfo(g.type).emoji}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-semibold">{GAME_META[g.type].name}</span>
+                    <span className="block font-semibold">{gameInfo(g.type).name}</span>
                     <span className="block text-xs text-muted">{g.moves} moves{g.lastMoveAt ? ` · ${formatDistanceToNowStrict(new Date(g.lastMoveAt), { addSuffix: true })}` : ""}</span>
                   </span>
                   <span className={cn("rounded-full px-2.5 py-1 text-xs font-bold", g.status === "invited" ? "bg-surface-2 text-muted" : mine ? "bg-[var(--accent)] text-white" : "bg-accent-soft")}>
@@ -163,12 +165,12 @@ export function PlayScreen() {
               <Card key={g.id} className="flex items-center gap-3 px-4 py-3">
                 <Link href={gameRoute(g.id)} className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="text-2xl" aria-hidden>
-                    {GAME_META[g.type].emoji}
+                    {gameInfo(g.type).emoji}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold">{g.winnerId ? (won ? "You won 🎉" : `${nameOf(g.winnerId)} won`) : g.endReason === "abandoned" ? "Abandoned" : "Draw"}</span>
                     <span className="block text-xs text-muted">
-                      {GAME_META[g.type].name}
+                      {gameInfo(g.type).name}
                       {g.endReason === "resign" && (won ? " · they resigned" : " · you resigned")}
                       {g.finishedAt && ` · ${formatDistanceToNowStrict(new Date(g.finishedAt), { addSuffix: true })}`}
                     </span>
@@ -194,13 +196,13 @@ export function PlayScreen() {
 
       <section className="flex flex-col gap-2">
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Record</h2>
-        <Card className="grid grid-cols-4 gap-2 p-3">
-          {GAME_TYPES.map((type) => {
+        <Card className="grid grid-cols-3 gap-2 p-3">
+          {RECORD_GAMES.map((type) => {
             const r = recordFor(pair, type, uid, friendUid);
             return (
               <div key={type} className="flex flex-col items-center gap-0.5 text-center">
                 <span className="text-xl" aria-hidden>
-                  {GAME_META[type].emoji}
+                  {gameInfo(type).emoji}
                 </span>
                 <span className="font-heading text-lg font-semibold tabular-nums">
                   {r.mine}–{r.theirs}
@@ -234,21 +236,11 @@ function RecentGames({ nameOf }: { nameOf: (uid: string) => string }) {
       </button>
       {open && rows === null && <p className="px-2 text-xs text-muted">Loading…</p>}
       {open && rows?.length === 0 && <p className="px-2 text-xs text-muted">No finished games yet.</p>}
-      {open &&
-        rows?.map((r) => (
-          <div key={r.id} className="card flex items-center gap-3 rounded-[20px] px-4 py-2.5">
-            <span className="text-xl" aria-hidden>
-              {GAME_META[r.game].emoji}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold">{r.winnerId ? `${nameOf(r.winnerId)} won` : r.endReason === "abandoned" ? "Abandoned" : "Draw"}</span>
-              <span className="block text-xs text-muted">
-                {GAME_META[r.game].name} · {r.moves} moves{r.endReason === "resign" && " · resignation"}
-                {r.endedAt && ` · ${formatDistanceToNowStrict(r.endedAt.toDate(), { addSuffix: true })}`}
-              </span>
-            </span>
-          </div>
-        ))}
+      {open && rows && rows.length > 0 && (
+        <ErrorBoundary fallback={<p className="px-2 text-xs text-muted">Couldn&apos;t show recent games.</p>}>
+          <RecentGamesList rows={rows} nameOf={nameOf} />
+        </ErrorBoundary>
+      )}
     </div>
   );
 }

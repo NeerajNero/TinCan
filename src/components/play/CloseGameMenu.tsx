@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { usePair } from "@/hooks/usePair";
 import { cancelGame, declineGame, playerOf, resign, type LiveGame } from "@/lib/db/games";
-import { GAME_META } from "@/lib/games";
-
+import { gameInfo } from "@/lib/games/catalog";
 /**
  * The ✕ on a game row or header. What it offers depends on the game:
  * an invite I sent → cancel it; an active game with no moves → cancel it;
@@ -20,7 +19,7 @@ export function CloseGameMenu({ game, onDone, className }: { game: LiveGame; onD
   const [busy, setBusy] = useState(false);
   const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
   const mine = playerOf(game, uid);
-  const meta = GAME_META[game.type];
+  const meta = gameInfo(game.type);
 
   const kind: "invite" | "cancel" | "resign" | null =
     game.status === "invited" ? (game.createdBy === uid ? "invite" : null) : game.status === "active" && mine ? ((game.moves ?? 0) === 0 ? "cancel" : "resign") : null;

@@ -18,7 +18,9 @@
 | `pnpm rules:build` warns about one email | `ALLOWED_EMAILS` has one entry | fine for solo testing; add the second before the friend signs in |
 | Daily history empty / index error | ordering by `__name__` descending | queries order by the `dateKey` field (auto-indexed); never add composite indexes |
 | Usage meter shows a spike | an unbounded listener or a screen re-subscribing per render | find the screen; every query needs `limit` or a single doc |
-| CSP violation in console (request blocked) | a new origin (CDN, stream URL) | add it to the matching directive in `next.config.ts`; to unblock users meanwhile set `CSP_REPORT_ONLY=1` on Vercel and redeploy |
+| CSP violation from `StrategyHandler` (service worker) | the worker fetched a host missing from connect-src | add it to `connectSrc()` in `csp.ts` (the worker policy shares it) |
+| `Cannot read properties of undefined (reading 'emoji')` | a lookup indexed a game catalogue with a stored type it doesn't know | use `gameInfo()` from `lib/games/catalog.ts` |
+| CSP violation in console (request blocked) | a new origin (CDN, stream URL) | add it to the matching directive in `csp.ts`; to unblock users meanwhile set `CSP_REPORT_ONLY=1` on Vercel and redeploy |
 | Animations missing or `motion` import warning | a component imported `motion` instead of `m` | use `m.*`; features come from `<LazyMotion>` in Providers |
 | Chat background not showing | `chatBg` rejected by rules (photo not from our cloud or unknown key) | check `rules/firestore.rules.tmpl` → `chatBgOk()`; deploy rules |
 | A sheet or overlay opens in the wrong place (above the header, off-screen) | it's `position: fixed` inside an ancestor with a transform, filter or backdrop-filter | use `Sheet` / `Portal` (renders into `<body>`) |

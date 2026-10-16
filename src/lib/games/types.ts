@@ -21,13 +21,6 @@ export interface Engine<S, M> {
   mover(state: S): Player;
 }
 
-export const GAME_META: Record<GameType, { name: string; emoji: string; blurb: string }> = {
-  tictactoe: { name: "Tic-tac-toe", emoji: "❌", blurb: "Three in a row" },
-  connectfour: { name: "Connect Four", emoji: "🔴", blurb: "Drop and connect" },
-  chess: { name: "Chess", emoji: "♟️", blurb: "The long game" },
-  checkers: { name: "Checkers", emoji: "⚪", blurb: "Jump and crown" },
-};
 
-export const GAME_TYPES: readonly GameType[] = ["tictactoe", "connectfour", "chess", "checkers"];
 
 export const other = (p: Player): Player => (p === "first" ? "second" : "first");

@@ -24,22 +24,27 @@ const imageCache = (cacheName: string, maxEntries: number, maxAgeSeconds: number
     plugins: [new CacheableResponsePlugin({ statuses: [0, 200] }), new ExpirationPlugin({ maxEntries, maxAgeSeconds, purgeOnQuotaError: true })],
   });
 
+function isCrossOriginCatchAll(route: RuntimeCaching): boolean {
+  const cacheName = (route.handler as { cacheName?: string }).cacheName;
+  return cacheName === "cross-origin" || (route.matcher instanceof RegExp && route.matcher.source === ".*");
+}
+
 const runtimeCaching: RuntimeCaching[] = [
   { matcher: ({ url }) => url.pathname.startsWith("/api/"), handler: new NetworkOnly() },
   {
-    matcher: ({ url }) =>
-      url.hostname.endsWith(".googleapis.com") ||
-      url.hostname.endsWith(".firebaseio.com") ||
-      url.hostname.endsWith(".firebasedatabase.app") ||
-      url.hostname.endsWith(".google.com") ||
-      url.hostname.endsWith(".gstatic.com"),
+    matcher: ({ url }) => url.hostname.endsWith(".googleapis.com") || url.hostname.endsWith(".firebaseio.com") || url.hostname.endsWith(".firebasedatabase.app"),
     handler: new NetworkOnly(),
   },
   { matcher: ({ url }) => url.hostname === "res.cloudinary.com", handler: imageCache("tincan-cloudinary", 500, 30 * DAY) },
   { matcher: ({ url }) => url.hostname.endsWith("tile.openstreetmap.org"), handler: imageCache("tincan-osm-tiles", 300, 7 * DAY) },
   { matcher: ({ url }) => url.hostname.endsWith(".giphy.com"), handler: imageCache("tincan-giphy", 150, 7 * DAY) },
   { matcher: ({ url }) => url.hostname.endsWith("ytimg.com"), handler: imageCache("tincan-ytimg", 150, 7 * DAY) },
-  ...defaultCache,
+  // Serwist's defaults minus its two cross-origin catch-alls (the "cross-origin" NetworkFirst and the
+  // final /.*/ NetworkOnly). They made the worker fetch every other cross-origin request (Google
+  // avatars, YouTube scripts, even the endless radio streams, which NetworkFirst tried to cache), all
+  // under connect-src. Unrouted cross-origin requests now go straight to the network, governed by
+  // the page's img-src / script-src / media-src.
+  ...defaultCache.filter((route) => !isCrossOriginCatchAll(route)),
 ];
 
 const serwist = new Serwist({

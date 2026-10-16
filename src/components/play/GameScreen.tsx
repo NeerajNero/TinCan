@@ -20,8 +20,8 @@ import { Splash } from "@/components/ui/Splash";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { acceptGame, declineGame, describeResult, GAME_REACTIONS, gameRoute, playerOf, playMove, rematch, resign, sendReaction, subscribeGame, uidOf, type LiveGame } from "@/lib/db/games";
-import { GAME_META } from "@/lib/games";
 import { engineFor } from "@/lib/games/all";
+import { gameInfo } from "@/lib/games/catalog";
 import { playSound } from "@/lib/sounds";
 
 
@@ -87,7 +87,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
     );
   }
 
-  const meta = GAME_META[game.type];
+  const meta = gameInfo(game.type);
   const mine = playerOf(game, uid);
   const myTurn = game.status === "active" && uidOf(game, game.turn) === uid;
   const canMove = myTurn && !busy;

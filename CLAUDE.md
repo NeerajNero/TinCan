@@ -316,8 +316,12 @@ radio stations (6 public stream URLs with names).
   checked before signing). Both presets must be in Signed mode in the console. The app only renders
   media from `https://res.cloudinary.com/<cloud>/` and GIFs from `https://media*.giphy.com/`; rules
   enforce the same prefixes on write.
-- Security headers from `next.config.ts`: CSP **enforced** (set `CSP_REPORT_ONLY=1` to fall back to
-  report-only while debugging), nosniff, DENY framing, strict referrer, Permissions-Policy allowing only
+- CSP is built in `csp.ts` and set per request by `src/proxy.ts` with a fresh nonce (script-src has no
+  `'unsafe-inline'`; Next's inline bootstrap scripts and the theme script carry the nonce). Reading the
+  nonce in the root layout makes every page dynamically rendered: the accepted cost of a strict policy.
+  The service worker has its own CSP (`buildWorkerCsp`, header on `/serwist/*`); every host it fetches for
+  a runtime cache must be in connect-src. `CSP_REPORT_ONLY=1` switches both to report-only.
+  `pnpm test:e2e` fails on any violation in the page or the worker. Other headers in `next.config.ts`: nosniff, DENY framing, strict referrer, Permissions-Policy allowing only
   microphone(self) and media playback. The worker caches images (Cloudinary 30 d/500, OSM tiles, GIPHY,
   ytimg 7 d) CacheFirst and never caches Firebase, Google APIs or `/api/*`.
 - Rules validate shapes and sizes (message text ≤ 2000, captions ≤ 500, notes ≤ 1000, no unknown
@@ -358,6 +362,10 @@ of a task must say which docs were updated.
   `git push` after every commit — the remote is the backup.
 - Rules deploy via Firebase CLI: `pnpm rules:deploy` → `firebase deploy --only firestore:rules,database`.
 - Accessibility basics: buttons have labels, tap targets ≥ 44 px, colour is never the only signal.
+- Anything read back from storage that names a game goes through `gameInfo()` in
+  `src/lib/games/catalog.ts` (never index a catalogue directly; stored rows may hold types this build
+  doesn't know). Widgets fed by stored lists sit inside `ui/ErrorBoundary` so one bad row can't take
+  down the whole tab.
 - Docs travel with code: no commit without the matching `docs/*` + `CHANGELOG.md` update (see Documentation).
 
 ## Env (`.env.example` must list all; `.env.local` is gitignored)

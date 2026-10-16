@@ -8,8 +8,7 @@ import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { Button } from "@/components/ui/Button";
 import { usePair } from "@/hooks/usePair";
 import { acceptGame, declineGame, gameRoute, uidOf } from "@/lib/db/games";
-import { GAME_META } from "@/lib/games";
-
+import { gameInfo } from "@/lib/games/catalog";
 /** Invites waiting on me, and games where it's my move. */
 export function GameInvitesCard({ friendName }: { friendName: string }) {
   const { uid } = usePair();
@@ -24,11 +23,11 @@ export function GameInvitesCard({ friendName }: { friendName: string }) {
       {invites.map((g) => (
         <div key={g.id} className="card flex items-center gap-3 rounded-[24px] px-4 py-3">
           <span className="text-3xl" aria-hidden>
-            {GAME_META[g.type].emoji}
+            {gameInfo(g.type).emoji}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block font-heading font-semibold">{friendName} wants to play</span>
-            <span className="block text-xs text-muted">{GAME_META[g.type].name}</span>
+            <span className="block text-xs text-muted">{gameInfo(g.type).name}</span>
           </span>
           <Button variant="ghost" onClick={() => void declineGame(g.id)} className="px-3 py-2 text-sm">
             No
@@ -42,11 +41,11 @@ export function GameInvitesCard({ friendName }: { friendName: string }) {
         <div key={g.id} className="card flex items-center gap-3 rounded-[24px] px-4 py-3">
           <Link href={gameRoute(g.id)} className="flex min-w-0 flex-1 items-center gap-3">
             <span className="text-3xl" aria-hidden>
-              {GAME_META[g.type].emoji}
+              {gameInfo(g.type).emoji}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block font-heading font-semibold">Your move</span>
-              <span className="block text-xs text-muted">{GAME_META[g.type].name} · {g.moves} moves in</span>
+              <span className="block text-xs text-muted">{gameInfo(g.type).name} · {g.moves} moves in</span>
             </span>
             <span className="rounded-full bg-[var(--accent)] px-3 py-1 text-xs font-bold text-white">Go</span>
           </Link>

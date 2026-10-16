@@ -9,7 +9,8 @@ import { postSystemMessage } from "@/lib/db/home";
 import { pairRef } from "@/lib/db/refs";
 import { getDb, getRtdb } from "@/lib/firebase/client";
 import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "@/lib/firebase/fs";
-import { GAME_META, initialStateFor, loadEngine, other, type GameType, type Player } from "@/lib/games";
+import { initialStateFor, loadEngine, other, type GameType, type Player } from "@/lib/games";
+import { gameInfo, resultLine, type ResultGame } from "@/lib/games/catalog";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { swallow } from "@/lib/swallow";
@@ -48,7 +49,8 @@ export interface LiveGame extends GameNode {
 }
 
 export interface GameResultDoc {
-  game: GameType;
+  /** A ResultGame id when written by this build; read it through gameInfo(), it's stored data. */
+  game: string;
   players: string[];
   winnerId: string | null;
   endReason: EndReason;
@@ -100,7 +102,7 @@ export async function inviteGame(type: GameType, me: string, friend: string): Pr
     endReason: null,
   };
   await update(node, { ...g, createdAt: rtdbNow(), lastMoveAt: rtdbNow() });
-  void notify("invite", { toUid: friend, body: `wants to play ${GAME_META[type].name} ${GAME_META[type].emoji}`, data: { url: gameRoute(node.key as string) } });
+  void notify("invite", { toUid: friend, body: `wants to play ${gameInfo(type).name} ${gameInfo(type).emoji}`, data: { url: gameRoute(node.key as string) } });
   return node.key as string;
 }
 
@@ -130,7 +132,7 @@ export async function rematch(from: LiveGame): Promise<string> {
   };
   await update(node, { ...g, createdAt: rtdbNow(), lastMoveAt: rtdbNow() });
   await update(ref(getRtdb(), gamePath(from.id)), { open: false });
-  void notify("yourTurn", { toUid: from.players.second === g.players.first ? from.players.first : from.players.second, body: `Rematch at ${GAME_META[from.type].name}! ${g.players.first === from.players.second ? "You move first." : "They move first."}`, data: { url: gameRoute(node.key as string) } });
+  void notify("yourTurn", { toUid: from.players.second === g.players.first ? from.players.first : from.players.second, body: `Rematch at ${gameInfo(from.type).name}! ${g.players.first === from.players.second ? "You move first." : "They move first."}`, data: { url: gameRoute(node.key as string) } });
   return node.key as string;
 }
 
@@ -182,7 +184,7 @@ export async function playMove(game: LiveGame, me: string, move: unknown, nameOf
   if (!res.committed) throw new Error("move_rejected");
   const after = { id: game.id, ...(res.snapshot.val() as GameNode) };
   if (outcome.finished) await recordResult(after, me, nameOf);
-  else void notify("yourTurn", { toUid: uidOf(after, after.turn), body: `Your move in ${GAME_META[after.type].name} ${GAME_META[after.type].emoji}`, data: { url: gameRoute(after.id) } });
+  else void notify("yourTurn", { toUid: uidOf(after, after.turn), body: `Your move in ${gameInfo(after.type).name} ${gameInfo(after.type).emoji}`, data: { url: gameRoute(after.id) } });
   return outcome;
 }
 
@@ -192,7 +194,7 @@ export async function cancelGame(game: LiveGame, me: string, nameOf: (uid: strin
     if (!current || current.status !== "active" || (current.moves ?? 0) > 0) return;
     return { ...current, status: "finished", open: false, winnerId: null, endReason: "cancelled", lastMoveAt: Date.now() } satisfies GameNode;
   });
-  if (res.committed) void postSystemMessage(me, `✕ ${nameOf(me)} cancelled the ${GAME_META[game.type].name} game`);
+  if (res.committed) void postSystemMessage(me, `✕ ${nameOf(me)} cancelled the ${gameInfo(game.type).name} game`);
   return res.committed;
 }
 
@@ -257,7 +259,7 @@ async function recordResult(game: LiveGame, by: string, nameOf: (uid: string) =>
 
 /** "Priya resigned at Chess — you win 🎉" / "Checkmate — Priya wins at Chess" / "Draw at Chess". */
 export function resultForRecipient(game: LiveGame, recipient: string, nameOf: (uid: string) => string): string {
-  const meta = GAME_META[game.type];
+  const meta = gameInfo(game.type);
   const otherUid = game.players.first === recipient ? game.players.second : game.players.first;
   if (!game.winnerId) return `${meta.emoji} Draw at ${meta.name}`;
   const won = game.winnerId === recipient;
@@ -267,7 +269,7 @@ export function resultForRecipient(game: LiveGame, recipient: string, nameOf: (u
 
 /** Nickname-aware line, posted from the UI where names are known. */
 export function describeResult(game: LiveGame, nameOf: (uid: string) => string): string {
-  const meta = GAME_META[game.type];
+  const meta = gameInfo(game.type);
   if (game.endReason === "cancelled") return `✕ The ${meta.name} game was cancelled`;
   if (!game.winnerId) return `${meta.emoji} ${nameOf(game.players.first)} and ${nameOf(game.players.second)} drew at ${meta.name}`;
   const loser = game.winnerId === game.players.first ? game.players.second : game.players.first;
@@ -276,16 +278,16 @@ export function describeResult(game: LiveGame, nameOf: (uid: string) => string):
 }
 
 /** The record strip: wins per uid and draws, from pair/main. */
-export function recordFor(pair: Pick<PairDoc, "records">, type: GameType, me: string, friend: string | null) {
+export function recordFor(pair: Pick<PairDoc, "records">, type: string, me: string, friend: string | null) {
   const r = pair.records?.[type] ?? {};
   return { mine: r[me] ?? 0, theirs: friend ? (r[friend] ?? 0) : 0, draws: r.draws ?? 0 };
 }
 
-/** Results for non-board games (trivia): gameResults doc + pair.records bump + chat line. */
-export async function recordGenericResult(game: string, players: string[], winnerId: string | null, startedAtMs: number, moves: number, nameOf: (uid: string) => string): Promise<void> {
+/** Results for non-board games (trivia, pictionary): gameResults doc + pair.records bump + chat line. */
+export async function recordGenericResult(game: Exclude<ResultGame, GameType>, players: string[], winnerId: string | null, startedAtMs: number, moves: number, nameOf: (uid: string) => string): Promise<void> {
   const id = `${game}-${startedAtMs}`;
   try {
-    await setDoc(doc(resultsCol(), id), { game: game as GameType, players, winnerId, endReason: winnerId ? "win" : "draw", startedAt: Timestamp.fromMillis(startedAtMs), endedAt: serverTimestamp(), moves });
+    await setDoc(doc(resultsCol(), id), { game, players, winnerId, endReason: winnerId ? "win" : "draw", startedAt: Timestamp.fromMillis(startedAtMs), endedAt: serverTimestamp(), moves });
   } catch {
     return;
   }
@@ -301,6 +303,6 @@ export async function recordGenericResult(game: string, players: string[], winne
   }).catch(swallow);
   const [host] = players;
   if (host === undefined) return;
-  void postSystemMessage(host, winnerId ? `🧠 ${nameOf(winnerId)} won the trivia duel` : "🧠 The trivia duel was a tie");
+  void postSystemMessage(host, resultLine(game, winnerId ? nameOf(winnerId) : null));
   if (game === "trivia") void recordTogetherEvent("trivia", host);
 }
