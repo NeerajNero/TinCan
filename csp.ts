@@ -37,6 +37,40 @@ const host = (url: string) => {
  */
 export const FIRESTORE_PROBE_IMG = "https://www.google.com/images/";
 
+/** The two YouTube player origins (watch/listen together embed the nocookie one; the API script comes from www). */
+export const YOUTUBE_ORIGINS = ["https://www.youtube-nocookie.com", "https://www.youtube.com"];
+
+/**
+ * Permissions-Policy (static, set in next.config.ts). Playback features are
+ * delegated to the YouTube iframe: with `autoplay=(self)` the browser denies
+ * the embed autoplay even though the iframe asks for it, so remote play and
+ * our own Play button (a tap in *our* frame) were treated as blocked autoplay.
+ * Everything else stays off; the microphone is ours only (voice notes).
+ */
+export function buildPermissionsPolicy(): string {
+  const yt = YOUTUBE_ORIGINS.map((o) => `"${o}"`).join(" ");
+  const playback = `(self ${yt})`;
+  return [
+    "accelerometer=()",
+    `autoplay=${playback}`,
+    "camera=()",
+    "display-capture=()",
+    `encrypted-media=${playback}`,
+    `fullscreen=${playback}`,
+    "geolocation=()",
+    "gyroscope=()",
+    "magnetometer=()",
+    "microphone=(self)",
+    "midi=()",
+    "payment=()",
+    `picture-in-picture=${playback}`,
+    "publickey-credentials-get=()",
+    "screen-wake-lock=()",
+    "usb=()",
+    "xr-spatial-tracking=()",
+  ].join(", ");
+}
+
 /** Public radio streams (src/content/radio.json): played by <audio>, never cached. */
 export const RADIO_ORIGINS = unique((radio as Array<{ url: string }>).map((s) => origin(s.url)));
 
@@ -112,7 +146,7 @@ export function buildCsp({ nonce, projectId, authDomain, databaseUrl, dev = fals
     "script-src": unique([
       "'self'",
       `'nonce-${nonce}'`,
-      "https://www.youtube.com",
+      "https://www.youtube.com", // iframe_api + www-widgetapi.js
       "https://s.ytimg.com",
       "https://apis.google.com",
       ...rtdbTransport,

@@ -5,12 +5,14 @@ import { useCallback, useEffect, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { ChatDrawer } from "@/components/play/together/ChatDrawer";
+import { JoinOverlay } from "@/components/play/together/JoinOverlay";
 import { LazyYouTubePlayer as YouTubePlayer } from "@/components/play/together/lazy";
-import { useSyncedPlayer, VideoPicker } from "@/components/play/together/WatchScreen";
+import { VideoPicker } from "@/components/play/together/WatchScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
-import { advanceQueue, dequeue, enqueue, loadVideo, subscribeQueue, writePlayer, type QueueItem } from "@/lib/db/watch";
+import { useSyncedPlayer } from "@/hooks/useSyncedPlayer";
+import { advanceQueue, dequeue, enqueue, loadVideo, subscribeQueue, type QueueItem } from "@/lib/db/watch";
 import { recordTogetherEvent } from "@/lib/garden";
 import { safeThumb } from "@/lib/safeUrl";
 
@@ -24,7 +26,7 @@ export function ListenScreen() {
     },
     [uid],
   );
-  const { node, onReady, onStateChange, syncToFriend } = useSyncedPlayer("listen", uid, onEnded);
+  const { node, ready, joined, onReady, onStateChange, join, toggle, syncToFriend, markJoined } = useSyncedPlayer("listen", uid, onEnded);
   useEffect(() => subscribeQueue(setQueue), []);
 
   const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
@@ -43,25 +45,37 @@ export function ListenScreen() {
           </Button>
         }
       />
-      <YouTubePlayer videoId={node?.videoId ?? null} hidden onReady={onReady} onStateChange={onStateChange} />
-      <Card className="flex items-center gap-3">
-        {safeThumb(node?.thumb) ? // eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail
-          <img src={node!.thumb as string} alt="" width={96} height={72} decoding="async" loading="lazy" className="h-16 w-24 rounded-xl object-cover" /> : <span className="grid h-16 w-24 place-items-center rounded-xl bg-surface-2 text-3xl">🎧</span>}
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{node?.title ?? "Nothing playing"}</p>
-          <p className="text-xs text-muted">{node?.videoId ? (node.playing ? "Playing for both" : "Paused") : "Add a track below"}</p>
+      {/* The player stays at a real 200 px size under the cover card: YouTube won't play a hidden or 1 px player. */}
+      <YouTubePlayer videoId={node?.videoId ?? null} variant="audio" onReady={onReady} onStateChange={onStateChange}>
+        <div className="absolute inset-0 flex flex-col justify-end gap-3 bg-surface p-4">
+          {safeThumb(node?.thumb) && (
+            // eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail
+            <img src={node!.thumb as string} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover opacity-40 blur-sm" />
+          )}
+          <div className="relative flex items-center gap-3">
+            {safeThumb(node?.thumb) ? // eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail
+              <img src={node!.thumb as string} alt="" width={96} height={72} decoding="async" className="h-16 w-24 rounded-xl object-cover shadow" /> : <span className="grid h-16 w-24 place-items-center rounded-xl bg-surface-2 text-3xl">🎧</span>}
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">{node?.title ?? "Nothing playing"}</p>
+              <p className="text-xs text-muted">{node?.videoId ? (!ready ? "Starting the player…" : node.playing ? "Playing for both" : "Paused") : "Add a track below"}</p>
+            </div>
+            {node?.videoId && (
+              <button type="button" onClick={toggle} disabled={!ready} aria-label={node.playing ? "Pause for both" : "Play for both"} className="tap grid size-12 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-white disabled:opacity-50">
+                {node.playing ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
+              </button>
+            )}
+          </div>
         </div>
-        {node?.videoId && (
-          <button type="button" onClick={() => void writePlayer("listen", { playing: !node.playing, positionSec: node.positionSec, by: uid })} aria-label={node.playing ? "Pause" : "Play"} className="tap grid size-12 place-items-center rounded-full bg-[var(--accent)] text-white">
-            {node.playing ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
-          </button>
-        )}
-      </Card>
+        {ready && node?.videoId && !joined && <JoinOverlay friendName={friend?.nickname ?? "your friend"} playing={node.playing} onJoin={join} />}
+      </YouTubePlayer>
       <Card className="flex flex-col gap-2">
         <VideoPicker
           label="Add a track (YouTube link)"
           onPick={async (id, title, thumb) => {
-            if (!node?.videoId) await loadVideo("listen", uid, id, title, thumb);
+            if (!node?.videoId) {
+              markJoined();
+              await loadVideo("listen", uid, id, title, thumb);
+            }
             else await enqueue({ videoId: id, title, thumb, addedBy: uid });
           }}
         />

@@ -293,8 +293,12 @@ radio stations (6 public stream URLs with names).
   Cloudinary and posts it to chat.
 - **Pixel art**: 32×32 shared grid, 16-colour palette, shared cursors, snapshot to chat.
 - **Watch together**: paste a YouTube URL; IFrame Player; play/pause/seek broadcast via RTDB;
-  drift correction if >2 s apart; small side chat uses the main chat.
-- **Listen together**: same mechanism, audio-only UI (hidden player, shows title/thumbnail),
+  drift correction if >2 s apart; small side chat uses the main chat. One IFrame API loader
+  (`src/lib/youtube.ts`); the player is built only once a video id is known and destroyed on route
+  change. Local Play/Pause drives the player inside the tap, then writes RTDB; remote state applies only
+  after a one-time "Tap to join". onError codes go to Diagnostics (101/150: "can't be embedded").
+- **Listen together**: same mechanism, audio-only UI (the player stays at a real 200 px size under an
+  opaque thumbnail card, never display:none or 1 px),
   shared queue (RTDB list). **Radio**: 6 curated public stream URLs, synced play/pause.
 - **Focus timer**: shared Pomodoro 25/5; both see the same countdown; chime at phase end.
 - **Cook-along**: pick a recipe (both can add recipes); steps tick off live for both.
@@ -335,8 +339,8 @@ radio stations (6 public stream URLs with names).
   nonce in the root layout makes every page dynamically rendered: the accepted cost of a strict policy.
   The service worker has its own CSP (`buildWorkerCsp`, header on `/serwist/*`); every host it fetches for
   a runtime cache must be in connect-src. `CSP_REPORT_ONLY=1` switches both to report-only.
-  `pnpm test:e2e` fails on any violation in the page or the worker. Other headers in `next.config.ts`: nosniff, DENY framing, strict referrer, Permissions-Policy allowing only
-  microphone(self) and media playback. The worker caches images (Cloudinary 30 d/500, OSM tiles, GIPHY,
+  `pnpm test:e2e` fails on any violation in the page or the worker. Other headers in `next.config.ts`: nosniff, DENY framing, strict referrer, Permissions-Policy (`buildPermissionsPolicy`
+  in `csp.ts`) allowing microphone(self) and delegating autoplay/encrypted-media/fullscreen/picture-in-picture to the YouTube origins. The worker caches images (Cloudinary 30 d/500, OSM tiles, GIPHY,
   ytimg 7 d) CacheFirst and never caches Firebase, Google APIs or `/api/*`.
 - Rules validate shapes and sizes (message text ≤ 2000, captions ≤ 500, notes ≤ 1000, no unknown
   top-level fields on users/messages, `createdAt == request.time` on creates, immutable identity
@@ -415,6 +419,7 @@ CLOUDINARY_API_SECRET=
 TICK_SECRET=
 GIPHY_API_KEY=                       # optional, server-only
 CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
+E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
 ## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–16 shipped

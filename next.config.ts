@@ -5,7 +5,7 @@ import { withSerwist } from "@serwist/turbopack";
 import type { NextConfig } from "next";
 
 
-import { buildWorkerCsp } from "./csp";
+import { buildPermissionsPolicy, buildWorkerCsp } from "./csp";
 
 
 /** Short commit id of this build (Vercel's, else local git), shown in More → Diagnostics. */
@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "X-Frame-Options", value: "DENY" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-      { key: "Permissions-Policy", value: "accelerometer=(), autoplay=(self), camera=(), display-capture=(), encrypted-media=(self), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(), usb=(), xr-spatial-tracking=()" },
+      { key: "Permissions-Policy", value: buildPermissionsPolicy() },
     ];
     return [
       { source: "/:path*", headers: securityHeaders },

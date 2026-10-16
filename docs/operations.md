@@ -12,7 +12,7 @@
 
 ## Env
 
-`.env.example` lists every variable (`CSP_REPORT_ONLY=1` is the only debug switch). Locally the values live in `.env` (or `.env.local`), both gitignored; scripts read `.env.local` then `.env`. Vercel holds the same set under Settings → Environment Variables. Never print or paste values into a chat, a log or a commit.
+`.env.example` lists every variable (`CSP_REPORT_ONLY=1` is the only debug switch; `E2E_HARNESS=1` is for Playwright only and is never set on Vercel). Locally the values live in `.env` (or `.env.local`), both gitignored; scripts read `.env.local` then `.env`. Vercel holds the same set under Settings → Environment Variables. Never print or paste values into a chat, a log or a commit.
 
 ## Scripts
 

@@ -163,7 +163,7 @@ Fonts are self-hosted, so Google Fonts receives nothing.
   - returns minimal error bodies.
 - **Media.** Uploads are signed for a fixed parameter set. Assets use authenticated delivery, and their URLs are signed server-side for a fixed set of variants. Unsigned or tampered URLs return 401. The rules validate every stored media URL.
 - **CSP with a nonce.** A per-request nonce, with no `'unsafe-inline'` scripts and an exact host list (`csp.ts`). The service worker has its own policy. `CSP_REPORT_ONLY=1` switches to report-only for debugging.
-- **Other headers.** nosniff, `X-Frame-Options: DENY`, a strict referrer policy, and a Permissions-Policy that allows only the microphone.
+- **Other headers.** nosniff, `X-Frame-Options: DENY`, a strict referrer policy, and a Permissions-Policy that allows the microphone for the app only and playback features (autoplay, encrypted media, fullscreen, picture-in-picture) for the app and the YouTube player.
 - **Rules tests.** `pnpm test:rules` covers: strangers blocked, message edit rights, private bodies, gifts privacy, pings, pair uids, signed media, place unlinking.
 - **Secrets.** Server-only. The client bundle is checked to contain none.
 

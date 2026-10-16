@@ -44,7 +44,7 @@ export interface YTPlayer {
   destroy(): void;
   getVideoData?: () => { video_id?: string };
 }
-interface YTNamespace {
+export interface YTNamespace {
   Player: new (el: HTMLElement | string, opts: Record<string, unknown>) => YTPlayer;
   PlayerState: { UNSTARTED: -1; ENDED: 0; PLAYING: 1; PAUSED: 2; BUFFERING: 3; CUED: 5 };
 }
@@ -55,24 +55,64 @@ declare global {
   }
 }
 
+export const YT_API_SRC = "https://www.youtube.com/iframe_api";
 let loading: Promise<YTNamespace> | null = null;
 
+/**
+ * Loads the IFrame API exactly once per page and resolves to `window.YT`.
+ * Resolves immediately when `YT.Player` already exists. Otherwise it wraps
+ * (never replaces) any existing `onYouTubeIframeAPIReady`, and reuses a
+ * script tag someone else already added. A failed load resets so a later
+ * mount can retry.
+ */
 export function loadYouTubeApi(): Promise<YTNamespace> {
   if (typeof window === "undefined") return Promise.reject(new Error("ssr"));
   if (window.YT?.Player) return Promise.resolve(window.YT);
-  if (loading) return loading;
-  loading = new Promise((resolve) => {
+  loading ??= new Promise<YTNamespace>((resolve, reject) => {
     const prev = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = () => {
-      prev?.();
-      resolve(window.YT as YTNamespace);
+      try {
+        prev?.();
+      } finally {
+        if (window.YT?.Player) resolve(window.YT);
+        else reject(new Error("youtube_api_incomplete"));
+      }
     };
+    if (document.querySelector(`script[src="${YT_API_SRC}"]`)) return;
     const s = document.createElement("script");
-    s.src = "https://www.youtube.com/iframe_api";
+    s.src = YT_API_SRC;
     s.async = true;
+    s.onerror = () => {
+      loading = null;
+      window.onYouTubeIframeAPIReady = prev;
+      s.remove();
+      reject(new Error("youtube_api_load_failed"));
+    };
     document.head.appendChild(s);
   });
   return loading;
+}
+
+/** Test hook: forget the cached load. */
+export function resetYouTubeApiForTests(): void {
+  loading = null;
+}
+
+/** Friendly text for a YT.Player onError code. */
+export function youTubeErrorMessage(code: number): string {
+  switch (code) {
+    case 2:
+      return "That video link looks wrong. Try pasting it again.";
+    case 5:
+      return "This video can't play in the browser player.";
+    case 100:
+      return "This video was removed or is private.";
+    case 101:
+    case 150:
+      return "This video can't be embedded. Its owner only allows it on YouTube.";
+    default:
+      return "YouTube couldn't play this video.";
+  }
 }
 
 export const YT_STATE = { ENDED: 0, PLAYING: 1, PAUSED: 2, BUFFERING: 3, CUED: 5 } as const;

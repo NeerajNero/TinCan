@@ -1,12 +1,12 @@
 /**
  * A tiny in-memory log for More → Diagnostics: the last 20 console errors,
- * Firebase warnings, uncaught errors, unhandled rejections and CSP
- * violations on this device. Nothing leaves the phone unless you press
+ * Firebase warnings, uncaught errors, unhandled rejections, CSP
+ * violations and YouTube player errors on this device. Nothing leaves the phone unless you press
  * "Copy diagnostics". Installed once, as early as possible (Providers).
  */
 export interface DiagEntry {
   at: number;
-  kind: "error" | "warn" | "uncaught" | "rejection" | "csp";
+  kind: "error" | "warn" | "uncaught" | "rejection" | "csp" | "player";
   text: string;
 }
 
@@ -50,6 +50,11 @@ export function installDiagLog(): void {
   window.addEventListener("error", (e) => push("uncaught", `${e.message} @ ${e.filename}:${e.lineno}`));
   window.addEventListener("unhandledrejection", (e) => push("rejection", stringify([e.reason])));
   document.addEventListener("securitypolicyviolation", (e) => push("csp", `${e.effectiveDirective} blocked ${e.blockedURI || "(inline)"}`));
+}
+
+/** Record a line directly (e.g. YouTube player error codes), without going through the console. */
+export function noteDiag(kind: DiagEntry["kind"], text: string): void {
+  push(kind, text.slice(0, 400));
 }
 
 export const diagEntries = (): readonly DiagEntry[] => entries.slice();

@@ -1,74 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Pause, Play } from "lucide-react";
+import { useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { ChatDrawer } from "@/components/play/together/ChatDrawer";
+import { JoinOverlay } from "@/components/play/together/JoinOverlay";
 import { LazyYouTubePlayer as YouTubePlayer } from "@/components/play/together/lazy";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
-import { useRtdbValue } from "@/hooks/useRtdbValue";
-import { loadVideo, subscribePlayer, writePlayer, type PlayerNode } from "@/lib/db/watch";
+import { useSyncedPlayer } from "@/hooks/useSyncedPlayer";
+import { loadVideo } from "@/lib/db/watch";
 import { recordTogetherEvent } from "@/lib/garden";
-import { fetchYouTubeMeta, parseYouTubeId, YT_STATE, type YTPlayer } from "@/lib/youtube";
-
-const DRIFT_SEC = 2;
-
-/** Shared playback: user actions write state; the other client applies it and corrects drift. */
-export function useSyncedPlayer(kind: "watch" | "listen", uid: string, onEnded?: (videoId: string) => void) {
-  const [node, setNode] = useState<PlayerNode | null | undefined>(undefined);
-  const player = useRef<YTPlayer | null>(null);
-  const applying = useRef(false);
-  const { value: offset } = useRtdbValue<number>(".info/serverTimeOffset");
-  const serverNow = () => Date.now() + (offset ?? 0);
-
-  useEffect(() => subscribePlayer(kind, setNode), [kind]);
-
-  // Apply remote state (and correct drift every 2 s).
-  useEffect(() => {
-    const p = player.current;
-    if (!p || !node?.videoId) return;
-    const apply = () => {
-      const expected = node.playing ? node.positionSec + (serverNow() - node.updatedAt) / 1000 : node.positionSec;
-      const state = p.getPlayerState();
-      applying.current = true;
-      if (Math.abs(p.getCurrentTime() - expected) > DRIFT_SEC) p.seekTo(expected, true);
-      if (node.playing && state !== YT_STATE.PLAYING && state !== YT_STATE.BUFFERING) p.playVideo();
-      if (!node.playing && state === YT_STATE.PLAYING) p.pauseVideo();
-      setTimeout(() => (applying.current = false), 600);
-    };
-    apply();
-    const t = setInterval(apply, 2000);
-    return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [node?.videoId, node?.playing, node?.positionSec, node?.updatedAt, offset]);
-
-  // The player keeps the latest callbacks in a ref, so plain functions are fine here.
-  const onReady = (p: YTPlayer) => {
-    player.current = p;
-    setNode((n) => (n ? { ...n } : n));
-  };
-
-  const onStateChange = (state: number, p: YTPlayer) => {
-    if (state === YT_STATE.ENDED) {
-      if (node?.videoId) onEnded?.(node.videoId);
-      return;
-    }
-    if (applying.current) return;
-    if (state === YT_STATE.PLAYING) void writePlayer(kind, { playing: true, positionSec: p.getCurrentTime(), by: uid });
-    if (state === YT_STATE.PAUSED) void writePlayer(kind, { playing: false, positionSec: p.getCurrentTime(), by: uid });
-  };
-
-  const syncToFriend = () => {
-    const p = player.current;
-    if (!p || !node?.videoId) return;
-    void writePlayer(kind, { playing: p.getPlayerState() === YT_STATE.PLAYING, positionSec: p.getCurrentTime(), by: uid });
-  };
-
-  return { node, onReady, onStateChange, syncToFriend };
-}
+import { fetchYouTubeMeta, parseYouTubeId } from "@/lib/youtube";
 
 export function VideoPicker({ onPick, label = "Paste a YouTube link or id" }: { onPick: (id: string, title: string, thumb: string) => Promise<void>; label?: string }) {
   const [input, setInput] = useState("");
@@ -108,7 +54,8 @@ export function VideoPicker({ onPick, label = "Paste a YouTube link or id" }: { 
 
 export function WatchScreen() {
   const { uid, friend } = usePair();
-  const { node, onReady, onStateChange, syncToFriend } = useSyncedPlayer("watch", uid, () => void recordTogetherEvent("watch", uid));
+  const { node, ready, joined, onReady, onStateChange, join, toggle, syncToFriend, markJoined } = useSyncedPlayer("watch", uid, () => void recordTogetherEvent("watch", uid));
+  const friendName = friend?.nickname ?? "your friend";
 
   return (
     <div className="flex flex-col gap-3 pb-20">
@@ -124,17 +71,35 @@ export function WatchScreen() {
           </Button>
         }
       />
-      <YouTubePlayer videoId={node?.videoId ?? null} onReady={onReady} onStateChange={onStateChange} />
+      <YouTubePlayer videoId={node?.videoId ?? null} onReady={onReady} onStateChange={onStateChange}>
+        {ready && node?.videoId && !joined && <JoinOverlay friendName={friendName} playing={node.playing} onJoin={join} />}
+      </YouTubePlayer>
       {node?.videoId ? (
-        <p className="px-1 text-sm">
-          <span className="font-semibold">{node.title}</span>
-          <span className="text-muted"> · {node.playing ? "playing" : "paused"}</span>
-        </p>
+        <div className="flex items-center gap-3 px-1">
+          <button
+            type="button"
+            onClick={toggle}
+            disabled={!ready}
+            aria-label={node.playing ? "Pause for both" : "Play for both"}
+            className="tap grid size-12 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-white disabled:opacity-50"
+          >
+            {node.playing ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
+          </button>
+          <p className="min-w-0 flex-1 text-sm">
+            <span className="block truncate font-semibold">{node.title}</span>
+            <span className="text-muted">{ready ? (node.playing ? "playing" : "paused") : "starting the player…"}</span>
+          </p>
+        </div>
       ) : (
         <Card className="py-6 text-center text-sm text-muted">Load a video and you&apos;ll both see it. Play, pause and seeks stay in step.</Card>
       )}
       <Card className="flex flex-col gap-2">
-        <VideoPicker onPick={(id, title, thumb) => loadVideo("watch", uid, id, title, thumb)} />
+        <VideoPicker
+          onPick={async (id, title, thumb) => {
+            markJoined();
+            await loadVideo("watch", uid, id, title, thumb);
+          }}
+        />
       </Card>
       <ChatDrawer />
     </div>

@@ -13,7 +13,7 @@ export default defineConfig({
   use: { baseURL: `http://127.0.0.1:${PORT}`, trace: "retain-on-failure" },
   projects: [{ name: "android", use: { ...devices["Pixel 7"] } }],
   webServer: {
-    command: `pnpm exec next start -p ${PORT}`,
+    command: `E2E_HARNESS=1 pnpm exec next start -p ${PORT}`,
     url: `http://127.0.0.1:${PORT}/signin`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

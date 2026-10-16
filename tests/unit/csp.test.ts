@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildCsp, buildWorkerCsp, FIRESTORE_PROBE_IMG } from "../../csp";
+import { buildCsp, buildPermissionsPolicy, buildWorkerCsp, FIRESTORE_PROBE_IMG } from "../../csp";
 
 const directive = (csp: string, name: string) => csp.split("; ").find((d) => d.startsWith(`${name} `))?.split(" ").slice(1) ?? [];
 
@@ -24,6 +24,24 @@ describe("CSP", () => {
     expect(directive(csp, "img-src")).not.toContain("https://www.google.com");
     expect(directive(buildWorkerCsp(), "img-src")).toContain(FIRESTORE_PROBE_IMG);
     expect(directive(buildWorkerCsp(), "img-src")).not.toContain("https://www.google.com");
+  });
+
+  it("lets the YouTube IFrame API and player embed load", () => {
+    for (const h of ["https://www.youtube.com", "https://s.ytimg.com"]) expect(directive(csp, "script-src")).toContain(h);
+    // 'strict-dynamic' would make browsers ignore those host entries.
+    expect(directive(csp, "script-src")).not.toContain("'strict-dynamic'");
+    for (const h of ["https://www.youtube.com", "https://www.youtube-nocookie.com"]) expect(directive(csp, "frame-src")).toContain(h);
+    for (const h of ["https://i.ytimg.com", "https://*.ytimg.com"]) expect(directive(csp, "img-src")).toContain(h);
+  });
+
+  it("delegates playback features to the YouTube iframe and nothing else", () => {
+    const pp = buildPermissionsPolicy();
+    for (const f of ["autoplay", "encrypted-media", "fullscreen", "picture-in-picture"]) {
+      expect(pp).toContain(`${f}=(self "https://www.youtube-nocookie.com" "https://www.youtube.com")`);
+    }
+    expect(pp).toContain("microphone=(self)");
+    expect(pp).toContain("camera=()");
+    expect(pp).toContain("geolocation=()");
   });
 
   it("keeps scripts strict", () => {

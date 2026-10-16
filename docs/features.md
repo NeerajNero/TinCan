@@ -49,11 +49,13 @@ Pages under `src/app/(app)/**` are thin: they render one screen component. Logic
 | Whiteboard | `/play/whiteboard` | `together/WhiteboardScreen` + `SharedCanvas` | RTDB `whiteboard/*`, `cursors/*`; snapshot → Cloudinary → chat |
 | Pixel art | `/play/pixel` | `together/PixelScreen` | RTDB `pixel/grid` (1024 chars) |
 | Pictionary | `/play/pictionary[/id]` | `together/PictionaryScreen` | RTDB `pictionary/{id}`, `lib/db/pictionary` |
-| Watch together | `/play/watch` | `together/WatchScreen`, `YouTubePlayer` | RTDB `watch/main`, `lib/youtube` |
-| Listen together | `/play/listen` | `together/ListenScreen` | RTDB `listen/main`, `listen/queue` |
+| Watch together | `/play/watch` | `together/WatchScreen`, `YouTubePlayer`, `JoinOverlay`, `hooks/useSyncedPlayer` | RTDB `watch/main`, `lib/youtube` (loader, error text), `lib/playerSync` (drift plan) |
+| Listen together | `/play/listen` | `together/ListenScreen` (200 px player under the cover card) | RTDB `listen/main`, `listen/queue` |
 | Radio | `/play/radio` | `together/RadioScreen` | RTDB `radio/main`, `content/radio.json` |
 | Focus timer | `/play/timer` | `together/TimerScreen` | RTDB `timer/main`; sessions → `pair.focusSessions` |
 | Cook-along | `/play/cook[/id]` | `together/CookScreen` | `recipes/{id}` + RTDB `cook/{id}` |
+
+**YouTube player rules** (watch and listen). `loadYouTubeApi()` in `lib/youtube.ts` loads `iframe_api` once per page, resolves at once when `YT.Player` exists, and wraps any existing `onYouTubeIframeAPIReady`. `YouTubePlayer` builds one player per mount, and only once its node is mounted, the API is loaded and a video id is known. Later ids are cued on the same player and unmounting destroys it. It passes `host: youtube-nocookie.com` and our `origin`. Local Play/Pause (`toggle` in `useSyncedPlayer`) calls the player inside the click handler, then writes RTDB. Remote state is applied only after this client joins: a one-time "Tap to join" overlay, a local Play/Pause, or loading the video yourself. Listen keeps the player at 200 px tall, the minimum YouTube allows, under an opaque cover, never hidden or 1 px. `onError` codes go to the Diagnostics log, and the player shows a friendly line. Codes 101 and 150 read "This video can't be embedded".
 
 Heavy together screens are code-split through `together/lazy.tsx`. `ChatDrawer` gives any together screen a slide-up view of the main chat.
 
