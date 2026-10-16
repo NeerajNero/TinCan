@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
+import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { gameRoute } from "@/lib/db/games";
@@ -41,7 +42,8 @@ const LABELS: Array<[RegExp, string]> = [
 /** One line under a game's header: here · elsewhere (with Nudge) · offline. No listeners of its own. */
 export function FriendHereBadge({ screenName }: { screenName: string }) {
   const { friend, friendUid } = usePair();
-  const { friendPresence, games } = useLiveEvents();
+  const { games } = useLiveEvents();
+  const friendPresence = useFriendPresence();
   const pathname = usePathname();
   const [nudgedAt, setNudgedAt] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);

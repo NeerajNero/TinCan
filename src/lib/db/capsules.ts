@@ -1,13 +1,12 @@
-import { collection, doc, getDoc, limit, orderBy, query, serverTimestamp, Timestamp, updateDoc, writeBatch, type CollectionReference, type DocumentReference, type Query } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { collection, doc, getDoc, limit, orderBy, query, serverTimestamp, Timestamp, updateDoc, writeBatch, type CollectionReference, type DocumentReference, type Query } from "@/lib/firebase/fs";
 import type { CapsuleBody, CapsuleDoc, MediaItem } from "@/lib/types";
 
 export const MIN_LOCK_MS = 60 * 60 * 1000;
-export const CAPSULE_LIMIT = 50;
+const CAPSULE_LIMIT = 50;
 
-export const capsulesCol = () => collection(getDb(), "capsules") as CollectionReference<CapsuleDoc>;
-export const capsuleBodyRef = (id: string) => doc(getDb(), "capsules", id, "private", "body") as DocumentReference<CapsuleBody>;
+const capsulesCol = () => collection(getDb(), "capsules") as CollectionReference<CapsuleDoc>;
+const capsuleBodyRef = (id: string) => doc(getDb(), "capsules", id, "private", "body") as DocumentReference<CapsuleBody>;
 
 export function capsulesQuery(): Query<CapsuleDoc> {
   return query(capsulesCol(), orderBy("unlockAt", "desc"), limit(CAPSULE_LIMIT));

@@ -54,8 +54,9 @@ function FitOnce({ points }: { points: Array<[number, number]> }) {
   const key = points.map((p) => p.join(",")).join("|");
   useEffect(() => {
     if (points.length === 0) return;
-    if (points.length === 1) {
-      map.setView(points[0], 10);
+    const [only] = points;
+    if (points.length === 1 && only !== undefined) {
+      map.setView(only, 10);
       return;
     }
     map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 12 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -84,7 +84,7 @@ export function PetScreen() {
     <div className="flex flex-col gap-4">
       <SubHeader emoji="🐾" title={pet.name} back="/" />
       <Card className="flex flex-col items-center gap-3 py-6">
-        <motion.button
+        <m.button
           type="button"
           onClick={tap}
           disabled={!game}
@@ -99,12 +99,12 @@ export function PetScreen() {
           <PetSprite species={pet.species} mood={stats.mood} level={level} size={180} />
           <AnimatePresence>
             {eating > 0 && (
-              <motion.span key={eating} initial={{ opacity: 1, y: 0, scale: 1 }} animate={{ opacity: 0, y: -40, scale: 1.4 }} transition={{ duration: 1.2 }} className="pointer-events-none absolute top-6 left-1/2 -translate-x-1/2 text-3xl" aria-hidden>
+              <m.span key={eating} initial={{ opacity: 1, y: 0, scale: 1 }} animate={{ opacity: 0, y: -40, scale: 1.4 }} transition={{ duration: 1.2 }} className="pointer-events-none absolute top-6 left-1/2 -translate-x-1/2 text-3xl" aria-hidden>
                 🍪
-              </motion.span>
+              </m.span>
             )}
           </AnimatePresence>
-        </motion.button>
+        </m.button>
         <div>
           <p className="text-center font-heading text-xl font-semibold">
             {pet.name} <span className="text-sm font-bold text-muted">· {species.name} · level {level}</span>

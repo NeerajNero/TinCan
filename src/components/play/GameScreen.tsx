@@ -1,31 +1,31 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
+import { Confetti } from "@/components/plan/Confetti";
 import { CheckersBoard } from "@/components/play/boards/CheckersBoard";
-import dynamic from "next/dynamic";
-
-import { ListSkeleton } from "@/components/ui/Skeleton";
-
-const ChessBoard = dynamic(() => import("@/components/play/boards/ChessBoard").then((m) => m.ChessBoard), { ssr: false, loading: () => <ListSkeleton rows={1} tall /> });
 import { ConnectFourBoard } from "@/components/play/boards/ConnectFourBoard";
 import { TicTacToeBoard } from "@/components/play/boards/TicTacToeBoard";
 import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { FriendHereBadge } from "@/components/play/FriendHereBadge";
-import { Confetti } from "@/components/plan/Confetti";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Splash } from "@/components/ui/Splash";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { acceptGame, declineGame, describeResult, GAME_REACTIONS, gameRoute, playerOf, playMove, rematch, resign, sendReaction, subscribeGame, uidOf, type LiveGame } from "@/lib/db/games";
-import { engineFor, GAME_META } from "@/lib/games";
+import { GAME_META } from "@/lib/games";
+import { engineFor } from "@/lib/games/all";
 import { playSound } from "@/lib/sounds";
 
+
+const ChessBoard = dynamic(() => import("@/components/play/boards/ChessBoard").then((m) => m.ChessBoard), { ssr: false, loading: () => <ListSkeleton rows={1} tall /> });
 export function GameScreen({ gameId }: { gameId: string }) {
   const { uid, me, friend } = usePair();
   const router = useRouter();
@@ -140,7 +140,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
       <div className={cn("relative", game.status !== "active" && game.status !== "finished" && "pointer-events-none opacity-60")}>
         <AnimatePresence>
           {floating && (
-            <motion.div
+            <m.div
               key={floating.at}
               aria-live="polite"
               className="pointer-events-none absolute inset-x-0 top-1/3 z-20 flex flex-col items-center"
@@ -151,7 +151,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
             >
               <span className="text-7xl drop-shadow-lg">{floating.emoji}</span>
               <span className="mt-1 rounded-full bg-surface/90 px-2 py-0.5 text-xs font-bold shadow">{floating.by === uid ? "You" : nameOf(floating.by)}</span>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
         {game.type === "tictactoe" && <TicTacToeBoard state={state} canMove={canMove} legal={legal} line={result?.line} onMove={move} />}
@@ -163,9 +163,9 @@ export function GameScreen({ gameId }: { gameId: string }) {
       {game.status === "active" && mine && (
         <div role="group" aria-label="React" className="flex justify-center gap-2">
           {GAME_REACTIONS.map((e) => (
-            <motion.button key={e} type="button" whileTap={{ scale: 0.8 }} onClick={() => void sendReaction(game.id, uid, e)} aria-label={`React ${e}`} className="tap grid size-11 place-items-center rounded-full bg-surface text-2xl shadow-sm">
+            <m.button key={e} type="button" whileTap={{ scale: 0.8 }} onClick={() => void sendReaction(game.id, uid, e)} aria-label={`React ${e}`} className="tap grid size-11 place-items-center rounded-full bg-surface text-2xl shadow-sm">
               {e}
-            </motion.button>
+            </m.button>
           ))}
         </div>
       )}
@@ -189,14 +189,14 @@ export function GameScreen({ gameId }: { gameId: string }) {
 
       <AnimatePresence>
         {game.status === "finished" && (
-          <motion.div key="done" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <m.div key="done" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="flex flex-col items-center gap-3 text-center">
               <p className="font-heading text-xl font-semibold">{describeResult(game, nameOf)}</p>
               <Button onClick={() => void rematch(game).then((id) => router.push(gameRoute(id)))} className="px-6">
                 Rematch
               </Button>
             </Card>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       <Confetti burst={burst} />

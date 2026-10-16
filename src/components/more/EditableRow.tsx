@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 
@@ -53,7 +53,7 @@ export function EditableRow({ emoji, label, value, placeholder = "Not set", disa
       </button>
       <AnimatePresence initial={false}>
         {open && children && (
-          <motion.div
+          <m.div
             key="editor"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -62,7 +62,7 @@ export function EditableRow({ emoji, label, value, placeholder = "Not set", disa
             className="overflow-hidden"
           >
             <div className="flex flex-col gap-3 px-2 pt-1 pb-3">{children(close)}</div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

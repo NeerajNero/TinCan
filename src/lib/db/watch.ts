@@ -57,8 +57,9 @@ export async function advanceQueue(endedVideoId: string, by: string): Promise<bo
   const res = await runTransaction(r("listen"), (cur: { main?: PlayerNode; queue?: Record<string, QueueItem> } | null) => {
     if (!cur?.main || cur.main.videoId !== endedVideoId) return;
     const entries = Object.entries(cur.queue ?? {}).sort(([a], [b]) => a.localeCompare(b));
-    if (entries.length === 0) return { ...cur, main: { ...cur.main, playing: false, positionSec: 0, updatedAt: Date.now(), by } };
-    const [id, next] = entries[0];
+    const first = entries[0];
+    if (first === undefined) return { ...cur, main: { ...cur.main, playing: false, positionSec: 0, updatedAt: Date.now(), by } };
+    const [id, next] = first;
     const queue = { ...(cur.queue ?? {}) } as Record<string, QueueItem | null>;
     queue[id] = null;
     return { ...cur, queue, main: { videoId: next.videoId, title: next.title, thumb: next.thumb, playing: true, positionSec: 0, updatedAt: Date.now(), by } };

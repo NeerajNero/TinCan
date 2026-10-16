@@ -51,7 +51,7 @@ const BASE_X = 60;
 const SOIL_Y = 96;
 
 export function PlantSvg({ stage, wilted = false, className }: PlantSvgProps) {
-  const s = PLANT_STAGES[Math.min(PLANT_STAGES.length, Math.max(1, Math.round(stage))) - 1];
+  const s = PLANT_STAGES[Math.min(PLANT_STAGES.length, Math.max(1, Math.round(stage))) - 1] ?? PLANT_STAGES[0]!;
   const topY = SOIL_Y - s.stem;
 
   const green = wilted ? "#b9a86a" : "#5fbf8a";
@@ -93,7 +93,7 @@ export function PlantSvg({ stage, wilted = false, className }: PlantSvgProps) {
     <svg
       viewBox="0 0 120 130"
       role="img"
-      aria-label={`${PLANT_STAGE_NAMES[s === undefined ? 0 : PLANT_STAGES.indexOf(s)]}${wilted ? ", a bit droopy" : ""}`}
+      aria-label={`${PLANT_STAGE_NAMES[PLANT_STAGES.indexOf(s)]}${wilted ? ", a bit droopy" : ""}`}
       className={className}
     >
       {/* pot */}

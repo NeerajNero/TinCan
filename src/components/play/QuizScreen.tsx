@@ -1,7 +1,6 @@
 "use client";
 
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -10,15 +9,16 @@ import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input, Label } from "@/components/ui/Input";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { createQuiz, deleteQuiz, MAX_QUIZ_QUESTIONS, MIN_QUESTIONS, quizzesCol, recentQuizzes, submitQuiz, updateQuiz, type QuizDoc, type QuizQuestion } from "@/lib/db/quizzes";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
+import { doc, onSnapshot as onDoc } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { seededOrder } from "@/lib/seeded";
-import { doc, onSnapshot as onDoc } from "@/lib/firebase/fs";
 
 interface Quiz extends QuizDoc {
   id: string;
@@ -125,7 +125,7 @@ function AuthorView({ quiz, uid, friendUid, nameOf }: { quiz: Quiz; uid: string;
         {quiz.questions.map((q, i) => (
           <div key={i} className="border-b border-border pb-2 text-sm last:border-0">
             <p className="font-semibold">{q.q}</p>
-            <p className="text-xs text-muted">✓ {q.answer}{taken ? ` · they said: ${[q.answer, ...q.decoys][taken.answers[i]] ?? "—"}` : ""}</p>
+            <p className="text-xs text-muted">✓ {q.answer}{taken ? ` · they said: ${[q.answer, ...q.decoys][taken.answers[i] ?? -1] ?? "—"}` : ""}</p>
           </div>
         ))}
       </Card>
@@ -238,7 +238,7 @@ function TakeQuiz({ quiz, uid, nameOf }: { quiz: Quiz; uid: string; nameOf: (u: 
         </Card>
         <Card className="flex flex-col gap-2">
           {quiz.questions.map((q, i) => {
-            const mine = [q.answer, ...q.decoys][taken.answers[i]];
+            const mine = [q.answer, ...q.decoys][taken.answers[i] ?? -1];
             return (
               <div key={i} className="border-b border-border pb-2 text-sm last:border-0">
                 <p className="font-semibold">{q.q}</p>
@@ -286,7 +286,7 @@ function TakeQuiz({ quiz, uid, nameOf }: { quiz: Quiz; uid: string; nameOf: (u: 
               const chosen = picked === o.original;
               const reveal = picked !== null;
               return (
-                <motion.button
+                <m.button
                   key={o.original}
                   type="button"
                   disabled={reveal}
@@ -301,7 +301,7 @@ function TakeQuiz({ quiz, uid, nameOf }: { quiz: Quiz; uid: string; nameOf: (u: 
                   )}
                 >
                   {o.text}
-                </motion.button>
+                </m.button>
               );
             })}
           </div>

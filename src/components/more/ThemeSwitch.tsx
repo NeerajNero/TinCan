@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Moon, Smartphone, Sun, type LucideIcon } from "lucide-react";
 
 import { useTheme } from "@/hooks/useTheme";
@@ -33,7 +33,7 @@ export function ThemeSwitch() {
             )}
           >
             {active && (
-              <motion.span
+              <m.span
                 layoutId="theme-pill"
                 aria-hidden
                 className="absolute inset-0 rounded-full bg-surface shadow-sm"

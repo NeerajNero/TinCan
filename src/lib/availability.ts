@@ -9,19 +9,19 @@ import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { addDays, dateKeyIn } from "@/lib/dates";
 import { WEEKDAY_KEYS, type AvailabilityDoc, type WeekdayKey } from "@/lib/types";
 
-export const SLOT_MIN = 30;
+const SLOT_MIN = 30;
 export const SLOTS_PER_DAY = 24 * (60 / SLOT_MIN);
 
 export const slotLabel = (index: number) => `${Math.floor(index / 2).toString().padStart(2, "0")}:${index % 2 ? "30" : "00"}`;
 export const slotIndex = (label: string) => {
-  const [h, m] = label.split(":").map(Number);
+  const [h = 0, m = 0] = label.split(":").map(Number);
   return h * 2 + (m >= 30 ? 1 : 0);
 };
 
 /** Monday-first weekday key for a date in a zone. */
-export function weekdayIn(date: Date, tz: string): WeekdayKey {
+function weekdayIn(date: Date, tz: string): WeekdayKey {
   const idx = Number(formatInTimeZone(date, tz, "i")); // 1 = Monday … 7 = Sunday
-  return WEEKDAY_KEYS[idx - 1];
+  return WEEKDAY_KEYS[idx - 1] ?? "mon";
 }
 
 export interface Interval {

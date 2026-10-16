@@ -1,5 +1,6 @@
-import type { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
 import { withSerwist } from "@serwist/turbopack";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -42,7 +43,8 @@ const nextConfig: NextConfig = {
       `connect-src 'self' https://*.googleapis.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://firestore.googleapis.com https://fcmregistrations.googleapis.com https://firebaseinstallations.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com wss://*.firebasedatabase.app https://*.firebasedatabase.app${dbHost ? ` wss://${dbHost} https://${dbHost}` : ""} https://api.cloudinary.com https://api.giphy.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://www.youtube.com https://stream.radioparadise.com https://icecast.radiofrance.fr`,
     ].join("; ");
     const securityHeaders = [
-      { key: "Content-Security-Policy-Report-Only", value: csp },
+      // Enforced. Set CSP_REPORT_ONLY=1 to fall back to report-only while debugging a violation.
+      { key: process.env.CSP_REPORT_ONLY === "1" ? "Content-Security-Policy-Report-Only" : "Content-Security-Policy", value: csp },
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "X-Frame-Options", value: "DENY" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -62,4 +64,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSerwist(nextConfig);
+// `pnpm analyze` (ANALYZE=true) writes the bundle report; a no-op otherwise.
+const withAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
+
+export default withAnalyzer(withSerwist(nextConfig));

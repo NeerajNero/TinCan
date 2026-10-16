@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 import { cn } from "@/lib/cn";
 import type { TttState } from "@/lib/games/tictactoe";
@@ -20,9 +20,9 @@ export function TicTacToeBoard({ state, canMove, legal, line, onMove }: { state:
             className={cn("card grid aspect-square place-items-center rounded-[20px] text-5xl font-bold disabled:cursor-default", win && "bg-accent-soft ring-2 ring-[var(--accent)]")}
           >
             {ch !== "." && (
-              <motion.span initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 500, damping: 20 }} className={ch === "X" ? "text-[var(--accent)]" : "text-[var(--accent-memories)]"}>
+              <m.span initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 500, damping: 20 }} className={ch === "X" ? "text-[var(--accent)]" : "text-[var(--accent-memories)]"}>
                 {ch}
-              </motion.span>
+              </m.span>
             )}
           </button>
         );

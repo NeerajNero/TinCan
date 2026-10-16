@@ -1,6 +1,7 @@
 /**
  * Firestore access for the single chat thread. Queries are always bounded.
  */
+import { getDb } from "@/lib/firebase/client";
 import {
   addDoc,
   arrayUnion,
@@ -21,17 +22,15 @@ import {
   type Query,
   type QueryDocumentSnapshot,
 } from "@/lib/firebase/fs";
-
-import { getDb } from "@/lib/firebase/client";
 import type { Message, MessageDoc, MessageMedia, MessageType, ReplyTo } from "@/lib/types";
 
 export const PAGE_SIZE = 50;
 export const MAX_TEXT = 2000;
-export const EDIT_WINDOW_MS = 15 * 60 * 1000;
-export const MAX_BATCH = 50;
+const EDIT_WINDOW_MS = 15 * 60 * 1000;
+const MAX_BATCH = 50;
 
 export const messagesCol = () => collection(getDb(), "messages") as CollectionReference<MessageDoc>;
-export const messageRef = (id: string) => doc(getDb(), "messages", id) as DocumentReference<MessageDoc>;
+const messageRef = (id: string) => doc(getDb(), "messages", id) as DocumentReference<MessageDoc>;
 
 /* ── queries ───────────────────────────────────────────────────────────── */
 

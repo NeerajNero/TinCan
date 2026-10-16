@@ -1,7 +1,6 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -16,6 +15,7 @@ import { useRelationship } from "@/hooks/useRelationship";
 import { cn } from "@/lib/cn";
 import { dateKeyToLocalDate, isDateKey, roomDateKey } from "@/lib/dates";
 import { addMilestone, deleteMilestone, editMilestone, milestonesQuery, type MilestoneInput } from "@/lib/db/milestones";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { friendsSinceMilestone, sortUpcoming, toUpcoming, yearsLine, type Upcoming } from "@/lib/milestones";
 import type { MilestoneDoc } from "@/lib/types";
 
@@ -103,7 +103,7 @@ function ordinal(n: number) {
 function MilestoneForm({ row, onDone }: { row: Row | null; onDone: () => void }) {
   const [title, setTitle] = useState(row?.title ?? "");
   const [date, setDate] = useState(row?.date ?? "");
-  const [emoji, setEmoji] = useState(row?.emoji ?? EMOJI[0]);
+  const [emoji, setEmoji] = useState(row?.emoji ?? EMOJI[0]!);
   const [repeatYearly, setRepeat] = useState(row?.repeatYearly ?? true);
   const [busy, setBusy] = useState(false);
   const canSave = title.trim().length > 0 && isDateKey(date) && !busy;

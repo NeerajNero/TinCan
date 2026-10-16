@@ -1,15 +1,15 @@
 "use client";
 
-import { onSnapshot, Timestamp, type Query, type Unsubscribe } from "@/lib/firebase/fs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { latestQuery, olderQuery, PAGE_SIZE, toMessage } from "@/lib/db/messages";
+import { onSnapshot, Timestamp, type Query, type Unsubscribe } from "@/lib/firebase/fs";
 import type { Message, MessageDoc } from "@/lib/types";
 
 /** Pages (including the live one) that scrolling alone may load; beyond this it's a button. */
 export const AUTO_LOAD_PAGES = 4;
 /** Pages kept once the reader is back near the bottom; older ones are dropped and re-read from cache later. */
-export const KEEP_PAGES = 4;
+const KEEP_PAGES = 4;
 
 interface Page {
   unsub: Unsubscribe;

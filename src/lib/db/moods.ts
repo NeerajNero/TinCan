@@ -1,9 +1,8 @@
-import { collection, limit, query, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { collection, limit, query, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import type { MoodDoc } from "@/lib/types";
 
-export const moodsCol = () => collection(getDb(), "moods") as CollectionReference<MoodDoc>;
+const moodsCol = () => collection(getDb(), "moods") as CollectionReference<MoodDoc>;
 
 /** Both people's moods for one month: a single range on dateKey (≤ 62 docs). */
 export function moodsForMonth(yearMonth: string): Query<MoodDoc> {

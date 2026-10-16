@@ -1,7 +1,7 @@
 "use client";
 
 import { Chess, type Square } from "chess.js";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/cn";
@@ -23,7 +23,7 @@ export function ChessBoard({ state, me, canMove, legal, onMove }: { state: Chess
   const movable = new Set(legal.map((m) => m.from));
   const kingSq = useMemo(() => {
     for (let r = 0; r < 8; r++) for (let f = 0; f < 8; f++) {
-      const p = board[r][f];
+      const p = board[r]?.[f];
       if (p && p.type === "k" && p.color === turnColor) return `${FILES[f]}${8 - r}`;
     }
     return null;
@@ -33,10 +33,11 @@ export function ChessBoard({ state, me, canMove, legal, onMove }: { state: Chess
     if (!canMove) return;
     if (selected && targets.has(sq)) {
       const options = fromSel.filter((m) => m.to === sq);
+      const first = options[0];
       if (options.some((m) => m.promotion)) {
         setPromo({ from: selected, to: sq });
-      } else {
-        onMove(options[0]);
+      } else if (first) {
+        onMove(first);
       }
       setSelected(null);
       return;
@@ -53,9 +54,9 @@ export function ChessBoard({ state, me, canMove, legal, onMove }: { state: Chess
       <CapturedRow pieces={flip ? captured.byFirst : captured.bySecond} />
       <div className="grid grid-cols-8 overflow-hidden rounded-[20px] border-4 border-[#5b4636]">
         {ordered.map((sq) => {
-          const f = FILES.indexOf(sq[0]);
+          const f = FILES.indexOf(sq.charAt(0));
           const r = 8 - Number(sq[1]);
-          const piece = board[r][f];
+          const piece = board[r]?.[f];
           const light = (r + f) % 2 === 0;
           const glyph = piece ? PIECE_GLYPH[piece.color === "w" ? piece.type.toUpperCase() : piece.type] : "";
           const last = state.lastMove && (state.lastMove.from === sq || state.lastMove.to === sq);
@@ -85,14 +86,14 @@ export function ChessBoard({ state, me, canMove, legal, onMove }: { state: Chess
 
       <AnimatePresence>
         {promo && (
-          <motion.div key="promo" role="dialog" aria-label="Promote to" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="card flex items-center justify-center gap-2 rounded-[20px] p-3">
+          <m.div key="promo" role="dialog" aria-label="Promote to" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="card flex items-center justify-center gap-2 rounded-[20px] p-3">
             <span className="text-sm font-bold text-muted">Promote to</span>
             {(["q", "r", "b", "n"] as const).map((p) => (
               <button key={p} type="button" onClick={() => { onMove({ from: promo.from, to: promo.to, promotion: p }); setPromo(null); }} className="tap grid size-11 place-items-center rounded-full bg-surface-2 text-2xl">
                 {PIECE_GLYPH[me === "second" ? p : p.toUpperCase()]}
               </button>
             ))}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { CalendarHeart, Gamepad2, House, Images, MessageCircle, Sparkles, type LucideIcon } from "lucide-react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
@@ -47,7 +47,7 @@ export function TabBar() {
               )}
             >
               {active && (
-                <motion.span
+                <m.span
                   layoutId="tab-pill"
                   aria-hidden
                   className="absolute inset-0 rounded-[20px] bg-accent-soft"
@@ -76,12 +76,12 @@ export function TabBar() {
 function TabIcon({ Icon, active }: { Icon: LucideIcon; active: boolean }) {
   const { pending } = useLinkStatus();
   return (
-    <motion.span className="relative grid size-6 place-items-center" animate={active ? { y: -1, scale: 1.08 } : { y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 520, damping: 26 }}>
+    <m.span className="relative grid size-6 place-items-center" animate={active ? { y: -1, scale: 1.08 } : { y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 520, damping: 26 }}>
       {pending ? (
         <Spinner size={18} className="text-[var(--accent)]" />
       ) : (
         <Icon size={22} strokeWidth={active ? 2.4 : 2} style={active ? { color: "var(--accent)" } : undefined} />
       )}
-    </motion.span>
+    </m.span>
   );
 }

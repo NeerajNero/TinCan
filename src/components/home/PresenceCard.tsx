@@ -2,6 +2,8 @@
 
 import { formatDistanceToNowStrict } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+
+import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
@@ -10,7 +12,6 @@ import { useWeather } from "@/hooks/useWeather";
 import { cn } from "@/lib/cn";
 import { formatDistance, haversineKm } from "@/lib/geo";
 import type { PresenceNode, UserDoc } from "@/lib/types";
-import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 
 function lastSeenLabel(presence: PresenceNode | null): string {
   if (!presence?.lastSeen) return "Not seen yet";
@@ -22,7 +23,7 @@ function lastSeenLabel(presence: PresenceNode | null): string {
 export function PresenceCard({ friend }: { friend: UserDoc }) {
   const { me } = usePair();
   const now = useNow(1000);
-  const { friendPresence: presence } = useLiveEvents();
+  const presence = useFriendPresence();
   const weather = useWeather(friend.lat, friend.lng);
 
   const online = presence?.online === true;

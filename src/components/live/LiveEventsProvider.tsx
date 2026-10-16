@@ -1,11 +1,11 @@
 "use client";
 
-import { onSnapshot } from "@/lib/firebase/fs";
 import { onValue } from "firebase/database";
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { useToast } from "@/components/toast/ToastProvider";
+import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
 import { useChatMeta } from "@/hooks/useChatMeta";
 import { useIncomingPings, type IncomingPing } from "@/hooks/useIncomingPings";
 import { useNow } from "@/hooks/useNow";
@@ -15,10 +15,11 @@ import { roomDateKey } from "@/lib/dates";
 import { backfillDateKey, dailyRef } from "@/lib/db/daily";
 import { gameRoute, resultForRecipient, subscribeOpenGames, type LiveGame } from "@/lib/db/games";
 import { mediaLabel } from "@/lib/db/messages";
-import { lampPath, presencePath, rtdbRef } from "@/lib/rtdb";
+import { onSnapshot } from "@/lib/firebase/fs";
+import { lampPath, rtdbRef } from "@/lib/rtdb";
 import { playSound } from "@/lib/sounds";
-import { PINGS, type DailyQuestionDoc, type LampNode, type PingKind, type PresenceNode } from "@/lib/types";
-import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
+import { swallow } from "@/lib/swallow";
+import { PINGS, type DailyQuestionDoc, type LampNode, type PingKind } from "@/lib/types";
 
 interface LiveEvents {
   /** Latest ping from the friend since this session started; Home shows it full-screen. */
@@ -29,8 +30,6 @@ interface LiveEvents {
   daily: DailyQuestionDoc | null;
   /** Invited + active games (one bounded listener for Play and Home). */
   games: LiveGame[];
-  /** The friend's presence node — the one listener every screen reads. */
-  friendPresence: PresenceNode | null;
 }
 
 const LiveEventsContext = createContext<LiveEvents | null>(null);
@@ -131,7 +130,7 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     const unsub = onSnapshot(dailyRef(today), (snap) => {
       const data = snap.exists() ? snap.data() : null;
       setDaily(data);
-      if (data && !data.dateKey && !snap.metadata.hasPendingWrites) void backfillDateKey(today).catch(() => undefined);
+      if (data && !data.dateKey && !snap.metadata.hasPendingWrites) void backfillDateKey(today).catch(swallow);
       const answered = Boolean(friendUid && data?.answers?.[friendUid]);
       if (friendAnswered.current === null) {
         friendAnswered.current = answered;
@@ -173,17 +172,6 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     };
   }, [friendUid, uid, friendName, toast]);
 
-  /* ── friend presence (shared) ──────────────────────────────────────── */
-  const [friendPresence, setFriendPresence] = useState<PresenceNode | null>(null);
-  useEffect(() => {
-    if (!friendUid) return;
-    const unsub = onValue(rtdbRef(presencePath(friendUid)), (snap) => setFriendPresence((snap.val() as PresenceNode | null) ?? null));
-    return () => {
-      unsub();
-      setFriendPresence(null);
-    };
-  }, [friendUid]);
-
   /* ── garden unlocks → toast for both ───────────────────────────────── */
   const seenStickers = useRef<Set<string> | null>(null);
   const stickerKeys = Object.keys(pair.garden?.stickers ?? {}).sort().join(",");
@@ -203,7 +191,7 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
   }, [stickerKeys, toast]);
 
   const activePing = incoming && incoming !== dismissed ? incoming : null;
-  const value = useMemo<LiveEvents>(() => ({ ping: activePing, dismissPing, today, daily, games, friendPresence }), [activePing, dismissPing, today, daily, games, friendPresence]);
+  const value = useMemo<LiveEvents>(() => ({ ping: activePing, dismissPing, today, daily, games }), [activePing, dismissPing, today, daily, games]);
   return <LiveEventsContext.Provider value={value}>{children}</LiveEventsContext.Provider>;
 }
 

@@ -4,7 +4,7 @@ import { onValue, ref, update } from "firebase/database";
 import secrets from "@/content/twenty-secrets.json";
 import { getRtdb } from "@/lib/firebase/client";
 
-export type TwentyStatus = "setup" | "asking" | "done";
+type TwentyStatus = "setup" | "asking" | "done";
 export type TwentyAnswer = "yes" | "no" | "sortof";
 
 export interface TwentyQuestion {

@@ -1,12 +1,11 @@
-import { collection, doc, getDoc, limit, query, serverTimestamp, updateDoc, where, writeBatch, type CollectionReference, type DocumentReference, type Query } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { collection, doc, getDoc, limit, query, serverTimestamp, updateDoc, where, writeBatch, type CollectionReference, type DocumentReference, type Query } from "@/lib/firebase/fs";
 import type { EnvelopeBody, EnvelopeDoc } from "@/lib/types";
 
-export const ENVELOPE_LIMIT = 50;
+const ENVELOPE_LIMIT = 50;
 
-export const envelopesCol = () => collection(getDb(), "envelopes") as CollectionReference<EnvelopeDoc>;
-export const envelopeBodyRef = (id: string) => doc(getDb(), "envelopes", id, "private", "body") as DocumentReference<EnvelopeBody>;
+const envelopesCol = () => collection(getDb(), "envelopes") as CollectionReference<EnvelopeDoc>;
+const envelopeBodyRef = (id: string) => doc(getDb(), "envelopes", id, "private", "body") as DocumentReference<EnvelopeBody>;
 
 /** Ones addressed to me. */
 export const envelopesForMe = (uid: string): Query<EnvelopeDoc> => query(envelopesCol(), where("forUid", "==", uid), limit(ENVELOPE_LIMIT));

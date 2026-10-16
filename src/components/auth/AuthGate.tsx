@@ -4,11 +4,12 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { PresenceController } from "@/components/auth/PresenceController";
-import { LiveEventsProvider } from "@/components/live/LiveEventsProvider";
-import { PushController } from "@/components/push/PushController";
-import { ToastProvider } from "@/components/toast/ToastProvider";
 import { SetupScreen } from "@/components/auth/SetupScreen";
 import { TakenScreen } from "@/components/auth/TakenScreen";
+import { LiveEventsProvider } from "@/components/live/LiveEventsProvider";
+import { PresenceProvider } from "@/components/live/PresenceProvider";
+import { PushController } from "@/components/push/PushController";
+import { ToastProvider } from "@/components/toast/ToastProvider";
 import { Splash } from "@/components/ui/Splash";
 import { useAuth } from "@/hooks/useAuth";
 import { ChatMetaProvider } from "@/hooks/useChatMeta";
@@ -34,10 +35,12 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           <PairProvider>
             <ChatMetaProvider>
               <ToastProvider>
-                <LiveEventsProvider>
-                  <PushController />
-                  {children}
-                </LiveEventsProvider>
+                <PresenceProvider>
+                  <LiveEventsProvider>
+                    <PushController />
+                    {children}
+                  </LiveEventsProvider>
+                </PresenceProvider>
               </ToastProvider>
             </ChatMetaProvider>
           </PairProvider>

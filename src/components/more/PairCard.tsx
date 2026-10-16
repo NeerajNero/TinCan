@@ -7,14 +7,14 @@ import { EditableRow } from "@/components/more/EditableRow";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
+import { RELATIONSHIPS } from "@/content/relationships";
 import { usePair } from "@/hooks/usePair";
 import { useRelationship } from "@/hooks/useRelationship";
-import { RELATIONSHIPS } from "@/content/relationships";
 import { cn } from "@/lib/cn";
+import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
 import { postSystemMessage } from "@/lib/db/home";
 import { setFriendsSince, setNextMeetup, setRelationship } from "@/lib/db/pair";
 import { renamePet } from "@/lib/db/pet";
-import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
 import type { NextMeetup } from "@/lib/types";
 
 function prettyDate(key: string | null | undefined): string | null {

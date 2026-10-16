@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useRef, useState } from "react";
 
 import { Card } from "@/components/ui/Card";
@@ -109,7 +109,7 @@ export function Lamps({ friendUid, friendName }: { friendUid: string; friendName
 
       <AnimatePresence initial={false}>
         {picking && (
-          <motion.div
+          <m.div
             key="picker"
             role="radiogroup"
             aria-label="Lamp colour"
@@ -140,7 +140,7 @@ export function Lamps({ friendUid, friendName }: { friendUid: string; friendName
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       <p className="px-1 text-center text-xs text-muted">Hold your lamp to choose a colour.</p>
@@ -158,7 +158,7 @@ interface LampFaceProps {
 function LampFace({ label, hint, lit, color }: LampFaceProps) {
   return (
     <>
-      <motion.div
+      <m.div
         aria-hidden
         className="grid size-20 place-items-center rounded-full border-4"
         animate={{
@@ -169,7 +169,7 @@ function LampFace({ label, hint, lit, color }: LampFaceProps) {
         transition={{ duration: 0.5 }}
       >
         <span className="text-3xl">{lit ? "💡" : "🔅"}</span>
-      </motion.div>
+      </m.div>
       <span className="text-sm font-bold">{label}</span>
       <span className="text-xs text-muted">{hint}</span>
     </>
@@ -191,14 +191,14 @@ function Lamp({ label, hint, lit, color, interactive, className, ...props }: Lam
     );
   }
   return (
-    <motion.button
+    <m.button
       type="button"
       whileTap={{ scale: 0.94 }}
       aria-label={`${label}: ${hint}`}
       className={cn(LAMP_CLASS, "tap cursor-pointer touch-none", className)}
-      {...(props as React.ComponentProps<typeof motion.button>)}
+      {...(props as React.ComponentProps<typeof m.button>)}
     >
       <LampFace label={label} hint={hint} lit={lit} color={color} />
-    </motion.button>
+    </m.button>
   );
 }

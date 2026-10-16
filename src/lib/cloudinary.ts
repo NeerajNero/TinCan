@@ -5,8 +5,8 @@
 import { authedFetch } from "@/lib/api";
 import { publicEnv } from "@/lib/env";
 
-export const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
-export const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
+const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
 
 interface SignedUpload {
   signature: string;
@@ -26,7 +26,7 @@ async function sign(kind: UploadKind, bytes: number): Promise<SignedUpload> {
   return (await res.json()) as SignedUpload;
 }
 
-export type UploadKind = "image" | "audio";
+type UploadKind = "image" | "audio";
 
 export interface UploadResult {
   url: string;
@@ -46,7 +46,7 @@ interface UploadOptions {
   retries?: number;
 }
 
-export const cloudinaryConfigured = Boolean(publicEnv.cloudinary.cloudName);
+const cloudinaryConfigured = Boolean(publicEnv.cloudinary.cloudName);
 
 function uploadOnce(blob: Blob, signed: SignedUpload, { onProgress, signal }: UploadOptions): Promise<UploadResult> {
   return new Promise((resolve, reject) => {
@@ -126,4 +126,3 @@ export function transformUrl(url: string, transformation: string): string {
 }
 
 export const thumbUrl = (url: string) => transformUrl(url, "f_auto,q_auto:low,w_320");
-export const fullUrl = (url: string) => transformUrl(url, "f_auto,q_auto:low,w_800");

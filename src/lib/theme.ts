@@ -1,7 +1,7 @@
 export type ThemePref = "system" | "light" | "dark";
 export type ResolvedTheme = "light" | "dark";
 
-export const THEME_KEY = "tincan-theme";
+const THEME_KEY = "tincan-theme";
 
 /**
  * Runs inline in <head> before first paint: resolves the stored preference (or
@@ -24,7 +24,7 @@ function mediaQuery() {
   return window.matchMedia("(prefers-color-scheme: dark)");
 }
 
-export function resolveTheme(pref: ThemePref): ResolvedTheme {
+function resolveTheme(pref: ThemePref): ResolvedTheme {
   return pref === "system" ? (mediaQuery().matches ? "dark" : "light") : pref;
 }
 

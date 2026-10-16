@@ -1,6 +1,5 @@
 "use client";
 
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Reorder, useDragControls } from "framer-motion";
 import { Check, ChevronDown, GripVertical, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -10,11 +9,12 @@ import { Confetti } from "@/components/plan/Confetti";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { addItem, deleteItem, editItem, itemsQuery, LIST_META, reorderItems, setDone } from "@/lib/db/lists";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import type { ListItemDoc, ListKind } from "@/lib/types";
 
 interface Item extends ListItemDoc {

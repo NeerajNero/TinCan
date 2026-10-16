@@ -75,7 +75,7 @@ export function TwentyScreen() {
           <p className="text-sm text-muted">Pick a secret for {friendName} to guess with yes / no questions.</p>
           <div className="flex gap-2">
             <Input value={secret} onChange={(e) => setSecret(e.target.value.slice(0, 60))} placeholder="A thing, e.g. umbrella" aria-label="Secret" />
-            <Button variant="soft" onClick={() => setSecret(randomSecret())} className="shrink-0 px-3">
+            <Button variant="soft" onClick={() => setSecret(randomSecret() ?? "")} className="shrink-0 px-3">
               Random
             </Button>
           </div>

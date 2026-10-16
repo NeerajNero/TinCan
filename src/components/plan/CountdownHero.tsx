@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useState } from "react";
 
 import { MeetupEditor } from "@/components/more/PairCard";
@@ -45,11 +45,11 @@ export function CountdownHero({ today }: { today: string }) {
       </div>
       <AnimatePresence initial={false}>
         {editing && (
-          <motion.div key="edit" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+          <m.div key="edit" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="rounded-2xl bg-surface p-3">
               <MeetupEditor initial={pair.nextMeetup} onDone={() => setEditing(false)} />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </Card>

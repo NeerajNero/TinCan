@@ -4,12 +4,13 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ChatBackgroundCard } from "@/components/more/ChatBackgroundCard";
 import { NotificationsCard } from "@/components/more/NotificationsCard";
-import { SoundsCard } from "@/components/more/SoundsCard";
-import { UsageCard } from "@/components/more/UsageCard";
 import { PairCard } from "@/components/more/PairCard";
 import { ProfileCard } from "@/components/more/ProfileCard";
+import { SoundsCard } from "@/components/more/SoundsCard";
 import { ThemeSwitch } from "@/components/more/ThemeSwitch";
+import { UsageCard } from "@/components/more/UsageCard";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,6 +46,7 @@ export function MoreScreen() {
         <h2 className="text-lg font-semibold">Theme</h2>
         <ThemeSwitch />
       </Card>
+      <ChatBackgroundCard />
 
       <NotificationsCard />
       <SoundsCard />

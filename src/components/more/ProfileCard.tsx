@@ -4,8 +4,8 @@ import { Camera } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { ProgressRing } from "@/components/chat/media/ProgressRing";
-import { CityPicker } from "@/components/onboarding/CityPicker";
 import { EditableRow } from "@/components/more/EditableRow";
+import { CityPicker } from "@/components/onboarding/CityPicker";
 import { Avatar, BIO_MAX } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";

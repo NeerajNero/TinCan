@@ -1,9 +1,8 @@
-import { addDoc, collection, deleteDoc, doc, limit, query, serverTimestamp, Timestamp, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { addDoc, collection, deleteDoc, doc, limit, query, serverTimestamp, Timestamp, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import type { ScheduledDoc } from "@/lib/types";
 
-export const scheduledCol = () => collection(getDb(), "scheduled") as CollectionReference<ScheduledDoc>;
+const scheduledCol = () => collection(getDb(), "scheduled") as CollectionReference<ScheduledDoc>;
 
 /** My pending ones; sorted client-side by sendAt (no composite index needed). */
 export const pendingScheduled = (uid: string): Query<ScheduledDoc> =>

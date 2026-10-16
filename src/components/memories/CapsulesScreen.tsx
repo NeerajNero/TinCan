@@ -1,8 +1,7 @@
 "use client";
 
 import { format, formatDistanceStrict } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useEffect, useState } from "react";
 
 import { PhotoGrid } from "@/components/memories/PhotoGrid";
@@ -10,17 +9,18 @@ import { PhotoPicker } from "@/components/memories/PhotoPicker";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input, Label } from "@/components/ui/Input";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { capsulesQuery, createCapsule, isUnlocked, MIN_LOCK_MS, openCapsule, readCapsuleBody } from "@/lib/db/capsules";
 import { deleteViaServer } from "@/lib/db/deleteViaServer";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { uploadImages } from "@/lib/media/uploadImages";
+import { errorMessage } from "@/lib/swallow";
 import type { CapsuleBody, CapsuleDoc } from "@/lib/types";
-
 interface Capsule extends CapsuleDoc {
   id: string;
 }
@@ -102,9 +102,9 @@ function CapsuleCard({ capsule, uid, now, authorName, openerName }: { capsule: C
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-start gap-3">
-        <motion.span className="text-3xl" aria-hidden animate={unlocked && !opened ? { rotate: [0, -8, 8, 0] } : { rotate: 0 }} transition={{ duration: 1.2, repeat: unlocked && !opened ? Infinity : 0, repeatDelay: 2 }}>
+        <m.span className="text-3xl" aria-hidden animate={unlocked && !opened ? { rotate: [0, -8, 8, 0] } : { rotate: 0 }} transition={{ duration: 1.2, repeat: unlocked && !opened ? Infinity : 0, repeatDelay: 2 }}>
           {opened ? "📬" : unlocked ? "🔓" : "🔒"}
-        </motion.span>
+        </m.span>
         <div className="min-w-0 flex-1">
           <p className="font-heading text-lg font-semibold leading-tight">{capsule.title || "Untitled"}</p>
           <p className="text-xs text-muted">
@@ -136,10 +136,10 @@ function CapsuleCard({ capsule, uid, now, authorName, openerName }: { capsule: C
       {error && <p className="text-xs text-red-500">{error}</p>}
       <AnimatePresence>
         {body && (
-          <motion.div key="body" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 rounded-2xl bg-surface-2 p-3">
+          <m.div key="body" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 rounded-2xl bg-surface-2 p-3">
             <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{body.body}</p>
             <PhotoGrid media={body.media ?? []} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </Card>
@@ -168,7 +168,7 @@ function CapsuleComposer({ uid, onDone }: { uid: string; onDone: () => void }) {
       await createCapsule(uid, title, body, unlockAt, media);
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't seal it. Try again?");
+      setError(errorMessage(err, "Couldn't seal it. Try again?"));
     } finally {
       setProgress(null);
     }

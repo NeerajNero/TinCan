@@ -28,12 +28,15 @@ Nothing under `src/components`, `src/hooks` or the client half of `src/lib` may 
     <PairProvider>              pair/main, users/{me}, users/{friend}; onboarding; "pair full"
       <ChatMetaProvider>        unread badge query (≤99) + latest message (limit 1)
         <ToastProvider>         one toast stack for the whole app
-          <LiveEventsProvider>  pings queue, lamp, friend presence, open games, today's daily doc, garden unlocks → toasts
-            <PushController/>   FCM token refresh + foreground pushes → toasts (skips live-covered types)
-            <AppShell>          h-dvh column: offline banner, scrolling <main>, tab bar
+          <PresenceProvider>    friend's presence node, in its own context so heartbeats re-render only presence UI
+            <LiveEventsProvider>  pings queue, lamp, open games, today's daily doc, garden unlocks → toasts
+              <PushController/>   token refresh + foreground pushes → toasts, only once push is enabled (lazy firebase/messaging)
+              <AppShell>          h-dvh column: offline banner, scrolling <main>, tab bar
 ```
 
-Every screen reads shared data through these hooks: `usePair()`, `useChatMeta()`, `useLiveEvents()`, `useToast()`. **Never re-subscribe per component to something a provider already holds.**
+`<Providers>` also wraps everything in framer-motion's `<LazyMotion>` with a lazily imported `domMax` bundle, so components use `m.*` and the full `motion` runtime never ships in a route chunk.
+
+Every screen reads shared data through these hooks: `usePair()`, `useChatMeta()`, `useLiveEvents()`, `useFriendPresence()`, `useToast()`. **Never re-subscribe per component to something a provider already holds.**
 
 ## Realtime split
 
@@ -57,6 +60,14 @@ All client code imports Firestore from `@/lib/firebase/fs`, a thin re-export of 
 ## Push notifications
 
 Data-only FCM messages (no `notification` key) so the worker alone decides what to show. `src/lib/pushTypes.ts` is the single map from push type → More toggle → title/body/url, shared by the client's `notify()`, `/api/push` and `/api/tick`. The server skips a push when the recipient's presence page is already the target route (chat, a game).
+
+## Bundle budget
+
+`pnpm analyze` (`ANALYZE=true next build`) writes the Turbopack bundle report. Measured on the prerendered `/chat` HTML (module scripts only, gzip): about 480 KB, of which Firebase is ~230 KB and React ~70 KB. Things deliberately kept off the initial path: `firebase/messaging` (loaded when push is enabled), `browser-image-compression` (first upload), `chess.js` (game screen only, through `lib/games/all.ts`), Leaflet, YouTube, and the together screens (`play/together/lazy.tsx`). Client API schemas use `zod/mini`.
+
+## Service worker caching
+
+`src/app/sw.ts`: precache of the build + `/offline`; runtime CacheFirst for `res.cloudinary.com` (30 days, 500 entries), OSM tiles (7 d, 300), GIPHY (7 d, 150) and ytimg (7 d, 150) with opaque responses allowed so cached photos display offline; NetworkOnly for `/api/*`, Firebase and Google hosts.
 
 ## Scheduler
 

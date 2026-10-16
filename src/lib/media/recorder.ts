@@ -2,11 +2,11 @@
  * Hold-to-record voice notes. Opus in WebM at 32 kbps where supported, with a
  * fallback to whatever the browser can encode. Hard cap of two minutes.
  */
-export const MAX_VOICE_MS = 2 * 60 * 1000;
+const MAX_VOICE_MS = 2 * 60 * 1000;
 
 const PREFERRED = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
 
-export function pickMimeType(): string | undefined {
+function pickMimeType(): string | undefined {
   if (typeof MediaRecorder === "undefined") return undefined;
   return PREFERRED.find((t) => MediaRecorder.isTypeSupported(t));
 }

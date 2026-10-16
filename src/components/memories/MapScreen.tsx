@@ -1,29 +1,28 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Search, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 import { ImageViewer } from "@/components/chat/media/ImageViewer";
 import type { HomePin, MapPin } from "@/components/memories/map/MemoryMap";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
+import { CloudImage } from "@/components/ui/CloudImage";
 import { Input, Label } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
-import { thumbUrl } from "@/lib/cloudinary";
-import { safeCloudinary } from "@/lib/safeUrl";
+import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
 import { memoriesAtPlace } from "@/lib/db/memories";
 import { addPlace, deletePlace, editPlace, placesQuery, type PlaceInput } from "@/lib/db/places";
-import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
-import { searchCities, type CityResult } from "@/lib/geocode";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
+import { searchCities, type CityResult } from "@/lib/geocode";
+import { safeCloudinary } from "@/lib/safeUrl";
+import { swallow } from "@/lib/swallow";
 import type { MemoryDoc, PlaceDoc, PlaceKind } from "@/lib/types";
-
 const MemoryMap = dynamic(() => import("@/components/memories/map/MemoryMap"), {
   ssr: false,
   loading: () => <div className="grid h-full w-full place-items-center rounded-[20px] bg-surface-2 text-sm text-muted">Unrolling the map…</div>,
@@ -53,7 +52,7 @@ export function MapScreen() {
     const t = setTimeout(() => {
       searchCities(q, controller.signal)
         .then(setResults)
-        .catch(() => undefined);
+        .catch(swallow);
     }, 300);
     return () => {
       clearTimeout(t);
@@ -137,8 +136,8 @@ export function MapScreen() {
 function Sheet({ children, onClose, label }: { children: React.ReactNode; onClose: () => void; label: string }) {
   return (
     <>
-      <motion.button type="button" aria-label="Close" onClick={onClose} className="fixed inset-0 z-[600] bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-      <motion.div
+      <m.button type="button" aria-label="Close" onClick={onClose} className="fixed inset-0 z-[600] bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+      <m.div
         role="dialog"
         aria-label={label}
         className="fixed inset-x-0 bottom-0 z-[601] mx-auto flex max-h-[80dvh] w-full max-w-[480px] flex-col gap-3 overflow-y-auto rounded-t-[28px] bg-surface p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]"
@@ -149,7 +148,7 @@ function Sheet({ children, onClose, label }: { children: React.ReactNode; onClos
       >
         <div className="mx-auto h-1.5 w-10 rounded-full bg-border" aria-hidden />
         {children}
-      </motion.div>
+      </m.div>
     </>
   );
 }
@@ -240,7 +239,7 @@ function PlaceSheet({ pin, uid, me, friend, onEdit, onClose }: { pin: MapPin; ui
         <div className="grid grid-cols-3 gap-1">
           {photos.filter((p) => safeCloudinary(p.url)).map((p) => (
             <button key={p.id} type="button" onClick={() => setViewing(p)} aria-label={p.caption || "Photo"} className="overflow-hidden rounded-xl bg-surface-2">
-              <Image src={thumbUrl(p.url)} alt="" width={120} height={120} unoptimized className="h-24 w-full object-cover" />
+              <CloudImage url={p.url} alt="" w={p.w} h={p.h} sizes="120px" className="h-24 w-full object-cover" />
             </button>
           ))}
         </div>

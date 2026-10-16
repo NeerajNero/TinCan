@@ -1,11 +1,10 @@
 "use client";
 
-import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import { AnimatePresence, m, type PanInfo } from "framer-motion";
 import { X } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-import { fullUrl } from "@/lib/cloudinary";
+import { CloudImage } from "@/components/ui/CloudImage";
 import { safeCloudinary } from "@/lib/safeUrl";
 
 interface ImageViewerProps {
@@ -50,6 +49,7 @@ function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { s
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 2) {
       const [a, b] = Array.from(pointers.current.values());
+      if (!a || !b) return;
       pinchStart.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), scale };
       panStart.current = null;
       setPinching(true);
@@ -73,6 +73,7 @@ function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { s
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 2 && pinchStart.current) {
       const [a, b] = Array.from(pointers.current.values());
+      if (!a || !b) return;
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       const next = Math.min(MAX_SCALE, Math.max(1, (pinchStart.current.scale * dist) / pinchStart.current.dist));
       setScale(next);
@@ -96,7 +97,7 @@ function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { s
   }
 
   return (
-        <motion.div
+        <m.div
           key="viewer"
           role="dialog"
           aria-label="Photo"
@@ -108,7 +109,7 @@ function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { s
           <button type="button" onClick={onClose} aria-label="Close" className="tap absolute top-[max(env(safe-area-inset-top),8px)] right-2 z-10 grid size-11 place-items-center rounded-full bg-white/15 text-white">
             <X size={20} />
           </button>
-          <motion.div
+          <m.div
             className="flex min-h-0 flex-1 items-center justify-center touch-none select-none"
             drag={scale === 1 ? "y" : false}
             dragConstraints={{ top: 0, bottom: 0 }}
@@ -120,17 +121,15 @@ function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { s
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
           >
-            <Image
-              src={fullUrl(src)}
+            <CloudImage
+              url={src}
               alt={caption ?? ""}
-              width={800}
-              height={800}
-              unoptimized
+              variant="full"
               draggable={false}
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full max-w-full bg-transparent object-contain"
               style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`, transition: pinching ? "none" : "transform 0.15s" }}
             />
-          </motion.div>
+          </m.div>
           {(caption || meta || actions) && (
             <div className="flex flex-col items-center gap-2 bg-black/60 px-4 py-3 pb-[max(env(safe-area-inset-bottom),12px)] text-center text-white">
               {caption && <p className="text-sm">{caption}</p>}
@@ -138,6 +137,15 @@ function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { s
               {actions && <div className="flex flex-wrap justify-center gap-2 pt-1">{actions}</div>}
             </div>
           )}
-        </motion.div>
+        </m.div>
+  );
+}
+
+/** A pill button for the viewer's action row (shared by chat and Memories). */
+export function ViewerButton({ children, onClick, danger }: { children: React.ReactNode; onClick: () => void; danger?: boolean }) {
+  return (
+    <button type="button" onClick={onClick} className={`tap rounded-full px-4 py-2 text-sm font-bold ${danger ? "bg-red-500/80 text-white" : "bg-white/20 text-white"}`}>
+      {children}
+    </button>
   );
 }

@@ -9,8 +9,8 @@ export function parseYouTubeId(input: string): string | null {
     if (u.hostname.endsWith("youtube.com")) {
       const v = u.searchParams.get("v");
       if (v && /^[\w-]{11}$/.test(v)) return v;
-      const m = u.pathname.match(/\/(?:embed|shorts|live)\/([\w-]{11})/);
-      if (m) return m[1];
+      const m = u.pathname.match(/\/(?:embed|shorts|live)\/([\w-]{11})/)?.[1];
+      if (m) return m;
     }
   } catch {
     // not a URL

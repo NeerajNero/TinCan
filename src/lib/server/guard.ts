@@ -54,12 +54,12 @@ export function errorResponse(err: unknown, route: RouteKey) {
 
 /* ── auth ──────────────────────────────────────────────────────────────── */
 
-export async function requireCaller(req: Request): Promise<Caller> {
-  const match = /^Bearer\s+(.+)$/i.exec(req.headers.get("authorization") ?? "");
-  if (!match) throw new GuardError(401, "unauthorized", "missing bearer");
+async function requireCaller(req: Request): Promise<Caller> {
+  const idToken = /^Bearer\s+(.+)$/i.exec(req.headers.get("authorization") ?? "")?.[1];
+  if (!idToken) throw new GuardError(401, "unauthorized", "missing bearer");
   let token;
   try {
-    token = await adminAuth().verifyIdToken(match[1], true); // checkRevoked
+    token = await adminAuth().verifyIdToken(idToken, true); // checkRevoked
   } catch (e) {
     throw new GuardError(401, "unauthorized", `token rejected: ${(e as Error).message}`);
   }

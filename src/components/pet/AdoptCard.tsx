@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
-import { PET_SPECIES, PetSprite } from "@/content/pets";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { PET_SPECIES, PetSprite } from "@/content/pets";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { adoptPet } from "@/lib/db/pet";

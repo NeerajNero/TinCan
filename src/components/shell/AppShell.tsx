@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 import { OfflineBanner } from "@/components/shell/OfflineBanner";
@@ -20,9 +20,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="mx-auto flex h-dvh w-full max-w-[480px] flex-col safe-top" style={{ "--accent": `var(${tab.accentVar})` } as React.CSSProperties}>
       <OfflineBanner />
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-4 pb-6">
-        <motion.div key={tab.key} className="flex min-h-0 flex-1 flex-col" initial={{ opacity: 0.4, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18, ease: "easeOut" }}>
+        <m.div key={tab.key} className="flex min-h-0 flex-1 flex-col" initial={{ opacity: 0.4, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18, ease: "easeOut" }}>
           {children}
-        </motion.div>
+        </m.div>
       </main>
       <TabBar />
     </div>

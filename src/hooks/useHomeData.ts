@@ -1,15 +1,15 @@
 "use client";
 
-import { onSnapshot } from "@/lib/firebase/fs";
 import { useEffect, useRef, useState } from "react";
 
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
-import { bumpStreak, checkIn, checkinRef, moodRef } from "@/lib/db/home";
 import { dateKeyIn, roomDateKey } from "@/lib/dates";
+import { bumpStreak, checkIn, checkinRef, moodRef } from "@/lib/db/home";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
+import { swallow } from "@/lib/swallow";
 import type { MoodDoc } from "@/lib/types";
-
 export interface HomeData {
   /** Today on the room calendar. */
   today: string;
@@ -38,7 +38,7 @@ export function useHomeData(): HomeData {
 
   // Check in, then watch today's doc.
   useEffect(() => {
-    checkIn(today, uid).catch(() => undefined);
+    checkIn(today, uid).catch(swallow);
     const unsub = onSnapshot(checkinRef(today), (snap) => setCheckins(snap.data() ?? {}));
     return () => {
       unsub();

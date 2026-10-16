@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { X } from "lucide-react";
 import { useState } from "react";
 
@@ -62,8 +62,8 @@ export function CloseGameMenu({ game, onDone, className }: { game: LiveGame; onD
       <AnimatePresence>
         {open && (
           <>
-            <motion.button key="bd" type="button" aria-label="Close" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-            <motion.div key="sheet" role="dialog" aria-label={copy.title} className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[480px] flex-col gap-3 rounded-t-[28px] bg-surface p-5 pb-[max(env(safe-area-inset-bottom),20px)] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 420, damping: 38 }}>
+            <m.button key="bd" type="button" aria-label="Close" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <m.div key="sheet" role="dialog" aria-label={copy.title} className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[480px] flex-col gap-3 rounded-t-[28px] bg-surface p-5 pb-[max(env(safe-area-inset-bottom),20px)] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 420, damping: 38 }}>
               <div className="mx-auto h-1.5 w-10 rounded-full bg-border" aria-hidden />
               <p className="font-heading text-lg font-semibold">{copy.title}</p>
               <p className="text-sm text-muted">{copy.body}</p>
@@ -75,7 +75,7 @@ export function CloseGameMenu({ game, onDone, className }: { game: LiveGame; onD
                   {busy ? "…" : copy.action}
                 </Button>
               </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

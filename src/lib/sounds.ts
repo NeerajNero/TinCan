@@ -1,5 +1,5 @@
 /** Tiny synthesised sound effects (Web Audio, no files). Off unless the More toggle is on. */
-export const SOUNDS_KEY = "tincan-sounds";
+const SOUNDS_KEY = "tincan-sounds";
 export type SoundKind = "ping" | "send" | "win" | "unlock";
 
 export function soundsEnabled(): boolean {

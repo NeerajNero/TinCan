@@ -1,7 +1,7 @@
 "use client";
 
+import { m } from "framer-motion";
 import Link from "next/link";
-import { motion } from "framer-motion";
 
 import { AdoptCard } from "@/components/pet/AdoptCard";
 import { StatBar } from "@/components/pet/PetBits";
@@ -17,9 +17,9 @@ export function PetWidget() {
   return (
     <Card className="flex items-center gap-3 p-3">
       <Link href="/pet" aria-label={`Open ${pet.name}`} className="shrink-0">
-        <motion.div animate={stats.sleeping ? { y: [0, 2, 0] } : { y: [0, -3, 0] }} transition={{ duration: stats.sleeping ? 3 : 2, repeat: Infinity, ease: "easeInOut" }}>
+        <m.div animate={stats.sleeping ? { y: [0, 2, 0] } : { y: [0, -3, 0] }} transition={{ duration: stats.sleeping ? 3 : 2, repeat: Infinity, ease: "easeInOut" }}>
           <PetSprite species={pet.species} mood={stats.mood} level={level} size={88} />
-        </motion.div>
+        </m.div>
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <Link href="/pet" className="font-heading text-lg font-semibold leading-tight">

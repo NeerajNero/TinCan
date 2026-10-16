@@ -2,7 +2,7 @@
  * City search via the Open-Meteo geocoding API (free, no key).
  * https://open-meteo.com/en/docs/geocoding-api
  */
-import { z } from "zod";
+import { z } from "zod/mini";
 
 import type { CityPick } from "@/lib/types";
 
@@ -14,11 +14,11 @@ const resultSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
   timezone: z.string(),
-  country: z.string().optional(),
-  admin1: z.string().optional(),
+  country: z.optional(z.string()),
+  admin1: z.optional(z.string()),
 });
 
-const responseSchema = z.object({ results: z.array(resultSchema).optional() });
+const responseSchema = z.object({ results: z.optional(z.array(resultSchema)) });
 
 export interface CityResult extends CityPick {
   id: number;

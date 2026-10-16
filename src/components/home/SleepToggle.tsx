@@ -1,12 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
 import { setMyStatus, useMyStatus } from "@/hooks/usePresence";
-import { postSystemMessage, sleepWakeText } from "@/lib/db/home";
 import { cn } from "@/lib/cn";
+import { postSystemMessage, sleepWakeText } from "@/lib/db/home";
 
 /** "Good night" / "Good morning": flips my presence status and leaves a note in chat. */
 export function SleepToggle() {
@@ -28,7 +28,7 @@ export function SleepToggle() {
   }
 
   return (
-    <motion.button
+    <m.button
       type="button"
       onClick={toggle}
       disabled={busy}
@@ -48,6 +48,6 @@ export function SleepToggle() {
           {sleeping ? "Tap when you're up — it tells them you're awake." : "Tap when you're off — it tells them you're asleep."}
         </span>
       </span>
-    </motion.button>
+    </m.button>
   );
 }

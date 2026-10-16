@@ -1,9 +1,8 @@
-import { addDoc, collection, doc, getDocs, limit, query, serverTimestamp, updateDoc, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { addDoc, collection, doc, getDocs, limit, query, serverTimestamp, updateDoc, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import type { JarDoc } from "@/lib/types";
 
-export const jarCol = () => collection(getDb(), "jar") as CollectionReference<JarDoc>;
+const jarCol = () => collection(getDb(), "jar") as CollectionReference<JarDoc>;
 
 /** Everything addressed to me (drawn or not), bounded; split client-side. */
 export const jarForMe = (uid: string): Query<JarDoc> => query(jarCol(), where("forUid", "==", uid), limit(100));
@@ -20,6 +19,7 @@ export async function drawJarNote(uid: string): Promise<(JarDoc & { id: string }
   const snap = await getDocs(query(jarCol(), where("forUid", "==", uid), where("drawnAt", "==", null), limit(50)));
   if (snap.empty) return null;
   const pick = snap.docs[Math.floor(Math.random() * snap.docs.length)];
+  if (pick === undefined) return null;
   await updateDoc(doc(getDb(), "jar", pick.id), { drawnAt: serverTimestamp() });
   return { id: pick.id, ...pick.data() };
 }

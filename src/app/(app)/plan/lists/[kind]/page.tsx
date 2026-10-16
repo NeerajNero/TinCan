@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ListScreen } from "@/components/plan/ListScreen";
 import { LIST_KINDS, type ListKind } from "@/lib/types";
 
+
 export const metadata: Metadata = { title: "Lists" };
 
 export function generateStaticParams() {

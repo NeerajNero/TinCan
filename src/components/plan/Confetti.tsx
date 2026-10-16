@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 
 const COLORS = ["#ff8fab", "#ffb454", "#6fb6ff", "#5fd3a4", "#b48cff", "#ffd166"];
 
@@ -14,7 +14,7 @@ export function Confetti({ burst }: { burst: number }) {
             const x = 10 + ((i * 37) % 80);
             const delay = (i % 7) * 0.05;
             return (
-              <motion.span
+              <m.span
                 key={i}
                 className="absolute top-[30%] block h-3 w-2 rounded-sm"
                 style={{ left: `${x}%`, background: COLORS[i % COLORS.length] }}

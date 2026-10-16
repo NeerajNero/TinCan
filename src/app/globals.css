@@ -28,6 +28,10 @@
   --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
   --accent-ink: #3b2f3a;
 
+  /* chat bubbles stay opaque so they read on any background */
+  --bubble-mine: color-mix(in oklab, var(--accent) 24%, var(--surface));
+  --bubble-theirs: var(--surface);
+
   --radius-card: 20px;
   --tabbar-h: 68px;
 }
@@ -53,6 +57,7 @@
 
   --accent-soft: color-mix(in oklab, var(--accent) 24%, transparent);
   --accent-ink: #141a2e;
+  --bubble-mine: color-mix(in oklab, var(--accent) 30%, var(--surface));
 }
 
 @theme inline {

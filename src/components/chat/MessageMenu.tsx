@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Copy, Pencil, Reply, Trash2, UserX } from "lucide-react";
 import { useState } from "react";
 
@@ -44,7 +44,7 @@ export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, o
     <AnimatePresence>
       {message && (
         <>
-          <motion.button
+          <m.button
             key="backdrop"
             type="button"
             aria-label="Close"
@@ -54,7 +54,7 @@ export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, o
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
-          <motion.div
+          <m.div
             key="sheet"
             role="dialog"
             aria-label="Message options"
@@ -84,7 +84,7 @@ export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, o
                 </div>
                 <AnimatePresence initial={false}>
                   {moreEmoji && (
-                    <motion.div
+                    <m.div
                       key="grid"
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
@@ -96,7 +96,7 @@ export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, o
                           <EmojiButton key={emoji} emoji={emoji} active={message.reactions[uid] === emoji} onPick={() => { onReact(message, emoji); close(); }} small />
                         ))}
                       </div>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
               </div>
@@ -111,7 +111,7 @@ export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, o
                 <Action icon={<Trash2 size={18} />} label="Delete for everyone" danger onClick={() => { onDeleteForEveryone(message); close(); }} />
               )}
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>
@@ -120,7 +120,7 @@ export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, o
 
 function EmojiButton({ emoji, active, onPick, small }: { emoji: string; active: boolean; onPick: () => void; small?: boolean }) {
   return (
-    <motion.button
+    <m.button
       type="button"
       onClick={onPick}
       aria-label={`React ${emoji}`}
@@ -133,7 +133,7 @@ function EmojiButton({ emoji, active, onPick, small }: { emoji: string; active: 
       )}
     >
       {emoji}
-    </motion.button>
+    </m.button>
   );
 }
 

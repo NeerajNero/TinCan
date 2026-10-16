@@ -1,7 +1,7 @@
+import { getDb } from "@/lib/firebase/client";
 import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, type CollectionReference, type DocumentReference, type Query } from "@/lib/firebase/fs";
 import type { Timestamp } from "@/lib/firebase/fs";
 
-import { getDb } from "@/lib/firebase/client";
 
 export interface RecipeDoc {
   title: string;
@@ -11,7 +11,7 @@ export interface RecipeDoc {
   createdAt: Timestamp | null;
 }
 
-export const recipesCol = () => collection(getDb(), "recipes") as CollectionReference<RecipeDoc>;
+const recipesCol = () => collection(getDb(), "recipes") as CollectionReference<RecipeDoc>;
 export const recipeRef = (id: string) => doc(getDb(), "recipes", id) as DocumentReference<RecipeDoc>;
 export const recipesQuery = (): Query<RecipeDoc> => query(recipesCol(), orderBy("createdAt", "desc"), limit(50));
 

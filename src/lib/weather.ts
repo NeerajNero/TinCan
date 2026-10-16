@@ -2,7 +2,7 @@
  * Current weather from the Open-Meteo forecast API (free, no key), cached in
  * localStorage so a city is fetched at most once every 30 minutes.
  */
-import { z } from "zod";
+import { z } from "zod/mini";
 
 const ENDPOINT = "https://api.open-meteo.com/v1/forecast";
 export const WEATHER_TTL_MS = 30 * 60 * 1000;
@@ -26,7 +26,7 @@ export interface Weather {
 }
 
 /** WMO weather interpretation codes → emoji + short label. */
-export function describeWeatherCode(code: number, isDay: boolean): { emoji: string; label: string } {
+function describeWeatherCode(code: number, isDay: boolean): { emoji: string; label: string } {
   if (code === 0) return { emoji: isDay ? "☀️" : "🌙", label: "Clear" };
   if (code === 1) return { emoji: isDay ? "🌤️" : "🌙", label: "Mostly clear" };
   if (code === 2) return { emoji: isDay ? "⛅" : "☁️", label: "Partly cloudy" };

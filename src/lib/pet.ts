@@ -2,9 +2,9 @@
 import type { PetDoc, PetMood } from "@/lib/types";
 
 export const MIN_PER_POINT = 14.4; // 24 h → 100 points
-export const SLEEP_MS = 8 * 60 * 60 * 1000;
-export const HUNGRY_BELOW = 30;
-export const SAD_BELOW = 30;
+const SLEEP_MS = 8 * 60 * 60 * 1000;
+const HUNGRY_BELOW = 30;
+const SAD_BELOW = 30;
 
 export const statFrom = (since: number, now: number) => Math.max(0, Math.min(100, 100 - (now - since) / 60_000 / MIN_PER_POINT));
 

@@ -1,10 +1,10 @@
 "use client";
 
-import { onSnapshot } from "@/lib/firebase/fs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
 import { Button } from "@/components/ui/Button";
@@ -14,18 +14,24 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
 import { advanceLive, answerLive, createRound, recentRounds, startLive, submitAnswers, subscribeLive, triviaRef, type LiveCursor, type TriviaRoundDoc } from "@/lib/db/trivia";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
 import { pointsFor, QUESTION_MS, ROUND_SIZE, shuffledOptions, totalScore, TRIVIA_BANK, type TriviaAnswer } from "@/lib/trivia";
-import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 
 const route = (id: string) => `/play/trivia/${id}`;
+
+function bankQuestion(id: number | undefined) {
+  const q = id === undefined ? undefined : TRIVIA_BANK[id];
+  if (q === undefined) throw new Error("trivia_question_missing");
+  return q;
+}
 
 /* ── lobby ─────────────────────────────────────────────────────────────── */
 
 export function TriviaLobby() {
   const { uid, me, friend, friendUid } = usePair();
   const router = useRouter();
-  const { friendPresence: presence } = useLiveEvents();
+  const presence = useFriendPresence();
   const [rounds, setRounds] = useState<Array<TriviaRoundDoc & { id: string }> | null>(null);
   const [busy, setBusy] = useState(false);
   const online = presence?.online === true;
@@ -122,7 +128,7 @@ export function TriviaRound({ id }: { id: string }) {
 }
 
 function Question({ round, index, onAnswer, deadline }: { round: TriviaRoundDoc; index: number; onAnswer: (choice: number, ms: number) => void; deadline: number }) {
-  const q = TRIVIA_BANK[round.questionIds[index]];
+  const q = bankQuestion(round.questionIds[index]);
   const { options } = useMemo(() => shuffledOptions(q, round.seed), [q, round.seed]);
   const now = useNow(200);
   const [picked, setPicked] = useState<number | null>(null);
@@ -204,7 +210,7 @@ function AsyncPlay({ round, uid, friendUid, theirsDone }: { round: TriviaRoundDo
   const onAnswer = useCallback(
     (choice: number, ms: number) => {
       if (index === null) return;
-      const q = TRIVIA_BANK[round.questionIds[index]];
+      const q = bankQuestion(round.questionIds[index]);
       const { answer } = shuffledOptions(q, round.seed);
       answers.current[index] = { choice, ms, correct: choice === answer };
       setTimeout(() => {
@@ -279,7 +285,7 @@ function LivePlay({ round, uid, friendUid, theirsDone }: { round: TriviaRoundDoc
 
   const onAnswer = useCallback(
     (choice: number, ms: number) => {
-      const q = TRIVIA_BANK[round.questionIds[qIndex]];
+      const q = bankQuestion(round.questionIds[qIndex]);
       const { answer } = shuffledOptions(q, round.seed);
       answers.current[qIndex] = { choice, ms, correct: choice === answer };
       void answerLive(round.id, uid, choice);
@@ -336,7 +342,7 @@ function Results({ round, uid, friendUid, nameOf }: { round: TriviaRoundDoc; uid
       </Card>
       <Card className="flex flex-col gap-2">
         {round.questionIds.map((qid, i) => {
-          const q = TRIVIA_BANK[qid];
+          const q = bankQuestion(qid);
           const { options, answer } = shuffledOptions(q, round.seed);
           const a = myAnswers[i];
           const b = theirAnswers[i];
@@ -346,9 +352,9 @@ function Results({ round, uid, friendUid, nameOf }: { round: TriviaRoundDoc; uid
               <p className="text-xs text-muted">✓ {options[answer]}</p>
               <div className="flex gap-3 text-xs">
                 <AnimatePresence>
-                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={cn(a?.correct ? "text-emerald-600 dark:text-emerald-300" : "text-red-500")}>
+                  <m.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={cn(a?.correct ? "text-emerald-600 dark:text-emerald-300" : "text-red-500")}>
                     You: {a ? (a.choice === -1 ? "⏱️" : options[a.choice]) : "—"} {a ? `(+${pointsFor(a)})` : ""}
-                  </motion.span>
+                  </m.span>
                 </AnimatePresence>
                 <span className={cn(b?.correct ? "text-emerald-600 dark:text-emerald-300" : "text-red-500")}>
                   Them: {b ? (b.choice === -1 ? "⏱️" : options[b.choice]) : "—"} {b ? `(+${pointsFor(b)})` : ""}

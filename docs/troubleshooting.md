@@ -18,6 +18,9 @@
 | `pnpm rules:build` warns about one email | `ALLOWED_EMAILS` has one entry | fine for solo testing; add the second before the friend signs in |
 | Daily history empty / index error | ordering by `__name__` descending | queries order by the `dateKey` field (auto-indexed); never add composite indexes |
 | Usage meter shows a spike | an unbounded listener or a screen re-subscribing per render | find the screen; every query needs `limit` or a single doc |
-| CSP violation in console | a new origin (CDN, stream URL) | add it to the matching directive in `next.config.ts`; the header is Report-Only until clean |
+| CSP violation in console (request blocked) | a new origin (CDN, stream URL) | add it to the matching directive in `next.config.ts`; to unblock users meanwhile set `CSP_REPORT_ONLY=1` on Vercel and redeploy |
+| Animations missing or `motion` import warning | a component imported `motion` instead of `m` | use `m.*`; features come from `<LazyMotion>` in Providers |
+| Chat background not showing | `chatBg` rejected by rules (photo not from our cloud or unknown key) | check `rules/firestore.rules.tmpl` → `chatBgOk()`; deploy rules |
+| `pnpm profile:chat` fails to start a worker | jsdom needs Node 22 | the config uses happy-dom; keep it |
 | Tick does nothing | wrong `x-tick-secret`, or the 15-minute window already passed and `tickLog` has the key | `pnpm tick:dry`; delete the `tickLog` doc to re-run a job |
 | Home countdown shows a trip not the meetup | `pair.nextMeetup` empty → nearest trip is the fallback | set the next meetup in More |

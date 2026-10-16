@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { useRtdbValue } from "@/hooks/useRtdbValue";
-import { cn } from "@/lib/cn";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { cn } from "@/lib/cn";
 import { sendMedia } from "@/lib/db/messages";
 import { clearPixelCursor, clearPixelGrid, emptyGrid, paintCells, PIXEL_CELLS, PIXEL_PALETTE, PIXEL_SIZE, pixelCursorPath, subscribePixelGrid, writePixelCursor } from "@/lib/db/together";
 import { recordTogetherEvent } from "@/lib/garden";
@@ -126,7 +126,7 @@ export function PixelScreen() {
       const ctx = c.getContext("2d")!;
       const cell = 320 / PIXEL_SIZE;
       for (let i = 0; i < PIXEL_CELLS; i++) {
-        ctx.fillStyle = PIXEL_PALETTE[parseInt(grid[i], 16)] ?? "#fff";
+        ctx.fillStyle = PIXEL_PALETTE[parseInt(grid[i] ?? "0", 16)] ?? "#fff";
         ctx.fillRect((i % PIXEL_SIZE) * cell, Math.floor(i / PIXEL_SIZE) * cell, cell, cell);
       }
       const blob = await new Promise<Blob | null>((r) => c.toBlob(r, "image/png"));
@@ -157,7 +157,7 @@ export function PixelScreen() {
       <div className="relative mx-auto w-full max-w-[400px] overflow-hidden rounded-[16px] border border-border bg-white shadow-sm">
         <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} className="grid touch-none select-none" style={{ gridTemplateColumns: `repeat(${PIXEL_SIZE}, 1fr)` }} role="img" aria-label="Pixel canvas">
           {Array.from({ length: PIXEL_CELLS }, (_, i) => (
-            <span key={i} data-cell={i} className="aspect-square" style={{ background: PIXEL_PALETTE[parseInt(grid[i], 16)] ?? "#fff" }} />
+            <span key={i} data-cell={i} className="aspect-square" style={{ background: PIXEL_PALETTE[parseInt(grid[i] ?? "0", 16)] ?? "#fff" }} />
           ))}
         </div>
         {friendIdx !== null && friend && (

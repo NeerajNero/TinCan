@@ -3,13 +3,13 @@
 import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import stations from "@/content/radio.json";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Card } from "@/components/ui/Card";
+import stations from "@/content/radio.json";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { setRadio, subscribeRadio, type RadioNode } from "@/lib/db/together";
-
+import { swallow } from "@/lib/swallow";
 interface Station {
   id: string;
   name: string;
@@ -61,7 +61,7 @@ export function RadioScreen() {
         </div>
       </Card>
       {blocked && (
-        <button type="button" onClick={() => audio.current?.play().then(() => setBlocked(false)).catch(() => undefined)} className="tap rounded-2xl bg-accent-soft px-4 py-3 text-sm font-bold">
+        <button type="button" onClick={() => audio.current?.play().then(() => setBlocked(false)).catch(swallow)} className="tap rounded-2xl bg-accent-soft px-4 py-3 text-sm font-bold">
           Tap to start audio on this device
         </button>
       )}
@@ -79,7 +79,7 @@ export function RadioScreen() {
           );
         })}
       </div>
-      <p className="px-2 text-center text-[11px] text-muted">Streams by {Array.from(new Set(STATIONS.map((s) => s.attribution.split(" — ")[0].split(" (")[0]))).join(" and ")}. Thank them.</p>
+      <p className="px-2 text-center text-[11px] text-muted">Streams by {Array.from(new Set(STATIONS.map((s) => s.attribution.split(" — ")[0]?.split(" (")[0] ?? s.attribution))).join(" and ")}. Thank them.</p>
     </div>
   );
 }

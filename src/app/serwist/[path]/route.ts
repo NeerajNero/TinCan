@@ -1,5 +1,6 @@
-import { randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
+
 import { createSerwistRoute } from "@serwist/turbopack";
 
 // A revision versions the precached /offline page so a stale copy is never served.

@@ -9,7 +9,7 @@ const ALLOWED = new Set<string>([...(allowed as string[]), ...(answers as string
 
 export function wordFor(dateKey: string): string {
   const list = answers as string[];
-  return list[hashSeed(`tincan-word-${dateKey}`) % list.length];
+  return list[hashSeed(`tincan-word-${dateKey}`) % list.length]!;
 }
 
 export const isAllowedGuess = (w: string) => ALLOWED.has(w.toLowerCase());
@@ -23,14 +23,19 @@ export function evaluate(guess: string, answer: string): LetterState[] {
   const result: LetterState[] = Array(WORD_LEN).fill("absent");
   const remaining: Record<string, number> = {};
   for (let i = 0; i < WORD_LEN; i++) {
-    if (g[i] === a[i]) result[i] = "correct";
-    else remaining[a[i]] = (remaining[a[i]] ?? 0) + 1;
+    const ai = a[i];
+    if (ai === undefined) continue;
+    if (g[i] === ai) result[i] = "correct";
+    else remaining[ai] = (remaining[ai] ?? 0) + 1;
   }
   for (let i = 0; i < WORD_LEN; i++) {
     if (result[i] === "correct") continue;
-    if (remaining[g[i]] > 0) {
+    const gi = g[i];
+    if (gi === undefined) continue;
+    const left = remaining[gi] ?? 0;
+    if (left > 0) {
       result[i] = "present";
-      remaining[g[i]] -= 1;
+      remaining[gi] = left - 1;
     }
   }
   return result;
@@ -43,7 +48,10 @@ export function keyboardStates(guesses: string[], answer: string): Record<string
   for (const guess of guesses) {
     const states = evaluate(guess, answer);
     guess.split("").forEach((ch, i) => {
-      if (!out[ch] || rank[states[i]] > rank[out[ch]]) out[ch] = states[i];
+      const next = states[i];
+      if (next === undefined) return;
+      const cur = out[ch];
+      if (cur === undefined || rank[next] > rank[cur]) out[ch] = next;
     });
   }
   return out;

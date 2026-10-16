@@ -2,19 +2,20 @@
  * Live games in RTDB (games/{id}), results in Firestore, records on pair/main.
  * State is stored as a JSON string so RTDB's array quirks never bite.
  */
-import { child, get, onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, update } from "firebase/database";
-import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "@/lib/firebase/fs";
+import { onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, update } from "firebase/database";
+
 
 import { postSystemMessage } from "@/lib/db/home";
 import { pairRef } from "@/lib/db/refs";
 import { getDb, getRtdb } from "@/lib/firebase/client";
-import { engineFor, GAME_META, other, type GameType, type Player } from "@/lib/games";
+import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "@/lib/firebase/fs";
+import { GAME_META, initialStateFor, loadEngine, other, type GameType, type Player } from "@/lib/games";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
+import { swallow } from "@/lib/swallow";
 import type { PairDoc } from "@/lib/types";
-
-export type GameStatusKey = "invited" | "active" | "finished" | "declined";
-export type EndReason = "win" | "draw" | "resign" | "abandoned" | "cancelled";
+type GameStatusKey = "invited" | "active" | "finished" | "declined";
+type EndReason = "win" | "draw" | "resign" | "abandoned" | "cancelled";
 
 export interface GameNode {
   type: GameType;
@@ -39,7 +40,6 @@ export interface GameNode {
 }
 
 export const GAME_REACTIONS = ["👏", "😱", "🤔", "😂"] as const;
-export const FINISHED_LISTED_MS = 6 * 60 * 60 * 1000;
 
 export const isLive = (g: GameNode) => g.status === "invited" || g.status === "active";
 
@@ -57,7 +57,7 @@ export interface GameResultDoc {
   moves: number;
 }
 
-export const gamePath = (id: string) => `games/${id}`;
+const gamePath = (id: string) => `games/${id}`;
 export const gameRoute = (id: string) => `/play/${id}`;
 const gamesRef = () => ref(getRtdb(), "games");
 
@@ -87,7 +87,7 @@ export async function inviteGame(type: GameType, me: string, friend: string): Pr
   const now = Date.now();
   const g: GameNode = {
     type,
-    state: JSON.stringify(engineFor(type).initialState()),
+    state: JSON.stringify(initialStateFor(type)),
     turn: "first",
     players: { first: me, second: friend },
     status: "invited",
@@ -117,7 +117,7 @@ export async function rematch(from: LiveGame): Promise<string> {
   const node = rtdbPush(gamesRef());
   const g: Omit<GameNode, "createdAt" | "lastMoveAt"> = {
     type: from.type,
-    state: JSON.stringify(engineFor(from.type).initialState()),
+    state: JSON.stringify(initialStateFor(from.type)),
     turn: "first",
     players: { first: from.players.second, second: from.players.first },
     status: "active",
@@ -152,7 +152,7 @@ export interface MoveOutcome {
  * The client that makes the final move also records the result.
  */
 export async function playMove(game: LiveGame, me: string, move: unknown, nameOf: (uid: string) => string): Promise<MoveOutcome> {
-  const engine = engineFor(game.type);
+  const engine = await loadEngine(game.type);
   let outcome: MoveOutcome = { finished: false, winnerId: null, endReason: null };
   const res = await runTransaction(ref(getRtdb(), gamePath(game.id)), (current: GameNode | null) => {
     if (!current || current.status !== "active") return;
@@ -209,8 +209,8 @@ export async function resign(game: LiveGame, me: string, nameOf: (uid: string) =
 
 /* ── results & records ─────────────────────────────────────────────────── */
 
-export const resultsCol = () => collection(getDb(), "gameResults") as CollectionReference<GameResultDoc>;
-export const recentResultsQuery = (): Query<GameResultDoc> => query(resultsCol(), orderBy("endedAt", "desc"), limit(20));
+const resultsCol = () => collection(getDb(), "gameResults") as CollectionReference<GameResultDoc>;
+const recentResultsQuery = (): Query<GameResultDoc> => query(resultsCol(), orderBy("endedAt", "desc"), limit(20));
 
 export async function loadRecentResults(): Promise<Array<GameResultDoc & { id: string }>> {
   const snap = await getDocs(recentResultsQuery());
@@ -247,7 +247,7 @@ async function recordResult(game: LiveGame, by: string, nameOf: (uid: string) =>
     else rec.draws = (rec.draws ?? 0) + 1;
     records[game.type] = rec;
     tx.update(pairRef(), { records });
-  }).catch(() => undefined);
+  }).catch(swallow);
   void postSystemMessage(by, describeResult(game, nameOf));
   if (game.winnerId && game.type === "chess") void recordTogetherEvent("chess-win", by);
   if (game.winnerId && game.type === "connectfour") void recordTogetherEvent("c4-win", by);
@@ -281,11 +281,6 @@ export function recordFor(pair: Pick<PairDoc, "records">, type: GameType, me: st
   return { mine: r[me] ?? 0, theirs: friend ? (r[friend] ?? 0) : 0, draws: r.draws ?? 0 };
 }
 
-export async function fetchGame(id: string): Promise<LiveGame | null> {
-  const snap = await get(child(ref(getRtdb()), gamePath(id)));
-  return snap.exists() ? { id, ...(snap.val() as GameNode) } : null;
-}
-
 /** Results for non-board games (trivia): gameResults doc + pair.records bump + chat line. */
 export async function recordGenericResult(game: string, players: string[], winnerId: string | null, startedAtMs: number, moves: number, nameOf: (uid: string) => string): Promise<void> {
   const id = `${game}-${startedAtMs}`;
@@ -303,7 +298,9 @@ export async function recordGenericResult(game: string, players: string[], winne
     else rec.draws = (rec.draws ?? 0) + 1;
     records[game] = rec;
     tx.update(pairRef(), { records });
-  }).catch(() => undefined);
-  void postSystemMessage(players[0], winnerId ? `🧠 ${nameOf(winnerId)} won the trivia duel` : "🧠 The trivia duel was a tie");
-  if (game === "trivia") void recordTogetherEvent("trivia", players[0]);
+  }).catch(swallow);
+  const [host] = players;
+  if (host === undefined) return;
+  void postSystemMessage(host, winnerId ? `🧠 ${nameOf(winnerId)} won the trivia duel` : "🧠 The trivia duel was a tie");
+  if (game === "trivia") void recordTogetherEvent("trivia", host);
 }

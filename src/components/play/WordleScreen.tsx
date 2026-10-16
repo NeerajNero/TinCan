@@ -1,7 +1,6 @@
 "use client";
 
-import { onSnapshot } from "@/lib/firebase/fs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Delete } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -13,6 +12,7 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
 import { saveGuesses, wordleRef, type WordleDoc } from "@/lib/db/wordle";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { evaluate, isAllowedGuess, KEY_ROWS, keyboardStates, MAX_GUESSES, WORD_LEN, wordFor, type LetterState } from "@/lib/wordle";
@@ -102,9 +102,9 @@ export function WordleScreen() {
           <div className="relative mx-auto w-full max-w-[320px]">
             <AnimatePresence>
               {toast && (
-                <motion.p key={toast} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute inset-x-0 -top-8 z-10 text-center text-sm font-bold">
+                <m.p key={toast} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute inset-x-0 -top-8 z-10 text-center text-sm font-bold">
                   {toast}
-                </motion.p>
+                </m.p>
               )}
             </AnimatePresence>
             <Grid guesses={guesses} draft={done ? "" : draft} answer={answer} shake={shake} reveal />
@@ -157,12 +157,12 @@ function Grid({ guesses, draft, answer, shake, compact, reveal }: { guesses: str
         const states = submitted ? evaluate(row, answer) : null;
         const isDraftRow = r === guesses.length;
         return (
-          <motion.div key={r} className="grid grid-cols-5 gap-1" animate={isDraftRow && shake ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }} transition={{ duration: 0.35 }}>
+          <m.div key={r} className="grid grid-cols-5 gap-1" animate={isDraftRow && shake ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }} transition={{ duration: 0.35 }}>
             {Array.from({ length: WORD_LEN }, (_, c) => {
               const ch = row[c] ?? "";
               const st = states?.[c];
               return (
-                <motion.span
+                <m.span
                   key={c}
                   initial={false}
                   animate={reveal && submitted ? { rotateX: [90, 0] } : { rotateX: 0 }}
@@ -174,10 +174,10 @@ function Grid({ guesses, draft, answer, shake, compact, reveal }: { guesses: str
                   )}
                 >
                   {compact ? "" : ch}
-                </motion.span>
+                </m.span>
               );
             })}
-          </motion.div>
+          </m.div>
         );
       })}
     </div>

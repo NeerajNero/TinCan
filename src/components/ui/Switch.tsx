@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 import { cn } from "@/lib/cn";
 
@@ -27,7 +27,7 @@ export function Switch({ checked, onChange, disabled, id, ...aria }: SwitchProps
         checked ? "bg-[var(--accent)]" : "bg-surface-2 border border-border",
       )}
     >
-      <motion.span
+      <m.span
         aria-hidden
         className="absolute top-1 left-1 size-6 rounded-full bg-white shadow"
         animate={{ x: checked ? 24 : 0 }}

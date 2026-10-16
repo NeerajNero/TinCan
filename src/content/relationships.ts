@@ -26,7 +26,7 @@ export const RELATIONSHIPS: readonly RelationshipPreset[] = [
   { id: "pen-pals", emoji: "✉️", label: "Pen pals", pairNoun: "pen pals", sinceLabel: "Writing since", anniversaryLabel: "Pen-pal-iversary" },
 ];
 
-export const DEFAULT_RELATIONSHIP = RELATIONSHIPS[0];
+const DEFAULT_RELATIONSHIP: RelationshipPreset = RELATIONSHIPS[0]!;
 
 export function relationshipFor(id: string | null | undefined): RelationshipPreset {
   return RELATIONSHIPS.find((r) => r.id === id) ?? DEFAULT_RELATIONSHIP;

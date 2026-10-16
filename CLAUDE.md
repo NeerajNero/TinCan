@@ -89,6 +89,15 @@ Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign
 - Mobile-first; desktop just centres a 480px column. Safe-area insets respected.
 - Empty states are friendly and suggest an action ("No photos yet — add the first one?").
 - Avoid generic SaaS-dashboard looks: no data tables on Home, no grey card grids.
+- Chat backgrounds are per user (`users/{me}.chatBg`): eight CSS-only built-ins in
+  `src/content/chat-backgrounds.ts` (gradient + inline SVG pattern < 2 KB, light and dark variants) or a
+  photo from Memories (Cloudinary `w_600,q_auto:low` with a dim overlay). Rendered as one absolutely
+  positioned layer behind the message list, never `background-attachment: fixed`. Bubbles use the opaque
+  `--bubble-mine` / `--bubble-theirs` tokens plus a subtle shadow so they read on any option.
+- Motion: import `m` from framer-motion (never `motion`); `<LazyMotion>` in Providers loads `domMax` lazily.
+- Images: never `next/image` with remote sources (Vercel Hobby meters optimisation). Cloudinary photos go
+  through `CloudImage` (320/640 srcset, blur-up placeholder, async decode, lazy); GIF/YouTube/local previews
+  are plain `<img>`.
 
 ## Data model — Firestore
 `users/{uid}`: name, nickname, email, photoURL, tz, city, lat, lng, fcmTokens[], notif{...}, createdAt
@@ -297,8 +306,10 @@ radio stations (6 public stream URLs with names).
   checked before signing). Both presets must be in Signed mode in the console. The app only renders
   media from `https://res.cloudinary.com/<cloud>/` and GIFs from `https://media*.giphy.com/`; rules
   enforce the same prefixes on write.
-- Security headers from `next.config.ts`: CSP (Report-Only until clean), nosniff, DENY framing,
-  strict referrer, Permissions-Policy allowing only microphone(self) and media playback.
+- Security headers from `next.config.ts`: CSP **enforced** (set `CSP_REPORT_ONLY=1` to fall back to
+  report-only while debugging), nosniff, DENY framing, strict referrer, Permissions-Policy allowing only
+  microphone(self) and media playback. The worker caches images (Cloudinary 30 d/500, OSM tiles, GIPHY,
+  ytimg 7 d) CacheFirst and never caches Firebase, Google APIs or `/api/*`.
 - Rules validate shapes and sizes (message text ≤ 2000, captions ≤ 500, notes ≤ 1000, no unknown
   top-level fields on users/messages, `createdAt == request.time` on creates, immutable identity
   fields; RTDB validates strokes, cursors, presence page length and canvas sizes).
@@ -329,6 +340,10 @@ of a task must say which docs were updated.
   from `FIREBASE_SERVICE_ACCOUNT` base64 JSON). Never import admin in client code.
 - Thin pages, logic in `src/lib/**` and hooks in `src/hooks/**`. Static decks in `src/content`.
 - Every API route validates input with zod and verifies the Firebase ID token.
+- TypeScript is `strict` + `noUncheckedIndexedAccess`; ESLint errors on `any`, missing hook deps and import
+  order; `pnpm knip` must report nothing. Fire-and-forget promises use `.catch(swallow)` and user-facing
+  errors go through `errorMessage()` (`src/lib/swallow.ts`). Pure logic lives in `src/lib` so `pnpm test`
+  (vitest unit tests in `tests/unit`) can cover it; `pnpm profile:chat` measures the chat list.
 - `pnpm typecheck` and `pnpm lint` must pass before each commit. One commit per phase, and
   `git push` after every commit — the remote is the backup.
 - Rules deploy via Firebase CLI: `pnpm rules:deploy` → `firebase deploy --only firestore:rules,database`.

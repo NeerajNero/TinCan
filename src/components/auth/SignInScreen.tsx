@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -55,7 +55,7 @@ export function SignInScreen() {
       className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col items-center justify-center gap-6 px-6 text-center safe-top safe-bottom"
       style={{ "--accent": "var(--accent-home)" } as React.CSSProperties}
     >
-      <motion.div
+      <m.div
         aria-hidden
         className="text-8xl"
         initial={{ scale: 0.6, rotate: -10, opacity: 0 }}
@@ -63,7 +63,7 @@ export function SignInScreen() {
         transition={{ type: "spring", stiffness: 260, damping: 16 }}
       >
         🥫
-      </motion.div>
+      </m.div>
       <div className="flex flex-col gap-2">
         <h1 className="text-4xl font-semibold">Tincan</h1>
         <p className="text-muted">A tin-can telephone for two.</p>

@@ -106,7 +106,10 @@ Both people sign in with Google, pick a nickname and city, and the pair is forme
 | `pnpm dev` | Next dev server (service worker and push are disabled in dev) |
 | `pnpm build` / `pnpm start` | Production build and server |
 | `pnpm typecheck` / `pnpm lint` | Must both pass before a commit |
+| `pnpm test` | Unit tests (game engines, dates/streak, pet, call-time overlap, pings) |
 | `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`); passing |
+| `pnpm profile:chat` | React Profiler run of a 300-message chat thread |
+| `pnpm analyze` / `pnpm knip` | Bundle report / dead-code check |
 | `pnpm rules:build` | Fills `rules/*.tmpl` → `firestore.rules`, `database.rules.json`, `.firebaserc` (all gitignored) |
 | `pnpm rules:deploy` | `rules:build`, then `firebase deploy --only firestore:rules,database` |
 | `pnpm cloudinary:presets` | Creates/updates the two upload presets |
@@ -120,7 +123,7 @@ Read [`docs/adding-a-feature.md`](docs/adding-a-feature.md). The short version: 
 
 ## Security
 
-Deny-by-default rules with the two emails compiled in, revocation-checked ID tokens and rate limits on every API route, signed Cloudinary uploads, media rendered only from our own cloud, CSP and friends in `next.config.ts`. Details and the threat model in [`docs/security.md`](docs/security.md).
+Deny-by-default rules with the two emails compiled in, revocation-checked ID tokens and rate limits on every API route, signed Cloudinary uploads, media rendered only from our own cloud, an enforced CSP and friends in `next.config.ts`. Details and the threat model in [`docs/security.md`](docs/security.md).
 
 ## License
 

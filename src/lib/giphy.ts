@@ -1,5 +1,5 @@
 /** GIPHY search, only when NEXT_PUBLIC_GIPHY_API_KEY is set. Rating pg. */
-import { z } from "zod";
+import { z } from "zod/mini";
 
 import { publicEnv } from "@/lib/env";
 
@@ -10,8 +10,8 @@ const schema = z.object({
   data: z.array(
     z.object({
       id: z.string(),
-      title: z.string().optional(),
-      images: z.object({ fixed_height: image, fixed_width_small: image.optional(), fixed_height_small: image.optional() }),
+      title: z.optional(z.string()),
+      images: z.object({ fixed_height: image, fixed_width_small: z.optional(image), fixed_height_small: z.optional(image) }),
     }),
   ),
 });

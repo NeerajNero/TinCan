@@ -4,16 +4,15 @@
  * clients firing the same event still produce a single unlock; the toast
  * comes from the live layer watching the pair doc, so both people see it.
  */
-import { runTransaction, serverTimestamp } from "@/lib/firebase/fs";
 
 import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
 import { postSystemMessage } from "@/lib/db/home";
 import { pairRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
+import { runTransaction, serverTimestamp } from "@/lib/firebase/fs";
 import type { PairDoc } from "@/lib/types";
 
 export type { GardenEvent };
-export type TogetherEvent = GardenEvent;
 
 /** Unlock the sticker for `kind` if it isn't already; returns true on a fresh unlock. */
 export async function recordTogetherEvent(kind: GardenEvent, by: string): Promise<boolean> {

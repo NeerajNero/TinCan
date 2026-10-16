@@ -12,7 +12,7 @@
 
 ## Env
 
-`.env.example` lists every variable. Locally the values live in `.env` (or `.env.local`), both gitignored; scripts read `.env.local` then `.env`. Vercel holds the same set under Settings → Environment Variables. Never print or paste values into a chat, a log or a commit.
+`.env.example` lists every variable (`CSP_REPORT_ONLY=1` is the only debug switch). Locally the values live in `.env` (or `.env.local`), both gitignored; scripts read `.env.local` then `.env`. Vercel holds the same set under Settings → Environment Variables. Never print or paste values into a chat, a log or a commit.
 
 ## Scripts
 
@@ -24,7 +24,11 @@
 | `pnpm lint` | ESLint with Next core-web-vitals + TypeScript + React Compiler rules |
 | `pnpm rules:build` | `rules/*.tmpl` → `firestore.rules`, `database.rules.json`, `.firebaserc` |
 | `pnpm rules:deploy` | build, then `firebase deploy --only firestore:rules,database` (needs `npm i -g firebase-tools` and `firebase login`) |
-| `pnpm test:rules` / `pnpm test` | build rules, start the emulators (Firestore 8181, RTDB 9191; needs Java), run `tests/rules.test.ts` with vitest |
+| `pnpm test` | vitest unit tests in `tests/unit` (engines, dates/streak, pet, availability, ping cooldown) |
+| `pnpm test:rules` | build rules, start the emulators (Firestore 8181, RTDB 9191; needs Java), run `tests/rules.test.ts` |
+| `pnpm profile:chat` | React Profiler run of a 300-message thread in happy-dom; prints mount and append cost |
+| `pnpm analyze` | production build with the bundle analyzer report |
+| `pnpm knip` | dead code / unused exports / unused deps; must be clean |
 | `pnpm cloudinary:presets` | create/update the two upload presets through the Admin API |
 | `pnpm tick:dry` | `GET $TICK_URL/api/tick?dry=1` and print what the tick would do |
 | `pnpm reset:dry` / `pnpm reset` | wipe all data except the owner's `users` doc (owner = first email in `ALLOWED_EMAILS`); dry run by default |

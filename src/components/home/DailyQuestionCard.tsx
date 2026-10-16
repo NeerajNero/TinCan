@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useState } from "react";
 
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
@@ -87,9 +87,9 @@ export function DailyQuestionCard({ today, friendUid, friendName }: { today: str
         <div className="relative">
           <AnswerRow who={friendName ?? "Friend"} text={theirs ?? `${friendName ?? "They"} hasn't answered yet`} muted={theirs === null} blurred={mine === null && theirs !== null} />
           {mine === null && theirs !== null && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 grid place-items-center text-sm font-bold">
+            <m.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 grid place-items-center text-sm font-bold">
               Answer to reveal 👀
-            </motion.p>
+            </m.p>
           )}
         </div>
       )}

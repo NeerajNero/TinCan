@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -76,7 +76,7 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
 
       {node && cardIndex !== null && (
         <AnimatePresence mode="wait">
-          <motion.div key={`${node.seed}-${node.index}`} initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} exit={{ rotateY: -90, opacity: 0 }} transition={{ duration: 0.25 }}>
+          <m.div key={`${node.seed}-${node.index}`} initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} exit={{ rotateY: -90, opacity: 0 }} transition={{ duration: 0.25 }}>
             {kind === "wyr" && <WyrCardView index={cardIndex} mine={mine} theirs={theirs} both={both} friendName={friendName} onPick={(v) => void respond(kind, uid, v)} />}
             {kind === "nhie" && <NhieCardView index={cardIndex} mine={mine} theirs={theirs} both={both} friendName={friendName} onPick={(v) => void respond(kind, uid, v)} />}
             {kind === "tod" && (
@@ -91,7 +91,7 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
               />
             )}
             {kind === "convo" && <ConvoCardView index={cardIndex} />}
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       )}
 
@@ -211,9 +211,9 @@ function TodCardView({ index, node, uid, friendUid, myName, friendName, onPick }
       <p className="text-xs font-bold uppercase tracking-wide text-muted">{myTurn ? "Your turn" : `${friendName}'s turn`}</p>
       {!node.pick ? (
         <>
-          <motion.span className="text-6xl" animate={spinning ? { rotate: [0, 360] } : { rotate: 0 }} transition={{ duration: 0.9, repeat: spinning ? Infinity : 0, ease: "linear" }} aria-hidden>
+          <m.span className="text-6xl" animate={spinning ? { rotate: [0, 360] } : { rotate: 0 }} transition={{ duration: 0.9, repeat: spinning ? Infinity : 0, ease: "linear" }} aria-hidden>
             {face === "truth" ? "🗣️" : "🎯"}
-          </motion.span>
+          </m.span>
           <p className="font-heading text-2xl font-semibold">{spinning ? (face === "truth" ? "Truth…" : "Dare…") : "Spin for truth or dare"}</p>
           {myTurn && (
             <Button onClick={spin} disabled={spinning}>

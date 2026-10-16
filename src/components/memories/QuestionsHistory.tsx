@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { useCallback } from "react";
-import type { QueryDocumentSnapshot } from "@/lib/firebase/fs";
+
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,7 @@ import { usePair } from "@/hooks/usePair";
 import { questionAt } from "@/lib/daily";
 import { dateKeyToLocalDate } from "@/lib/dates";
 import { historyQuery, HISTORY_PAGE } from "@/lib/db/daily";
+import type { QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import type { DailyQuestionDoc } from "@/lib/types";
 
 interface Row extends DailyQuestionDoc {

@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { adminDb } from "@/lib/firebase/admin";
 import { errorResponse, guard, readJson } from "@/lib/server/guard";
-
+import { swallow } from "@/lib/swallow";
 const bodySchema = z.union([
   z.object({ kind: z.enum(["message", "memory", "journal", "capsule"]), id: z.string().min(1).max(128) }).strict(),
   // Destroy the caller's stale avatar asset (previousAvatarPublicId on their own user doc).
@@ -25,7 +25,7 @@ async function destroyAll(ids: string[], resourceType: "image" | "video" = "imag
   const unique = Array.from(new Set(ids.filter(Boolean)));
   if (!unique.length) return 0;
   configureCloudinary();
-  await Promise.all(unique.map((id) => cloudinary.uploader.destroy(id, { resource_type: resourceType, invalidate: true }).catch(() => undefined)));
+  await Promise.all(unique.map((id) => cloudinary.uploader.destroy(id, { resource_type: resourceType, invalidate: true }).catch(swallow)));
   return unique.length;
 }
 

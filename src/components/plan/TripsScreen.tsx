@@ -1,7 +1,6 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Reorder } from "framer-motion";
 import { ChevronDown, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -9,13 +8,14 @@ import { useEffect, useMemo, useState } from "react";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Input, Label } from "@/components/ui/Input";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { dateKeyToLocalDate, daysBetween, isDateKey, roomDateKey } from "@/lib/dates";
 import { addTrip, cleanStop, deleteTrip, editTrip, newStopId, saveDays, tripsQuery, type TripInput } from "@/lib/db/trips";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import type { TripDay, TripDoc, TripStop } from "@/lib/types";
 

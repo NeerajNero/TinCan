@@ -1,15 +1,15 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc, type CollectionReference, type Query } from "@/lib/firebase/fs";
 
-import { pairRef } from "@/lib/db/refs";
 import { addDays, daysBetween, isDateKey } from "@/lib/dates";
+import { pairRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
+import { addDoc, collection, deleteDoc, doc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import type { DateKey, TripDay, TripDoc, TripStop, TripSummary } from "@/lib/types";
 
-export const tripsCol = () => collection(getDb(), "trips") as CollectionReference<TripDoc>;
+const tripsCol = () => collection(getDb(), "trips") as CollectionReference<TripDoc>;
 export const tripsQuery = (): Query<TripDoc> => query(tripsCol(), orderBy("startDate", "asc"), limit(100));
 
 /** One TripDay per date in the range, keeping stops for dates that still exist. */
-export function buildDays(startDate: DateKey, endDate: DateKey, previous: TripDay[] = []): TripDay[] {
+function buildDays(startDate: DateKey, endDate: DateKey, previous: TripDay[] = []): TripDay[] {
   if (!isDateKey(startDate) || !isDateKey(endDate)) return [];
   const span = Math.max(0, Math.min(60, daysBetween(startDate, endDate)));
   const byDate = new Map(previous.map((d) => [d.date, d.stops]));

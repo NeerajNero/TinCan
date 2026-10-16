@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -29,7 +29,7 @@ export function GardenScreen() {
         {GARDEN_STICKERS.map((s) => {
           const on = Boolean(unlocked[s.id]);
           return (
-            <motion.button
+            <m.button
               key={s.id}
               type="button"
               onClick={() => setSelected(s)}
@@ -41,13 +41,13 @@ export function GardenScreen() {
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
               <s.Svg size={40} locked={!on} />
-            </motion.button>
+            </m.button>
           );
         })}
       </div>
       <AnimatePresence mode="wait">
         {selected && (
-          <motion.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+          <m.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <Card className="flex items-center gap-3">
               <selected.Svg size={48} locked={!sel} />
               <div className="min-w-0 flex-1">
@@ -55,7 +55,7 @@ export function GardenScreen() {
                 <p className="text-sm text-muted">{sel ? `Earned by ${nameOf(sel.by)}${sel.at ? ` on ${format(sel.at.toDate(), "d MMM yyyy")}` : ""} · ${selected.hint.toLowerCase()}` : selected.hint}</p>
               </div>
             </Card>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

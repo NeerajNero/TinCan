@@ -1,7 +1,6 @@
 "use client";
 
-import { updateDoc } from "@/lib/firebase/fs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { BellRing, ChevronRight } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
@@ -11,8 +10,10 @@ import { Switch } from "@/components/ui/Switch";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { userRef } from "@/lib/db/refs";
+import { updateDoc } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
 import { disablePush, enablePush, permissionState, type EnableResult } from "@/lib/push";
+import { swallow } from "@/lib/swallow";
 import { NOTIF_KEYS, NOTIF_LABELS } from "@/lib/types";
 
 const noop = () => () => undefined;
@@ -52,7 +53,7 @@ export function NotificationsCard() {
   }
 
   function toggleType(key: (typeof NOTIF_KEYS)[number], value: boolean) {
-    void updateDoc(userRef(uid), { [`notif.${key}`]: value }).catch(() => undefined);
+    void updateDoc(userRef(uid), { [`notif.${key}`]: value }).catch(swallow);
   }
 
   async function sendTest() {
@@ -96,7 +97,7 @@ export function NotificationsCard() {
 
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div
+          <m.div
             key="types"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -127,7 +128,7 @@ export function NotificationsCard() {
                 Tip: background the app before the test arrives to see the system notification; in the foreground it shows as a toast.
               </p>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </Card>

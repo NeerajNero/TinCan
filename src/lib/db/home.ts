@@ -2,11 +2,11 @@
  * Firestore writes made from Home: check-ins, the streak/plant transaction,
  * mood check-ins and sleep/wake system messages.
  */
-import { addDoc, collection, doc, runTransaction, serverTimestamp, setDoc, type DocumentReference } from "@/lib/firebase/fs";
-
+import { dayUserId, daysBetween } from "@/lib/dates";
 import { pairRef } from "@/lib/db/refs";
-import { dayUserId, daysBetween, previousDay } from "@/lib/dates";
 import { getDb } from "@/lib/firebase/client";
+import { addDoc, collection, doc, runTransaction, serverTimestamp, setDoc, type DocumentReference } from "@/lib/firebase/fs";
+import { nextStreak } from "@/lib/streak";
 import type { DateKey, MoodDoc, PairDoc, Plant, PresenceStatus, Streak } from "@/lib/types";
 
 export const MAX_PLANT_STAGE = 10;
@@ -45,10 +45,9 @@ export async function bumpStreak(today: DateKey): Promise<void> {
     const prev = pair.streak;
     if (prev?.lastDateKey === today) return;
 
-    const count = prev && prev.lastDateKey === previousDay(today) ? prev.count + 1 : 1;
-    const streak: Streak = { count, lastDateKey: today };
+    const streak = nextStreak(prev, today);
 
-    const stage = Math.max(pair.plant?.stage ?? 1, plantStageFor(count));
+    const stage = Math.max(pair.plant?.stage ?? 1, plantStageFor(streak.count));
     const plant: Plant =
       stage !== pair.plant?.stage ? { stage, lastGrowthDate: today } : pair.plant ?? { stage, lastGrowthDate: today };
 

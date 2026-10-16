@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { STICKERS } from "@/content/stickers";
@@ -105,7 +104,8 @@ function GifTab({ onGif }: { onGif: (gif: Gif) => void }) {
       <div className="grid grid-cols-3 gap-1">
         {gifs.filter((g) => isGiphyUrl(g.url) && isGiphyUrl(g.previewUrl)).map((g) => (
           <button key={g.id} type="button" onClick={() => onGif(g)} aria-label={`Send GIF: ${g.title}`} className="tap overflow-hidden rounded-xl bg-surface-2">
-            <Image src={g.previewUrl} alt="" width={120} height={100} unoptimized className="h-24 w-full object-cover" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- GIPHY preview */}
+            <img src={g.previewUrl} alt="" width={120} height={100} decoding="async" loading="lazy" className="h-24 w-full bg-surface-2 object-cover" />
           </button>
         ))}
       </div>

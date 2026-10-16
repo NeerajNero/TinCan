@@ -1,5 +1,13 @@
 # Testing
 
+## Unit tests (`pnpm test`)
+
+Vitest over the pure modules in `tests/unit`: game engines against known positions (checkers mandatory capture, multi-jump and crowning; chess promotion, fool's-mate checkmate and stalemate; Connect Four diagonal win and draw; tic-tac-toe lines), `dateKey` roll-over at ROOM_TZ midnight and streak transitions (`lib/streak.ts`), pet stat derivation and levels, call-time overlap across zones including a slot that crosses midnight after conversion, and the ping cooldown (`lib/pings.ts`). Keep logic that needs testing in `src/lib` with no Firebase import so it stays testable.
+
+## Profiling the chat list (`pnpm profile:chat`)
+
+`tests/perf/chat.profile.test.tsx` mounts `MessageList` with 300 messages under React's `<Profiler>` in happy-dom and appends ten more, printing the mount cost and the median append commit. It asserts an append costs under a quarter of the mount (the memoised bubbles must not re-render). Numbers are an upper bound: happy-dom is slower than a phone's Chrome. Windowing (`@tanstack/react-virtual`) is only worth adding if an append exceeds ~16 ms in a real browser.
+
 ## Automated: security rules
 
 `tests/rules.test.ts` runs against the Firebase emulators with `@firebase/rules-unit-testing` and vitest. It reads `ALLOWED_EMAILS` and `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` from `.env.local` / `.env` so the generated rules match.

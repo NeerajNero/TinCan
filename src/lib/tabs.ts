@@ -18,7 +18,9 @@ export const TABS: readonly Tab[] = [
   { key: "more", href: "/more", label: "More", emoji: "✨", accentVar: "--accent-more" },
 ] as const;
 
+const HOME_TAB: Tab = TABS[0]!;
+
 export function activeTab(pathname: string): Tab {
-  if (pathname === "/") return TABS[0];
-  return TABS.find((t) => t.href !== "/" && pathname.startsWith(t.href)) ?? TABS[0];
+  if (pathname === "/") return HOME_TAB;
+  return TABS.find((t) => t.href !== "/" && pathname.startsWith(t.href)) ?? HOME_TAB;
 }

@@ -1,9 +1,10 @@
-import imageCompression from "browser-image-compression";
+/** browser-image-compression (≈50 KB) loads on the first upload, not with the chat route. */
+const loadCompressor = () => import("browser-image-compression").then((mod) => mod.default);
 
 let webpSupport: boolean | null = null;
 
 /** Canvas-encode test, cached. */
-export function supportsWebP(): boolean {
+function supportsWebP(): boolean {
   if (webpSupport !== null) return webpSupport;
   try {
     const canvas = document.createElement("canvas");
@@ -30,7 +31,7 @@ interface CompressOptions {
 /** ≤1080 px on the long edge, ~0.3 MB by default, WebP when the browser can encode it. */
 export async function compressImage(file: File, options: CompressOptions = {}): Promise<CompressedImage> {
   const fileType = supportsWebP() ? "image/webp" : "image/jpeg";
-  const blob = await imageCompression(file, {
+  const blob = await (await loadCompressor())(file, {
     maxSizeMB: options.maxSizeMB ?? 0.3,
     maxWidthOrHeight: options.maxWidthOrHeight ?? 1080,
     useWebWorker: true,
@@ -41,7 +42,7 @@ export async function compressImage(file: File, options: CompressOptions = {}): 
   return { blob, w, h };
 }
 
-export function readDimensions(blob: Blob): Promise<{ w: number; h: number }> {
+function readDimensions(blob: Blob): Promise<{ w: number; h: number }> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(blob);
     const img = new Image();

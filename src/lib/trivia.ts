@@ -14,8 +14,8 @@ export interface TriviaQuestion {
 export const TRIVIA_BANK = bank as TriviaQuestion[];
 export const ROUND_SIZE = 10;
 export const QUESTION_MS = 15_000;
-export const POINTS_CORRECT = 10;
-export const SPEED_BONUS_MAX = 5;
+const POINTS_CORRECT = 10;
+const SPEED_BONUS_MAX = 5;
 
 export function pickQuestionIds(seed: number): number[] {
   return seededOrder(TRIVIA_BANK.length, seed).slice(0, ROUND_SIZE);
@@ -24,7 +24,7 @@ export function pickQuestionIds(seed: number): number[] {
 /** Options shuffled per question per seed so A isn't always right, with the correct index remapped. */
 export function shuffledOptions(q: TriviaQuestion, seed: number): { options: string[]; answer: number } {
   const order = seededOrder(q.options.length, seed + q.id);
-  const options = order.map((i) => q.options[i]);
+  const options = order.map((i) => q.options[i]!);
   return { options, answer: order.indexOf(q.answer) };
 }
 

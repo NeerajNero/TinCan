@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { DeckScreen } from "@/components/play/DeckScreen";
 import { DECK_KINDS, type DeckKind } from "@/lib/deckMeta";
 
+
 export const metadata: Metadata = { title: "Deck" };
 
 export function generateStaticParams() {

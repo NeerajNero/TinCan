@@ -1,8 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useEffect, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -12,6 +11,7 @@ import { Input } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { envelopesByMe, envelopesForMe, openEnvelope, readEnvelopeBody, writeEnvelope } from "@/lib/db/envelopes";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { ENVELOPE_LABELS, type EnvelopeDoc } from "@/lib/types";
@@ -104,9 +104,9 @@ function EnvelopeCard({ envelope, canOpen, onOpened, uid }: { envelope: Envelope
   return (
     <Card className="flex flex-col gap-3 overflow-hidden">
       <div className="flex items-center gap-3">
-        <motion.span className="text-3xl" aria-hidden animate={unsealing ? { rotateX: [0, 80, 0], scale: [1, 1.15, 1] } : { rotateX: 0, scale: 1 }} transition={{ duration: 0.7, ease: "easeInOut" }}>
+        <m.span className="text-3xl" aria-hidden animate={unsealing ? { rotateX: [0, 80, 0], scale: [1, 1.15, 1] } : { rotateX: 0, scale: 1 }} transition={{ duration: 0.7, ease: "easeInOut" }}>
           {opened || body !== null ? "📭" : "✉️"}
-        </motion.span>
+        </m.span>
         <div className="min-w-0 flex-1">
           <p className="font-heading text-lg font-semibold leading-tight">Open when {envelope.label}</p>
           <p className={cn("text-xs", opened ? "text-emerald-600 dark:text-emerald-300" : "text-muted")}>
@@ -121,9 +121,9 @@ function EnvelopeCard({ envelope, canOpen, onOpened, uid }: { envelope: Envelope
       </div>
       <AnimatePresence>
         {body !== null && (
-          <motion.p key="body" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="whitespace-pre-wrap rounded-2xl bg-surface-2 p-3 text-[15px] leading-relaxed">
+          <m.p key="body" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="whitespace-pre-wrap rounded-2xl bg-surface-2 p-3 text-[15px] leading-relaxed">
             {body}
-          </motion.p>
+          </m.p>
         )}
       </AnimatePresence>
     </Card>

@@ -12,7 +12,9 @@ export const CANVAS_COLORS = ["#3b2f3a", "#ff6b6b", "#ffb454", "#ffd166", "#5fd3
 export const CANVAS_WIDTHS = [3, 7, 14] as const;
 export type Tool = "pen" | "eraser";
 
-const THROTTLE_MS = 50;
+/** Cursor writes at most every 80 ms; the live stroke streams on the same cadence and only when new points were added. */
+const CURSOR_THROTTLE_MS = 80;
+const STREAM_THROTTLE_MS = 80;
 const ERASER = "#ffffff";
 
 interface SharedCanvasProps {
@@ -44,10 +46,12 @@ function drawStroke(ctx: CanvasRenderingContext2D, s: Pick<Stroke, "color" | "wi
   ctx.lineWidth = s.width * (w / 400);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
+  const first = pts[0];
+  if (!first) return;
   ctx.beginPath();
-  ctx.moveTo(pts[0][0] * w, pts[0][1] * h);
-  if (pts.length === 1) ctx.lineTo(pts[0][0] * w + 0.1, pts[0][1] * h);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0] * w, pts[i][1] * h);
+  ctx.moveTo(first[0] * w, first[1] * h);
+  if (pts.length === 1) ctx.lineTo(first[0] * w + 0.1, first[1] * h);
+  for (const p of pts.slice(1)) ctx.lineTo(p[0] * w, p[1] * h);
   ctx.stroke();
 }
 
@@ -59,6 +63,7 @@ export function SharedCanvas({ base, canDraw, tool, color, width, cursors = fals
   const [live, setLive] = useState<Record<string, LiveStroke>>({});
   const current = useRef<Pt[] | null>(null);
   const lastStream = useRef(0);
+  const lastStreamedLen = useRef(0);
   const lastCursor = useRef(0);
   const firstDone = useRef(false);
   const { value: friendCursor } = useRtdbValue<CursorNode>(cursors && friendUid ? cursorPath(friendUid) : null);
@@ -120,11 +125,12 @@ export function SharedCanvas({ base, canDraw, tool, color, width, cursors = fals
     if (!canDraw) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     current.current = [norm(e)];
+    lastStreamedLen.current = 0;
     setLive((l) => ({ ...l })); // trigger paint
   }
   function onMove(e: React.PointerEvent) {
     const now = Date.now();
-    if (cursors && now - lastCursor.current > THROTTLE_MS) {
+    if (cursors && now - lastCursor.current > CURSOR_THROTTLE_MS) {
       lastCursor.current = now;
       const [x, y] = norm(e);
       void writeCursor(uid, x, y, page);
@@ -132,8 +138,9 @@ export function SharedCanvas({ base, canDraw, tool, color, width, cursors = fals
     if (!current.current) return;
     current.current.push(norm(e));
     setLive((l) => ({ ...l }));
-    if (now - lastStream.current > THROTTLE_MS) {
+    if (now - lastStream.current > STREAM_THROTTLE_MS && current.current.length !== lastStreamedLen.current) {
       lastStream.current = now;
+      lastStreamedLen.current = current.current.length;
       void streamLive(base, uid, { ...strokeMeta(), points: JSON.stringify(current.current) });
     }
   }

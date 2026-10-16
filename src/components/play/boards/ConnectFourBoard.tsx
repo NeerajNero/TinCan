@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 import { cn } from "@/lib/cn";
 import { C4_COLS, C4_ROWS, type C4State } from "@/lib/games/connectfour";
@@ -22,7 +22,7 @@ export function ConnectFourBoard({ state, canMove, legal, line, onMove }: { stat
           return (
             <button key={i} type="button" disabled={!canMove || !legal.includes(col)} onClick={() => onMove(col)} aria-label={`Row ${row + 1} column ${col + 1}`} className="grid aspect-square place-items-center rounded-full bg-bg disabled:cursor-default">
               {ch !== "." && (
-                <motion.span
+                <m.span
                   key={`${i}-${ch}`}
                   initial={state.last === i ? { y: -(row + 1) * 44, opacity: 0.8 } : false}
                   animate={{ y: 0, opacity: 1 }}

@@ -1,8 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useEffect, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -11,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
 import { addJarNote, drawJarNote, jarByMe, jarForMe } from "@/lib/db/jar";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
 import type { JarDoc } from "@/lib/types";
 
@@ -72,9 +72,9 @@ export function JarScreen() {
       <SubHeader emoji="🫙" title="Jar" />
 
       <Card className="flex flex-col items-center gap-3 py-6 text-center">
-        <motion.span className="text-7xl" aria-hidden animate={drawing ? { rotate: [0, -12, 12, -8, 8, 0] } : { rotate: 0 }} transition={{ duration: 0.6 }}>
+        <m.span className="text-7xl" aria-hidden animate={drawing ? { rotate: [0, -12, 12, -8, 8, 0] } : { rotate: 0 }} transition={{ duration: 0.6 }}>
           🫙
-        </motion.span>
+        </m.span>
         <p className="font-heading text-lg font-semibold">
           {undrawn === 0 ? "Your jar is empty" : `${undrawn} ${undrawn === 1 ? "note" : "notes"} from ${friendName}`}
         </p>
@@ -83,7 +83,7 @@ export function JarScreen() {
         </Button>
         <AnimatePresence>
           {drawn && (
-            <motion.blockquote
+            <m.blockquote
               key={drawn.id}
               initial={{ opacity: 0, scale: 0.8, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -91,7 +91,7 @@ export function JarScreen() {
               className="w-full rounded-2xl bg-accent-soft px-4 py-3 text-[15px] leading-relaxed whitespace-pre-wrap"
             >
               “{drawn.text}”
-            </motion.blockquote>
+            </m.blockquote>
           )}
         </AnimatePresence>
       </Card>

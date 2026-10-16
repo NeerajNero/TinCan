@@ -1,17 +1,17 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { format } from "date-fns";
+import { AnimatePresence, m } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { UploadBubble } from "@/components/chat/media/UploadBubble";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { ListSkeleton } from "@/components/ui/Skeleton";
-import type { Upload } from "@/hooks/useUploads";
 import { AUTO_LOAD_PAGES } from "@/hooks/useMessages";
+import type { Upload } from "@/hooks/useUploads";
 import { cn } from "@/lib/cn";
 import { dateKeyIn, dateKeyToLocalDate, previousDay } from "@/lib/dates";
-import { format } from "date-fns";
 import type { Message } from "@/lib/types";
 
 const NEAR_BOTTOM_PX = 120;
@@ -40,6 +40,8 @@ interface MessageListProps {
   onDismissUpload: (id: string) => void;
   /** Bumped by the parent on visual-viewport resizes and composer focus. */
   layoutTick: number;
+  /** The background layer, rendered behind the scroller so scrolling never repaints it. */
+  backdrop?: React.ReactNode;
 }
 
 function dayLabel(key: string, today: string): string {
@@ -49,7 +51,7 @@ function dayLabel(key: string, today: string): string {
 }
 
 export function MessageList(props: MessageListProps) {
-  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact, onOpenImage, deletingIds, uploads, onRetryUpload, onDismissUpload, layoutTick } = props;
+  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact, onOpenImage, deletingIds, uploads, onRetryUpload, onDismissUpload, layoutTick, backdrop } = props;
   const scroller = useRef<HTMLDivElement>(null);
   const dividerRef = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
@@ -151,12 +153,14 @@ export function MessageList(props: MessageListProps) {
   const rows: Array<{ m: Message; dayLabel: string | null }> = [];
   for (const m of visible) {
     const day = dateKeyIn(tz, new Date(m.createdAtMs));
-    const prev = rows.length ? dateKeyIn(tz, new Date(rows[rows.length - 1].m.createdAtMs)) : null;
+    const last = rows[rows.length - 1];
+    const prev = last ? dateKeyIn(tz, new Date(last.m.createdAtMs)) : null;
     rows.push({ m, dayLabel: day !== prev ? dayLabel(day, today) : null });
   }
 
   return (
     <div className="relative min-h-0 flex-1">
+      {backdrop}
       <div ref={scroller} onScroll={onScroll} className="h-full overflow-y-auto px-3 py-3 [overflow-anchor:none]">
         {loadingOlder && <p className="py-2 text-center text-xs text-muted">Loading older…</p>}
         {ready && hasMore && !loadingOlder && !autoLoad && (
@@ -194,7 +198,7 @@ export function MessageList(props: MessageListProps) {
                   </div>
                 )}
                 {m.type === "system" ? (
-                  <p className="mx-auto max-w-[90%] rounded-full bg-surface-2 px-3 py-1 text-center text-xs font-semibold text-muted">
+                  <p className="mx-auto max-w-[90%] rounded-full bg-surface px-3 py-1 text-center text-xs font-semibold text-muted shadow-[0_1px_2px_rgba(0,0,0,0.08)]">
                     {m.text}
                   </p>
                 ) : (
@@ -222,7 +226,7 @@ export function MessageList(props: MessageListProps) {
 
       <AnimatePresence>
         {(awayFromBottom || fabCount > 0) && (
-          <motion.button
+          <m.button
             key="fab"
             type="button"
             onClick={() => {
@@ -239,7 +243,7 @@ export function MessageList(props: MessageListProps) {
               <span className="min-w-5 rounded-full bg-[var(--accent)] px-1.5 text-center text-xs leading-5 text-white">{fabCount}</span>
             )}
             <ArrowDown size={16} />
-          </motion.button>
+          </m.button>
         )}
       </AnimatePresence>
     </div>
@@ -250,7 +254,7 @@ function Separator({ label, accent }: { label: string; accent?: boolean }) {
   return (
     <div className="my-1 flex items-center gap-3" role="separator" aria-label={label}>
       <span className={cn("h-px flex-1", accent ? "bg-[var(--accent)]/50" : "bg-border")} />
-      <span className={cn("rounded-full px-2.5 py-0.5 text-[11px] font-bold", accent ? "bg-accent-soft text-text" : "bg-surface-2 text-muted")}>{label}</span>
+      <span className={cn("rounded-full px-2.5 py-0.5 text-[11px] font-bold", accent ? "bg-[var(--bubble-mine)] text-text" : "bg-surface text-muted")}>{label}</span>
       <span className={cn("h-px flex-1", accent ? "bg-[var(--accent)]/50" : "bg-border")} />
     </div>
   );

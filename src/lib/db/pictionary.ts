@@ -42,10 +42,10 @@ export const pictRoute = (id: string) => `/play/pictionary/${id}`;
 
 const offer = () => {
   const picks = new Set<string>();
-  while (picks.size < 3) picks.add(words[Math.floor(Math.random() * words.length)]);
+  while (picks.size < 3) picks.add(words[Math.floor(Math.random() * words.length)]!);
   return JSON.stringify(Array.from(picks));
 };
-export const normalise = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+const normalise = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 export const parseGuesses = (n: PictionaryNode | null): Guess[] => {
   try {
     return n?.guesses ? (JSON.parse(n.guesses) as Guess[]) : [];
@@ -111,7 +111,7 @@ export function chooseWord(id: string, word: string): Promise<void> {
 }
 
 /** Points scale with time left: 1–10 for the guesser, half (rounded up) for the drawer. */
-export function pointsFor(msLeft: number): number {
+function pointsFor(msLeft: number): number {
   return Math.max(1, Math.ceil((msLeft / ROUND_MS) * 10));
 }
 

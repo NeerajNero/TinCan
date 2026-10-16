@@ -6,9 +6,9 @@
  */
 import { formatInTimeZone } from "date-fns-tz";
 
-import type { DateKey, PairDoc, UserDoc } from "@/lib/types";
+import type { DateKey, PairDoc } from "@/lib/types";
 
-export const DATE_KEY_FORMAT = "yyyy-MM-dd";
+const DATE_KEY_FORMAT = "yyyy-MM-dd";
 const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MS_PER_DAY = 86_400_000;
 
@@ -22,16 +22,6 @@ export function roomDateKey(pair: Pick<PairDoc, "roomTz">, at?: Date): DateKey {
   return dateKeyIn(pair.roomTz, at);
 }
 
-/** Date key on one person's own calendar. */
-export function ownDateKey(user: Pick<UserDoc, "tz">, at?: Date): DateKey {
-  return dateKeyIn(user.tz, at);
-}
-
-/** Hour (0–23) right now in a zone — used by the scheduler for "at 20:00 ROOM_TZ". */
-export function hourIn(tz: string, at: Date = new Date()): number {
-  return Number(formatInTimeZone(at, tz, "H"));
-}
-
 /** Minutes since local midnight in a zone (0–1439). */
 export function minutesIntoDayIn(tz: string, at: Date = new Date()): number {
   return Number(formatInTimeZone(at, tz, "H")) * 60 + Number(formatInTimeZone(at, tz, "m"));
@@ -41,28 +31,15 @@ export function isDateKey(value: unknown): value is DateKey {
   return typeof value === "string" && DATE_KEY_RE.test(value) && !Number.isNaN(dateKeyToUtcMs(value));
 }
 
-/** The zone the device reports; falls back to UTC in odd environments. */
-export function deviceTz(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch {
-    return "UTC";
-  }
-}
-
-export function isValidTz(tz: string): boolean {
-  try {
-    Intl.DateTimeFormat(undefined, { timeZone: tz });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /* ── Arithmetic on date keys (zone-free, since a key is already a calendar day) ── */
 
+function parts(key: DateKey): [number, number, number] {
+  const [y = NaN, m = NaN, d = NaN] = key.split("-").map(Number);
+  return [y, m, d];
+}
+
 function dateKeyToUtcMs(key: DateKey): number {
-  const [y, m, d] = key.split("-").map(Number);
+  const [y, m, d] = parts(key);
   return Date.UTC(y, m - 1, d);
 }
 
@@ -91,7 +68,7 @@ export function previousDay(key: DateKey): DateKey {
  * date-fns (`format(dateKeyToLocalDate(key), "d MMM")`). Never store it.
  */
 export function dateKeyToLocalDate(key: DateKey): Date {
-  const [y, m, d] = key.split("-").map(Number);
+  const [y, m, d] = parts(key);
   return new Date(y, m - 1, d);
 }
 

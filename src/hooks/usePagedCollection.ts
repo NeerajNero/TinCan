@@ -1,7 +1,8 @@
 "use client";
 
-import { getDocs, onSnapshot, type Query, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { getDocs, onSnapshot, type Query, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 
 interface Paged<T> {
   items: T[];

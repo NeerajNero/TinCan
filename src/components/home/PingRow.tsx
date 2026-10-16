@@ -1,19 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { m } from "framer-motion";
+import { useRef, useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
 import { useRelationship } from "@/hooks/useRelationship";
-import { increment, updateDoc } from "@/lib/firebase/fs";
-
 import { pairRef } from "@/lib/db/refs";
+import { increment, updateDoc } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
+import { PING_COOLDOWN_MS, pingAllowed, pingNow } from "@/lib/pings";
 import { sendPing } from "@/lib/rtdb";
+import { swallow } from "@/lib/swallow";
 import { BASE_PING_KINDS, PINGS, type PingKind } from "@/lib/types";
-
-const COOLDOWN_MS = 5000;
 
 /** Bouncy ping buttons. A tap sends, flashes "Sent!" with a shrinking ring, and rests the row for 5 s. */
 export function PingRow({ friendUid, friendName }: { friendUid: string; friendName: string }) {
@@ -22,15 +21,17 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
   const kinds: PingKind[] = preset.extraPing ? [...BASE_PING_KINDS, preset.extraPing] : [...BASE_PING_KINDS];
   const [sent, setSent] = useState<PingKind | null>(null);
   const [cooling, setCooling] = useState(false);
+  const lastSentAt = useRef<number | null>(null);
 
   async function ping(kind: PingKind) {
-    if (cooling) return;
+    if (cooling || !pingAllowed(lastSentAt.current)) return;
+    lastSentAt.current = pingNow();
     setSent(kind);
     setCooling(true);
     setTimeout(() => {
       setSent((s) => (s === kind ? null : s));
       setCooling(false);
-    }, COOLDOWN_MS);
+    }, PING_COOLDOWN_MS);
     try {
       await sendPing(friendUid, uid, kind);
       await notify("ping", {
@@ -40,7 +41,7 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
         data: { kind },
       });
       const total = (pair.counters?.pings ?? 0) + 1;
-      void updateDoc(pairRef(), { "counters.pings": increment(1) }).catch(() => undefined);
+      void updateDoc(pairRef(), { "counters.pings": increment(1) }).catch(swallow);
       if (total >= 100 && !pair.garden?.stickers?.["pings-100"]) void recordTogetherEvent("pings-100", uid);
     } catch {
       setSent(null);
@@ -52,7 +53,7 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
       {kinds.map((kind) => {
         const isSent = sent === kind;
         return (
-          <motion.button
+          <m.button
             key={kind}
             type="button"
             onClick={() => ping(kind)}
@@ -65,14 +66,14 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
           >
             {isSent && (
               <svg className="pointer-events-none absolute inset-1" viewBox="0 0 100 100" aria-hidden>
-                <motion.rect x="3" y="3" width="94" height="94" rx="22" fill="none" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round" initial={{ pathLength: 1 }} animate={{ pathLength: 0 }} transition={{ duration: COOLDOWN_MS / 1000, ease: "linear" }} />
+                <m.rect x="3" y="3" width="94" height="94" rx="22" fill="none" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round" initial={{ pathLength: 1 }} animate={{ pathLength: 0 }} transition={{ duration: PING_COOLDOWN_MS / 1000, ease: "linear" }} />
               </svg>
             )}
             <span className="text-3xl" aria-hidden>
               {PINGS[kind].emoji}
             </span>
             <span className="text-[11px] font-bold leading-tight text-muted">{isSent ? "Sent!" : PINGS[kind].label}</span>
-          </motion.button>
+          </m.button>
         );
       })}
     </section>

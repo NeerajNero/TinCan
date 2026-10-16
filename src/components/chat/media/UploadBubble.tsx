@@ -1,11 +1,11 @@
 "use client";
 
 import { Mic, RefreshCw, X } from "lucide-react";
-import Image from "next/image";
 
 import { ProgressRing } from "@/components/chat/media/ProgressRing";
 import type { Upload } from "@/hooks/useUploads";
 import { formatClock } from "@/lib/media/recorder";
+
 
 /** Placeholder for an outgoing photo or voice note while it compresses and uploads. */
 export function UploadBubble({ upload, onRetry, onDismiss }: { upload: Upload; onRetry: () => void; onDismiss: () => void }) {
@@ -14,7 +14,8 @@ export function UploadBubble({ upload, onRetry, onDismiss }: { upload: Upload; o
     <div className="flex w-full justify-end">
       <div className="relative max-w-[82%] overflow-hidden rounded-[20px] rounded-br-md bg-accent-soft p-1 shadow-sm">
         {upload.kind === "image" && upload.previewUrl ? (
-          <Image src={upload.previewUrl} alt="" width={240} height={240} unoptimized className="block max-h-72 w-60 rounded-[16px] object-cover opacity-80" />
+          // eslint-disable-next-line @next/next/no-img-element -- local object URL
+          <img src={upload.previewUrl} alt="" width={240} height={240} decoding="async" className="block max-h-72 w-60 rounded-[16px] object-cover opacity-80" />
         ) : (
           <div className="flex w-56 items-center gap-3 px-3 py-3">
             <Mic size={18} className="text-muted" />

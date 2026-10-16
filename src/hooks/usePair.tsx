@@ -1,6 +1,5 @@
 "use client";
 
-import { onSnapshot, type DocumentSnapshot } from "@/lib/firebase/fs";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { OnboardingScreen } from "@/components/onboarding/OnboardingScreen";
@@ -8,6 +7,7 @@ import { PairFullScreen } from "@/components/pair/PairFullScreen";
 import { Splash } from "@/components/ui/Splash";
 import { useAuth } from "@/hooks/useAuth";
 import { pairRef, userRef } from "@/lib/db/refs";
+import { onSnapshot, type DocumentSnapshot } from "@/lib/firebase/fs";
 import type { PairDoc, UserDoc } from "@/lib/types";
 
 export interface PairContextValue {

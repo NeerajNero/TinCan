@@ -1,1 +1,1 @@
-export { useAuthContext as useAuth, type AuthStatus } from "@/components/providers/AuthProvider";
+export { useAuthContext as useAuth } from "@/components/providers/AuthProvider";

@@ -1,12 +1,11 @@
-import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, startAfter, updateDoc, type CollectionReference, type Query, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, startAfter, updateDoc, type CollectionReference, type Query, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import type { JournalDoc, MediaItem } from "@/lib/types";
 
 export const JOURNAL_PAGE = 20;
-export const JOURNAL_MAX = 4000;
+const JOURNAL_MAX = 4000;
 
-export const journalCol = () => collection(getDb(), "journal") as CollectionReference<JournalDoc>;
+const journalCol = () => collection(getDb(), "journal") as CollectionReference<JournalDoc>;
 
 export function journalQuery(after: QueryDocumentSnapshot<JournalDoc> | null): Query<JournalDoc> {
   return after

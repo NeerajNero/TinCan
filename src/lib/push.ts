@@ -2,12 +2,14 @@
  * FCM token lifecycle in the browser. Always uses the Serwist worker's
  * registration (scope "/"), never Firebase's default firebase-messaging-sw.js.
  */
-import { arrayRemove, arrayUnion, updateDoc } from "@/lib/firebase/fs";
-import { deleteToken, getMessaging, getToken, isSupported, onMessage, type MessagePayload, type Messaging } from "firebase/messaging";
+
+import type { MessagePayload, Messaging } from "firebase/messaging";
 
 import { userRef } from "@/lib/db/refs";
 import { publicEnv } from "@/lib/env";
 import { getFirebaseApp } from "@/lib/firebase/client";
+import { arrayRemove, arrayUnion, updateDoc } from "@/lib/firebase/fs";
+
 
 const TOKEN_KEY = "tincan-fcm-token";
 const SW_READY_TIMEOUT_MS = 10_000;
@@ -19,9 +21,13 @@ export function permissionState(): PermissionState {
   return Notification.permission;
 }
 
+/** firebase/messaging is loaded only when push is actually used, so it stays out of every route's initial JS. */
+const loadMessaging = () => import("firebase/messaging");
+
 let messaging: Messaging | null = null;
 async function getMessagingClient(): Promise<Messaging> {
   if (messaging) return messaging;
+  const { getMessaging, isSupported } = await loadMessaging();
   if (!(await isSupported())) throw new Error("push_unsupported");
   messaging = getMessaging(getFirebaseApp());
   return messaging;
@@ -54,7 +60,7 @@ function storeToken(token: string | null) {
 }
 
 async function fetchToken(): Promise<string> {
-  const [m, registration] = await Promise.all([getMessagingClient(), serwistRegistration()]);
+  const [m, registration, { getToken }] = await Promise.all([getMessagingClient(), serwistRegistration(), loadMessaging()]);
   const token = await getToken(m, { vapidKey: publicEnv.vapidKey, serviceWorkerRegistration: registration });
   if (!token) throw new Error("no_token");
   return token;
@@ -82,7 +88,7 @@ export async function enablePush(uid: string): Promise<EnableResult> {
 export async function disablePush(uid: string): Promise<void> {
   const token = readStoredToken();
   try {
-    const m = await getMessagingClient();
+    const [m, { deleteToken }] = await Promise.all([getMessagingClient(), loadMessaging()]);
     await deleteToken(m);
   } catch {
     // Already gone, or unsupported.
@@ -115,7 +121,7 @@ export async function removePushTokenOnSignOut(uid: string): Promise<void> {
   if (!token) return;
   try {
     await updateDoc(userRef(uid), { fcmTokens: arrayRemove(token) });
-    const m = await getMessagingClient();
+    const [m, { deleteToken }] = await Promise.all([getMessagingClient(), loadMessaging()]);
     await deleteToken(m);
   } catch {
     // Best effort.
@@ -126,7 +132,7 @@ export async function removePushTokenOnSignOut(uid: string): Promise<void> {
 /** Foreground messages (tab visible). Returns an unsubscribe. */
 export async function onForegroundMessage(handler: (payload: MessagePayload) => void): Promise<() => void> {
   try {
-    const m = await getMessagingClient();
+    const [m, { onMessage }] = await Promise.all([getMessagingClient(), loadMessaging()]);
     return onMessage(m, handler);
   } catch {
     return () => undefined;

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cert, getApp, getApps, initializeApp, type App } from "firebase-admin/app";
-import { getAuth, type DecodedIdToken } from "firebase-admin/auth";
+import { getAuth } from "firebase-admin/auth";
 import { getDatabase } from "firebase-admin/database";
 import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
@@ -46,19 +46,3 @@ export const adminAuth = () => getAuth(getAdminApp());
 export const adminDb = () => getFirestore(getAdminApp());
 export const adminRtdb = () => getDatabase(getAdminApp());
 export const adminMessaging = () => getMessaging(getAdminApp());
-
-export class AuthError extends Error {
-  readonly status = 401;
-}
-
-/** Verifies the `Authorization: Bearer <Firebase ID token>` header of a request. */
-export async function verifyBearer(req: Request): Promise<DecodedIdToken> {
-  const header = req.headers.get("authorization") ?? "";
-  const match = /^Bearer\s+(.+)$/i.exec(header);
-  if (!match) throw new AuthError("Missing bearer token");
-  try {
-    return await adminAuth().verifyIdToken(match[1]);
-  } catch {
-    throw new AuthError("Invalid or expired token");
-  }
-}

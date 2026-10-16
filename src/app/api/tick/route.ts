@@ -1,8 +1,8 @@
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
-import { daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
 import { questionFor } from "@/lib/daily";
+import { daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
 import { adminDb, adminRtdb } from "@/lib/firebase/admin";
 import { resolveCountdown } from "@/lib/meetup";
 import { secretMatches } from "@/lib/server/guard";
@@ -114,10 +114,11 @@ async function streakRisk(ctx: Ctx, minutes: number, pair: PairDoc) {
   await once(ctx, "streak-risk", `streak-risk-${ctx.today}`, async () => {
     const checkins = ((await adminDb().doc(`checkins/${ctx.today}`).get()).data() ?? {}) as Record<string, boolean>;
     const present = ctx.uids.filter((u) => checkins[u]);
-    if (present.length !== 1) return `checked in: ${present.length}, nothing to do`;
-    const other = friendOf(ctx, present[0]);
+    const [who] = present;
+    if (present.length !== 1 || who === undefined) return `checked in: ${present.length}, nothing to do`;
+    const other = friendOf(ctx, who);
     const count = pair.streak?.count ?? 0;
-    await push(ctx, other, "streak-risk", { body: count > 0 ? `Open Tincan today to keep your ${count}-day streak 🔥` : `Open Tincan today — ${ctx.names[present[0]] ?? "they"} already did` });
+    await push(ctx, other, "streak-risk", { body: count > 0 ? `Open Tincan today to keep your ${count}-day streak 🔥` : `Open Tincan today — ${ctx.names[who] ?? "they"} already did` });
     return `warned ${ctx.names[other] ?? other}`;
   });
 }
@@ -200,7 +201,8 @@ async function petHunger(ctx: Ctx, pair: PairDoc) {
   if (emptyAt - ctx.now.getTime() > PET_WARN_MS) return;
   await once(ctx, "pet-hungry", `pet-hungry-${ctx.today}`, async () => {
     for (const uid of ctx.uids) await push(ctx, uid, "petHungry", { title: `${pet.name} is hungry 🍽️`, body: emptyAt <= ctx.now.getTime() ? `${pet.name}'s bowl has been empty for a while` : `${pet.name} runs out of food in under 2 hours` });
-    if (!ctx.dry) await postSystemMessageAdmin(ctx.uids[0], `🍽️ ${pet.name} is getting hungry — someone feed them?`);
+    const [first] = ctx.uids;
+    if (!ctx.dry && first !== undefined) await postSystemMessageAdmin(first, `🍽️ ${pet.name} is getting hungry — someone feed them?`);
     return `warned about ${pet.name}`;
   });
 }

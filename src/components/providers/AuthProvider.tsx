@@ -4,11 +4,11 @@ import { getRedirectResult, onAuthStateChanged, type User } from "firebase/auth"
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { markOffline } from "@/hooks/usePresence";
-import { removePushTokenOnSignOut } from "@/lib/push";
 import { signOut as doSignOut } from "@/lib/auth";
 import { firebaseConfigured } from "@/lib/env";
 import { getFirebaseAuth } from "@/lib/firebase/client";
-
+import { removePushTokenOnSignOut } from "@/lib/push";
+import { errorMessage } from "@/lib/swallow";
 /**
  * loading     — waiting for Firebase to restore the session
  * signed-out  — no user
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getRedirectResult(auth).catch((err: unknown) => {
       if (cancelled) return;
       setStatus("error");
-      setError(err instanceof Error ? err.message : "Sign-in failed");
+      setError(errorMessage(err, "Sign-in failed"));
     });
 
     const unsubscribe = onAuthStateChanged(auth, async (u) => {

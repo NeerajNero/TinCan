@@ -1,29 +1,28 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { ImageViewer } from "@/components/chat/media/ImageViewer";
+import { ImageViewer, ViewerButton } from "@/components/chat/media/ImageViewer";
 import { PhotoPicker } from "@/components/memories/PhotoPicker";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ListSkeleton } from "@/components/ui/Skeleton";
+import { CloudImage } from "@/components/ui/CloudImage";
 import { Input, Label } from "@/components/ui/Input";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { usePagedCollection } from "@/hooks/usePagedCollection";
 import { usePair } from "@/hooks/usePair";
-import { thumbUrl } from "@/lib/cloudinary";
-import { safeCloudinary } from "@/lib/safeUrl";
 import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { addMemories, editMemory, MEMORIES_PAGE, memoriesCol, memoriesQuery } from "@/lib/db/memories";
-import { recordTogetherEvent } from "@/lib/garden";
-import { getCountFromServer } from "@/lib/firebase/fs";
 import { placesQuery } from "@/lib/db/places";
+import { getCountFromServer } from "@/lib/firebase/fs";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
+import { recordTogetherEvent } from "@/lib/garden";
 import { uploadImages } from "@/lib/media/uploadImages";
+import { safeCloudinary } from "@/lib/safeUrl";
+import { errorMessage, swallow } from "@/lib/swallow";
 import type { MemoryDoc, PlaceDoc } from "@/lib/types";
-
 interface Memory extends MemoryDoc {
   id: string;
 }
@@ -87,7 +86,7 @@ export function PhotosScreen() {
           <div className="columns-2 gap-2 [column-fill:_balance]">
             {g.items.filter((m) => safeCloudinary(m.url)).map((m) => (
               <button key={m.id} type="button" onClick={() => setViewing(m)} aria-label={m.caption || "Photo"} className="mb-2 block w-full break-inside-avoid overflow-hidden rounded-2xl bg-surface-2">
-                <Image src={thumbUrl(m.url)} alt={m.caption} width={m.w} height={m.h} sizes="(max-width: 480px) 50vw, 224px" loading="lazy" unoptimized className="h-auto w-full" style={{ aspectRatio: `${m.w} / ${m.h}` }} />
+                <CloudImage url={m.url} alt={m.caption} w={m.w} h={m.h} sizes="(max-width: 480px) 50vw, 224px" className="h-auto w-full" />
               </button>
             ))}
           </div>
@@ -112,7 +111,7 @@ export function PhotosScreen() {
                 onClick={() => {
                   const target = viewing;
                   setViewing(null);
-                  void deleteViaServer("memory", target.id).catch(() => undefined);
+                  void deleteViaServer("memory", target.id).catch(swallow);
                 }}
               >
                 Delete
@@ -126,13 +125,6 @@ export function PhotosScreen() {
   );
 }
 
-export function ViewerButton({ children, onClick, danger }: { children: React.ReactNode; onClick: () => void; danger?: boolean }) {
-  return (
-    <button type="button" onClick={onClick} className={`tap rounded-full px-4 py-2 text-sm font-bold ${danger ? "bg-red-500/80 text-white" : "bg-white/20 text-white"}`}>
-      {children}
-    </button>
-  );
-}
 
 function PlaceSelect({ value, onChange, places }: { value: string | null; onChange: (v: string | null) => void; places: Place[] }) {
   return (
@@ -167,10 +159,10 @@ function Uploader({ uid, places, onDone }: { uid: string; places: Place[]; onDon
       const items = await uploadImages(files, setProgress);
       const takenAt = new Date(`${date}T12:00:00`);
       await addMemories(uid, items, caption, takenAt, placeId);
-      void getCountFromServer(memoriesCol()).then((c) => c.data().count >= 10 && recordTogetherEvent("photos-10", uid)).catch(() => undefined);
+      void getCountFromServer(memoriesCol()).then((c) => c.data().count >= 10 && recordTogetherEvent("photos-10", uid)).catch(swallow);
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't upload. Try again?");
+      setError(errorMessage(err, "Couldn't upload. Try again?"));
     } finally {
       setProgress(null);
     }
@@ -217,7 +209,7 @@ function EditSheet({ memory, places, onDone }: { memory: Memory; places: Place[]
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <Image src={thumbUrl(memory.url)} alt="" width={56} height={56} unoptimized className="size-14 rounded-xl object-cover" />
+        <CloudImage url={memory.url} alt="" w={memory.w} h={memory.h} sizes="56px" className="size-14 rounded-xl object-cover" />
         <p className="font-semibold">Edit photo</p>
       </div>
       <Input value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 300))} placeholder="Caption" aria-label="Caption" />

@@ -1,18 +1,17 @@
 "use client";
 
-import { motion, type PanInfo } from "framer-motion";
 import { formatInTimeZone } from "date-fns-tz";
+import { m, type PanInfo } from "framer-motion";
 import { Loader2, MoreHorizontal, Reply } from "lucide-react";
-import Image from "next/image";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 
 import { VoicePlayer } from "@/components/chat/media/VoicePlayer";
 import { Ticks } from "@/components/chat/Ticks";
+import { CloudImage } from "@/components/ui/CloudImage";
 import { STICKER_BY_ID } from "@/content/stickers";
 import { cn } from "@/lib/cn";
-import { thumbUrl } from "@/lib/cloudinary";
-import { safeCloudinary, safeGif } from "@/lib/safeUrl";
 import { Linkify } from "@/lib/linkify";
+import { safeCloudinary, safeGif } from "@/lib/safeUrl";
 import type { Message } from "@/lib/types";
 
 const LONG_PRESS_MS = 420;
@@ -32,7 +31,8 @@ interface MessageBubbleProps {
   deleting?: boolean;
 }
 
-export function MessageBubble({
+/** Memoised: `message` keeps its identity between snapshots (useMessages only replaces changed docs) and every callback is stable. */
+export const MessageBubble = memo(function MessageBubble({
   message,
   mine,
   uid,
@@ -112,7 +112,7 @@ export function MessageBubble({
           mine ? "items-end" : "items-start",
         )}
       >
-        <motion.div
+        <m.div
           drag="x"
           dragDirectionLock
           dragConstraints={{ left: 0, right: 0 }}
@@ -133,11 +133,11 @@ export function MessageBubble({
           }}
           className={cn(
             "relative max-w-full select-none",
-            !bare && "rounded-[20px] shadow-sm",
+            !bare && "rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.12)]",
             !bare &&
               (mine
-                ? "rounded-br-md bg-accent-soft"
-                : "rounded-bl-md bg-surface"),
+                ? "rounded-br-md bg-[var(--bubble-mine)]"
+                : "rounded-bl-md bg-[var(--bubble-theirs)]"),
             bare || visual ? "p-1" : "px-3.5 py-2",
             deleted && "opacity-80",
           )}
@@ -198,7 +198,7 @@ export function MessageBubble({
               </span>
             </div>
           )}
-        </motion.div>
+        </m.div>
 
         {reactions.length > 0 && (
           <div className="flex flex-wrap gap-1 px-1">
@@ -241,7 +241,7 @@ export function MessageBubble({
       </button>
     </div>
   );
-}
+});
 
 function MediaBody({
   message,
@@ -270,17 +270,7 @@ function MediaBody({
               aria-label="Open photo"
               className="block overflow-hidden rounded-[16px]"
             >
-              <Image
-                src={thumbUrl(imageUrl)}
-                alt={message.text || "Photo"}
-                width={w}
-                height={h}
-                unoptimized
-                sizes="240px"
-                loading="lazy"
-                className="block max-h-80 w-60 max-w-full object-cover"
-                style={{ aspectRatio: `${w} / ${h}` }}
-              />
+              <CloudImage url={imageUrl} alt={message.text || "Photo"} w={w} h={h} sizes="240px" className="block max-h-80 w-60 max-w-full object-cover" />
             </button>
           )}
           {message.text && (
@@ -296,13 +286,15 @@ function MediaBody({
       const h = media.h ?? 200;
       if (media.url && !gifUrl) return <Placeholder label="GIF unavailable" />;
       return gifUrl ? (
-        <Image
+        // eslint-disable-next-line @next/next/no-img-element -- GIPHY serves the GIF; Vercel image optimisation is metered
+        <img
           src={gifUrl}
           alt="GIF"
           width={w}
           height={h}
-          unoptimized sizes="240px" loading="lazy"
-          className="block max-h-72 w-60 max-w-full rounded-[16px] object-cover"
+          decoding="async"
+          loading="lazy"
+          className="block max-h-72 w-60 max-w-full rounded-[16px] bg-surface-2 object-cover"
           style={{ aspectRatio: `${w} / ${h}` }}
         />
       ) : null;

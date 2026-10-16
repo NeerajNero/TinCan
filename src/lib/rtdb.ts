@@ -7,7 +7,7 @@ import { onDisconnect, push, ref, serverTimestamp, set, update, type DatabaseRef
 import { getRtdb } from "@/lib/firebase/client";
 import type { LampNode, PingKind, PresenceStatus } from "@/lib/types";
 
-export const LAMP_DURATION_MS = 10 * 60 * 1000;
+const LAMP_DURATION_MS = 10 * 60 * 1000;
 
 export const presencePath = (uid: string) => `presence/${uid}`;
 export const pingsPath = (uid: string) => `pings/${uid}`;

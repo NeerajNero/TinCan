@@ -1,13 +1,13 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useState } from "react";
 
 import { Card } from "@/components/ui/Card";
-import { usePair } from "@/hooks/usePair";
 import { PLANT_STAGE_NAMES, PLANT_STAGES, PlantSvg } from "@/content/plant";
-import { isPlantWilted, MAX_PLANT_STAGE, plantStageFor } from "@/lib/db/home";
+import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
+import { isPlantWilted, MAX_PLANT_STAGE, plantStageFor } from "@/lib/db/home";
 
 interface StreakPlantProps {
   today: string;
@@ -32,7 +32,7 @@ export function StreakPlant({ today, checkins, friendUid, friendName }: StreakPl
 
   return (
     <Card className="flex items-center gap-4">
-      <motion.div
+      <m.div
         role="button"
         tabIndex={0}
         aria-label="About the plant"
@@ -43,7 +43,7 @@ export function StreakPlant({ today, checkins, friendUid, friendName }: StreakPl
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       >
         <PlantSvg stage={stage} wilted={wilted} className="h-auto w-full" />
-      </motion.div>
+      </m.div>
       <div className="min-w-0 flex-1">
         <p className="font-heading text-3xl font-semibold">
           🔥 {count} <span className="text-base font-bold text-muted">{count === 1 ? "day" : "days"}</span>
@@ -68,8 +68,8 @@ export function StreakPlant({ today, checkins, friendUid, friendName }: StreakPl
       <AnimatePresence>
         {open && (
           <>
-            <motion.button key="bd" type="button" aria-label="Close" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-            <motion.div key="sheet" role="dialog" aria-label="Plant" className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[480px] flex-col items-center gap-2 rounded-t-[28px] bg-surface p-5 pb-[max(env(safe-area-inset-bottom),20px)] text-center shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 420, damping: 38 }}>
+            <m.button key="bd" type="button" aria-label="Close" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <m.div key="sheet" role="dialog" aria-label="Plant" className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[480px] flex-col items-center gap-2 rounded-t-[28px] bg-surface p-5 pb-[max(env(safe-area-inset-bottom),20px)] text-center shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 420, damping: 38 }}>
               <div className="mx-auto h-1.5 w-10 rounded-full bg-border" aria-hidden />
               <PlantSvg stage={stage} wilted={wilted} className="h-44 w-44" />
               <p className="font-heading text-2xl font-semibold">{PLANT_STAGE_NAMES[stage - 1]}</p>
@@ -78,7 +78,7 @@ export function StreakPlant({ today, checkins, friendUid, friendName }: StreakPl
               </p>
               <p className="text-sm">{stage >= MAX_PLANT_STAGE ? "Fully grown — keep it watered 🌸" : `${daysToNext} ${daysToNext === 1 ? "day" : "days"} of streak to the next stage`}</p>
               {wilted && <p className="rounded-2xl bg-amber-400/20 px-3 py-2 text-xs">A day was missed, so it&apos;s drooping. It perks back up the next day you both open the app, and the stage never goes down.</p>}
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

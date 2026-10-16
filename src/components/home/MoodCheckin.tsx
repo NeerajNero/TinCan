@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useState } from "react";
 
 import { Card } from "@/components/ui/Card";
@@ -64,7 +64,7 @@ export function MoodCheckin({ myToday, myMood, friendMood, friendName }: MoodChe
           />
           <div role="group" aria-label="Pick a mood" className="grid grid-cols-8 gap-1">
             {MOOD_EMOJI.map((emoji) => (
-              <motion.button
+              <m.button
                 key={emoji}
                 type="button"
                 onClick={() => pick(emoji)}
@@ -77,7 +77,7 @@ export function MoodCheckin({ myToday, myMood, friendMood, friendName }: MoodChe
                 )}
               >
                 {emoji}
-              </motion.button>
+              </m.button>
             ))}
           </div>
         </div>
@@ -89,7 +89,7 @@ export function MoodCheckin({ myToday, myMood, friendMood, friendName }: MoodChe
 function MoodBubble({ who, mood, placeholder }: { who: string; mood: MoodDoc | null; placeholder: string }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-surface-2 px-3 py-2.5">
-      <motion.span
+      <m.span
         key={mood?.emoji ?? "none"}
         aria-hidden
         className="text-3xl"
@@ -98,7 +98,7 @@ function MoodBubble({ who, mood, placeholder }: { who: string; mood: MoodDoc | n
         transition={{ type: "spring", stiffness: 400, damping: 16 }}
       >
         {mood?.emoji ?? "·"}
-      </motion.span>
+      </m.span>
       <div className="min-w-0">
         <p className="text-xs font-bold uppercase tracking-wide text-muted">{who}</p>
         <p className={cn("truncate text-sm", mood ? "font-semibold" : "text-muted")}>{mood ? mood.note || "Checked in" : placeholder}</p>

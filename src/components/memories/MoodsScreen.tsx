@@ -1,7 +1,6 @@
 "use client";
 
 import { addMonths, format, subMonths } from "date-fns";
-import { onSnapshot } from "@/lib/firebase/fs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -11,6 +10,7 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { dateKeyIn, dateKeyToLocalDate } from "@/lib/dates";
 import { moodsForMonth } from "@/lib/db/moods";
+import { onSnapshot } from "@/lib/firebase/fs";
 import type { MoodDoc } from "@/lib/types";
 
 const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];

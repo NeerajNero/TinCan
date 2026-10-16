@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -10,13 +10,13 @@ import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { useRtdbValue } from "@/hooks/useRtdbValue";
 import { cn } from "@/lib/cn";
+import { roomDateKey } from "@/lib/dates";
 import { pairRef } from "@/lib/db/refs";
 import { claimFocusCompletion, DEFAULT_TIMER, subscribeTimer, writeTimer, type TimerNode } from "@/lib/db/together";
-import { roomDateKey } from "@/lib/dates";
+import { increment, updateDoc } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { formatClock } from "@/lib/media/recorder";
-import { increment, updateDoc } from "@/lib/firebase/fs";
-
+import { swallow } from "@/lib/swallow";
 /** Two short Web Audio tones; no asset needed. */
 function chime() {
   try {
@@ -62,7 +62,7 @@ export function TimerScreen() {
       void claimFocusCompletion(t.endsAt).then((won) => {
         if (!won) return;
         void recordTogetherEvent("focus", uid);
-        void updateDoc(pairRef(), { [`focusSessions.${today}`]: increment(1) }).catch(() => undefined);
+        void updateDoc(pairRef(), { [`focusSessions.${today}`]: increment(1) }).catch(swallow);
       });
     } else {
       void writeTimer({ mode: "focus", running: false, endsAt: 0, remainingMs: t.focusMin * 60_000 });
@@ -92,7 +92,7 @@ export function TimerScreen() {
         <div className="relative">
           <svg width="180" height="180" viewBox="0 0 180 180" aria-hidden>
             <circle cx="90" cy="90" r={r} fill="none" stroke="var(--surface-2)" strokeWidth="10" />
-            <motion.circle cx="90" cy="90" r={r} fill="none" stroke={t.mode === "focus" ? "var(--accent)" : "var(--accent-plan)"} strokeWidth="10" strokeLinecap="round" strokeDasharray={c} animate={{ strokeDashoffset: c * (1 - pct) }} transition={{ duration: 0.25 }} transform="rotate(-90 90 90)" />
+            <m.circle cx="90" cy="90" r={r} fill="none" stroke={t.mode === "focus" ? "var(--accent)" : "var(--accent-plan)"} strokeWidth="10" strokeLinecap="round" strokeDasharray={c} animate={{ strokeDashoffset: c * (1 - pct) }} transition={{ duration: 0.25 }} transform="rotate(-90 90 90)" />
           </svg>
           <div className="absolute inset-0 grid place-items-center">
             <p className="font-heading text-4xl font-semibold tabular-nums" aria-live="polite">

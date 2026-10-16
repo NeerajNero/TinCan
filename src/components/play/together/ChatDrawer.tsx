@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
 import { useState } from "react";
 
@@ -24,8 +24,8 @@ export function ChatDrawer() {
       <AnimatePresence>
         {open && friendUid && (
           <>
-            <motion.button key="bd" type="button" aria-label="Close chat" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-            <motion.div key="sheet" role="dialog" aria-label="Chat" className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[70dvh] w-full max-w-[480px] flex-col rounded-t-[28px] bg-bg shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 420, damping: 38 }}>
+            <m.button key="bd" type="button" aria-label="Close chat" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <m.div key="sheet" role="dialog" aria-label="Chat" className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[70dvh] w-full max-w-[480px] flex-col rounded-t-[28px] bg-bg shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 420, damping: 38 }}>
               <div className="flex items-center justify-between px-4 pt-3">
                 <p className="font-heading font-semibold">Chat with {friend?.nickname}</p>
                 <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="tap grid size-10 place-items-center rounded-full text-muted">
@@ -33,7 +33,7 @@ export function ChatDrawer() {
                 </button>
               </div>
               <DrawerBody uid={uid} friendUid={friendUid} friendName={friend?.nickname ?? "Friend"} />
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

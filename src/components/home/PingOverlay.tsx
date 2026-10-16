@@ -1,10 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useEffect } from "react";
 
 import type { IncomingPing } from "@/hooks/useIncomingPings";
 import { PINGS, type PingKind } from "@/lib/types";
+
 
 const PARTICLES: Record<PingKind, string[]> = {
   thinking: ["💭", "💗", "✨", "💭", "💕", "✨"],
@@ -31,7 +32,7 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
   return (
     <AnimatePresence>
       {ping && (
-        <motion.button
+        <m.button
           key={ping.nonce}
           type="button"
           aria-label="Dismiss"
@@ -44,7 +45,7 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
           {PARTICLES[ping.kind].map((p, i) => {
             const angle = (i / PARTICLES[ping.kind].length) * Math.PI * 2;
             return (
-              <motion.span
+              <m.span
                 key={i}
                 aria-hidden
                 className="absolute text-3xl"
@@ -58,10 +59,10 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
                 transition={{ delay: 0.15 + i * 0.04, duration: 0.7, ease: "easeOut" }}
               >
                 {p}
-              </motion.span>
+              </m.span>
             );
           })}
-          <motion.span
+          <m.span
             aria-hidden
             className="text-9xl"
             initial={{ scale: 0, rotate: -20 }}
@@ -77,16 +78,16 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
             transition={{ duration: 0.9, ease: "easeOut", times: ping.kind === "wave" ? [0, 0.25, 0.5, 0.75, 1] : [0, 0.6, 1] }}
           >
             {PINGS[ping.kind].emoji}
-          </motion.span>
-          <motion.p
+          </m.span>
+          <m.p
             className="font-heading text-2xl font-semibold"
             initial={{ y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.25 }}
           >
             {fromName} {PINGS[ping.kind].sentence}
-          </motion.p>
-        </motion.button>
+          </m.p>
+        </m.button>
       )}
     </AnimatePresence>
   );

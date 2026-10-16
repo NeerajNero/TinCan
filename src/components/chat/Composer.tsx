@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Clock, ImagePlus, Mic, Send, SmilePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -300,7 +300,7 @@ export function Composer(props: ComposerProps) {
           {showMic ? (
             <RecordButton onRecorded={onSendVoice} onViewChange={setRec} />
           ) : (
-            <motion.button
+            <m.button
               type="button"
               onClick={submit}
               disabled={!canSend}
@@ -309,7 +309,7 @@ export function Composer(props: ComposerProps) {
               className="tap grid size-11 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-white shadow-md disabled:opacity-40"
             >
               <Send size={18} className={editing ? "" : "-ml-0.5"} />
-            </motion.button>
+            </m.button>
           )}
         </div>
         {rec.denied && !rec.recording && (
@@ -456,7 +456,7 @@ function RecordButton({
   }
 
   return (
-    <motion.button
+    <m.button
       type="button"
       aria-label={
         recording ? "Release to send voice note" : "Hold to record a voice note"
@@ -474,6 +474,6 @@ function RecordButton({
       )}
     >
       <Mic size={18} />
-    </motion.button>
+    </m.button>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
+import { Eraser, Pen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
+import { Confetti } from "@/components/plan/Confetti";
 import { CANVAS_COLORS, CANVAS_WIDTHS, SharedCanvas, type Tool } from "@/components/play/together/SharedCanvas";
 import { ToolBtn } from "@/components/play/together/WhiteboardScreen";
-import { Confetti } from "@/components/plan/Confetti";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -17,7 +18,6 @@ import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
 import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRound, invitePictionary, nextRound, parseGuesses, parseOptions, pictRoute, ROUND_MS, ROUNDS, submitGuess, subscribeOpenPictionary, subscribePictionary, type LivePictionary } from "@/lib/db/pictionary";
 import { recordTogetherEvent } from "@/lib/garden";
-import { Eraser, Pen } from "lucide-react";
 
 function winnerIdOf(g: LivePictionary): string | null {
   const a = g.players.first;

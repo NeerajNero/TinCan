@@ -1,9 +1,11 @@
+
 import type { User } from "firebase/auth";
-import { arrayUnion, runTransaction, serverTimestamp, updateDoc } from "@/lib/firebase/fs";
 
 import { pairRef, userRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
+import { arrayUnion, runTransaction, serverTimestamp, updateDoc } from "@/lib/firebase/fs";
 import { defaultNotifPrefs, type CityPick, type NextMeetup, type PairDoc } from "@/lib/types";
+
 
 /** Thrown when `pair/main` already belongs to two other accounts. */
 export class PairFullError extends Error {

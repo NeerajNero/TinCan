@@ -7,23 +7,24 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
+import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
-import { onSnapshot } from "@/lib/firebase/fs";
-
+import { roomDateKey } from "@/lib/dates";
 import { acceptGame, declineGame, gameRoute, inviteGame, isLive, loadRecentResults, recordFor, rematch, uidOf, type GameResultDoc } from "@/lib/db/games";
 import { quizzesFrom } from "@/lib/db/quizzes";
 import { wordleRef } from "@/lib/db/wordle";
 import { DECK_KINDS, DECK_META } from "@/lib/deckMeta";
-import { roomDateKey } from "@/lib/dates";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { GAME_META, GAME_TYPES, type GameType } from "@/lib/games";
 
 export function PlayScreen() {
   const { uid, me, friend, friendUid, pair } = usePair();
-  const { games, friendPresence } = useLiveEvents();
+  const { games } = useLiveEvents();
+  const friendPresence = useFriendPresence();
   const router = useRouter();
   const [busy, setBusy] = useState<GameType | null>(null);
   const today = roomDateKey(pair);

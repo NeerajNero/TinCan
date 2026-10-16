@@ -1,9 +1,9 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
+import { defaultCache } from "@serwist/turbopack/worker";
 import { initializeApp } from "firebase/app";
 import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw";
-import { defaultCache } from "@serwist/turbopack/worker";
-import { Serwist, type PrecacheEntry, type SerwistGlobalConfig } from "serwist";
+import { CacheableResponsePlugin, CacheFirst, ExpirationPlugin, NetworkOnly, Serwist, type PrecacheEntry, type RuntimeCaching, type SerwistGlobalConfig } from "serwist";
 
 // `self.__SW_MANIFEST` is replaced with the precache manifest at build time.
 declare global {
@@ -14,12 +14,40 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+const DAY = 24 * 60 * 60;
+
+/** Images and tiles are cached first (they're immutable URLs); anything that talks to Firebase, Google or our API never is. */
+const imageCache = (cacheName: string, maxEntries: number, maxAgeSeconds: number) =>
+  new CacheFirst({
+    cacheName,
+    // Cross-origin <img> responses are opaque (status 0); allow them so cached photos show offline.
+    plugins: [new CacheableResponsePlugin({ statuses: [0, 200] }), new ExpirationPlugin({ maxEntries, maxAgeSeconds, purgeOnQuotaError: true })],
+  });
+
+const runtimeCaching: RuntimeCaching[] = [
+  { matcher: ({ url }) => url.pathname.startsWith("/api/"), handler: new NetworkOnly() },
+  {
+    matcher: ({ url }) =>
+      url.hostname.endsWith(".googleapis.com") ||
+      url.hostname.endsWith(".firebaseio.com") ||
+      url.hostname.endsWith(".firebasedatabase.app") ||
+      url.hostname.endsWith(".google.com") ||
+      url.hostname.endsWith(".gstatic.com"),
+    handler: new NetworkOnly(),
+  },
+  { matcher: ({ url }) => url.hostname === "res.cloudinary.com", handler: imageCache("tincan-cloudinary", 500, 30 * DAY) },
+  { matcher: ({ url }) => url.hostname.endsWith("tile.openstreetmap.org"), handler: imageCache("tincan-osm-tiles", 300, 7 * DAY) },
+  { matcher: ({ url }) => url.hostname.endsWith(".giphy.com"), handler: imageCache("tincan-giphy", 150, 7 * DAY) },
+  { matcher: ({ url }) => url.hostname.endsWith("ytimg.com"), handler: imageCache("tincan-ytimg", 150, 7 * DAY) },
+  ...defaultCache,
+];
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching,
   fallbacks: {
     entries: [
       {

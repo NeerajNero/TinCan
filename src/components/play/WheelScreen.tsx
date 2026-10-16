@@ -1,12 +1,12 @@
 "use client";
 
-import { motion, useAnimationControls } from "framer-motion";
+import { m, useAnimationControls } from "framer-motion";
 import { useRef, useState } from "react";
 
-import ideas from "@/content/hangout-ideas.json";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import ideas from "@/content/hangout-ideas.json";
 import { usePair } from "@/hooks/usePair";
 import { sendText } from "@/lib/db/messages";
 import { notify } from "@/lib/notify";
@@ -16,7 +16,7 @@ const SEGMENTS = 12;
 const COLORS = ["#ff8fab", "#ffb454", "#6fb6ff", "#5fd3a4", "#b48cff", "#ffd166"];
 
 function sample(seed: number): string[] {
-  return seededOrder(ideas.length, seed).slice(0, SEGMENTS).map((i) => ideas[i]);
+  return seededOrder(ideas.length, seed).slice(0, SEGMENTS).map((i) => ideas[i]!);
 }
 
 export function WheelScreen() {
@@ -79,7 +79,7 @@ export function WheelScreen() {
         <div className="absolute top-0 left-1/2 z-10 -translate-x-1/2 -translate-y-2 text-3xl" aria-hidden>
           🔻
         </div>
-        <motion.svg viewBox="0 0 320 320" className="w-full drop-shadow-lg" animate={controls} style={{ originX: "50%", originY: "50%" }} aria-label="Hangout wheel">
+        <m.svg viewBox="0 0 320 320" className="w-full drop-shadow-lg" animate={controls} style={{ originX: "50%", originY: "50%" }} aria-label="Hangout wheel">
           {items.map((idea, i) => {
             const a0 = -Math.PI / 2 + i * seg;
             const a1 = a0 + seg;
@@ -103,7 +103,7 @@ export function WheelScreen() {
           <text x={cx} y={cy + 6} fontSize="18" textAnchor="middle">
             🥫
           </text>
-        </motion.svg>
+        </m.svg>
       </div>
       <Button onClick={spin} disabled={spinning} className="self-center px-8">
         {spinning ? "Spinning…" : "Spin"}

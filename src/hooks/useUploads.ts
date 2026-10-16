@@ -4,12 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { sendMedia } from "@/lib/db/messages";
+import { recordTogetherEvent } from "@/lib/garden";
 import { compressImage } from "@/lib/media/compress";
 import type { Recording } from "@/lib/media/recorder";
-import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
+import { errorMessage } from "@/lib/swallow";
 import type { ReplyTo } from "@/lib/types";
-
 export interface Upload {
   id: string;
   kind: "image" | "voice";
@@ -58,7 +58,7 @@ export function useUploads(uid: string, friendUid: string) {
             await run();
             remove(upload.id);
           } catch (err) {
-            patch(upload.id, { error: err instanceof Error ? err.message : "failed" });
+            patch(upload.id, { error: errorMessage(err, "Upload failed") });
           }
         },
       };

@@ -1,6 +1,5 @@
 "use client";
 
-import { onSnapshot } from "@/lib/firebase/fs";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -8,10 +7,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
-import { cn } from "@/lib/cn";
 import { fmtDay, fmtTime, intersect, projectWeek, remapToZone, slotLabel, SLOTS_PER_DAY, toWindows } from "@/lib/availability";
+import { cn } from "@/lib/cn";
 import { availabilityRef, saveAvailability } from "@/lib/db/availability";
 import { sendText } from "@/lib/db/messages";
+import { onSnapshot } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
 import { WEEKDAY_KEYS, type AvailabilityDoc, type WeekdayKey } from "@/lib/types";
 

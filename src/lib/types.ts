@@ -49,6 +49,12 @@ export const NOTIF_LABELS: Record<NotifKey, string> = {
 
 /* ── users/{uid} ───────────────────────────────────────────────────────── */
 
+export interface ChatBgPref {
+  id: string;
+  photoUrl?: string | null;
+  photoPublicId?: string | null;
+}
+
 export interface UserDoc {
   /** Google display name. */
   name: string;
@@ -72,6 +78,8 @@ export interface UserDoc {
   notif: NotifPrefs;
   /** Days the daily word was solved (bumped client-side). */
   wordleSolved?: number;
+  /** Chat background: a built-in id, or "photo" with a memory's Cloudinary URL. Absent means plain. */
+  chatBg?: ChatBgPref | null;
   createdAt: Timestamp | null;
 }
 
@@ -138,7 +146,6 @@ export interface MilestoneSummary {
 /* ── moods/{dateKey}_{uid} ─────────────────────────────────────────────── */
 
 export const MOOD_EMOJI = ["😊", "🥳", "😍", "😐", "😴", "😢", "😤", "🤒"] as const;
-export type MoodEmoji = (typeof MOOD_EMOJI)[number];
 
 export interface MoodDoc {
   emoji: string;
@@ -214,8 +221,7 @@ export interface PresenceNode {
 }
 
 /** The four everyday pings plus the relationship extra ("kiss"), shown only when the preset has it. */
-export const PING_KINDS = ["thinking", "hug", "highfive", "wave", "kiss"] as const;
-export type PingKind = (typeof PING_KINDS)[number];
+export type PingKind = "thinking" | "hug" | "highfive" | "wave" | "kiss";
 export const BASE_PING_KINDS: readonly PingKind[] = ["thinking", "hug", "highfive", "wave"];
 
 export const PINGS: Record<PingKind, { emoji: string; label: string; sentence: string }> = {
@@ -270,7 +276,7 @@ export interface MediaItem {
 
 /* ── dailyQuestions/{dateKey} ──────────────────────────────────────────── */
 
-export interface DailyAnswer {
+interface DailyAnswer {
   text: string;
   at: Timestamp | null;
 }
@@ -465,7 +471,7 @@ export interface PetDoc {
   bornAt: number;
 }
 
-export interface GardenUnlock {
+interface GardenUnlock {
   at: Timestamp | null;
   by: string;
 }

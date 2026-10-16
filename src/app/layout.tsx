@@ -3,6 +3,7 @@ import { Fredoka, Nunito } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
+import { WebVitals } from "@/components/providers/WebVitals";
 import { themeInitScript } from "@/lib/theme";
 
 const fredoka = Fredoka({
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
+        <WebVitals />
         <Providers>{children}</Providers>
       </body>
     </html>

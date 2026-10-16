@@ -1,14 +1,14 @@
 "use client";
 
 import { format } from "date-fns";
-import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { cancelScheduled, pendingScheduled, scheduleMessage } from "@/lib/db/scheduled";
+import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import type { ScheduledDoc } from "@/lib/types";
 
 interface Pending extends ScheduledDoc {
@@ -70,8 +70,8 @@ function SheetBody({ uid, draft, onClose, onScheduled }: ScheduleSheetProps) {
 
   return (
         <>
-          <motion.button key="backdrop" type="button" aria-label="Close" onClick={onClose} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-          <motion.div
+          <m.button key="backdrop" type="button" aria-label="Close" onClick={onClose} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+          <m.div
             key="sheet"
             role="dialog"
             aria-label="Scheduled messages"
@@ -114,7 +114,7 @@ function SheetBody({ uid, draft, onClose, onScheduled }: ScheduleSheetProps) {
                 </button>
               </div>
             ))}
-          </motion.div>
+          </m.div>
         </>
   );
 }

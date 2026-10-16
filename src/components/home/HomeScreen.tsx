@@ -7,18 +7,18 @@ import { Lamps } from "@/components/home/Lamps";
 import { LastMessageCard } from "@/components/home/LastMessageCard";
 import { MoodCheckin } from "@/components/home/MoodCheckin";
 import { NextUpCard } from "@/components/home/NextUpCard";
-import { PingOverlay } from "@/components/home/PingOverlay";
 import { PetWidget } from "@/components/home/PetWidget";
+import { PingOverlay } from "@/components/home/PingOverlay";
 import { PingRow } from "@/components/home/PingRow";
 import { PresenceCard } from "@/components/home/PresenceCard";
 import { PushNudgeCard } from "@/components/home/PushNudgeCard";
 import { SleepToggle } from "@/components/home/SleepToggle";
 import { StreakPlant } from "@/components/home/StreakPlant";
 import { WaitingCard } from "@/components/home/WaitingCard";
+import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { Splash } from "@/components/ui/Splash";
 import { useHomeData } from "@/hooks/useHomeData";
 import { usePair } from "@/hooks/usePair";
-import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 
 function Header({ nickname }: { nickname: string }) {
   return (

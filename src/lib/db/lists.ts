@@ -1,6 +1,5 @@
-import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, where, writeBatch, type CollectionReference, type Query } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, where, writeBatch, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import type { ListItemDoc, ListKind } from "@/lib/types";
 
 export const LIST_META: Record<ListKind, { emoji: string; title: string; blurb: string }> = {
@@ -10,7 +9,7 @@ export const LIST_META: Record<ListKind, { emoji: string; title: string; blurb: 
   todo: { emoji: "✅", title: "To-do", blurb: "Shared chores and errands" },
 };
 
-export const itemsCol = (kind: ListKind) => collection(getDb(), "lists", kind, "items") as CollectionReference<ListItemDoc>;
+const itemsCol = (kind: ListKind) => collection(getDb(), "lists", kind, "items") as CollectionReference<ListItemDoc>;
 
 /** One bounded listener; gift ideas are filtered to the author (the rules require it). */
 export function itemsQuery(kind: ListKind, uid: string): Query<ListItemDoc> {

@@ -1,14 +1,18 @@
-import { deleteField, updateDoc } from "@/lib/firebase/fs";
 
 import { BIO_MAX } from "@/components/ui/Avatar";
 import { authedFetch } from "@/lib/api";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { userRef } from "@/lib/db/refs";
+import { deleteField, updateDoc } from "@/lib/firebase/fs";
 import { compressImage } from "@/lib/media/compress";
-import type { CityPick, UserDoc } from "@/lib/types";
-
+import { swallow } from "@/lib/swallow";
+import type { ChatBgPref, CityPick, UserDoc } from "@/lib/types";
 export function setNickname(uid: string, nickname: string): Promise<void> {
   return updateDoc(userRef(uid), { nickname: nickname.trim() });
+}
+
+export function setChatBg(uid: string, chatBg: ChatBgPref | null): Promise<void> {
+  return updateDoc(userRef(uid), { chatBg });
 }
 
 export function setBio(uid: string, bio: string): Promise<void> {
@@ -28,7 +32,7 @@ export function setCity(uid: string, place: CityPick): Promise<void> {
 function cleanupAvatar(): Promise<void> {
   return authedFetch("/api/media", { method: "DELETE", body: JSON.stringify({ kind: "avatar" }) })
     .then(() => undefined)
-    .catch(() => undefined);
+    .catch(swallow);
 }
 
 /**
@@ -50,5 +54,5 @@ export async function removeAvatar(uid: string, me: UserDoc): Promise<void> {
   if (!me.avatar) return;
   await updateDoc(userRef(uid), { avatar: null, previousAvatarPublicId: me.avatar.publicId });
   await cleanupAvatar();
-  await updateDoc(userRef(uid), { previousAvatarPublicId: deleteField() }).catch(() => undefined);
+  await updateDoc(userRef(uid), { previousAvatarPublicId: deleteField() }).catch(swallow);
 }

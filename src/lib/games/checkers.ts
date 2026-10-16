@@ -55,7 +55,7 @@ function jumpsFrom(board: string[], from: number, ch: string, taken: Set<number>
     if (!inside(lr, lc)) continue;
     const mid = at(mr, mc);
     const land = at(lr, lc);
-    const midOwner = ownerOf(board[mid]);
+    const midOwner = ownerOf(board[mid] ?? ".");
     if (!midOwner || midOwner === player || taken.has(mid) || board[land] !== ".") continue;
     const crowned = !isKing(ch) && ((ch === "r" && lr === 0) || (ch === "b" && lr === SIZE - 1));
     const nextTaken = new Set(taken).add(mid);
@@ -75,7 +75,7 @@ function movesFor(state: CheckersState): CheckersMove[] {
   const steps: CheckersMove[] = [];
   const jumps: CheckersMove[] = [];
   for (let i = 0; i < 64; i++) {
-    const ch = board[i];
+    const ch = board[i] ?? ".";
     if (ownerOf(ch) !== state.turn) continue;
     const [r, c] = rc(i);
     jumps.push(...jumpsFrom(board, i, ch, new Set()));
@@ -110,7 +110,8 @@ export const checkers: Engine<CheckersState, CheckersMove> = {
     const b = state.board.split("");
     const from = move.path[0];
     const to = move.path[move.path.length - 1];
-    let ch = b[from];
+    if (from === undefined || to === undefined) return state;
+    let ch = b[from] ?? ".";
     b[from] = ".";
     for (const cap of move.captures) b[cap] = ".";
     const [tr] = rc(to);

@@ -26,7 +26,7 @@ function landingRow(board: string, col: number): number {
 
 function status(state: C4State): GameStatus {
   const b = state.board;
-  const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+  const dirs: Array<[number, number]> = [[0, 1], [1, 0], [1, 1], [1, -1]];
   for (let r = 0; r < C4_ROWS; r++) {
     for (let c = 0; c < C4_COLS; c++) {
       const ch = b[idx(r, c)];

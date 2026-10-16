@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useState } from "react";
 
 import { cn } from "@/lib/cn";
@@ -35,7 +35,7 @@ export function CheckersBoard({ state, me, canMove, legal, onMove }: { state: Ch
         const r = Math.floor(i / 8);
         const c = i % 8;
         const dark = (r + c) % 2 === 1;
-        const ch = state.board[i];
+        const ch = state.board.charAt(i);
         const owner = ownerOf(ch);
         const target = targets.has(i);
         const onPath = fromSel.some((m) => m.captures.includes(i));
@@ -48,12 +48,12 @@ export function CheckersBoard({ state, me, canMove, legal, onMove }: { state: Ch
             className={cn("relative grid aspect-square place-items-center", dark ? "bg-[#8b5e3c]" : "bg-[#f2d6b3]", selected === i && "ring-inset ring-4 ring-[var(--accent)]", onPath && "bg-red-400/60")}
           >
             {owner && (
-              <motion.span
+              <m.span
                 layout
                 className={cn("grid size-[78%] place-items-center rounded-full text-base shadow-md", owner === "first" ? "bg-[#e63946] text-white" : "bg-[#1d1d2b] text-white", canMove && movable.has(i) && selected === null && "ring-2 ring-white/70")}
               >
                 {isKing(ch) ? "♛" : ""}
-              </motion.span>
+              </m.span>
             )}
             {target && <span className="absolute size-3 rounded-full bg-[var(--accent)] shadow" aria-hidden />}
           </button>

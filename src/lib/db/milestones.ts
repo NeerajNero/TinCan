@@ -1,10 +1,10 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, limit, query, serverTimestamp, updateDoc, type CollectionReference, type Query } from "@/lib/firebase/fs";
 
 import { pairRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
+import { addDoc, collection, deleteDoc, doc, getDocs, limit, query, serverTimestamp, updateDoc, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import type { MilestoneDoc, MilestoneSummary } from "@/lib/types";
 
-export const milestonesCol = () => collection(getDb(), "milestones") as CollectionReference<MilestoneDoc>;
+const milestonesCol = () => collection(getDb(), "milestones") as CollectionReference<MilestoneDoc>;
 export const milestonesQuery = (): Query<MilestoneDoc> => query(milestonesCol(), limit(100));
 
 export type MilestoneInput = MilestoneDoc;

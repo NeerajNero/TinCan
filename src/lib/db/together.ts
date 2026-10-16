@@ -5,7 +5,7 @@
 import { limitToLast, onValue, orderByKey, push, query, ref, remove, runTransaction, serverTimestamp, set, update } from "firebase/database";
 
 import { getRtdb } from "@/lib/firebase/client";
-
+import { swallow } from "@/lib/swallow";
 export interface Stroke {
   uid: string;
   color: string;
@@ -23,7 +23,7 @@ export interface CursorNode {
   at: number;
 }
 
-export const MAX_STROKES = 500;
+const MAX_STROKES = 500;
 const r = (p: string) => ref(getRtdb(), p);
 
 /* ── strokes (base = "whiteboard" or "pictionary/{id}") ────────────────── */
@@ -46,7 +46,7 @@ export function subscribeLive(base: string, cb: (live: Record<string, LiveStroke
 export async function addStroke(base: string, stroke: Stroke, currentCount: number, oldestId: string | null): Promise<string> {
   const node = push(r(`${base}/strokes`));
   await set(node, stroke);
-  if (currentCount >= MAX_STROKES && oldestId) await remove(r(`${base}/strokes/${oldestId}`)).catch(() => undefined);
+  if (currentCount >= MAX_STROKES && oldestId) await remove(r(`${base}/strokes/${oldestId}`)).catch(swallow);
   return node.key as string;
 }
 
@@ -101,7 +101,7 @@ export const setRadio = (node: RadioNode) => update(r("radio/main"), { ...node, 
 
 /* ── focus timer ───────────────────────────────────────────────────────── */
 
-export type TimerMode = "focus" | "break";
+type TimerMode = "focus" | "break";
 export interface TimerNode {
   mode: TimerMode;
   /** Epoch ms (server clock) when the running phase ends; 0 when idle. */

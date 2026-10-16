@@ -32,13 +32,14 @@ Uploads are **signed**: the browser asks `POST /api/media/sign` for a signature 
 
 ## Headers (`next.config.ts`)
 
-- `Content-Security-Policy-Report-Only` listing exactly the origins we use (Firebase, Cloudinary, GIPHY, Open-Meteo, YouTube, OSM tiles, radio streams). **To enforce**: watch the browser console on the deployment for a few days of normal use; when no violations appear, rename the header key to `Content-Security-Policy`.
+- `Content-Security-Policy` is **enforced**, listing exactly the origins we use (Firebase, Cloudinary, GIPHY, Open-Meteo, YouTube, OSM tiles, radio streams). If something breaks, set `CSP_REPORT_ONLY=1` on Vercel to switch the header back to report-only, fix the directive in `next.config.ts`, then unset it.
 - `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` allowing only microphone(self) and media playback. `/serwist/*` is `max-age=0, must-revalidate`.
 
 ## Secrets handling
 
 - All env values live in `.env` / `.env.local` (gitignored) and on Vercel. Scripts read `.env.local` then `.env` and **never print values**; emails are masked in output.
 - `FIREBASE_SERVICE_ACCOUNT` is base64 JSON consumed only by `lib/firebase/admin.ts`; `CLOUDINARY_API_SECRET` only by `/api/media` and `/api/media/sign`; `TICK_SECRET` only by `/api/tick`.
+- The service worker caches only images and tiles (CacheFirst) and never Firebase, Google or `/api/*` responses.
 - `NEXT_PUBLIC_*` are public by design (Firebase web config, Cloudinary cloud name, GIPHY key). On Vercel, add `NEXT_PUBLIC_GIPHY_API_KEY` as a plain variable, not a Sensitive one, so it reaches the client bundle.
 - `/api/health` returns booleans only.
 - Dependency overrides in `package.json`: `jose@5.10.0` (firebase-admin ESM crash on Vercel) and `@grpc/grpc-js >= 1.13.6` (advisory). Run `pnpm audit --prod` after upgrades.

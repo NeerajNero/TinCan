@@ -28,6 +28,8 @@ Pages under `src/app/(app)/**` are thin: they render one screen component. Logic
 - Media: `media/*` (AttachmentStrip, UploadBubble + ProgressRing, ImageViewer with pinch-zoom, VoicePlayer 1×/1.5×, MediaPanel for GIF/stickers). Upload pipeline in `hooks/useUploads.ts` → `lib/media/compress.ts` (≤1080 px, ~0.3 MB) / `lib/media/recorder.ts` (opus 32 kbps, ≤2 min) → `POST /api/media/sign` → Cloudinary.
 - Typing: `hooks/useTyping.ts` (RTDB `typing/{uid}`, 1.5 s throttle, 3 s expiry). Unread badge: `hooks/useChatMeta.tsx`.
 - Rendered URLs are filtered by `lib/safeUrl.ts`; links auto-linked by `lib/linkify.tsx`.
+- **Backgrounds**: `ChatBackground` is one absolute layer behind the scroller (`backdrop` prop of `MessageList`); `ChatBackgroundPicker` (palette button in `ChatHeader`, and More → Chat background) writes `users/{me}.chatBg`. Built-ins live in `content/chat-backgrounds.ts`; the photo option reads one bounded page of `memories`.
+- **Rendering cost**: `MessageBubble` is `React.memo` with stable callbacks; presence lives in `PresenceProvider` and typing in `useFriendTyping` inside the header, so the list never re-renders for them. `pnpm profile:chat` measures it.
 
 ## Play (`/play`) — `components/play/PlayScreen.tsx`
 
@@ -74,7 +76,7 @@ Heavy together screens are code-split through `together/lazy.tsx`. `ChatDrawer` 
 
 ## More (`/more`) — `components/more/MoreScreen.tsx`
 
-`ProfileCard` (nickname, city via `onboarding/CityPicker` → Open-Meteo geocode, avatar upload, bio), `PairCard` (friends-since, next meetup, relationship preset from `content/relationships.ts`, pet name, room tz), `ThemeSwitch` (`hooks/useTheme`), `NotificationsCard` (master switch + per-type toggles, test push), `SoundsCard` (`lib/sounds`), `UsageCard` (metered Firestore reads/writes vs Spark quota), sign out.
+`ProfileCard` (nickname, city via `onboarding/CityPicker` → Open-Meteo geocode, avatar upload, bio), `PairCard` (friends-since, next meetup, relationship preset from `content/relationships.ts`, pet name, room tz), `ThemeSwitch` (`hooks/useTheme`), `ChatBackgroundCard`, `NotificationsCard` (master switch + per-type toggles, test push), `SoundsCard` (`lib/sounds`), `UsageCard` (metered Firestore reads/writes vs Spark quota), sign out.
 
 ## Pet (`/pet`) — `components/pet/PetScreen.tsx`
 
@@ -99,5 +101,6 @@ One sticker per `GardenEvent`, unlocked once, stored under `pair.garden.stickers
 - **Auth & onboarding**: `components/auth/*` (SignInScreen, AuthGate, SetupScreen, TakenScreen), `components/onboarding/OnboardingScreen`, `components/pair/PairFullScreen`. `lib/auth.ts`, `lib/allowlist.ts`.
 - **Shell**: `components/shell/AppShell`, `TabBar` (pending spinner on tapped tab), `OfflineBanner`; `lib/tabs.ts`.
 - **Toasts**: `components/toast/ToastProvider`. **Live events**: `components/live/LiveEventsProvider`. **Push**: `components/push/PushController`, `lib/push.ts` (token), `lib/notify.ts` (client → `/api/push`).
-- **UI kit**: `components/ui/*` (Avatar, Button, Card, Input, Skeleton, Spinner, Splash, Switch, TabError).
-- **Service worker**: `src/app/sw.ts` (precache, `/offline` fallback, FCM background handler, same-origin notification click).
+- **UI kit**: `components/ui/*` (Avatar, Button, Card, CloudImage, Input, Skeleton, Spinner, Splash, Switch, TabError). `CloudImage` is the only way to render a Cloudinary photo (srcset, blur-up, lazy); `next/image` is not used anywhere.
+- **Web vitals**: `providers/WebVitals` logs CLS/LCP/INP to the console in development only.
+- **Service worker**: `src/app/sw.ts` (precache, `/offline` fallback, runtime caches for Cloudinary/OSM/GIPHY/ytimg images, NetworkOnly for Firebase/Google/`/api`, FCM background handler, same-origin notification click).

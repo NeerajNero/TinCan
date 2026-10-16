@@ -1,8 +1,8 @@
-import { updateDoc } from "@/lib/firebase/fs";
 
 import { PET_SPECIES } from "@/content/pets";
 import { postSystemMessage } from "@/lib/db/home";
 import { pairRef } from "@/lib/db/refs";
+import { updateDoc } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import type { PetDoc, PetSpecies } from "@/lib/types";
 

@@ -15,8 +15,11 @@
     "tick:dry": "node scripts/tick-dry.mjs",
     "reset:dry": "node scripts/reset-data.mjs",
     "reset": "node scripts/reset-data.mjs --yes",
-    "test:rules": "pnpm rules:build && firebase emulators:exec --only firestore,database \"vitest run tests/rules.test.ts\"",
-    "test": "pnpm test:rules"
+    "test:rules": "pnpm rules:build && firebase emulators:exec --only firestore,database \"vitest run --config vitest.rules.config.mts\"",
+    "test": "vitest run",
+    "analyze": "ANALYZE=true next build",
+    "knip": "knip",
+    "profile:chat": "vitest run --config vitest.perf.config.mts"
   },
   "dependencies": {
     "browser-image-compression": "^2.0.2",
@@ -38,6 +41,7 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
+    "@next/bundle-analyzer": "^16.4.2",
     "@serwist/turbopack": "^9.5.13",
     "@tailwindcss/turbopack": "^4",
     "@types/leaflet": "^1.9.22",
@@ -47,6 +51,8 @@
     "esbuild": "^0.28.2",
     "eslint": "^9",
     "eslint-config-next": "16.4.1",
+    "happy-dom": "^21.0.3",
+    "knip": "^6.41.0",
     "serwist": "^9.5.13",
     "sharp": "^0.35.5",
     "tailwindcss": "^4",

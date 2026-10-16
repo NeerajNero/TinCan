@@ -7,7 +7,7 @@ import * as F from "firebase/firestore";
 
 export * from "firebase/firestore";
 
-export const usage = { reads: 0, writes: 0, startedAt: Date.now() };
+const usage = { reads: 0, writes: 0, startedAt: Date.now() };
 const listeners = new Set<() => void>();
 const bump = (kind: "reads" | "writes", n: number) => {
   if (n <= 0) return;

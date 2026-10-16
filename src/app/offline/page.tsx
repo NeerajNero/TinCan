@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { RetryButton } from "@/components/offline/RetryButton";
 
+
+
 export const metadata: Metadata = { title: "Offline" };
 
 export default function OfflinePage() {

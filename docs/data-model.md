@@ -6,7 +6,7 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 
 | Collection | Doc id | Written by | Read bound | Notes |
 | --- | --- | --- | --- | --- |
-| `users/{uid}` | uid | owner only | 2 single docs | name, nickname, email (immutable), photoURL, avatar{url,publicId}, bio, tz, city, lat, lng, fcmTokens[], notif{enabled,…}, wordleSolved, createdAt (immutable). No other top-level fields allowed. |
+| `users/{uid}` | uid | owner only | 2 single docs | name, nickname, email (immutable), photoURL, avatar{url,publicId}, bio, tz, city, lat, lng, fcmTokens[], notif{enabled,…}, wordleSolved, chatBg{id, photoUrl?, photoPublicId?} (id ≤ 24 chars; photoUrl must be our Cloudinary cloud), createdAt (immutable). No other top-level fields allowed. |
 | `pair/main` | fixed | either | 1 doc | uids[≤2] (can only grow, never lose a uid), roomTz, friendsSince, nextMeetup, relationship, streak, plant, pet, garden.stickers, records, focusSessions, milestonesSummary, tripsSummary, counters |
 | `messages/{id}` | auto | sender creates; recipient marks delivered/read; sender edits/deletes; either reacts (own key) / hides for self | latest 50 + ≤3 pages by scroll, then a button; unread ≤99; latest 1 | text ≤2000, type in text/image/voice/gif/sticker/system, createdAt == server time, media URL must be our Cloudinary cloud (gif: media*.giphy.com) |
 | `checkins/{dateKey}` | room day | each uid sets only its own key | 1 doc | `{uid: true}` |

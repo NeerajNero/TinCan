@@ -27,7 +27,11 @@ ESLint runs the React Compiler rules. The patterns that fail lint and how we wri
 | `useMemo`/`useCallback` with incomplete deps | list every dep; the compiler checks them |
 | conditional hooks | early-return *after* hooks |
 
-Other habits: `"use client"` on any file using hooks; `cn()` from `lib/cn` for class merging; `framer-motion` for motion, with multi-keyframe animations as tweens (springs allow two frames only); icons from `lucide-react`; `next/image` with `unoptimized` for Cloudinary/GIPHY URLs.
+Other habits: `"use client"` on any file using hooks; `cn()` from `lib/cn` for class merging; framer-motion through `m.*` only (`import { m } from "framer-motion"`; `<LazyMotion>` in Providers supplies the features, so a bare `motion.` import would double the animation runtime), multi-keyframe animations as tweens (springs allow two frames only); icons from `lucide-react`; Cloudinary photos through `components/ui/CloudImage`, every other image a plain `<img>` with an eslint-disable note. `next/image` is never used with remote sources.
+
+TypeScript runs `strict` + `noUncheckedIndexedAccess`: index reads are `T | undefined`, so narrow (`?? fallback`, early return) rather than assert; `!` only where the index is provably in range (modulo into a static non-empty list, a permutation of the same length). ESLint also errors on `any`, incomplete hook deps and import order (`eslint --fix` sorts them: builtin, external, `@/`, relative, alphabetised, blank line between groups). `pnpm knip` must be clean: don't export what only one file uses.
+
+Errors: fire-and-forget promises end in `.catch(swallow)`; anything shown to the user goes through `errorMessage(err, fallback)` (both in `lib/swallow.ts`). Toasts come from `useToast()`; there is no second toast or error path.
 
 ## Design tokens
 

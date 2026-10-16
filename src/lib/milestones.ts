@@ -24,7 +24,7 @@ function withYear(key: DateKey, year: number): DateKey {
 }
 
 /** The next occurrence of a (possibly yearly) date on or after today. */
-export function nextOccurrence(date: DateKey, repeatYearly: boolean, today: DateKey): { nextDate: DateKey; years: number | null } {
+function nextOccurrence(date: DateKey, repeatYearly: boolean, today: DateKey): { nextDate: DateKey; years: number | null } {
   if (!repeatYearly) return { nextDate: date, years: null };
   const todayYear = Number(today.slice(0, 4));
   const startYear = Number(date.slice(0, 4));

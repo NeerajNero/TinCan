@@ -1,11 +1,10 @@
 /** Daily word docs at wordle/{dateKey}_{uid}: own-write, both-read. */
+import { dayUserId } from "@/lib/dates";
+import { userRef } from "@/lib/db/refs";
+import { getDb } from "@/lib/firebase/client";
 import { doc, increment, serverTimestamp, setDoc, updateDoc, type DocumentReference } from "@/lib/firebase/fs";
 import type { Timestamp } from "@/lib/firebase/fs";
-
-import { userRef } from "@/lib/db/refs";
-import { dayUserId } from "@/lib/dates";
-import { getDb } from "@/lib/firebase/client";
-
+import { swallow } from "@/lib/swallow";
 export interface WordleDoc {
   guesses: string[];
   solved: boolean;
@@ -18,5 +17,5 @@ export const wordleRef = (dateKey: string, uid: string) => doc(getDb(), "wordle"
 
 export async function saveGuesses(dateKey: string, uid: string, guesses: string[], solved: boolean, done: boolean): Promise<void> {
   await setDoc(wordleRef(dateKey, uid), { guesses, solved, done, at: serverTimestamp() });
-  if (solved) await updateDoc(userRef(uid), { wordleSolved: increment(1) }).catch(() => undefined);
+  if (solved) await updateDoc(userRef(uid), { wordleSolved: increment(1) }).catch(swallow);
 }

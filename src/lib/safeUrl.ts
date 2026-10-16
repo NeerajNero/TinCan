@@ -6,10 +6,10 @@ const GIPHY_RE = /^https:\/\/media\d*\.giphy\.com\//;
 const YTIMG_RE = /^https:\/\/(i|i\d)\.ytimg\.com\//;
 const GOOGLE_PHOTO_RE = /^https:\/\/lh\d\.googleusercontent\.com\//;
 
-export const isCloudinaryUrl = (url: string | null | undefined): url is string => typeof url === "string" && url.startsWith(cloudinaryPrefix());
+const isCloudinaryUrl = (url: string | null | undefined): url is string => typeof url === "string" && url.startsWith(cloudinaryPrefix());
 export const isGiphyUrl = (url: string | null | undefined): url is string => typeof url === "string" && GIPHY_RE.test(url);
-export const isYouTubeThumb = (url: string | null | undefined): url is string => typeof url === "string" && YTIMG_RE.test(url);
-export const isGooglePhoto = (url: string | null | undefined): url is string => typeof url === "string" && GOOGLE_PHOTO_RE.test(url);
+const isYouTubeThumb = (url: string | null | undefined): url is string => typeof url === "string" && YTIMG_RE.test(url);
+const isGooglePhoto = (url: string | null | undefined): url is string => typeof url === "string" && GOOGLE_PHOTO_RE.test(url);
 
 /** A Cloudinary URL or null. */
 export const safeCloudinary = (url: string | null | undefined): string | null => (isCloudinaryUrl(url) ? url : null);

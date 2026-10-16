@@ -1,6 +1,5 @@
-import { doc, type DocumentReference } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { doc, type DocumentReference } from "@/lib/firebase/fs";
 import type { PairDoc, UserDoc } from "@/lib/types";
 
 /** Typed references for the documents phase 2 touches. */

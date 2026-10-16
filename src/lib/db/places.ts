@@ -1,9 +1,8 @@
-import { addDoc, collection, deleteDoc, doc, limit, query, serverTimestamp, updateDoc, type CollectionReference, type Query } from "@/lib/firebase/fs";
-
 import { getDb } from "@/lib/firebase/client";
+import { addDoc, collection, deleteDoc, doc, limit, query, serverTimestamp, updateDoc, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import type { PlaceDoc, PlaceKind } from "@/lib/types";
 
-export const placesCol = () => collection(getDb(), "places") as CollectionReference<PlaceDoc>;
+const placesCol = () => collection(getDb(), "places") as CollectionReference<PlaceDoc>;
 export const placesQuery = (): Query<PlaceDoc> => query(placesCol(), limit(200));
 
 export interface PlaceInput {

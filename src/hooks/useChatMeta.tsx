@@ -1,12 +1,12 @@
 "use client";
 
-import { onSnapshot } from "@/lib/firebase/fs";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
 import { lastMessageQuery, markDelivered, toMessage, unreadQuery } from "@/lib/db/messages";
+import { onSnapshot } from "@/lib/firebase/fs";
+import { swallow } from "@/lib/swallow";
 import type { Message } from "@/lib/types";
-
 interface ChatMeta {
   /** Incoming messages not yet read (≤ 99). */
   unreadCount: number;
@@ -36,7 +36,7 @@ export function ChatMetaProvider({ children }: { children: React.ReactNode }) {
       if (toDeliver.length) {
         toDeliver.forEach((id) => delivering.current.add(id));
         markDelivered(toDeliver)
-          .catch(() => undefined)
+          .catch(swallow)
           .finally(() => toDeliver.forEach((id) => delivering.current.delete(id)));
       }
     });
@@ -49,7 +49,8 @@ export function ChatMetaProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!friendUid) return;
     const unsub = onSnapshot(lastMessageQuery(), { includeMetadataChanges: true }, (snap) => {
-      setLastMessage(snap.empty ? null : toMessage(snap.docs[0]));
+      const first = snap.docs[0];
+      setLastMessage(first ? toMessage(first) : null);
     });
     return () => {
       unsub();

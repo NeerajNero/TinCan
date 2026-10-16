@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -52,7 +52,7 @@ export function OnboardingScreen() {
       className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center gap-6 px-6 py-10 safe-top safe-bottom"
       style={{ "--accent": "var(--accent-home)" } as React.CSSProperties}
     >
-      <motion.div
+      <m.div
         className="flex flex-col items-center gap-2 text-center"
         initial={{ y: 12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -63,7 +63,7 @@ export function OnboardingScreen() {
         </span>
         <h1 className="text-3xl font-semibold">Hi, you&apos;re in!</h1>
         <p className="max-w-xs text-muted">Two quick things so your friend knows who&apos;s on the line and what time it is for you.</p>
-      </motion.div>
+      </m.div>
 
       <form onSubmit={handleSubmit} className="card flex flex-col gap-5 p-5">
         <div className="flex flex-col gap-1.5">

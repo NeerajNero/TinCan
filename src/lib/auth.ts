@@ -7,6 +7,7 @@ import {
 
 import { getFirebaseAuth, googleProvider } from "@/lib/firebase/client";
 
+
 /** Popup failures that mean "try the redirect flow instead". */
 const REDIRECT_FALLBACK_CODES = new Set([
   "auth/popup-blocked",

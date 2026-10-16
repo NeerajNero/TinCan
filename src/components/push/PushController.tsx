@@ -28,7 +28,9 @@ export function PushController() {
     void refreshPushToken(uid);
   }, [enabled, uid]);
 
+  // Foreground pushes only matter once push is on; until then firebase/messaging is never loaded.
   useEffect(() => {
+    if (!enabled) return;
     let unsub: (() => void) | null = null;
     let cancelled = false;
     void onForegroundMessage((payload) => {
@@ -45,7 +47,7 @@ export function PushController() {
       cancelled = true;
       unsub?.();
     };
-  }, [toast]);
+  }, [enabled, toast]);
 
   return null;
 }

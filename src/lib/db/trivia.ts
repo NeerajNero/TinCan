@@ -3,9 +3,9 @@
  * trivia/{id}; live mode keeps the shared cursor at RTDB trivia/{id}.
  */
 import { onValue, ref, runTransaction, update } from "firebase/database";
-import { addDoc, collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, type CollectionReference, type DocumentReference } from "@/lib/firebase/fs";
 
 import { getDb, getRtdb } from "@/lib/firebase/client";
+import { addDoc, collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, type CollectionReference, type DocumentReference } from "@/lib/firebase/fs";
 import { randomSeed } from "@/lib/seeded";
 import { pickQuestionIds, totalScore, type TriviaAnswer } from "@/lib/trivia";
 
@@ -34,7 +34,7 @@ export interface LiveCursor {
   answered?: Record<string, number>;
 }
 
-export const triviaCol = () => collection(getDb(), "trivia") as CollectionReference<TriviaRoundDoc>;
+const triviaCol = () => collection(getDb(), "trivia") as CollectionReference<TriviaRoundDoc>;
 export const triviaRef = (id: string) => doc(getDb(), "trivia", id) as DocumentReference<TriviaRoundDoc>;
 const liveRef = (id: string) => ref(getRtdb(), `trivia/${id}`);
 

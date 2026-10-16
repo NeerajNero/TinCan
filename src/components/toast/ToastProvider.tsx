@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import { AnimatePresence, m, type PanInfo } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
@@ -100,7 +100,7 @@ function ToastCard({ toast, onDismiss, onTap }: { toast: Toast; onDismiss: () =>
     if (info.offset.y < -40 || info.velocity.y < -400) onDismiss();
   }
   return (
-    <motion.button
+    <m.button
       type="button"
       onClick={onTap}
       drag="y"
@@ -119,14 +119,14 @@ function ToastCard({ toast, onDismiss, onTap }: { toast: Toast; onDismiss: () =>
       {toast.avatar ? (
         <Avatar user={toast.avatar} size={36} />
       ) : (
-        <motion.span
+        <m.span
           aria-hidden
           className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xl"
           animate={toast.bounce ? { y: [0, -6, 0], rotate: [0, -12, 12, 0] } : { y: 0, rotate: 0 }}
           transition={{ duration: 0.7, ease: "easeOut", repeat: toast.bounce ? 1 : 0 }}
         >
           {toast.emoji ?? "🥫"}
-        </motion.span>
+        </m.span>
       )}
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
@@ -135,7 +135,7 @@ function ToastCard({ toast, onDismiss, onTap }: { toast: Toast; onDismiss: () =>
         </span>
         {toast.body && <span className="block truncate text-sm text-muted">{toast.body}</span>}
       </span>
-    </motion.button>
+    </m.button>
   );
 }
 

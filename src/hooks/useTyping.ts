@@ -6,11 +6,11 @@ import { useCallback, useEffect, useRef } from "react";
 import { useNow } from "@/hooks/useNow";
 import { useRtdbValue } from "@/hooks/useRtdbValue";
 import { rtdbRef } from "@/lib/rtdb";
-
+import { swallow } from "@/lib/swallow";
 const TYPING_TTL_MS = 3000;
 const TYPING_THROTTLE_MS = 1500;
 
-export const typingPath = (uid: string) => `typing/${uid}`;
+const typingPath = (uid: string) => `typing/${uid}`;
 
 /** True while the friend's typing timestamp is under three seconds old (server clock). */
 export function useFriendTyping(friendUid: string | null): boolean {
@@ -30,7 +30,7 @@ export function useTypingWriter(uid: string) {
     if (!wrote.current) return;
     wrote.current = false;
     lastWrite.current = 0;
-    remove(rtdbRef(typingPath(uid))).catch(() => undefined);
+    remove(rtdbRef(typingPath(uid))).catch(swallow);
   }, [uid]);
 
   const ping = useCallback(() => {
@@ -38,7 +38,7 @@ export function useTypingWriter(uid: string) {
     if (now - lastWrite.current < TYPING_THROTTLE_MS) return;
     lastWrite.current = now;
     wrote.current = true;
-    set(rtdbRef(typingPath(uid)), serverTimestamp()).catch(() => undefined);
+    set(rtdbRef(typingPath(uid)), serverTimestamp()).catch(swallow);
   }, [uid]);
 
   // Never leave a stale "typing" behind when the screen unmounts.

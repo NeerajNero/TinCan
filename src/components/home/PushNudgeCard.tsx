@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { X } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
@@ -50,7 +50,7 @@ export function PushNudgeCard() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card relative flex items-center gap-3 px-4 py-3">
+    <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card relative flex items-center gap-3 px-4 py-3">
       <span className="text-3xl" aria-hidden>
         🔔
       </span>
@@ -64,6 +64,6 @@ export function PushNudgeCard() {
       <button type="button" onClick={dismiss} aria-label="Dismiss" className="tap absolute -top-1 -right-1 grid size-9 place-items-center rounded-full text-muted">
         <X size={14} />
       </button>
-    </motion.div>
+    </m.div>
   );
 }

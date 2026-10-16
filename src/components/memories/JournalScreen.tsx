@@ -1,7 +1,6 @@
 "use client";
 
 import { formatDistanceToNowStrict } from "date-fns";
-import type { QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { Pencil, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 
@@ -17,8 +16,11 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { addJournalEntry, deleteJournalEntry, editJournalEntry, JOURNAL_PAGE, journalQuery } from "@/lib/db/journal";
+import type { QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { uploadImages } from "@/lib/media/uploadImages";
+import { errorMessage } from "@/lib/swallow";
 import { MOOD_EMOJI, type JournalDoc } from "@/lib/types";
+
 
 interface Entry extends JournalDoc {
   id: string;
@@ -121,7 +123,7 @@ function Composer({ uid, entry, onDone }: { uid: string; entry: Entry | null; on
       }
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't save. Try again?");
+      setError(errorMessage(err, "Couldn't save. Try again?"));
     } finally {
       setProgress(null);
     }

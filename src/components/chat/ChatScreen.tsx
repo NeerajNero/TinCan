@@ -3,21 +3,21 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { ChatBackground } from "@/components/chat/ChatBackground";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Composer } from "@/components/chat/Composer";
-import { ImageViewer } from "@/components/chat/media/ImageViewer";
+import { ImageViewer, ViewerButton } from "@/components/chat/media/ImageViewer";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageMenu } from "@/components/chat/MessageMenu";
 import { ScheduleSheet } from "@/components/chat/ScheduleSheet";
 import { WaitingCard } from "@/components/home/WaitingCard";
 import { Splash } from "@/components/ui/Splash";
-import { ViewerButton } from "@/components/memories/PhotosScreen";
 import { useMessages } from "@/hooks/useMessages";
-import { findMemoryByPublicId, saveMessageToMemories } from "@/lib/db/memories";
 import { usePair } from "@/hooks/usePair";
 import { useUploads } from "@/hooks/useUploads";
 import { useVisible } from "@/hooks/useVisible";
 import { authedFetch } from "@/lib/api";
+import { findMemoryByPublicId, saveMessageToMemories } from "@/lib/db/memories";
 import {
   deleteForEveryone,
   deleteForMe,
@@ -29,14 +29,15 @@ import {
   sendText,
   toggleReaction,
 } from "@/lib/db/messages";
-import type { Gif } from "@/lib/giphy";
-import type { Recording } from "@/lib/media/recorder";
-import { recordTogetherEvent } from "@/lib/garden";
 import { messagesCol } from "@/lib/db/messages";
 import { getCountFromServer } from "@/lib/firebase/fs";
+import { recordTogetherEvent } from "@/lib/garden";
+import type { Gif } from "@/lib/giphy";
+import type { Recording } from "@/lib/media/recorder";
 import { notify } from "@/lib/notify";
 import { playSound } from "@/lib/sounds";
-import type { Message } from "@/lib/types";
+import { swallow } from "@/lib/swallow";
+import type { ChatBgPref, Message } from "@/lib/types";
 
 export function ChatScreen() {
   const { uid, me, friend, friendUid, loading, pair } = usePair();
@@ -51,19 +52,20 @@ export function ChatScreen() {
   }
   if (loading || !friend) return <Splash label="Finding your friend…" />;
 
-  return <Thread uid={uid} tz={me.tz} friendUid={friendUid} friendName={friend.nickname} friendDoc={friend} needsMessageSticker={!pair.garden?.stickers?.["messages-100"]} />;
+  return <Thread uid={uid} tz={me.tz} chatBg={me.chatBg ?? null} friendUid={friendUid} friendName={friend.nickname} friendDoc={friend} needsMessageSticker={!pair.garden?.stickers?.["messages-100"]} />;
 }
 
 interface ThreadProps {
   uid: string;
   tz: string;
+  chatBg: ChatBgPref | null;
   friendUid: string;
   friendName: string;
   friendDoc: NonNullable<ReturnType<typeof usePair>["friend"]>;
   needsMessageSticker: boolean;
 }
 
-function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker }: ThreadProps) {
+function Thread({ uid, tz, chatBg, friendUid, friendName, friendDoc, needsMessageSticker }: ThreadProps) {
   const router = useRouter();
   const root = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number | null>(null);
@@ -111,7 +113,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
     let cancelled = false;
     void findMemoryByPublicId(viewingPublicId)
       .then((memoryId) => !cancelled && setExistingMemory({ messageId: viewingId, memoryId }))
-      .catch(() => undefined);
+      .catch(swallow);
     return () => {
       cancelled = true;
     };
@@ -128,7 +130,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
     if (toRead.length === 0) return;
     toRead.forEach((m) => reading.current.add(m.id));
     markRead(toRead)
-      .catch(() => undefined)
+      .catch(swallow)
       .finally(() => toRead.forEach((m) => reading.current.delete(m.id)));
   }, [messages, visible, ready, friendUid]);
 
@@ -140,7 +142,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
       playSound("send");
       setLayoutTick((t) => t + 1);
       await notify("message", { toUid: friendUid, body: text.slice(0, 120), data: { messageId: id } });
-      if (needsMessageSticker) void getCountFromServer(messagesCol()).then((c) => c.data().count >= 100 && recordTogetherEvent("messages-100", uid)).catch(() => undefined);
+      if (needsMessageSticker) void getCountFromServer(messagesCol()).then((c) => c.data().count >= 100 && recordTogetherEvent("messages-100", uid)).catch(swallow);
     },
     [uid, friendUid, replyTo, needsMessageSticker],
   );
@@ -150,7 +152,11 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
     await editText(m.id, text);
   }, []);
 
-  const react = useCallback((m: Message, emoji: string) => void toggleReaction(m, uid, emoji).catch(() => undefined), [uid]);
+  const react = useCallback((m: Message, emoji: string) => void toggleReaction(m, uid, emoji).catch(swallow), [uid]);
+  const startReply = useCallback((m: Message) => {
+    setEditing(null);
+    setReplyTo(m);
+  }, []);
 
   const takeReply = useCallback(() => {
     const reply = replyTo ? replyPreview(replyTo) : null;
@@ -187,7 +193,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
           // Fall through to the client-side soft delete; the asset stays until retried.
         }
       }
-      await deleteForEveryone(m.id).catch(() => undefined);
+      await deleteForEveryone(m.id).catch(swallow);
     } finally {
       setDeletingIds((ids) => {
         const next = new Set(ids);
@@ -213,13 +219,11 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
         friendName={friendName}
         initialUnread={initialUnread}
         onOpenMenu={setMenuFor}
-        onReply={(m) => {
-          setEditing(null);
-          setReplyTo(m);
-        }}
+        onReply={startReply}
         onReact={react}
         onOpenImage={setViewing}
         deletingIds={deletingIds}
+        backdrop={<ChatBackground pref={chatBg} />}
         uploads={uploads.uploads}
         onRetryUpload={uploads.retry}
         onDismissUpload={uploads.dismiss}
@@ -237,8 +241,8 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
         onSaveEdit={saveEdit}
         onSendImages={sendImages}
         onSendVoice={sendVoice}
-        onSendSticker={(id) => void sendSticker(id).catch(() => undefined)}
-        onSendGif={(gif) => void sendGif(gif).catch(() => undefined)}
+        onSendSticker={(id) => void sendSticker(id).catch(swallow)}
+        onSendGif={(gif) => void sendGif(gif).catch(swallow)}
         onSchedule={(draft) => setSchedule({ open: true, draft })}
         onFocusInput={() => setLayoutTick((t) => t + 1)}
       />
@@ -272,7 +276,7 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
                       setSavedToMemories(target.id);
                       setExistingMemory({ messageId: target.id, memoryId: id });
                     })
-                    .catch(() => undefined);
+                    .catch(swallow);
                 }}
               >
                 {savedToMemories === viewing.id ? "Saved ✓" : "Save to memories"}
@@ -287,15 +291,12 @@ function Thread({ uid, tz, friendUid, friendName, friendDoc, needsMessageSticker
         uid={uid}
         onClose={() => setMenuFor(null)}
         onReact={react}
-        onReply={(m) => {
-          setEditing(null);
-          setReplyTo(m);
-        }}
+        onReply={startReply}
         onEdit={(m) => {
           setReplyTo(null);
           setEditing(m);
         }}
-        onDeleteForMe={(m) => void deleteForMe(m.id, uid).catch(() => undefined)}
+        onDeleteForMe={(m) => void deleteForMe(m.id, uid).catch(swallow)}
         onDeleteForEveryone={(m) => void removeForEveryone(m)}
       />
     </div>
