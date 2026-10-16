@@ -1,10 +1,10 @@
 "use client";
 
-import { AnimatePresence, m } from "framer-motion";
 import { X } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { Sheet } from "@/components/ui/Sheet";
 import { usePair } from "@/hooks/usePair";
 import { cancelGame, declineGame, playerOf, resign, type LiveGame } from "@/lib/db/games";
 import { GAME_META } from "@/lib/games";
@@ -59,12 +59,7 @@ export function CloseGameMenu({ game, onDone, className }: { game: LiveGame; onD
       >
         <X size={16} />
       </button>
-      <AnimatePresence>
-        {open && (
-          <>
-            <m.button key="bd" type="button" aria-label="Close" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-            <m.div key="sheet" role="dialog" aria-label={copy.title} className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-[480px] flex-col gap-3 rounded-t-[28px] bg-surface p-5 pb-[max(env(safe-area-inset-bottom),20px)] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 420, damping: 38 }}>
-              <div className="mx-auto h-1.5 w-10 rounded-full bg-border" aria-hidden />
+            <Sheet open={open} onClose={() => setOpen(false)} label={copy.title} className="flex flex-col gap-3 px-5">
               <p className="font-heading text-lg font-semibold">{copy.title}</p>
               <p className="text-sm text-muted">{copy.body}</p>
               <div className="flex justify-end gap-2">
@@ -75,10 +70,7 @@ export function CloseGameMenu({ game, onDone, className }: { game: LiveGame; onD
                   {busy ? "…" : copy.action}
                 </Button>
               </div>
-            </m.div>
-          </>
-        )}
-      </AnimatePresence>
+            </Sheet>
     </>
   );
 }

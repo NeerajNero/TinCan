@@ -108,6 +108,7 @@ Both people sign in with Google, pick a nickname and city, and the pair is forme
 | `pnpm typecheck` / `pnpm lint` | Must both pass before a commit |
 | `pnpm test` | Unit tests (game engines, dates/streak, pet, call-time overlap, pings) |
 | `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`); passing |
+| `pnpm test:e2e` | Build + Playwright mobile layout smoke test (first run: `npx playwright install chromium`) |
 | `pnpm profile:chat` | React Profiler run of a 300-message chat thread |
 | `pnpm analyze` / `pnpm knip` | Bundle report / dead-code check |
 | `pnpm rules:build` | Fills `rules/*.tmpl` → `firestore.rules`, `database.rules.json`, `.firebaserc` (all gitignored) |

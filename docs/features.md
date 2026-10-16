@@ -101,6 +101,6 @@ One sticker per `GardenEvent`, unlocked once, stored under `pair.garden.stickers
 - **Auth & onboarding**: `components/auth/*` (SignInScreen, AuthGate, SetupScreen, TakenScreen), `components/onboarding/OnboardingScreen`, `components/pair/PairFullScreen`. `lib/auth.ts`, `lib/allowlist.ts`.
 - **Shell**: `components/shell/AppShell`, `TabBar` (pending spinner on tapped tab), `OfflineBanner`; `lib/tabs.ts`.
 - **Toasts**: `components/toast/ToastProvider`. **Live events**: `components/live/LiveEventsProvider`. **Push**: `components/push/PushController`, `lib/push.ts` (token), `lib/notify.ts` (client → `/api/push`).
-- **UI kit**: `components/ui/*` (Avatar, Button, Card, CloudImage, Input, Skeleton, Spinner, Splash, Switch, TabError). `CloudImage` is the only way to render a Cloudinary photo (srcset, blur-up, lazy); `next/image` is not used anywhere.
+- **UI kit**: `components/ui/*` (Avatar, Button, Card, CloudImage, Input, Portal, Sheet, Skeleton, Spinner, Splash, Switch, TabError). `CloudImage` is the only way to render a Cloudinary photo (srcset, blur-up, lazy); `next/image` is not used anywhere.
 - **Web vitals**: `providers/WebVitals` logs CLS/LCP/INP to the console in development only.
 - **Service worker**: `src/app/sw.ts` (precache, `/offline` fallback, runtime caches for Cloudinary/OSM/GIPHY/ytimg images, NetworkOnly for Firebase/Google/`/api`, FCM background handler, same-origin notification click).

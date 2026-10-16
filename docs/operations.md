@@ -26,6 +26,7 @@
 | `pnpm rules:deploy` | build, then `firebase deploy --only firestore:rules,database` (needs `npm i -g firebase-tools` and `firebase login`) |
 | `pnpm test` | vitest unit tests in `tests/unit` (engines, dates/streak, pet, availability, ping cooldown) |
 | `pnpm test:rules` | build rules, start the emulators (Firestore 8181, RTDB 9191; needs Java), run `tests/rules.test.ts` |
+| `pnpm test:e2e` | production build + Playwright layout smoke test (mobile viewport; first run `npx playwright install chromium`) |
 | `pnpm profile:chat` | React Profiler run of a 300-message thread in happy-dom; prints mount and append cost |
 | `pnpm analyze` | production build with the bundle analyzer report |
 | `pnpm knip` | dead code / unused exports / unused deps; must be clean |

@@ -87,6 +87,16 @@ Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign
 - Light and dark themes (dark is a cosy navy, not pure black). Respect `prefers-color-scheme`,
   overridable in More.
 - Mobile-first; desktop just centres a 480px column. Safe-area insets respected.
+- The document never scrolls: html/body are `height: 100%; overflow: hidden; overscroll-behavior: none`.
+  The app shell is `position: fixed; inset: 0` with `<main>` as the only scroller and the tab bar as its
+  last row; screens outside the shell (sign-in, onboarding, splash, offline…) use the `screen-fixed`
+  utility. Focus with `focusNoScroll` / `autoFocusRef` (`src/lib/focus.ts`), never bare `.focus()` or
+  `autoFocus` on raw elements (`Input` handles `autoFocus` itself). `useDocumentScrollLock` resets any
+  layout-viewport drift. Guarded by `pnpm test:e2e`.
+- Every bottom sheet or menu is `src/components/ui/Sheet.tsx` (portal to body, scrim, safe-area bottom,
+  above the tab bar/header/Leaflet). Any other `position: fixed` overlay goes through `Portal`, with its
+  z-index from `Z` in `src/components/ui/Portal.tsx`: a transformed, filtered or backdrop-blurred ancestor
+  would otherwise become its containing block.
 - Empty states are friendly and suggest an action ("No photos yet — add the first one?").
 - Avoid generic SaaS-dashboard looks: no data tables on Home, no grey card grids.
 - Chat backgrounds are per user (`users/{me}.chatBg`): eight CSS-only built-ins in

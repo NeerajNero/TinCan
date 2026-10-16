@@ -1,10 +1,11 @@
 "use client";
 
-import { AnimatePresence, m } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
 import { useState } from "react";
 
 import { Composer } from "@/components/chat/Composer";
+import { Portal } from "@/components/ui/Portal";
+import { Sheet } from "@/components/ui/Sheet";
 import { useMessages } from "@/hooks/useMessages";
 import { usePair } from "@/hooks/usePair";
 import { useUploads } from "@/hooks/useUploads";
@@ -18,25 +19,20 @@ export function ChatDrawer() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} aria-label="Open chat" className="tap fixed right-4 bottom-[calc(var(--tabbar-h)+24px)] z-30 grid size-12 place-items-center rounded-full bg-[var(--accent)] text-white shadow-lg">
-        <MessageCircle size={22} />
-      </button>
-      <AnimatePresence>
-        {open && friendUid && (
-          <>
-            <m.button key="bd" type="button" aria-label="Close chat" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-            <m.div key="sheet" role="dialog" aria-label="Chat" className="fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[70dvh] w-full max-w-[480px] flex-col rounded-t-[28px] bg-bg shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 420, damping: 38 }}>
-              <div className="flex items-center justify-between px-4 pt-3">
-                <p className="font-heading font-semibold">Chat with {friend?.nickname}</p>
-                <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="tap grid size-10 place-items-center rounded-full text-muted">
-                  <X size={18} />
-                </button>
-              </div>
-              <DrawerBody uid={uid} friendUid={friendUid} friendName={friend?.nickname ?? "Friend"} />
-            </m.div>
-          </>
-        )}
-      </AnimatePresence>
+      <Portal>
+        <button type="button" onClick={() => setOpen(true)} aria-label="Open chat" className="tap fixed right-4 bottom-[calc(var(--tabbar-h)+24px)] z-30 grid size-12 place-items-center rounded-full bg-[var(--accent)] text-white shadow-lg">
+          <MessageCircle size={22} />
+        </button>
+      </Portal>
+      <Sheet open={open && Boolean(friendUid)} onClose={() => setOpen(false)} label="Chat" tone="bg" height="70dvh" scroll={false} className="px-0">
+        <div className="flex items-center justify-between px-4">
+          <p className="font-heading font-semibold">Chat with {friend?.nickname}</p>
+          <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="tap grid size-10 place-items-center rounded-full text-muted">
+            <X size={18} />
+          </button>
+        </div>
+        {friendUid && <DrawerBody uid={uid} friendUid={friendUid} friendName={friend?.nickname ?? "Friend"} />}
+      </Sheet>
     </>
   );
 }

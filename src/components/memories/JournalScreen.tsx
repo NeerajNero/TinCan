@@ -17,6 +17,7 @@ import { cn } from "@/lib/cn";
 import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { addJournalEntry, deleteJournalEntry, editJournalEntry, JOURNAL_PAGE, journalQuery } from "@/lib/db/journal";
 import type { QueryDocumentSnapshot } from "@/lib/firebase/fs";
+import { autoFocusRef } from "@/lib/focus";
 import { uploadImages } from "@/lib/media/uploadImages";
 import { errorMessage } from "@/lib/swallow";
 import { MOOD_EMOJI, type JournalDoc } from "@/lib/types";
@@ -136,7 +137,7 @@ function Composer({ uid, entry, onDone }: { uid: string; entry: Entry | null; on
         onChange={(e) => setText(e.target.value.slice(0, 4000))}
         placeholder="What happened today?"
         rows={4}
-        autoFocus
+        ref={autoFocusRef}
         aria-label="Journal entry"
         className="w-full resize-none rounded-2xl border border-border bg-surface-2 px-4 py-3 text-[15px] focus:border-[var(--accent)] focus:outline-none"
       />

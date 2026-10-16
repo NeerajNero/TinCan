@@ -49,7 +49,7 @@ export function OnboardingScreen() {
 
   return (
     <main
-      className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center gap-6 px-6 py-10 safe-top safe-bottom"
+      className="mx-auto flex screen-fixed w-full max-w-[480px] flex-col justify-center-safe gap-6 px-6 py-10 safe-top safe-bottom"
       style={{ "--accent": "var(--accent-home)" } as React.CSSProperties}
     >
       <m.div

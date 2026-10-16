@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Sheet } from "@/components/ui/Sheet";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { bumpTally, flipNext, resetDeck, respond, setPick, subscribeDeck, type DeckNode } from "@/lib/db/decks";
@@ -97,23 +98,29 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
 
       {node && (
         <div className="flex items-center justify-end gap-2 px-1 text-xs">
-          {!confirmReset ? (
-            <button type="button" onClick={() => setConfirmReset(true)} className="tap px-2 font-bold text-muted">
-              Reset deck
-            </button>
-          ) : (
-            <>
-              <span className="text-muted">Reshuffle and clear the tally?</span>
-              <button type="button" onClick={() => setConfirmReset(false)} className="tap px-2 font-bold text-muted">
-                Keep
-              </button>
-              <button type="button" onClick={() => { void resetDeck(kind, uid); setConfirmReset(false); }} className="tap rounded-full bg-red-500 px-3 font-bold text-white">
-                Reset
-              </button>
-            </>
-          )}
+          <button type="button" onClick={() => setConfirmReset(true)} className="tap px-2 font-bold text-muted">
+            Reset deck
+          </button>
         </div>
       )}
+      <Sheet open={confirmReset} onClose={() => setConfirmReset(false)} label="Reset deck" className="flex flex-col gap-3 px-5">
+        <p className="font-heading text-lg font-semibold">Reset the deck?</p>
+        <p className="text-sm text-muted">Reshuffles the cards and clears the tally for both of you.</p>
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setConfirmReset(false)}>
+            Keep
+          </Button>
+          <Button
+            className="bg-red-500 text-white"
+            onClick={() => {
+              void resetDeck(kind, uid);
+              setConfirmReset(false);
+            }}
+          >
+            Reset
+          </Button>
+        </div>
+      </Sheet>
       {node && (
         <div className="flex items-center justify-between px-1">
           <p className="text-xs text-muted">

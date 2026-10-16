@@ -2,12 +2,15 @@
 
 import { m } from "framer-motion";
 
-export function Splash({ label = "Untangling the string…" }: { label?: string }) {
+import { cn } from "@/lib/cn";
+
+/** Full-screen loader. `inline` fills the shell's main area instead (screens inside the tab layout). */
+export function Splash({ label = "Untangling the string…", inline = false }: { label?: string; inline?: boolean }) {
   return (
     <div
       role="status"
       aria-live="polite"
-      className="flex min-h-dvh flex-col items-center justify-center gap-4 safe-top safe-bottom"
+      className={cn("flex flex-col items-center justify-center-safe gap-4", inline ? "min-h-0 flex-1" : "screen-fixed safe-top safe-bottom")}
     >
       <m.div
         aria-hidden

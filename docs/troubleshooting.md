@@ -21,6 +21,8 @@
 | CSP violation in console (request blocked) | a new origin (CDN, stream URL) | add it to the matching directive in `next.config.ts`; to unblock users meanwhile set `CSP_REPORT_ONLY=1` on Vercel and redeploy |
 | Animations missing or `motion` import warning | a component imported `motion` instead of `m` | use `m.*`; features come from `<LazyMotion>` in Providers |
 | Chat background not showing | `chatBg` rejected by rules (photo not from our cloud or unknown key) | check `rules/firestore.rules.tmpl` → `chatBgOk()`; deploy rules |
+| A sheet or overlay opens in the wrong place (above the header, off-screen) | it's `position: fixed` inside an ancestor with a transform, filter or backdrop-filter | use `Sheet` / `Portal` (renders into `<body>`) |
+| The whole UI, tab bar included, scrolls up | something made the document scrollable or focused without `preventScroll` | keep screens in the shell or `screen-fixed`; use `focusNoScroll`; run `pnpm test:e2e` |
 | `pnpm profile:chat` fails to start a worker | jsdom needs Node 22 | the config uses happy-dom; keep it |
 | Tick does nothing | wrong `x-tick-secret`, or the 15-minute window already passed and `tickLog` has the key | `pnpm tick:dry`; delete the `tickLog` doc to re-run a job |
 | Home countdown shows a trip not the meetup | `pair.nextMeetup` empty → nearest trip is the fallback | set the next meetup in More |

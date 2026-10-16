@@ -1,9 +1,9 @@
 "use client";
 
-import { AnimatePresence, m } from "framer-motion";
 import { Check, ImageIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Sheet } from "@/components/ui/Sheet";
 import { CHAT_BACKGROUNDS } from "@/content/chat-backgrounds";
 import { useTheme } from "@/hooks/useTheme";
 import { thumbUrl } from "@/lib/cloudinary";
@@ -70,21 +70,7 @@ export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProp
   }
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <m.button key="backdrop" type="button" aria-label="Close" onClick={close} className="fixed inset-0 z-40 bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-          <m.div
-            key="sheet"
-            role="dialog"
-            aria-label="Chat background"
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[80dvh] w-full max-w-[480px] flex-col rounded-t-[28px] bg-surface p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 420, damping: 38 }}
-          >
-            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-border" aria-hidden />
+          <Sheet open={open} onClose={close} label="Chat background" maxHeight="80dvh">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold">{choosingPhoto ? "Pick a memory" : "Chat background"}</h2>
               {choosingPhoto && (
@@ -148,9 +134,6 @@ export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProp
                 ))}
               </div>
             )}
-          </m.div>
-        </>
-      )}
-    </AnimatePresence>
+          </Sheet>
   );
 }

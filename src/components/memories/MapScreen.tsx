@@ -1,7 +1,6 @@
 "use client";
 
 import { format } from "date-fns";
-import { AnimatePresence, m } from "framer-motion";
 import { Search, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
@@ -12,6 +11,7 @@ import { SubHeader } from "@/components/memories/SubHeader";
 import { Button } from "@/components/ui/Button";
 import { CloudImage } from "@/components/ui/CloudImage";
 import { Input, Label } from "@/components/ui/Input";
+import { Sheet } from "@/components/ui/Sheet";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
@@ -112,8 +112,10 @@ export function MapScreen() {
       </div>
       <p className="px-1 text-center text-xs text-muted">🟢 been · 🟣 want to go · 🏠 home. Hold the map to add a place.</p>
 
-      <AnimatePresence>
+      <Sheet open={draft !== null} onClose={() => setDraft(null)} label={draft?.id ? "Edit place" : "Add place"} maxHeight="80dvh" className="flex flex-col gap-3 px-4">
         {draft && <PlaceForm key={draft.id ?? "new"} draft={draft} uid={uid} onClose={() => setDraft(null)} />}
+      </Sheet>
+      <Sheet open={selected !== null && !draft} onClose={() => setSelected(null)} label={selected?.name ?? "Place"} maxHeight="80dvh" className="flex flex-col gap-3 px-4">
         {selected && !draft && (
           <PlaceSheet
             key={selected.id}
@@ -128,28 +130,8 @@ export function MapScreen() {
             onClose={() => setSelected(null)}
           />
         )}
-      </AnimatePresence>
+      </Sheet>
     </div>
-  );
-}
-
-function Sheet({ children, onClose, label }: { children: React.ReactNode; onClose: () => void; label: string }) {
-  return (
-    <>
-      <m.button type="button" aria-label="Close" onClick={onClose} className="fixed inset-0 z-[600] bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-      <m.div
-        role="dialog"
-        aria-label={label}
-        className="fixed inset-x-0 bottom-0 z-[601] mx-auto flex max-h-[80dvh] w-full max-w-[480px] flex-col gap-3 overflow-y-auto rounded-t-[28px] bg-surface p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]"
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "spring", stiffness: 420, damping: 38 }}
-      >
-        <div className="mx-auto h-1.5 w-10 rounded-full bg-border" aria-hidden />
-        {children}
-      </m.div>
-    </>
   );
 }
 
@@ -178,7 +160,7 @@ function PlaceForm({ draft, uid, onClose }: { draft: Draft; uid: string; onClose
   }
 
   return (
-    <Sheet onClose={onClose} label={draft.id ? "Edit place" : "Add place"}>
+    <>
       <h2 className="text-lg font-semibold">{draft.id ? "Edit place" : "New place"}</h2>
       <Input value={name} onChange={(e) => setName(e.target.value.slice(0, 80))} placeholder="Name" aria-label="Place name" autoFocus />
       <div role="radiogroup" aria-label="Kind" className="flex gap-2">
@@ -204,7 +186,7 @@ function PlaceForm({ draft, uid, onClose }: { draft: Draft; uid: string; onClose
           {busy ? "Saving…" : draft.id ? "Save" : "Add pin"}
         </Button>
       </div>
-    </Sheet>
+    </>
   );
 }
 
@@ -217,7 +199,7 @@ function PlaceSheet({ pin, uid, me, friend, onEdit, onClose }: { pin: MapPin; ui
   }, [pin.id]);
 
   return (
-    <Sheet onClose={onClose} label={pin.name}>
+    <>
       <div className="flex items-start gap-3">
         <span className="text-3xl" aria-hidden>
           {pin.kind === "been" ? "🟢" : "🟣"}
@@ -251,6 +233,6 @@ function PlaceSheet({ pin, uid, me, friend, onEdit, onClose }: { pin: MapPin; ui
         <Button onClick={onClose}>Done</Button>
       </div>
       <ImageViewer src={viewing?.url ?? null} caption={viewing?.caption} onClose={() => setViewing(null)} />
-    </Sheet>
+    </>
   );
 }

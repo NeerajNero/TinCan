@@ -3,6 +3,7 @@
 import { AnimatePresence, m } from "framer-motion";
 import { useEffect } from "react";
 
+import { Portal, Z } from "@/components/ui/Portal";
 import type { IncomingPing } from "@/hooks/useIncomingPings";
 import { PINGS, type PingKind } from "@/lib/types";
 
@@ -30,6 +31,7 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
   }, [ping, onDone]);
 
   return (
+    <Portal>
     <AnimatePresence>
       {ping && (
         <m.button
@@ -37,7 +39,8 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
           type="button"
           aria-label="Dismiss"
           onClick={onDone}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-bg/80 backdrop-blur-sm"
+          className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-bg/80 backdrop-blur-sm"
+          style={{ zIndex: Z.overlay }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -90,5 +93,6 @@ export function PingOverlay({ ping, fromName, onDone }: PingOverlayProps) {
         </m.button>
       )}
     </AnimatePresence>
+    </Portal>
   );
 }

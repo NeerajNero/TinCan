@@ -77,7 +77,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
     }
   }, [game?.status, game?.winnerId, uid]);
 
-  if (game === undefined) return <Splash label="Setting up the board…" />;
+  if (game === undefined) return <Splash label="Setting up the board…" inline />;
   if (game === null) {
     return (
       <div className="flex flex-col gap-4">

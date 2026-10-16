@@ -52,7 +52,7 @@ export function SignInScreen() {
 
   return (
     <main
-      className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col items-center justify-center gap-6 px-6 text-center safe-top safe-bottom"
+      className="mx-auto flex screen-fixed w-full max-w-[480px] flex-col items-center justify-center-safe gap-6 px-6 text-center safe-top safe-bottom"
       style={{ "--accent": "var(--accent-home)" } as React.CSSProperties}
     >
       <m.div

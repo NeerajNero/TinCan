@@ -4,6 +4,10 @@
 
 Vitest over the pure modules in `tests/unit`: game engines against known positions (checkers mandatory capture, multi-jump and crowning; chess promotion, fool's-mate checkmate and stalemate; Connect Four diagonal win and draw; tic-tac-toe lines), `dateKey` roll-over at ROOM_TZ midnight and streak transitions (`lib/streak.ts`), pet stat derivation and levels, call-time overlap across zones including a slot that crosses midnight after conversion, and the ping cooldown (`lib/pings.ts`). Keep logic that needs testing in `src/lib` with no Firebase import so it stays testable.
 
+## Layout smoke test (`pnpm test:e2e`)
+
+Playwright on a Pixel 7 viewport against a production build (`next build` then `next start -p 3100`; no sign-in needed). For `/signin` and `/offline` it asserts `document.documentElement.scrollHeight` equals the viewport height, both as shipped and with the html/body clamp lifted (the clamp alone would only clip a too-tall screen), at full height and at a 200 px-tall viewport, and that `window.scrollTo` can't move the page. First run needs `npx playwright install chromium`. There is no CI pipeline in the repo yet; run it before pushing layout changes.
+
 ## Profiling the chat list (`pnpm profile:chat`)
 
 `tests/perf/chat.profile.test.tsx` mounts `MessageList` with 300 messages under React's `<Profiler>` in happy-dom and appends ten more, printing the mount cost and the median append commit. It asserts an append costs under a quarter of the mount (the memoised bubbles must not re-render). Numbers are an upper bound: happy-dom is slower than a phone's Chrome. Windowing (`@tanstack/react-virtual`) is only worth adding if an append exceeds ~16 ms in a real browser.

@@ -1,10 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": [
+    "scripts/*.mjs",
     "src/app/sw.ts",
     "tests/**/*.test.ts",
-    "vitest.rules.config.mts",
-    "scripts/*.mjs"
+    "tests/e2e/*.spec.ts",
+    "vitest.rules.config.mts"
   ],
   "project": [
     "src/**/*.{ts,tsx}",

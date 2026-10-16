@@ -33,6 +33,13 @@ TypeScript runs `strict` + `noUncheckedIndexedAccess`: index reads are `T | unde
 
 Errors: fire-and-forget promises end in `.catch(swallow)`; anything shown to the user goes through `errorMessage(err, fallback)` (both in `lib/swallow.ts`). Toasts come from `useToast()`; there is no second toast or error path.
 
+## Overlays and scrolling
+
+- Bottom sheets and menus: `<Sheet open onClose label className>` from `components/ui/Sheet`. It portals to `<body>`, adds the scrim, the drag handle, Escape-to-close and the safe-area bottom padding, and mounts children only while open. `className` styles the content column (include horizontal padding, default `px-4`); `tone`, `height`, `maxHeight`, `scroll` cover the chat drawer case. For a `T | null`-driven menu use `useStickyValue` so the content stays during the exit animation.
+- Any other fixed overlay (viewer, ping overlay, confetti, floating buttons) is wrapped in `<Portal>` and takes its z-index from `Z`. Never rely on `position: fixed` inside a screen: the chat header's `backdrop-blur`, the tab transition's transform and similar make an ancestor the containing block.
+- The document is locked. New full-screen pages outside the shell use `screen-fixed` (and `justify-center-safe` if centred, so tall content isn't cut off at the top). Inside the shell, never use `h-dvh`/`min-h-dvh`; fill with `flex-1 min-h-0`.
+- Focus programmatically with `focusNoScroll(el)` and on mount with `ref={autoFocusRef}`; `Input`'s `autoFocus` already does this.
+
 ## Design tokens
 
 Theme colours are CSS variables on `:root` (`--bg`, `--surface`, `--surface-2`, `--border`, `--muted`, `--accent`, `--accent-soft`, …) with light/dark values; Tailwind utilities map to them (`bg-surface`, `text-muted`, `bg-accent-soft`). Each tab sets its own `--accent`. Cards are `rounded-[20px]`; tap targets ≥ 44 px; every icon-only button has `aria-label`.

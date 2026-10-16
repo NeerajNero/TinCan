@@ -78,13 +78,24 @@
   --shadow-card: var(--shadow-card);
 }
 
+/*
+ * The document never scrolls. Every screen lives in a position: fixed box
+ * (the app shell, or a full-screen page) with its own scroller, so neither a
+ * tall screen nor the browser's scroll-focused-input-into-view can move the
+ * page, and the tab bar with it. Fixed boxes don't add to the document's
+ * scrollable overflow. Guarded by tests/e2e/layout.spec.ts.
+ */
 html {
   height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   background: var(--bg);
 }
 
 body {
-  min-height: 100dvh;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
@@ -116,6 +127,14 @@ h3,
 
 @utility safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* A full-screen page outside the app shell (sign-in, onboarding, splash…): fixed, scrolls itself. */
+@utility screen-fixed {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 @utility tap {

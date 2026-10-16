@@ -51,7 +51,7 @@ export function HomeScreen() {
     );
   }
 
-  if (loading || !friend) return <Splash label="Finding your friend…" />;
+  if (loading || !friend) return <Splash label="Finding your friend…" inline />;
 
   return (
     <div className="flex flex-col gap-4">

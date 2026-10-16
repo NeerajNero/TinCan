@@ -9,6 +9,7 @@ import { MediaPanel } from "@/components/chat/media/MediaPanel";
 import { useTypingWriter } from "@/hooks/useTyping";
 import { cn } from "@/lib/cn";
 import { MAX_TEXT } from "@/lib/db/messages";
+import { focusNoScroll } from "@/lib/focus";
 import type { Gif } from "@/lib/giphy";
 import {
   formatClock,
@@ -83,12 +84,12 @@ export function Composer(props: ComposerProps) {
   useEffect(() => {
     const el = textarea.current;
     if (!editing || !el) return;
-    el.focus();
+    focusNoScroll(el);
     el.setSelectionRange(el.value.length, el.value.length);
   }, [editing]);
 
   useEffect(() => {
-    if (replyTo) textarea.current?.focus();
+    if (replyTo) focusNoScroll(textarea.current);
   }, [replyTo]);
 
   // Auto-grow up to MAX_ROWS lines.
@@ -130,7 +131,7 @@ export function Composer(props: ComposerProps) {
       }
     } finally {
       setBusy(false);
-      textarea.current?.focus();
+      focusNoScroll(textarea.current);
     }
   }
 
@@ -152,7 +153,7 @@ export function Composer(props: ComposerProps) {
     );
     setText(next);
     queueMicrotask(() => {
-      el?.focus();
+      focusNoScroll(el);
       el?.setSelectionRange(start + emoji.length, start + emoji.length);
     });
   }

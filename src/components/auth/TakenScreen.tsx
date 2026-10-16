@@ -23,7 +23,7 @@ export function TakenScreen() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col items-center justify-center gap-4 px-6 text-center safe-top safe-bottom">
+    <main className="mx-auto flex screen-fixed w-full max-w-[480px] flex-col items-center justify-center-safe gap-4 px-6 text-center safe-top safe-bottom">
       <div className="text-7xl" aria-hidden>
         🥫🔒
       </div>

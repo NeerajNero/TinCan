@@ -4,6 +4,7 @@ import { AnimatePresence, m } from "framer-motion";
 import { Copy, Pencil, Reply, Trash2, UserX } from "lucide-react";
 import { useState } from "react";
 
+import { Sheet, useStickyValue } from "@/components/ui/Sheet";
 import { cn } from "@/lib/cn";
 import { canEdit } from "@/lib/db/messages";
 import { EMOJI_GRID, QUICK_EMOJI } from "@/lib/emoji";
@@ -21,8 +22,10 @@ interface MessageMenuProps {
 }
 
 /** Bottom sheet with reactions and actions for one message. */
-export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, onDeleteForMe, onDeleteForEveryone }: MessageMenuProps) {
+export function MessageMenu({ message: current, uid, onClose, onReact, onReply, onEdit, onDeleteForMe, onDeleteForEveryone }: MessageMenuProps) {
   const [moreEmoji, setMoreEmoji] = useState(false);
+  // Keep the last message on screen while the sheet slides away.
+  const message = useStickyValue(current);
   const mine = message?.senderId === uid;
   const deleted = message?.deletedForEveryone ?? false;
 
@@ -41,30 +44,9 @@ export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, o
   }
 
   return (
-    <AnimatePresence>
+    <Sheet open={current !== null} onClose={close} label="Message options">
       {message && (
         <>
-          <m.button
-            key="backdrop"
-            type="button"
-            aria-label="Close"
-            onClick={close}
-            className="fixed inset-0 z-40 bg-black/30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
-          <m.div
-            key="sheet"
-            role="dialog"
-            aria-label="Message options"
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[480px] rounded-t-[28px] bg-surface p-4 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 420, damping: 38 }}
-          >
-            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-border" aria-hidden />
 
             {!deleted && (
               <div className="mb-3 flex flex-col gap-2">
@@ -111,10 +93,9 @@ export function MessageMenu({ message, uid, onClose, onReact, onReply, onEdit, o
                 <Action icon={<Trash2 size={18} />} label="Delete for everyone" danger onClick={() => { onDeleteForEveryone(message); close(); }} />
               )}
             </div>
-          </m.div>
-        </>
+                  </>
       )}
-    </AnimatePresence>
+    </Sheet>
   );
 }
 

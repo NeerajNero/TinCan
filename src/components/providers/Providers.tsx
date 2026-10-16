@@ -5,10 +5,12 @@ import { LazyMotion } from "framer-motion";
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { useDocumentScrollLock } from "@/hooks/useDocumentScrollLock";
 
 const loadMotionFeatures = () => import("@/lib/motionFeatures").then((mod) => mod.default);
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  useDocumentScrollLock();
   return (
     <SerwistProvider
       swUrl="/serwist/sw.js"

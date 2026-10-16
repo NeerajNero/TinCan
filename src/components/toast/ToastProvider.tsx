@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
 import { Avatar } from "@/components/ui/Avatar";
+import { Z } from "@/components/ui/Portal";
 import { cn } from "@/lib/cn";
 import type { UserDoc } from "@/lib/types";
 
@@ -76,7 +77,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="pointer-events-none fixed inset-x-3 top-[max(env(safe-area-inset-top),10px)] z-[60] mx-auto flex max-w-[456px] flex-col gap-2" aria-live="polite">
+      <div className="pointer-events-none fixed inset-x-3 top-[max(env(safe-area-inset-top),10px)] mx-auto flex max-w-[456px] flex-col gap-2" style={{ zIndex: Z.toast }} aria-live="polite">
         <AnimatePresence initial={false}>
           {toasts.map((t) => (
             <ToastCard

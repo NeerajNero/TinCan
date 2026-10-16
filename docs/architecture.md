@@ -38,6 +38,10 @@ Nothing under `src/components`, `src/hooks` or the client half of `src/lib` may 
 
 Every screen reads shared data through these hooks: `usePair()`, `useChatMeta()`, `useLiveEvents()`, `useFriendPresence()`, `useToast()`. **Never re-subscribe per component to something a provider already holds.**
 
+## Layout
+
+The document never scrolls. `html`/`body` are clamped in `globals.css`; `AppShell` is `fixed inset-0` (centred 480 px column) whose `<main>` is the only scroller, with the tab bar as the last flex row. Pages outside the shell use the `screen-fixed` utility. `useDocumentScrollLock` (mounted in `Providers`) snaps the layout viewport back to 0,0 on any `visualViewport` scroll/resize, and focus goes through `focusNoScroll` so Android's scroll-into-view can't move the page. Sheets and overlays are portalled to `<body>` (`ui/Sheet`, `ui/Portal`) with one z-index scale (`Z`). `tests/e2e/layout.spec.ts` guards the lock.
+
 ## Realtime split
 
 - **Firestore** holds anything that must survive: messages, journal, memories, lists, results, the pair doc. All listeners are bounded (`limit(n)` or a single doc) — see data-model.md for the full table.

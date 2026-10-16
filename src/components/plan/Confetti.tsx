@@ -2,14 +2,16 @@
 
 import { AnimatePresence, m } from "framer-motion";
 
+import { Portal, Z } from "@/components/ui/Portal";
 const COLORS = ["#ff8fab", "#ffb454", "#6fb6ff", "#5fd3a4", "#b48cff", "#ffd166"];
 
 /** A short burst of paper for bucket-list wins. Keyed on `burst` so each change re-fires. */
 export function Confetti({ burst }: { burst: number }) {
   return (
+    <Portal>
     <AnimatePresence>
       {burst > 0 && (
-        <div key={burst} className="pointer-events-none fixed inset-0 z-[70] overflow-hidden" aria-hidden>
+        <div key={burst} className="pointer-events-none fixed inset-0 overflow-hidden" style={{ zIndex: Z.confetti }} aria-hidden>
           {Array.from({ length: 22 }, (_, i) => {
             const x = 10 + ((i * 37) % 80);
             const delay = (i % 7) * 0.05;
@@ -27,5 +29,6 @@ export function Confetti({ burst }: { burst: number }) {
         </div>
       )}
     </AnimatePresence>
+    </Portal>
   );
 }

@@ -27,7 +27,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Main"
-      className="sticky bottom-0 z-40 px-3 pt-2 pb-[max(env(safe-area-inset-bottom),12px)]"
+      className="relative z-40 shrink-0 px-3 pt-2 pb-[max(env(safe-area-inset-bottom),12px)]"
     >
       <div className="card grid grid-cols-6 gap-0.5 rounded-[28px] bg-surface/90 p-1.5 backdrop-blur-md">
         {TABS.map((tab) => {

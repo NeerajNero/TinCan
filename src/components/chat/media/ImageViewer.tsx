@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { CloudImage } from "@/components/ui/CloudImage";
+import { Portal, Z } from "@/components/ui/Portal";
 import { safeCloudinary } from "@/lib/safeUrl";
 
 interface ImageViewerProps {
@@ -22,9 +23,11 @@ const MAX_SCALE = 4;
 /** Full-screen photo: pinch (or double-tap) to zoom, drag to pan when zoomed, swipe down to close. */
 export function ImageViewer({ src, caption, meta, actions, onClose }: ImageViewerProps) {
   return (
-    <AnimatePresence>
-      {safeCloudinary(src) && <Viewer key={src} src={src as string} caption={caption} meta={meta} actions={actions} onClose={onClose} />}
-    </AnimatePresence>
+    <Portal>
+      <AnimatePresence>
+        {safeCloudinary(src) && <Viewer key={src} src={src as string} caption={caption} meta={meta} actions={actions} onClose={onClose} />}
+      </AnimatePresence>
+    </Portal>
   );
 }
 
@@ -101,7 +104,8 @@ function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { s
           key="viewer"
           role="dialog"
           aria-label="Photo"
-          className="fixed inset-0 z-50 flex flex-col bg-black"
+          className="fixed inset-0 flex flex-col bg-black"
+          style={{ zIndex: Z.viewer }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
