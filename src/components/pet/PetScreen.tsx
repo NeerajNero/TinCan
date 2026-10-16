@@ -53,7 +53,7 @@ export function PetScreen() {
   if (!pet || !stats) {
     return (
       <div className="flex flex-col gap-4">
-        <SubHeader emoji="🐾" title="Pet" back="/" />
+        <SubHeader help="pet" emoji="🐾" title="Pet" back="/" />
         <AdoptCard />
       </div>
     );
@@ -82,7 +82,7 @@ export function PetScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🐾" title={pet.name} back="/" />
+      <SubHeader help="pet" emoji="🐾" title={pet.name} back="/" />
       <Card className="flex flex-col items-center gap-3 py-6">
         <m.button
           type="button"

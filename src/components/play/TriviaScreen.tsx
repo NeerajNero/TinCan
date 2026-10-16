@@ -55,7 +55,7 @@ export function TriviaLobby() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🧠" title="Trivia duel" back="/play" screenName="Trivia duel" />
+      <SubHeader help="trivia" emoji="🧠" title="Trivia duel" back="/play" screenName="Trivia duel" />
       <Card className="flex flex-col gap-3">
         <p className="text-sm text-muted">Ten questions, 15 seconds each. Right answers score 10, plus up to 5 for speed.</p>
         <div className="flex gap-2">
@@ -113,7 +113,7 @@ export function TriviaRound({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji={round.mode === "live" ? "⚡" : "🧠"} title={round.mode === "live" ? "Live duel" : "Trivia round"} back="/play/trivia" screenName="Trivia duel" />
+      <SubHeader help="trivia" emoji={round.mode === "live" ? "⚡" : "🧠"} title={round.mode === "live" ? "Live duel" : "Trivia round"} back="/play/trivia" screenName="Trivia duel" />
       {mineDone && theirsDone && <Results round={round} uid={uid} friendUid={friendUid} nameOf={nameOf} />}
       {mineDone && !theirsDone && (
         <Card className="flex flex-col items-center gap-2 py-8 text-center">

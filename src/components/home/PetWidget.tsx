@@ -8,6 +8,7 @@ import { StatBar } from "@/components/pet/PetBits";
 import { usePet } from "@/components/pet/PetScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { HowToButton } from "@/components/ui/HowTo";
 import { PetSprite } from "@/content/pets";
 import { feedPet } from "@/lib/db/pet";
 
@@ -36,6 +37,7 @@ export function PetWidget() {
           </Link>
         </div>
       </div>
+      <HowToButton topic="pet" autoOpen={false} className="self-start" />
     </Card>
   );
 }

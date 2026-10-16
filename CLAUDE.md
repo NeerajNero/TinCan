@@ -299,6 +299,9 @@ radio stations (6 public stream URLs with names).
 - **Focus timer**: shared Pomodoro 25/5; both see the same countdown; chime at phase end.
 - **Cook-along**: pick a recipe (both can add recipes); steps tick off live for both.
 - **Mood history**: month calendar with both users' emoji per day.
+- **How-to sheets**: every game, together activity and slow feature (pet, plant, garden, jar, capsules,
+  envelopes, daily question, call-time finder) has an entry in `src/content/howto.ts`, shown by the ? in
+  its header (auto-opens once per device) and used for Play tile sub-labels. No tours or tooltips.
 - **Usage meter**: client counts Firestore reads/writes per session and estimates daily use vs
   the free quota; shows a friendly gauge in More. Purely informational.
 

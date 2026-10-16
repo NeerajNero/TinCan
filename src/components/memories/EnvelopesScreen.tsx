@@ -42,6 +42,7 @@ export function EnvelopesScreen() {
   return (
     <div className="flex flex-col gap-4">
       <SubHeader
+        help="envelopes"
         emoji="💌"
         title="Open when…"
         action={

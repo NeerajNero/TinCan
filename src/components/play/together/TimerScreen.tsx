@@ -80,7 +80,7 @@ export function TimerScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="⏱️" title="Focus timer" back="/play" screenName="the focus timer" />
+      <SubHeader help="timer" emoji="⏱️" title="Focus timer" back="/play" screenName="the focus timer" />
       <div role="tablist" className="grid grid-cols-2 gap-1 rounded-full bg-surface-2 p-1">
         {(["focus", "break"] as const).map((m) => (
           <button key={m} type="button" role="tab" aria-selected={t.mode === m} onClick={() => void switchMode(m)} className={cn("tap rounded-full py-2 text-sm font-bold", t.mode === m ? "bg-surface shadow-sm" : "text-muted")}>

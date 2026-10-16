@@ -59,7 +59,7 @@ export function CallsScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="📞" title="Call-time finder" back="/plan" />
+      <SubHeader help="calls" emoji="📞" title="Call-time finder" back="/plan" />
       <div role="tablist" className="grid grid-cols-2 gap-1 rounded-full bg-surface-2 p-1">
         {(["mine", "overlap"] as const).map((t) => (
           <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={cn("tap rounded-full py-2 text-sm font-bold", tab === t ? "bg-surface shadow-sm" : "text-muted")}>

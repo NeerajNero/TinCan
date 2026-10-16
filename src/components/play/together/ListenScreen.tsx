@@ -32,6 +32,7 @@ export function ListenScreen() {
   return (
     <div className="relative flex flex-col gap-3 pb-20">
       <SubHeader
+        help="listen"
         emoji="🎧"
         title="Listen together"
         back="/play"

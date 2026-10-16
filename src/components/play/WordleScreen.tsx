@@ -94,7 +94,7 @@ export function WordleScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🟩" title="Daily word" back="/play" screenName="Daily word" />
+      <SubHeader help="word" emoji="🟩" title="Daily word" back="/play" screenName="Daily word" />
       {mine === undefined && <Card className="py-8 text-center text-muted">Loading…</Card>}
 
       {mine !== undefined && (

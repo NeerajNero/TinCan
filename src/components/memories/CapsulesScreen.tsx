@@ -55,6 +55,7 @@ export function CapsulesScreen() {
   return (
     <div className="flex flex-col gap-4">
       <SubHeader
+        help="capsules"
         emoji="⏳"
         title="Time capsules"
         action={

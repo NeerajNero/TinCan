@@ -17,13 +17,17 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Splash } from "@/components/ui/Splash";
+import type { HowToKey } from "@/content/howto";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { acceptGame, declineGame, describeResult, GAME_REACTIONS, gameRoute, playerOf, playMove, rematch, resign, sendReaction, subscribeGame, uidOf, type LiveGame } from "@/lib/db/games";
+import type { GameType } from "@/lib/games";
 import { engineFor } from "@/lib/games/all";
 import { gameInfo } from "@/lib/games/catalog";
 import { playSound } from "@/lib/sounds";
 
+/** Board games share their how-to keys with the engine types. */
+const HOWTO_FOR_GAME: Record<GameType, HowToKey> = { tictactoe: "tictactoe", connectfour: "connectfour", chess: "chess", checkers: "checkers" };
 
 const ChessBoard = dynamic(() => import("@/components/play/boards/ChessBoard").then((m) => m.ChessBoard), { ssr: false, loading: () => <ListSkeleton rows={1} tall /> });
 export function GameScreen({ gameId }: { gameId: string }) {
@@ -106,7 +110,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji={meta.emoji} title={meta.name} back="/play" />
+      <SubHeader emoji={meta.emoji} title={meta.name} back="/play" help={HOWTO_FOR_GAME[game.type]} />
 
       {/* sticky turn header */}
       <div className="sticky top-0 z-10 -mx-4 bg-bg/90 px-4 py-2 backdrop-blur-md">

@@ -113,6 +113,7 @@ export function WatchScreen() {
   return (
     <div className="flex flex-col gap-3 pb-20">
       <SubHeader
+        help="watch"
         emoji="📺"
         title="Watch together"
         back="/play"

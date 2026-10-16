@@ -69,7 +69,7 @@ export function JarScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🫙" title="Jar" />
+      <SubHeader help="jar" emoji="🫙" title="Jar" />
 
       <Card className="flex flex-col items-center gap-3 py-6 text-center">
         <m.span className="text-7xl" aria-hidden animate={drawing ? { rotate: [0, -12, 12, -8, 8, 0] } : { rotate: 0 }} transition={{ duration: 0.6 }}>

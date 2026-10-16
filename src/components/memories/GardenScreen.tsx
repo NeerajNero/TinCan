@@ -20,7 +20,7 @@ export function GardenScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🌻" title="Garden" />
+      <SubHeader help="garden" emoji="🌻" title="Garden" />
       <p className="-mt-2 px-2 text-xs text-muted">
         {count}/{GARDEN_STICKERS.length} stickers grown. Do things together and the garden fills up.
       </p>

@@ -46,6 +46,7 @@ export function QuizList() {
   return (
     <div className="flex flex-col gap-4">
       <SubHeader
+        help="quiz"
         emoji="🪞"
         title="Know-me quiz"
         back="/play"
@@ -108,7 +109,7 @@ function AuthorView({ quiz, uid, friendUid, nameOf }: { quiz: Quiz; uid: string;
   if (editing) return <QuizEditor uid={uid} friendUid={friendUid} quiz={quiz} onDone={() => setEditing(false)} />;
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🪞" title={quiz.title || "Your quiz"} back="/play/quiz" screenName="Know-me quiz" />
+      <SubHeader help="quiz" emoji="🪞" title={quiz.title || "Your quiz"} back="/play/quiz" screenName="Know-me quiz" />
       <Card className="flex flex-col items-center gap-2 text-center">
         {taken ? (
           <>
@@ -171,7 +172,7 @@ function QuizEditor({ uid, friendUid, quiz, onDone }: { uid: string; friendUid: 
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🪞" title={quiz ? "Edit quiz" : "New quiz"} back="/play/quiz" screenName="Know-me quiz" />
+      <SubHeader help="quiz" emoji="🪞" title={quiz ? "Edit quiz" : "New quiz"} back="/play/quiz" screenName="Know-me quiz" />
       <Card className="flex flex-col gap-2">
         <Label htmlFor="quiz-title">Title (optional)</Label>
         <Input id="quiz-title" value={title} onChange={(e) => setTitle(e.target.value.slice(0, 60))} placeholder="How well do you know me?" />
@@ -229,7 +230,7 @@ function TakeQuiz({ quiz, uid, nameOf }: { quiz: Quiz; uid: string; nameOf: (u: 
   if (taken) {
     return (
       <div className="flex flex-col gap-4">
-        <SubHeader emoji="🪞" title={quiz.title || `About ${nameOf(quiz.authorId)}`} back="/play/quiz" />
+        <SubHeader help="quiz" emoji="🪞" title={quiz.title || `About ${nameOf(quiz.authorId)}`} back="/play/quiz" />
         <Card className="flex flex-col items-center gap-2 text-center">
           <p className="text-xs font-bold uppercase tracking-wide text-muted">You scored</p>
           <p className="font-heading text-4xl font-semibold">
@@ -274,7 +275,7 @@ function TakeQuiz({ quiz, uid, nameOf }: { quiz: Quiz; uid: string; nameOf: (u: 
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🪞" title={quiz.title || `About ${nameOf(quiz.authorId)}`} back="/play/quiz" />
+      <SubHeader help="quiz" emoji="🪞" title={quiz.title || `About ${nameOf(quiz.authorId)}`} back="/play/quiz" />
       {!done && q && (
         <Card className="flex flex-col gap-3">
           <p className="text-xs font-bold uppercase tracking-wide text-muted">

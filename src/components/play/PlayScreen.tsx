@@ -13,6 +13,7 @@ import { RecentGamesList } from "@/components/play/RecentGamesList";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { HOWTO } from "@/content/howto";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
@@ -91,7 +92,7 @@ export function PlayScreen() {
               </span>
               <span className="font-heading text-lg font-semibold leading-tight">{meta.name}</span>
               <span className={cn("text-xs", open ? "font-bold text-[var(--accent)]" : "text-muted")}>
-                {busy === type ? "Inviting…" : open ? (open.status === "invited" ? (open.createdBy === uid ? "Invite sent" : "Invited you!") : mine ? "Your turn" : "Their turn") : meta.blurb}
+                {busy === type ? "Inviting…" : open ? (open.status === "invited" ? (open.createdBy === uid ? "Invite sent" : "Invited you!") : mine ? "Your turn" : "Their turn") : HOWTO[type].label}
               </span>
             </button>
           );
@@ -102,13 +103,13 @@ export function PlayScreen() {
       <section className="flex flex-col gap-2">
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Quick play</h2>
         <div className="grid grid-cols-2 gap-3">
-          <Tile href="/play/word" emoji="🟩" title="Daily word" badge={wordMine?.done ? (wordMine.solved ? "Today's word ✓" : "Done for today") : wordTheirs?.done ? "They've played" : "Same word for both"} hot={!wordMine?.done && Boolean(wordTheirs?.done)} />
-          <Tile href="/play/trivia" emoji="🧠" title="Trivia duel" badge="10 questions, 15 s each" />
-          <Tile href="/play/quiz" emoji="🪞" title="Know-me quiz" badge={newQuizzes > 0 ? `New quiz${newQuizzes > 1 ? ` ×${newQuizzes}` : ""}` : "Write or take one"} hot={newQuizzes > 0} />
-          <Tile href="/play/twenty" emoji="🔍" title="20 Questions" badge="Yes, no, sort of" />
-          <Tile href="/play/wheel" emoji="🎡" title="Hangout wheel" badge="Spin for an idea" />
+          <Tile href="/play/word" emoji="🟩" title="Daily word" badge={wordMine?.done ? (wordMine.solved ? "Today's word ✓" : "Done for today") : wordTheirs?.done ? "They've played" : HOWTO.word.label} hot={!wordMine?.done && Boolean(wordTheirs?.done)} />
+          <Tile href="/play/trivia" emoji="🧠" title="Trivia duel" badge={HOWTO.trivia.label} />
+          <Tile href="/play/quiz" emoji="🪞" title="Know-me quiz" badge={newQuizzes > 0 ? `New quiz${newQuizzes > 1 ? ` ×${newQuizzes}` : ""}` : HOWTO.quiz.label} hot={newQuizzes > 0} />
+          <Tile href="/play/twenty" emoji="🔍" title="20 Questions" badge={HOWTO.twenty.label} />
+          <Tile href="/play/wheel" emoji="🎡" title="Hangout wheel" badge={HOWTO.wheel.label} />
           {DECK_KINDS.map((k) => (
-            <Tile key={k} href={`/play/deck/${k}`} emoji={DECK_META[k].emoji} title={DECK_META[k].name} badge={DECK_META[k].blurb} />
+            <Tile key={k} href={`/play/deck/${k}`} emoji={DECK_META[k].emoji} title={DECK_META[k].name} badge={HOWTO[k].label} />
           ))}
         </div>
       </section>
@@ -246,14 +247,14 @@ function RecentGames({ nameOf }: { nameOf: (uid: string) => string }) {
 }
 
 const TOGETHER = [
-  { href: "/play/whiteboard", emoji: "🖍️", title: "Whiteboard", blurb: "Draw on one canvas" },
-  { href: "/play/pixel", emoji: "🟪", title: "Pixel art", blurb: "32×32, sixteen colours" },
-  { href: "/play/pictionary", emoji: "🎨", title: "Pictionary", blurb: "Three rounds, 60 s" },
-  { href: "/play/watch", emoji: "📺", title: "Watch together", blurb: "YouTube in sync" },
-  { href: "/play/listen", emoji: "🎧", title: "Listen together", blurb: "A shared queue" },
-  { href: "/play/radio", emoji: "📻", title: "Radio", blurb: "Six live stations" },
-  { href: "/play/timer", emoji: "⏱️", title: "Focus timer", blurb: "25 on, 5 off" },
-  { href: "/play/cook", emoji: "🍳", title: "Cook-along", blurb: "Same dish, same time" },
+  { href: "/play/whiteboard", emoji: "🖍️", title: "Whiteboard", blurb: HOWTO.whiteboard.label },
+  { href: "/play/pixel", emoji: "🟪", title: "Pixel art", blurb: HOWTO.pixel.label },
+  { href: "/play/pictionary", emoji: "🎨", title: "Pictionary", blurb: HOWTO.pictionary.label },
+  { href: "/play/watch", emoji: "📺", title: "Watch together", blurb: HOWTO.watch.label },
+  { href: "/play/listen", emoji: "🎧", title: "Listen together", blurb: HOWTO.listen.label },
+  { href: "/play/radio", emoji: "📻", title: "Radio", blurb: HOWTO.radio.label },
+  { href: "/play/timer", emoji: "⏱️", title: "Focus timer", blurb: HOWTO.timer.label },
+  { href: "/play/cook", emoji: "🍳", title: "Cook-along", blurb: HOWTO.cook.label },
 ];
 
 function Tile({ href, emoji, title, badge, hot }: { href: string; emoji: string; title: string; badge: string; hot?: boolean }) {

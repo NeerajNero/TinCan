@@ -48,6 +48,10 @@ Add the `GardenEvent` id and sticker to `src/content/garden/index.tsx`, then cal
 
 Implement `Engine<S, M>` in `src/lib/games/<game>.ts`, register in `lib/games/index.ts` and `GAME_META`/`GAME_TYPES`, add a board component under `components/play/boards/`, and extend the `type` enum in the RTDB rule for `games`. Results and head-to-head are generic.
 
+## 9. How-to (games and slow features)
+
+Add an entry to `src/content/howto.ts` (title, label ≤ 40 chars, 3–4 steps starting with an emoji, optional tip) and pass `help="<key>"` to the screen's `SubHeader`. If it has a Play tile, use `HOWTO.<key>.label` as its badge. `tests/unit/howto.test.ts` checks the shape.
+
 ## Finish
 
 1. `pnpm typecheck && pnpm lint` green (`pnpm build` too if config/worker/deps changed).

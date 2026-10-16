@@ -53,6 +53,7 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
   return (
     <div className="flex flex-col gap-4">
       <SubHeader
+        help={kind}
         emoji={meta.emoji}
         title={meta.name}
         back="/play"

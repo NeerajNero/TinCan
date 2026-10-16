@@ -66,6 +66,7 @@ export function WheelScreen() {
   return (
     <div className="flex flex-col gap-4">
       <SubHeader
+        help="wheel"
         emoji="🎡"
         title="Hangout wheel"
         back="/play"

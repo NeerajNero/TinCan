@@ -11,6 +11,7 @@ import { PairCard } from "@/components/more/PairCard";
 import { ProfileCard } from "@/components/more/ProfileCard";
 import { SoundsCard } from "@/components/more/SoundsCard";
 import { ThemeSwitch } from "@/components/more/ThemeSwitch";
+import { TipsCard } from "@/components/more/TipsCard";
 import { UsageCard } from "@/components/more/UsageCard";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -51,6 +52,7 @@ export function MoreScreen() {
 
       <NotificationsCard />
       <SoundsCard />
+      <TipsCard />
       <UsageCard />
       <DiagnosticsCard />
 

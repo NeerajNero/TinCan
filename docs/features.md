@@ -98,6 +98,10 @@ One sticker per `GardenEvent`, unlocked once, stored under `pair.garden.stickers
 | streak-7, streak-30 | `hooks/useHomeData.ts` |
 | pet-level-2 | `lib/db/pet.ts` |
 
+## How-to sheets
+
+`src/content/howto.ts` (`HOWTO`, keyed by `HowToKey`) is the only source of help text and of Play tile sub-labels. Pass `help="<key>"` to `SubHeader` and the screen gets a ? button; the sheet auto-opens once per device (`hooks/useHowToSeen.ts`, localStorage `tincan-howto-seen`). Cards use `<HowToButton topic autoOpen={false}>`. More → `TipsCard` resets the seen set.
+
 ## Cross-cutting
 
 - **Auth & onboarding**: `components/auth/*` (SignInScreen, AuthGate, SetupScreen, TakenScreen), `components/onboarding/OnboardingScreen`, `components/pair/PairFullScreen`. `lib/auth.ts`, `lib/allowlist.ts`.

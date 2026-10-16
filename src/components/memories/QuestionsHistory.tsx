@@ -30,7 +30,7 @@ export function QuestionsHistory() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="💭" title="Daily questions" />
+      <SubHeader help="daily" emoji="💭" title="Daily questions" />
       {!ready && <ListSkeleton tall />}
       {ready && items.length === 0 && <Card className="py-8 text-center text-muted">No answers yet — today&apos;s question is waiting on Home.</Card>}
       {items.map((row) => {

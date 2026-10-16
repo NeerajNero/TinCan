@@ -4,6 +4,7 @@ import { m } from "framer-motion";
 import { useState } from "react";
 
 import { Card } from "@/components/ui/Card";
+import { HowToButton } from "@/components/ui/HowTo";
 import { Sheet } from "@/components/ui/Sheet";
 import { PLANT_STAGE_NAMES, PLANT_STAGES, PlantSvg } from "@/content/plant";
 import { usePair } from "@/hooks/usePair";
@@ -66,7 +67,8 @@ export function StreakPlant({ today, checkins, friendUid, friendName }: StreakPl
         </div>
       </div>
 
-            <Sheet open={open} onClose={() => setOpen(false)} label="Plant" className="flex flex-col items-center gap-2 px-5 text-center">
+            <HowToButton topic="plant" autoOpen={false} className="self-start" />
+      <Sheet open={open} onClose={() => setOpen(false)} label="Plant" className="flex flex-col items-center gap-2 px-5 text-center">
               <PlantSvg stage={stage} wilted={wilted} className="h-44 w-44" />
               <p className="font-heading text-2xl font-semibold">{PLANT_STAGE_NAMES[stage - 1]}</p>
               <p className="text-sm text-muted">

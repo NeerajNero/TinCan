@@ -40,6 +40,7 @@ export function CookList() {
   return (
     <div className="flex flex-col gap-4">
       <SubHeader
+        help="cook"
         emoji="🍳"
         title="Cook-along"
         back="/play"
@@ -168,7 +169,7 @@ export function CookDetail({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🍳" title={recipe.title} back="/play/cook" screenName={`cooking ${recipe.title}`} />
+      <SubHeader help="cook" emoji="🍳" title={recipe.title} back="/play/cook" screenName={`cooking ${recipe.title}`} />
       <div className="flex gap-2">
         <Button onClick={nudge} disabled={!friendUid || nudged} className="flex-1">
           {nudged ? `Nudged ${friend?.nickname ?? ""}` : "Start cooking together"}

@@ -49,7 +49,7 @@ export function PictionaryLobby() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji="🎨" title="Pictionary" back="/play" screenName="Pictionary" />
+      <SubHeader help="pictionary" emoji="🎨" title="Pictionary" back="/play" screenName="Pictionary" />
       <Card className="flex flex-col gap-3">
         <p className="text-sm text-muted">Three rounds, 60 seconds each, drawer alternates. The guesser types; the drawer draws.</p>
         {live ? (
@@ -124,7 +124,7 @@ export function PictionaryGame({ id }: { id: string }) {
 
   return (
     <div className="-mb-6 flex min-h-0 flex-1 flex-col gap-3">
-      <SubHeader emoji="🎨" title={`Pictionary · round ${Math.min(game.round, ROUNDS)}/${ROUNDS}`} back="/play/pictionary" screenName="Pictionary" />
+      <SubHeader help="pictionary" emoji="🎨" title={`Pictionary · round ${Math.min(game.round, ROUNDS)}/${ROUNDS}`} back="/play/pictionary" screenName="Pictionary" />
 
       <div className="card flex items-center gap-3 rounded-[20px] px-3 py-2">
         <span className="min-w-0 flex-1 text-sm">

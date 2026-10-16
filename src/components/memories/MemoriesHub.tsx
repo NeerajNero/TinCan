@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 
+import { HowToButton } from "@/components/ui/HowTo";
 const SECTIONS = [
   { href: "/memories/photos", emoji: "📷", title: "Photos", blurb: "Your timeline" },
   { href: "/memories/map", emoji: "🗺️", title: "Map", blurb: "Been & want to go" },
   { href: "/memories/milestones", emoji: "🎉", title: "Milestones", blurb: "Dates that matter" },
   { href: "/memories/journal", emoji: "📓", title: "Journal", blurb: "Both your entries" },
-  { href: "/memories/jar", emoji: "🫙", title: "Jar", blurb: "Notes to draw" },
+  { href: "/memories/jar", emoji: "🫙", title: "Jar", blurb: "Notes to draw", help: "jar" as const },
   { href: "/memories/capsules", emoji: "⏳", title: "Capsules", blurb: "Sealed for later" },
   { href: "/memories/envelopes", emoji: "💌", title: "Envelopes", blurb: "Open when…" },
   { href: "/memories/questions", emoji: "💭", title: "Daily questions", blurb: "Every answer" },
   { href: "/memories/moods", emoji: "🗓️", title: "Moods", blurb: "Month by month" },
-  { href: "/memories/garden", emoji: "🌻", title: "Garden", blurb: "Stickers you've grown" },
+  { href: "/memories/garden", emoji: "🌻", title: "Garden", blurb: "Stickers you've grown", help: "garden" as const },
 ];
 
 export function MemoriesHub() {
@@ -26,13 +27,16 @@ export function MemoriesHub() {
       </header>
       <div className="grid grid-cols-2 gap-3">
         {SECTIONS.map((s) => (
-          <Link key={s.href} href={s.href} className="card tap flex flex-col items-start gap-2 rounded-[24px] p-4">
+          <div key={s.href} className="relative">
+          <Link href={s.href} className="card tap flex h-full flex-col items-start gap-2 rounded-[24px] p-4">
             <span className="grid size-12 place-items-center rounded-full bg-accent-soft text-2xl" aria-hidden>
               {s.emoji}
             </span>
             <span className="font-heading text-lg font-semibold leading-tight">{s.title}</span>
             <span className="text-xs text-muted">{s.blurb}</span>
           </Link>
+          {"help" in s && s.help && <HowToButton topic={s.help} autoOpen={false} className="absolute top-2 right-2" />}
+          </div>
         ))}
       </div>
     </div>
