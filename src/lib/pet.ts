@@ -22,3 +22,6 @@ export const levelFor = (streak: number) => Math.floor(Math.max(0, streak) / 7) 
 
 /** Ms until hunger hits zero. */
 export const emptyAt = (pet: PetDoc) => pet.hungerAt + 100 * MIN_PER_POINT * 60_000;
+
+/** The timestamp that makes `statFrom` read `value` at `now` (inverse of `statFrom`). */
+export const sinceFor = (value: number, now: number) => now - (100 - Math.max(0, Math.min(100, value))) * MIN_PER_POINT * 60_000;

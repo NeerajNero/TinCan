@@ -163,7 +163,7 @@ export const HOWTO: Record<HowToKey, HowTo> = {
   pet: {
     title: "Your pet",
     label: "Look after it together",
-    steps: ["🍪 Feed it and 🎾 play with it — either of you can", "📉 Hunger and happiness drain slowly over a day", "😴 Tuck it in and it sleeps for 8 hours", "⭐ It levels up every 7 days of your shared streak"],
+    steps: ["🍪 Feed it and 🎾 play with it — either of you can; both drain over a day", "👆 Tap it for a reaction, hold to pet it (that cheers it up too)", "😴 Tuck it in and it sleeps for 8 hours", "⭐ It levels up every 7 days of your shared streak"],
     tip: "You'll both get a ping when it's about to get hungry.",
   },
   plant: {

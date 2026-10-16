@@ -84,7 +84,17 @@ Heavy together screens are code-split through `together/lazy.tsx`. `ChatDrawer` 
 
 ## Pet (`/pet`) — `components/pet/PetScreen.tsx`
 
-`AdoptCard` picks a species on first open; `PetBits` draws the sprite from `content/pets` by species/level/mood. Hunger and happiness are derived from `pair.pet.hungerAt/happyAt` (`100 − minutes/14.4`, see `lib/pet.ts`); Feed/Play reset the timestamps and post system messages. Level = streak ÷ 7. Hunger push comes from the tick.
+`AdoptCard` picks a species on first open; `content/pets` draws the sprite by species/level/mood as inline SVG built from named parts (`breath` › `body`, `eyes` › `eyeL`/`eyeR`, `mouth`, `cheeks`, `accessory`), each an `m.g` driven by its own animation controls. Hunger and happiness are derived from `pair.pet.hungerAt/happyAt` (`100 − minutes/14.4`, see `lib/pet.ts`); Feed/Play reset the timestamps and post system messages. Level = streak ÷ 7. Hunger push comes from the tick.
+
+**Pet life (motion only).** `hooks/usePetLife.ts` owns everything animated for one mounted stage (`usePetLife` wires the app's writes, pair, toasts and pings into the injectable core `usePetMotion(opts, env)`, which the e2e harness drives with fakes); `components/pet/PetStage.tsx` renders it (HTML actor for whole-body moves around the part-animated SVG, the food prop, looping zzz, the sad 🌧️ cloud, particles) plus `PetDim` (card veil while asleep) and `LevelBadge`. `PetScreen` (180 px) and Home's `PetWidget` (88 px, `compact`: same motion, no particles) both use it. Pure helpers in `lib/petLife.ts` (unit-tested):
+- Tap: one of 10 reactions (< 700 ms each), random with no immediate repeat (`pickReaction`). 3 taps within 2 s (`tapBurst`) → 3 s "excited" with a sparkle burst. Particles are capped at 20 alive (`capParticles`). Taps while asleep only make it stir.
+- Long-press (400 ms): wiggle loop + a trickle of hearts; the Joy bar tops up at 20 points/s up to 100 (`heldHappiness`, one Play's worth) and is written **once on release** as `happyAt = sinceFor(value)` (`lib/pet.ts`, inverse of `statFrom`) via `db/pet.pettedPet`.
+- Feed ≈ 2 s: cookie floats in, lean, three chomps with crumbs, the write lands after the chomps so the Food bar (`PetBits.StatBar`, scaleX tween) glides to full over 800 ms, then a satisfied wiggle + heart. Sleep ≈ 1.5 s (yawn, droop, settle → zzz, card dims) and wake ≈ 1.5 s (stretch, blink open, shake, sparkle, card brightens) write `sleepAt` **at the end**. Buttons are disabled while a sequence runs; a sequence cut short (another one, or leaving the page) still writes.
+- Level-up: spin, confetti (full size), accessory pops on, badge counts up.
+- Idle (paused while the tab is hidden): breathing, blink every 3–6 s, glances, a fidget every 15–30 s; hungry = tummy rumble + glance at Feed, sad = slow droop + cloud, happy = soft bob, asleep = slow breathing.
+- The friend's actions: `db/pet` records each value this device writes; `petEvents(prev, next, consumeMyPetWrite)` turns the other changes into feed/play/sleep/wake, replayed here (stats held at their old values until the matching beat) with a toast such as "Sam fed Blob 🍪" (key `message`, so the "fed" system message toast collapses into it). A received hug ping → heart hop (on Home after the full-screen overlay).
+- Chirps `petTap`/`petFeed`/`petSleep`/`petWake` in `lib/sounds.ts`, under the Sounds toggle.
+- Reduced motion: `useReducedMotion()` + `<MotionConfig reducedMotion="user">`; no idle loops, reactions or particles, and actions write immediately.
 
 ## Garden stickers — `lib/garden.recordTogetherEvent(kind, by)`
 

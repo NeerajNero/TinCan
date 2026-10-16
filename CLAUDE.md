@@ -256,6 +256,15 @@ radio stations (6 public stream URLs with names).
   `100 - minutes since lastAction / 14.4` clamped 0–100 (so 24 h to empty). Feed/Play set the
   timestamps. Level up every 7 streak days; sprite changes per level. Species chosen on first
   open by either user; name editable in More. Pet events post system messages.
+- **Pet life** (motion only, stats logic unchanged): sprites are inline SVG with named parts
+  (body, eyes, mouth, cheeks, accessory) animated separately via Framer Motion `m` on
+  transforms/opacity; prefers-reduced-motion honoured. Tap → one of 10 short reactions (no
+  immediate repeat); 3 taps in 2 s → 3 s excited burst; ≤ 20 particles alive. Long-press pets
+  (happiness tops up, max one Play's worth, written once on release). Feed ≈ 2 s, sleep/wake
+  ≈ 1.5 s sequences with buttons disabled; sleep/wake write at the end. Idle breathing/blinks/
+  glances/fidgets + mood idles, paused while hidden. The friend's feed/play/sleep/wake replays
+  with a toast; a hug ping → heart hop; level-up spins with confetti. Four chirps under the
+  Sounds toggle. The Home widget shows the same motion smaller, without particles.
 - **Garden**: completing a together-activity (first whiteboard drawing, a watched video, a
   finished trivia round, etc.) unlocks a sticker placed on a shared garden scene (Memories tab).
 - **Time capsules**: Firestore rule forbids reading `body` before `unlockAt` for the non-author
@@ -422,7 +431,7 @@ CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–16 shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–17 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -457,6 +466,8 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
     (portalled sheets, locked document, Playwright), 15d CSP with nonce + game catalogue.
 16. ✅ **Privacy & docs** — private media (authenticated + signed variants, migration script), GIPHY
     server-side, access audit, `pnpm export` backup, polish, README rewrite.
+17. ✅ **Pet life** — part-based sprite animation, tap reactions, petting, feed/sleep/wake/level-up
+    sequences, idle life, friend replays, chirps.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

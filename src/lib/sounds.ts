@@ -1,6 +1,6 @@
 /** Tiny synthesised sound effects (Web Audio, no files). Off unless the More toggle is on. */
 const SOUNDS_KEY = "tincan-sounds";
-export type SoundKind = "ping" | "send" | "win" | "unlock";
+export type SoundKind = "ping" | "send" | "win" | "unlock" | "petTap" | "petFeed" | "petSleep" | "petWake";
 
 export function soundsEnabled(): boolean {
   try {
@@ -28,11 +28,12 @@ function audio(): AudioContext | null {
   }
 }
 
-function tone(c: AudioContext, freq: number, at: number, dur: number, type: OscillatorType = "sine", gain = 0.18) {
+function tone(c: AudioContext, freq: number, at: number, dur: number, type: OscillatorType = "sine", gain = 0.18, glideTo?: number) {
   const o = c.createOscillator();
   const g = c.createGain();
   o.type = type;
   o.frequency.setValueAtTime(freq, c.currentTime + at);
+  if (glideTo) o.frequency.exponentialRampToValueAtTime(glideTo, c.currentTime + at + dur);
   g.gain.setValueAtTime(0.0001, c.currentTime + at);
   g.gain.exponentialRampToValueAtTime(gain, c.currentTime + at + 0.015);
   g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + at + dur);
@@ -49,6 +50,14 @@ const RECIPES: Record<SoundKind, (c: AudioContext) => void> = {
   send: (c) => tone(c, 1320, 0, 0.07, "sine", 0.1),
   win: (c) => [523, 659, 784, 1047].forEach((f, i) => tone(c, f, i * 0.09, 0.22, "triangle", 0.16)),
   unlock: (c) => [1568, 1976, 2349, 2637].forEach((f, i) => tone(c, f, i * 0.06, 0.3, "sine", 0.09)),
+  // Pet chirps: short pitch glides, quieter than the UI blips.
+  petTap: (c) => tone(c, 1100, 0, 0.09, "sine", 0.08, 1700),
+  petFeed: (c) => [0, 0.16, 0.32].forEach((at) => tone(c, 520, at, 0.07, "triangle", 0.07, 380)),
+  petSleep: (c) => tone(c, 700, 0, 0.45, "sine", 0.07, 300),
+  petWake: (c) => {
+    tone(c, 600, 0, 0.12, "sine", 0.07, 900);
+    tone(c, 900, 0.12, 0.16, "sine", 0.07, 1500);
+  },
 };
 
 /** Plays if enabled; silently does nothing otherwise. */
