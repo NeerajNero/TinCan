@@ -86,7 +86,7 @@ export function PhotosScreen() {
           <div className="columns-2 gap-2 [column-fill:_balance]">
             {g.items.filter((m) => safeCloudinary(m.url)).map((m) => (
               <button key={m.id} type="button" onClick={() => setViewing(m)} aria-label={m.caption || "Photo"} className="mb-2 block w-full break-inside-avoid overflow-hidden rounded-2xl bg-surface-2">
-                <CloudImage url={m.url} alt={m.caption} w={m.w} h={m.h} sizes="(max-width: 480px) 50vw, 224px" className="h-auto w-full" />
+                <CloudImage media={m} alt={m.caption} w={m.w} h={m.h} sizes="(max-width: 480px) 50vw, 224px" className="h-auto w-full" />
               </button>
             ))}
           </div>
@@ -99,7 +99,7 @@ export function PhotosScreen() {
       )}
 
       <ImageViewer
-        src={viewing?.url ?? null}
+        media={viewing}
         caption={viewing?.caption}
         meta={viewing ? [`Added by ${nameOf(viewing.uploaderId)}`, format(viewing.takenAt.toDate(), "d MMM yyyy"), placeName(viewing.placeId)].filter(Boolean).join(" · ") : undefined}
         actions={
@@ -209,7 +209,7 @@ function EditSheet({ memory, places, onDone }: { memory: Memory; places: Place[]
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <CloudImage url={memory.url} alt="" w={memory.w} h={memory.h} sizes="56px" className="size-14 rounded-xl object-cover" />
+        <CloudImage media={memory} alt="" w={memory.w} h={memory.h} sizes="56px" className="size-14 rounded-xl object-cover" />
         <p className="font-semibold">Edit photo</p>
       </div>
       <Input value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 300))} placeholder="Caption" aria-label="Caption" />

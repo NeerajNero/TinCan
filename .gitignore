@@ -53,3 +53,6 @@ ui-debug.log
 # playwright
 /test-results/
 /playwright-report/
+
+# data exports (pnpm export): private, never commit
+/exports/

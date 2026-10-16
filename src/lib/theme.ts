@@ -4,12 +4,14 @@ export type ResolvedTheme = "light" | "dark";
 const THEME_KEY = "tincan-theme";
 
 /**
- * Runs inline in <head> before first paint: resolves the stored preference (or
- * the OS setting) and stamps it on <html data-theme> so there is no flash.
+ * Runs in <head> before first paint: resolves the stored preference (or the OS
+ * setting) and stamps it on <html data-theme> so there is no flash. Served as
+ * public/theme-init.js (a same-origin file, so no inline script and no
+ * raw-HTML injection); tests/unit/theme.test.ts keeps the two identical.
  */
 export const themeInitScript = `(function(){try{var p=localStorage.getItem(${JSON.stringify(
   THEME_KEY,
-)});var d=window.matchMedia("(prefers-color-scheme: dark)").matches;var t=(p==="light"||p==="dark")?p:(d?"dark":"light");var h=document.documentElement;h.dataset.theme=t;h.style.colorScheme=t;}catch(e){}})();`;
+)});var d=window.matchMedia("(prefers-color-scheme: dark)").matches;var t=(p==="light"||p==="dark")?p:(d?"dark":"light");var h=document.documentElement;h.dataset.theme=t;h.style.colorScheme=t;}catch{}})();`;
 
 export function readThemePref(): ThemePref {
   try {

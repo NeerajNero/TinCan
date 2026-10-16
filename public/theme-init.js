@@ -1,0 +1,1 @@
+(function(){try{var p=localStorage.getItem("tincan-theme");var d=window.matchMedia("(prefers-color-scheme: dark)").matches;var t=(p==="light"||p==="dark")?p:(d?"dark":"light");var h=document.documentElement;h.dataset.theme=t;h.style.colorScheme=t;}catch{}})();

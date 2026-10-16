@@ -6,10 +6,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { CloudImage } from "@/components/ui/CloudImage";
 import { Portal, Z } from "@/components/ui/Portal";
-import { safeCloudinary } from "@/lib/safeUrl";
-
+import { variantUrl, type MediaLike } from "@/lib/mediaUrl";
 interface ImageViewerProps {
-  src: string | null;
+  /** A stored media object (message media, memory, journal photo); null closes the viewer. */
+  media: MediaLike | null;
   caption?: string;
   /** Small line under the caption, e.g. "Added by Neeraj · 3 Oct 2026". */
   meta?: string;
@@ -21,18 +21,19 @@ interface ImageViewerProps {
 const MAX_SCALE = 4;
 
 /** Full-screen photo: pinch (or double-tap) to zoom, drag to pan when zoomed, swipe down to close. */
-export function ImageViewer({ src, caption, meta, actions, onClose }: ImageViewerProps) {
+export function ImageViewer({ media, caption, meta, actions, onClose }: ImageViewerProps) {
+  const key = variantUrl(media, "w800");
   return (
     <Portal>
       <AnimatePresence>
-        {safeCloudinary(src) && <Viewer key={src} src={src as string} caption={caption} meta={meta} actions={actions} onClose={onClose} />}
+        {media && key && <Viewer key={key} media={media} caption={caption} meta={meta} actions={actions} onClose={onClose} />}
       </AnimatePresence>
     </Portal>
   );
 }
 
-/** Keyed on `src`, so zoom and pan start fresh for every photo. */
-function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { src: string }) {
+/** Keyed on the photo's URL, so zoom and pan start fresh for every photo. */
+function Viewer({ media, caption, meta, actions, onClose }: ImageViewerProps & { media: MediaLike }) {
   const [scale, setScale] = useState(1);
   const [pinching, setPinching] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -126,7 +127,7 @@ function Viewer({ src, caption, meta, actions, onClose }: ImageViewerProps & { s
             onPointerCancel={onPointerUp}
           >
             <CloudImage
-              url={src}
+              media={media}
               alt={caption ?? ""}
               variant="full"
               draggable={false}

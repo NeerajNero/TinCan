@@ -1,16 +1,14 @@
 
-import { transformUrl } from "@/lib/cloudinary";
 import { cn } from "@/lib/cn";
-import { safeAvatar, safeCloudinary } from "@/lib/safeUrl";
+import { variantUrl } from "@/lib/mediaUrl";
+import { safeAvatar } from "@/lib/safeUrl";
 import type { UserDoc } from "@/lib/types";
 
 export const BIO_MAX = 120;
 
-/** Best available picture: the custom avatar (face-cropped by Cloudinary) else the Google photo. */
-function avatarUrl(user: Pick<UserDoc, "photoURL" | "avatar">, px = 160): string | null {
-  const custom = safeCloudinary(user.avatar?.url);
-  if (custom) return transformUrl(custom, `f_auto,q_auto,c_fill,g_face,w_${px},h_${px}`);
-  return safeAvatar(user.photoURL);
+/** Best available picture: the custom avatar's signed 256 px face crop, else the Google photo. */
+function avatarUrl(user: Pick<UserDoc, "photoURL" | "avatar">): string | null {
+  return variantUrl(user.avatar, "face") ?? safeAvatar(user.photoURL);
 }
 
 interface AvatarProps {
@@ -21,7 +19,7 @@ interface AvatarProps {
 }
 
 export function Avatar({ user, size, className }: AvatarProps) {
-  const src = avatarUrl(user, size * 2);
+  const src = avatarUrl(user);
   if (!src) {
     return (
       <div className={cn("grid shrink-0 place-items-center rounded-full bg-accent-soft", className)} style={{ width: size, height: size, fontSize: size * 0.5 }} aria-hidden>

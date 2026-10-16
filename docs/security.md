@@ -28,7 +28,9 @@ ID token verified with revocation check → `email_verified` + allowlist → per
 
 ## Media
 
-Uploads are **signed**: the browser asks `POST /api/media/sign` for a signature over a fixed parameter set (timestamp, folder, preset, incoming transformation for images), after a size check (5 MB / 3 MB). The Cloudinary presets `tincan_image` and `tincan_audio` must be in **Signed** mode in the console or the signature is pointless. Deletes go through `DELETE /api/media`, which checks the caller owns the doc. The app renders media only from our own cloud or GIPHY (`lib/safeUrl.ts`) and the rules enforce the same prefixes on write.
+Uploads are **signed** and **private**. The browser asks `POST /api/media/sign` for a signature over a fixed parameter set (timestamp, folder, preset, `type=authenticated`, the incoming transformation for images), after a size check (5 MB / 3 MB). It uploads straight to Cloudinary, then calls `POST /api/media/urls` once for signed delivery URLs of the fixed variant set, and stores them on the doc. Authenticated assets return **401** without a valid signature, and a tampered transformation also gets 401 (verified against the live cloud). A signed URL never expires and opens exactly one variant of one asset; anyone holding it can load that variant, so treat the URLs (and `pnpm export` output) as private.
+
+The presets `tincan_image` and `tincan_audio` must be Signed mode with delivery type authenticated (`pnpm cloudinary:presets` sets both). Deletes go through `DELETE /api/media`, which checks the caller owns the doc and destroys the asset under either delivery type. The app renders only `res.cloudinary.com/<cloud>/(image|video)/(upload|authenticated/s--sig--)/…` and GIPHY media (`lib/safeUrl.ts`); the rules enforce the same pattern on every stored URL and variant. User-typed links (lists) render only when http(s).
 
 ## Headers (`next.config.ts`)
 
@@ -37,11 +39,15 @@ Uploads are **signed**: the browser asks `POST /api/media/sign` for a signature 
 - If something breaks, set `CSP_REPORT_ONLY=1` on Vercel to send both policies as report-only, fix `csp.ts`, then unset it. `pnpm test:e2e` checks that the header is enforced and nonce-based, and that loading `/signin` and every cached image host raises no violation in the page or the worker.
 - `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` allowing only microphone(self) and media playback. `/serwist/*` is `max-age=0, must-revalidate`.
 
+## Third parties
+
+The full list of what leaves Firebase and Cloudinary, and to whom, is in the README under Privacy & access. GIPHY is called only from `/api/gif` (key server-side). The YouTube player uses `youtube-nocookie.com`. `/api/tick` live responses carry counts only. `/api/health` reports booleans and an error name.
+
 ## Secrets handling
 
 - All env values live in `.env` / `.env.local` (gitignored) and on Vercel. Scripts read `.env.local` then `.env` and **never print values**; emails are masked in output.
 - `FIREBASE_SERVICE_ACCOUNT` is base64 JSON consumed only by `lib/firebase/admin.ts`; `CLOUDINARY_API_SECRET` only by `/api/media` and `/api/media/sign`; `TICK_SECRET` only by `/api/tick`.
 - The service worker caches only images and tiles (CacheFirst) and never Firebase, Google or `/api/*` responses.
-- `NEXT_PUBLIC_*` are public by design (Firebase web config, Cloudinary cloud name, GIPHY key). On Vercel, add `NEXT_PUBLIC_GIPHY_API_KEY` as a plain variable, not a Sensitive one, so it reaches the client bundle.
+- `NEXT_PUBLIC_*` are public by design (Firebase web config, Cloudinary cloud name). `GIPHY_API_KEY` is server-only. The client bundle was grepped for every secret name and value (Cloudinary secret, tick secret, GIPHY key, service account and its private key): 0 matches.
 - `/api/health` returns booleans only.
 - Dependency overrides in `package.json`: `jose@5.10.0` (firebase-admin ESM crash on Vercel) and `@grpc/grpc-js >= 1.13.6` (advisory). Run `pnpm audit --prod` after upgrades.

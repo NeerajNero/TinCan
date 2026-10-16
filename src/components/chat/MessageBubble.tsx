@@ -11,7 +11,8 @@ import { CloudImage } from "@/components/ui/CloudImage";
 import { STICKER_BY_ID } from "@/content/stickers";
 import { cn } from "@/lib/cn";
 import { Linkify } from "@/lib/linkify";
-import { safeCloudinary, safeGif } from "@/lib/safeUrl";
+import { variantUrl } from "@/lib/mediaUrl";
+import { safeGif } from "@/lib/safeUrl";
 import type { Message } from "@/lib/types";
 
 const LONG_PRESS_MS = 420;
@@ -253,14 +254,14 @@ function MediaBody({
   onOpenImage: (m: Message) => void;
 }) {
   const media = message.media ?? {};
-  const imageUrl = safeCloudinary(media.url);
+  const imageUrl = variantUrl(media, "w320");
   const gifUrl = safeGif(media.url);
-  const voiceUrl = safeCloudinary(media.url);
+  const voiceUrl = variantUrl(media, "audio");
   switch (message.type) {
     case "image": {
       const w = media.w ?? 4;
       const h = media.h ?? 3;
-      if (media.url && !imageUrl) return <Placeholder label="Photo unavailable" />;
+      if ((media.url || media.variants) && !imageUrl) return <Placeholder label="Photo unavailable" />;
       return (
         <>
           {imageUrl && (
@@ -270,7 +271,7 @@ function MediaBody({
               aria-label="Open photo"
               className="block overflow-hidden rounded-[16px]"
             >
-              <CloudImage url={imageUrl} alt={message.text || "Photo"} w={w} h={h} sizes="240px" className="block max-h-80 w-60 max-w-full object-cover" />
+              <CloudImage media={media} alt={message.text || "Photo"} w={w} h={h} sizes="240px" className="block max-h-80 w-60 max-w-full object-cover" />
             </button>
           )}
           {message.text && (

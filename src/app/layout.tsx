@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito } from "next/font/google";
-import { headers } from "next/headers";
+import { connection } from "next/server";
 
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 import { WebVitals } from "@/components/providers/WebVitals";
-import { themeInitScript } from "@/lib/theme";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -46,17 +45,19 @@ export const viewport: Viewport = {
 };
 
 /**
- * Async because it reads the per-request CSP nonce (src/proxy.ts). That makes
- * every page dynamically rendered, the price of a script-src without
- * 'unsafe-inline': Next's inline bootstrap scripts can only be allowed by nonce.
+ * Rendered per request (`connection()`): src/proxy.ts puts a fresh CSP nonce
+ * on each request and Next can only stamp it on its inline bootstrap scripts
+ * during dynamic rendering. That's the price of a script-src without
+ * 'unsafe-inline'.
  */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  await connection();
   return (
     <html lang="en" className={`${fredoka.variable} ${nunito.variable}`} suppressHydrationWarning>
       <head>
-        {/* Applies the saved/OS theme before first paint to avoid a flash. */}
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* Applies the saved/OS theme before first paint to avoid a flash (blocking, same-origin). */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- must run before first paint */}
+        <script src="/theme-init.js" />
       </head>
       <body>
         <WebVitals />

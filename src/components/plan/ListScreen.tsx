@@ -15,6 +15,7 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { addItem, deleteItem, editItem, itemsQuery, LIST_META, reorderItems, setDone } from "@/lib/db/lists";
 import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
+import { safeHttpUrl } from "@/lib/safeUrl";
 import type { ListItemDoc, ListKind } from "@/lib/types";
 
 interface Item extends ListItemDoc {
@@ -134,12 +135,12 @@ function Row({ item, who, onToggle, onEdit, onDelete }: { item: Item; who: { pho
       <button type="button" onClick={onToggle} aria-label="Mark done" className="tap grid size-9 shrink-0 place-items-center rounded-full border-2 border-border hover:border-[var(--accent)]" />
       <div className="min-w-0 flex-1">
         <p className="text-[15px] leading-snug">{item.text}</p>
-        {(item.note || item.url) && (
+        {(item.note || safeHttpUrl(item.url)) && (
           <p className="truncate text-xs text-muted">
             {item.note}
-            {item.note && item.url && " · "}
-            {item.url && (
-              <a href={item.url} target="_blank" rel="noopener noreferrer" className="underline">
+            {item.note && safeHttpUrl(item.url) && " · "}
+            {safeHttpUrl(item.url) && (
+              <a href={safeHttpUrl(item.url) ?? undefined} target="_blank" rel="noopener noreferrer" className="underline">
                 link
               </a>
             )}

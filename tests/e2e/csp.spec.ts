@@ -56,6 +56,8 @@ test("/signin is served with an enforced, nonce-based CSP", async ({ page }) => 
   const scriptSrc = csp.split(";").find((d) => d.trim().startsWith("script-src")) ?? "";
   expect(scriptSrc).toMatch(/'nonce-[A-Za-z0-9+/=]+'/);
   expect(scriptSrc).not.toContain("'unsafe-inline'");
+  // The theme pre-hydration script (public/theme-init.js) ran and stamped <html>.
+  expect(await page.evaluate(() => document.documentElement.dataset.theme)).toMatch(/^(light|dark)$/);
 });
 
 test("no CSP violations on /signin, in the page or the service worker", async ({ page, context }) => {

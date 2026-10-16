@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { STICKERS } from "@/content/stickers";
 import { cn } from "@/lib/cn";
 import { COMPOSER_EMOJI } from "@/lib/emoji";
-import { giphyEnabled, GiphyRateLimited, searchGifs, type Gif } from "@/lib/giphy";
+import { giphyAvailable, GiphyRateLimited, searchGifs, type Gif } from "@/lib/giphy";
 import { isGiphyUrl } from "@/lib/safeUrl";
 
 type Tab = "emoji" | "stickers" | "gifs";
@@ -16,9 +16,17 @@ interface MediaPanelProps {
   onGif: (gif: Gif) => void;
 }
 
-/** Emoji · Stickers · GIFs (GIFs only with a GIPHY key). Sits under the composer. */
+/** Emoji · Stickers · GIFs (GIFs only when the server reports a GIPHY key). Sits under the composer. */
 export function MediaPanel({ onEmoji, onSticker, onGif }: MediaPanelProps) {
   const [tab, setTab] = useState<Tab>("emoji");
+  const [giphyEnabled, setGiphyEnabled] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void giphyAvailable().then((ok) => live && setGiphyEnabled(ok));
+    return () => {
+      live = false;
+    };
+  }, []);
   const tabs: Array<{ key: Tab; label: string }> = [
     { key: "emoji", label: "Emoji" },
     { key: "stickers", label: "Stickers" },

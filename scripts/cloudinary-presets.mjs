@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Creates (or updates) the two unsigned upload presets Tincan needs, using the
+ * Creates (or updates) the two upload presets Tincan needs (Signed mode, delivery
+ * type authenticated), using the
  * server credentials from .env.local / .env. Idempotent; prints no secrets.
  *
  *   tincan_image → folder tincan/images, incoming c_limit,w_1080,h_1080,q_auto:low
@@ -43,7 +44,9 @@ const presets = [
   {
     name: env.NEXT_PUBLIC_CLOUDINARY_PRESET_IMAGE || "tincan_image",
     settings: {
-      unsigned: true,
+      // Signed only (the app signs every upload via /api/media/sign), private delivery.
+      unsigned: false,
+      type: "authenticated",
       folder: "tincan/images",
       // Incoming transformation (object form; a string would be treated as a named transformation).
       transformation: { crop: "limit", width: 1080, height: 1080, quality: "auto:low" },
@@ -54,7 +57,7 @@ const presets = [
   },
   {
     name: env.NEXT_PUBLIC_CLOUDINARY_PRESET_AUDIO || "tincan_audio",
-    settings: { unsigned: true, folder: "tincan/audio", use_filename: false, unique_filename: true, overwrite: false },
+    settings: { unsigned: false, type: "authenticated", folder: "tincan/audio", use_filename: false, unique_filename: true, overwrite: false },
   },
 ];
 

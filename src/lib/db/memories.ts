@@ -22,6 +22,7 @@ export async function addMemories(uploaderId: string, items: MediaItem[], captio
         uploaderId,
         url: m.url,
         publicId: m.publicId,
+        ...(m.variants ? { variants: m.variants } : {}),
         w: m.w,
         h: m.h,
         caption: caption.trim().slice(0, 300),
@@ -43,10 +44,14 @@ export async function findMemoryByPublicId(publicId: string): Promise<string | n
 export async function saveMessageToMemories(uid: string, message: Message): Promise<string> {
   const media = message.media;
   if (!media?.url || !media.publicId) throw new Error("no_asset");
+  // Idempotent: a double tap (or a second device) returns the existing memory instead of a duplicate.
+  const existing = await findMemoryByPublicId(media.publicId);
+  if (existing) return existing;
   const ref = await addDoc(memoriesCol(), {
     uploaderId: uid,
     url: media.url,
     publicId: media.publicId,
+    ...(media.variants ? { variants: media.variants } : {}),
     w: media.w ?? 4,
     h: media.h ?? 3,
     caption: message.text.slice(0, 300),

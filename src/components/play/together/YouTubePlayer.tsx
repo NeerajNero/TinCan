@@ -29,6 +29,8 @@ export function YouTubePlayer({ videoId, hidden, onReady, onStateChange }: YouTu
       const el = document.createElement("div");
       host.current.appendChild(el);
       player.current = new YT.Player(el, {
+        // Privacy-enhanced mode: YouTube sets no cookies until the video plays.
+        host: "https://www.youtube-nocookie.com",
         width: "100%",
         height: "100%",
         videoId: videoId ?? undefined,

@@ -6,12 +6,11 @@ import { useEffect, useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
 import { CHAT_BACKGROUNDS } from "@/content/chat-backgrounds";
 import { useTheme } from "@/hooks/useTheme";
-import { thumbUrl } from "@/lib/cloudinary";
 import { cn } from "@/lib/cn";
 import { memoriesQuery } from "@/lib/db/memories";
 import { setChatBg } from "@/lib/db/users";
 import { getDocs } from "@/lib/firebase/fs";
-import { safeCloudinary } from "@/lib/safeUrl";
+import { chatBgPhotoUrl, variantUrl } from "@/lib/mediaUrl";
 import { swallow } from "@/lib/swallow";
 import type { ChatBgPref } from "@/lib/types";
 interface PickerProps {
@@ -23,7 +22,9 @@ interface PickerProps {
 
 interface MemoryThumb {
   id: string;
-  url: string;
+  /** Signed (or legacy public) thumbnail and background variants of the memory. */
+  thumb: string;
+  background: string;
   publicId: string;
 }
 
@@ -43,7 +44,7 @@ export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProp
   const [photos, setPhotos] = useState<MemoryThumb[] | null>(null);
   const [choosingPhoto, setChoosingPhoto] = useState(false);
   const currentId = current?.id ?? "plain";
-  const currentPhoto = current?.id === "photo" ? safeCloudinary(current.photoUrl) : null;
+  const currentPhoto = current?.id === "photo" ? chatBgPhotoUrl(current.photoUrl) : null;
 
   // One bounded read of the latest memories, only when the photo panel opens.
   useEffect(() => {
@@ -52,7 +53,14 @@ export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProp
     getDocs(memoriesQuery(null))
       .then((snap) => {
         if (cancelled) return;
-        setPhotos(snap.docs.map((d) => ({ id: d.id, url: d.data().url, publicId: d.data().publicId })).filter((p) => safeCloudinary(p.url)));
+        setPhotos(
+          snap.docs.flatMap((d) => {
+            const m = d.data();
+            const thumb = variantUrl(m, "w320");
+            const background = variantUrl(m, "w640");
+            return thumb && background ? [{ id: d.id, thumb, background, publicId: m.publicId }] : [];
+          }),
+        );
       })
       .catch(() => !cancelled && setPhotos([]));
     return () => {
@@ -104,7 +112,7 @@ export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProp
                   <span className={cn("relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border-2 bg-surface-2", currentId === "photo" ? "border-[var(--accent)]" : "border-border")}>
                     {currentPhoto ? (
                       // eslint-disable-next-line @next/next/no-img-element -- Cloudinary thumbnail
-                      <img src={thumbUrl(currentPhoto)} alt="" decoding="async" loading="lazy" className="h-full w-full object-cover" />
+                      <img src={currentPhoto} alt="" decoding="async" loading="lazy" className="h-full w-full object-cover" />
                     ) : (
                       <span className="grid h-full place-items-center text-muted">
                         <ImageIcon size={22} />
@@ -127,9 +135,9 @@ export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProp
             ) : (
               <div className="grid grid-cols-3 gap-2 overflow-y-auto">
                 {photos.map((p) => (
-                  <button key={p.id} type="button" onClick={() => pick({ id: "photo", photoUrl: p.url, photoPublicId: p.publicId })} aria-label="Use this photo" className={cn("aspect-square overflow-hidden rounded-xl border-2 bg-surface-2", current?.photoPublicId === p.publicId ? "border-[var(--accent)]" : "border-transparent")}>
+                  <button key={p.id} type="button" onClick={() => pick({ id: "photo", photoUrl: p.background, photoPublicId: p.publicId })} aria-label="Use this photo" className={cn("aspect-square overflow-hidden rounded-xl border-2 bg-surface-2", current?.photoPublicId === p.publicId ? "border-[var(--accent)]" : "border-transparent")}>
                     {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary thumbnail */}
-                    <img src={thumbUrl(p.url)} alt="" decoding="async" loading="lazy" className="h-full w-full object-cover" />
+                    <img src={p.thumb} alt="" decoding="async" loading="lazy" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>

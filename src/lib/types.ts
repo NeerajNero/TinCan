@@ -64,7 +64,7 @@ export interface UserDoc {
   /** Google photo, the fallback when no custom avatar is set. */
   photoURL: string | null;
   /** Custom photo uploaded to Cloudinary; null/absent means use photoURL. */
-  avatar?: { url: string; publicId: string } | null;
+  avatar?: { url: string; publicId: string; variants?: MediaVariants } | null;
   /** Destroyed by the server after a replacement; see /api/media. */
   previousAvatarPublicId?: string | null;
   /** One short line about me (≤120 chars). */
@@ -172,9 +172,24 @@ export interface ReplyTo {
  * image: url, publicId, w, h, bytes · voice: url, publicId, durationMs, bytes
  * gif: url, w, h · sticker: stickerId
  */
+/** Which variant table in src/lib/media-variants.json an asset uses. */
+export type VariantPurpose = "image" | "avatar" | "audio";
+
+/** Signed delivery URLs for an authenticated asset (see /api/media/urls). Render only these. */
+export interface MediaVariants {
+  w320?: string;
+  w640?: string;
+  w800?: string;
+  blur?: string;
+  original?: string;
+  face?: string;
+  audio?: string;
+}
+
 export interface MessageMedia {
   url?: string;
   publicId?: string;
+  variants?: MediaVariants;
   w?: number;
   h?: number;
   durationMs?: number;
@@ -270,6 +285,7 @@ export interface CityPick {
 export interface MediaItem {
   url: string;
   publicId: string;
+  variants?: MediaVariants;
   w: number;
   h: number;
 }
@@ -370,6 +386,7 @@ export interface MemoryDoc {
   uploaderId: string;
   url: string;
   publicId: string;
+  variants?: MediaVariants;
   w: number;
   h: number;
   caption: string;

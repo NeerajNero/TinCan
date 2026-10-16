@@ -20,7 +20,9 @@
     "analyze": "ANALYZE=true next build",
     "knip": "knip",
     "profile:chat": "vitest run --config vitest.perf.config.mts",
-    "test:e2e": "next build && playwright test"
+    "test:e2e": "next build && playwright test",
+    "migrate-media": "node scripts/migrate-media-authenticated.mjs",
+    "export": "node scripts/export-data.mjs"
   },
   "dependencies": {
     "browser-image-compression": "^2.0.2",

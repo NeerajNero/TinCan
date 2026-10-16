@@ -28,13 +28,15 @@ app should feel like a small hello, not a dashboard.
     lamp, cursors, live game boards, canvases, watch/listen sync, timers).
   - Cloud Messaging (FCM) — web push, VAPID key, sent from Next API routes via `firebase-admin`.
   - NEVER use Cloud Functions, Firebase Storage, Extensions, or anything requiring Blaze.
-- Cloudinary (free): all photos and voice notes. Unsigned upload presets from the browser;
-  API secret only in server routes (deletes). No Firebase Storage.
+- Cloudinary (free): all photos and voice notes, **private**: signed uploads with delivery type
+  `authenticated`, so only signed URLs (minted server-side, stored on the doc) can load an asset.
+  API secret only in server routes. No Firebase Storage.
 - Vercel Hobby. Next API routes host the server bits. NEVER add `crons` to vercel.json
   (Hobby cron is daily-only); scheduling is `GET /api/tick` pinged every 15 min by cron-job.org.
 - Free third-party data with no keys: Open-Meteo (weather + geocoding), OpenStreetMap tiles via
   Leaflet (memory map), YouTube IFrame Player (watch/listen together), public radio stream URLs.
-  GIPHY is optional (`NEXT_PUBLIC_GIPHY_API_KEY`); hide the GIF button when the key is absent.
+  GIPHY is optional and server-side (`GIPHY_API_KEY`, proxied by `GET /api/gif`); the GIF tab hides
+  when the server reports no key.
 - Libraries: `firebase`, `firebase-admin`, `framer-motion`, `chess.js`, `leaflet` + `react-leaflet`,
   `browser-image-compression`, `date-fns` + `date-fns-tz`, `zod`, `lucide-react`. Add others only
   when clearly needed and free.
@@ -116,7 +118,8 @@ Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign
   pet{name,species,hungerAt,happyAt,sleepAt,level,bornAt}, plant{stage,lastGrowthDate},
   garden{stickers[]}, streak{count,lastDateKey}
 `messages/{id}`: senderId, type(text|image|voice|gif|sticker|system), text,
-  media{url,publicId,w,h,durationMs,bytes}, replyTo{id,preview,senderId,type},
+  media{url,publicId,variants{w320,w640,w800,blur,original|audio},w,h,durationMs,bytes},
+  replyTo{id,preview,senderId,type},
   reactions{uid:emoji}, status(sent|delivered|read), deliveredAt, readAt, editedAt,
   deletedFor[], deletedForEveryone, createdAt
 `checkins/{dateKey}`: {uid:true}  — written once per user per day on app open
@@ -183,9 +186,9 @@ radio stations (6 public stream URLs with names).
   sticker (bundled SVG set), system (good night, game results, pet events, capsule unlocked).
 - Day separators ("Today", "Yesterday", date), unread divider on open, jump-to-bottom FAB,
   unread count badge on the Chat tab, last-message preview on Home.
-- Images: compress in browser (max 1080 px, ~0.3 MB, JPEG/WebP) → Cloudinary unsigned preset
-  `tincan_image` → store `url`, `publicId`, `w`, `h`. Render with
-  `f_auto,q_auto:low,w_800` transformation; thumbnails `w_320`. Tap for full-screen viewer with pinch-zoom.
+- Images: compress in browser (max 1080 px, ~0.3 MB, JPEG/WebP) → signed upload to preset
+  `tincan_image` (authenticated) → store `url`, `publicId`, `w`, `h` and the signed `variants` (see Media).
+  Thumbnails render the w320/w640 variants, the viewer w800. Tap for full-screen viewer with pinch-zoom.
 - Voice: `MediaRecorder` `audio/webm;codecs=opus` at 32 kbps, max 2 min, hold-to-record with
   slide-to-cancel → Cloudinary preset `tincan_audio` (resource_type `video`) → bubble with
   play/pause, duration, simple progress bar, 1×/1.5× speed.
@@ -227,12 +230,20 @@ radio stations (6 public stream URLs with names).
 - Dry run: `pnpm tick:dry` prints what would be sent without sending.
 
 ## Media — Cloudinary
-- Two unsigned presets created manually: `tincan_image` (folder `tincan/images`, incoming
-  transformation `c_limit,w_1080,h_1080,q_auto:low`), `tincan_audio` (folder `tincan/audio`,
-  resource type video). Client uploads with `fetch` to
-  `https://api.cloudinary.com/v1_1/{cloud}/{image|video}/upload` using the preset.
-- Server routes using `CLOUDINARY_API_SECRET`: `DELETE /api/media` (destroy by publicId; only
-  the uploader may delete). Nothing else needs the secret.
+- Two presets, both **Signed** mode with delivery type **authenticated** (`pnpm cloudinary:presets`
+  sets this): `tincan_image` (folder `tincan/images`, incoming `c_limit,w_1080,h_1080,q_auto:low`) and
+  `tincan_audio` (folder `tincan/audio`, resource type video).
+- Upload: `POST /api/media/sign` signs a fixed param set (timestamp, folder, preset, `type=authenticated`,
+  the image transformation; 5 MB image / 3 MB audio cap) → the browser uploads straight to Cloudinary →
+  `POST /api/media/urls` returns signed delivery URLs for the fixed variant set in
+  `src/lib/media-variants.json` (images: w320, w640, w800, blur, original; avatars: face 256, original;
+  audio: audio). The client stores them as `variants` on the message / memory / journal / capsule /
+  avatar and renders **only stored URLs** (`src/lib/mediaUrl.ts`, `CloudImage`). Unsigned or tampered
+  URLs return 401. Signatures don't expire; each URL opens exactly one variant of one asset.
+- Changing a variant's transformation means re-signing stored URLs: re-run
+  `pnpm migrate-media --yes` (it also moves any public asset under `tincan/` to authenticated).
+- Server routes using `CLOUDINARY_API_SECRET`: `/api/media/sign`, `/api/media/urls`, `DELETE /api/media`
+  (destroy; only the uploader may delete).
 - Show an upload progress ring; retry once on failure.
 
 ## Feature specs (brief)
@@ -330,6 +341,19 @@ radio stations (6 public stream URLs with names).
 - Rules are covered by emulator tests (`pnpm test:rules`). The service worker only opens
   same-origin URLs from notification clicks.
 
+## Privacy (phase 16)
+- Media is private (authenticated delivery, signed variant URLs; rules validate every stored variant
+  URL). GIPHY is called only from `/api/gif` (key server-side; GIPHY sees our server, not the phone).
+  YouTube uses the privacy-enhanced `youtube-nocookie.com` player.
+- No `dangerouslySetInnerHTML` anywhere (the theme script is `public/theme-init.js`, kept identical to
+  `src/lib/theme.ts` by a unit test). User-typed links render only if http(s), always with
+  `rel="noopener noreferrer"`.
+- `/api/tick` answers live runs with counts only (cron-job.org stores response bodies); details only
+  with `?dry=1`. `/api/health` reports booleans and an error *name*, never a message.
+- What leaves Firebase/Cloudinary, and to whom, is listed in README → Privacy & access. Keep it current.
+- Backups: `pnpm export` (dated JSON + media CSV in `./exports/`, gitignored). Spark has no managed
+  exports, so this is the only backup.
+
 ## Documentation (keep in sync — this is a hard rule)
 The codebase is documented in `docs/` and `CHANGELOG.md`; this file is the spec, those describe
 the code as it is. Start at [`docs/README.md`](docs/README.md):
@@ -386,10 +410,11 @@ NEXT_PUBLIC_CLOUDINARY_PRESET_AUDIO=tincan_audio
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 TICK_SECRET=
-NEXT_PUBLIC_GIPHY_API_KEY=           # optional
+GIPHY_API_KEY=                       # optional, server-only
+CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — all 13 phases shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–16 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -418,6 +443,12 @@ NEXT_PUBLIC_GIPHY_API_KEY=           # optional
 13. ✅ **Polish & ship** — animations/sounds/confetti pass, empty states, usage meter, Firestore
     read audit on every screen, Lighthouse PWA pass, Vercel deploy, env on Vercel, rules
     re-review, cron-job.org for `/api/tick`, README with the manual setup checklist.
+14. ✅ **Fixes** — ping queue, game end reasons and close menu, finished-game listing, tick housekeeping.
+15. ✅ **Hardening** — 15a security (guard, signed uploads, headers, rules tests), 15b performance &
+    polish (chat backgrounds, bundle diet, worker caches, unit tests, strict TS/lint, knip), 15c layout
+    (portalled sheets, locked document, Playwright), 15d CSP with nonce + game catalogue.
+16. ✅ **Privacy & docs** — private media (authenticated + signed variants, migration script), GIPHY
+    server-side, access audit, `pnpm export` backup, polish, README rewrite.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

@@ -32,7 +32,7 @@ export const config = {
   matcher: [
     {
       // Pages only: not API routes, static files, the worker, icons or the manifest.
-      source: "/((?!api|_next/static|_next/image|serwist|icons|favicon.ico|icon.svg|apple-icon.png|manifest.webmanifest).*)",
+      source: "/((?!api|_next/static|_next/image|serwist|icons|theme-init.js|favicon.ico|icon.svg|apple-icon.png|manifest.webmanifest).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

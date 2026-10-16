@@ -31,7 +31,7 @@ export function WhiteboardScreen() {
       const blob = await ctl.toPng();
       if (!blob) return;
       const up = await uploadToCloudinary(blob, { kind: "image" });
-      const id = await sendMedia(uid, "image", { url: up.url, publicId: up.publicId, w: up.w ?? 800, h: up.h ?? 800, bytes: up.bytes }, "🖍️ Whiteboard snapshot");
+      const id = await sendMedia(uid, "image", { url: up.url, publicId: up.publicId, variants: up.variants, w: up.w ?? 800, h: up.h ?? 800, bytes: up.bytes }, "🖍️ Whiteboard snapshot");
       if (friendUid) void notify("message", { toUid: friendUid, body: "📷 Whiteboard snapshot", data: { messageId: id } });
     } finally {
       setSnapping(false);

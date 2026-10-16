@@ -13,10 +13,12 @@ Errors go back as `{ error: "<code>" }` with 400/401/403/413/429/500; details ar
 | --- | --- | --- | --- | --- | --- |
 | `POST /api/gate` | gate | 10 / 0.2 | — | none | `{ allowed: boolean }` — 403 from the guard becomes `allowed: false` |
 | `POST /api/push` | push | 30 / 0.5 | 1000 | `{ type: PushType, payload?: { toUid?, title?, body?, data? }, toSelf? }` | `{ sent, reason? }` |
-| `POST /api/media/sign` | sign | 20 / 0.3 | 300 | `{ kind: "image" \| "audio", bytes }` (≤5 MB image, ≤3 MB audio) | `{ signature, apiKey, cloudName, params, resourceType }` |
+| `POST /api/media/sign` | sign | 20 / 0.3 | 300 | `{ kind: "image" \| "audio", bytes }` (≤5 MB image, ≤3 MB audio) | `{ signature, apiKey, cloudName, params, resourceType }`; params include `type: "authenticated"` |
+| `POST /api/media/urls` | urls | 20 / 0.3 | 300 | `{ publicId: "tincan/images/…" \| "tincan/audio/…", purpose: "image" \| "avatar" \| "audio", format? }` | `{ variants }`: signed URLs for the fixed variant set (`src/lib/media-variants.json`) |
+| `GET /api/gif` | gif | 20 / 1 | 1000 | query `q?` (≤ 80 chars), or `mode=status` | `{ enabled, gifs[] }` (GIPHY search/trending, rating pg; trending cached 10 min per instance) |
 | `DELETE /api/media` | media | 15 / 0.25 | 300 | `{ kind: "message" \| "memory" \| "journal" \| "capsule", id }` · `{ kind: "avatar" }` · legacy `{ messageId }` | `{ ok: true }` after Cloudinary destroy + Firestore update |
-| `GET /api/tick` | secret header | — | — | header `x-tick-secret`; `?dry=1` | `{ dry, now, roomTz, today, localMinutes, actions[] }` |
-| `GET /api/health` | none | — | — | — | booleans only: Node version, which env keys are set, admin SDK loads |
+| `GET /api/tick` | secret header | — | — | header `x-tick-secret`; `?dry=1` | live: `{ ok, now, actions: <count>, jobs: {job: count} }` (no names or text: cron-job.org keeps bodies); dry: full `actions[]` |
+| `GET /api/health` | none (deliberate) | — | — | — | booleans only: Node version, which env keys are set, whether the admin SDK loads (error *name* only) |
 | `GET /serwist/sw.js` | none | — | — | — | the built service worker (Firebase public config inlined via esbuild `define`) |
 
 ## `/api/push` semantics

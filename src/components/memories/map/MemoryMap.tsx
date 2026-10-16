@@ -80,7 +80,7 @@ export default function MemoryMap({ pins, homes, onLongPress, onPinTap, focus }:
 
   return (
     <MapContainer center={[20, 78]} zoom={4} className="h-full w-full rounded-[20px]" scrollWheelZoom attributionControl>
-      <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors' url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <Events onLongPress={onLongPress} />
       <FitOnce points={points} />
       <Focus focus={focus} />

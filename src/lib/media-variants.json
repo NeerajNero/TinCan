@@ -1,0 +1,17 @@
+{
+  "$comment": "The fixed delivery variants for authenticated Cloudinary assets. Shared by src/lib/server/cloudinary.ts (signs them), src/lib/mediaUrl.ts (legacy public fallback) and scripts/migrate-media-authenticated.mjs. Changing a transformation means re-signing every stored URL (run the migration script again).",
+  "image": {
+    "w320": "f_auto,q_auto:low,w_320",
+    "w640": "f_auto,q_auto:low,w_640",
+    "w800": "f_auto,q_auto:low,w_800",
+    "blur": "e_blur:2000,q_1,w_40",
+    "original": ""
+  },
+  "avatar": {
+    "face": "f_auto,q_auto,c_fill,g_face,w_256,h_256",
+    "original": ""
+  },
+  "audio": {
+    "audio": ""
+  }
+}

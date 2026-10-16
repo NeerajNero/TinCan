@@ -221,7 +221,7 @@ function PlaceSheet({ pin, uid, me, friend, onEdit, onClose }: { pin: MapPin; ui
         <div className="grid grid-cols-3 gap-1">
           {photos.filter((p) => safeCloudinary(p.url)).map((p) => (
             <button key={p.id} type="button" onClick={() => setViewing(p)} aria-label={p.caption || "Photo"} className="overflow-hidden rounded-xl bg-surface-2">
-              <CloudImage url={p.url} alt="" w={p.w} h={p.h} sizes="120px" className="h-24 w-full object-cover" />
+              <CloudImage media={p} alt="" w={p.w} h={p.h} sizes="120px" className="h-24 w-full object-cover" />
             </button>
           ))}
         </div>
@@ -232,7 +232,7 @@ function PlaceSheet({ pin, uid, me, friend, onEdit, onClose }: { pin: MapPin; ui
         </Button>
         <Button onClick={onClose}>Done</Button>
       </div>
-      <ImageViewer src={viewing?.url ?? null} caption={viewing?.caption} onClose={() => setViewing(null)} />
+      <ImageViewer media={viewing} caption={viewing?.caption} onClose={() => setViewing(null)} />
     </>
   );
 }

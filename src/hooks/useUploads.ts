@@ -82,7 +82,7 @@ export function useUploads(uid: string, friendUid: string) {
           const messageId = await sendMedia(
             uid,
             "image",
-            { url: up.url, publicId: up.publicId, w: up.w ?? w, h: up.h ?? h, bytes: up.bytes },
+            { url: up.url, publicId: up.publicId, variants: up.variants, w: up.w ?? w, h: up.h ?? h, bytes: up.bytes },
             index === 0 ? caption : "",
             index === 0 ? replyTo : null,
           );
@@ -101,7 +101,7 @@ export function useUploads(uid: string, friendUid: string) {
         const messageId = await sendMedia(
           uid,
           "voice",
-          { url: up.url, publicId: up.publicId, durationMs: rec.durationMs, bytes: up.bytes },
+          { url: up.url, publicId: up.publicId, variants: up.variants, durationMs: rec.durationMs, bytes: up.bytes },
           "",
           replyTo,
         );

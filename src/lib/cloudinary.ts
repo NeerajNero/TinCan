@@ -1,9 +1,11 @@
 /**
- * Cloudinary from the browser: unsigned uploads with progress, and delivery
- * URL transforms. The API secret never comes near this file.
+ * Cloudinary from the browser: signed uploads (delivery type `authenticated`)
+ * with progress, then one call to /api/media/urls for the signed variant URLs
+ * the app renders. The API secret never comes near this file.
  */
 import { authedFetch } from "@/lib/api";
 import { publicEnv } from "@/lib/env";
+import type { MediaVariants, VariantPurpose } from "@/lib/types";
 
 const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
@@ -36,6 +38,8 @@ export interface UploadResult {
   bytes: number;
   /** Cloudinary's measured duration for audio, in ms (we prefer the recorder's). */
   durationMs?: number;
+  /** Signed delivery URLs; store these on the doc and render only them. */
+  variants: MediaVariants;
 }
 
 interface UploadOptions {
@@ -44,11 +48,15 @@ interface UploadOptions {
   signal?: AbortSignal;
   /** Retries once on failure by default. */
   retries?: number;
+  /** Variant table to sign: avatar uploads get a face crop. Defaults from `kind`. */
+  purpose?: VariantPurpose;
 }
 
 const cloudinaryConfigured = Boolean(publicEnv.cloudinary.cloudName);
 
-function uploadOnce(blob: Blob, signed: SignedUpload, { onProgress, signal }: UploadOptions): Promise<UploadResult> {
+type RawUpload = Omit<UploadResult, "variants"> & { format?: string };
+
+function uploadOnce(blob: Blob, signed: SignedUpload, { onProgress, signal }: UploadOptions): Promise<RawUpload> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const form = new FormData();
@@ -75,6 +83,7 @@ function uploadOnce(blob: Blob, signed: SignedUpload, { onProgress, signal }: Up
           height?: number;
           bytes: number;
           duration?: number;
+          format?: string;
         };
         resolve({
           url: body.secure_url,
@@ -83,6 +92,7 @@ function uploadOnce(blob: Blob, signed: SignedUpload, { onProgress, signal }: Up
           h: body.height,
           bytes: body.bytes,
           durationMs: typeof body.duration === "number" ? Math.round(body.duration * 1000) : undefined,
+          format: body.format,
         });
       } catch {
         reject(new Error("upload_bad_response"));
@@ -105,7 +115,10 @@ export async function uploadToCloudinary(blob: Blob, options: UploadOptions): Pr
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const signed = await sign(options.kind, blob.size);
-      return await uploadOnce(blob, signed, options);
+      const raw = await uploadOnce(blob, signed, options);
+      const { format, ...rest } = raw;
+      const variants = await signedUrls(raw.publicId, options.purpose ?? (options.kind === "audio" ? "audio" : "image"), format);
+      return { ...rest, variants };
     } catch (err) {
       lastError = err;
       if (err instanceof DOMException && err.name === "AbortError") throw err;
@@ -115,7 +128,14 @@ export async function uploadToCloudinary(blob: Blob, options: UploadOptions): Pr
   throw lastError instanceof Error ? lastError : new Error("upload_failed");
 }
 
-/* ── delivery URLs ─────────────────────────────────────────────────────── */
+/** Signed variant URLs for an uploaded asset; one call per upload. */
+async function signedUrls(publicId: string, purpose: VariantPurpose, format?: string): Promise<MediaVariants> {
+  const res = await authedFetch("/api/media/urls", { method: "POST", body: JSON.stringify({ publicId, purpose, ...(format && /^[a-z0-9]{2,5}$/.test(format) ? { format } : {}) }) });
+  if (!res.ok) throw new Error("Couldn't finish the upload");
+  return ((await res.json()) as { variants: MediaVariants }).variants;
+}
+
+/* ── delivery URLs (legacy public assets only; see lib/mediaUrl.ts) ──────── */
 
 /** Inserts a transformation right after `/upload/` in a Cloudinary delivery URL. */
 export function transformUrl(url: string, transformation: string): string {
@@ -125,4 +145,3 @@ export function transformUrl(url: string, transformation: string): string {
   return `${url.slice(0, i + marker.length)}${transformation}/${url.slice(i + marker.length)}`;
 }
 
-export const thumbUrl = (url: string) => transformUrl(url, "f_auto,q_auto:low,w_320");

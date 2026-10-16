@@ -18,7 +18,6 @@ export const publicEnv = {
     presetImage: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_IMAGE ?? "tincan_image",
     presetAudio: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_AUDIO ?? "tincan_audio",
   },
-  giphyKey: process.env.NEXT_PUBLIC_GIPHY_API_KEY ?? "",
 } as const;
 
 /** True when enough Firebase config is present to initialise the client SDK. */

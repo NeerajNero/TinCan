@@ -5,15 +5,24 @@ import { useEffect, useState } from "react";
 
 import { useRtdbValue } from "@/hooks/useRtdbValue";
 
-/** Shows once the realtime connection has been down for a few seconds. */
+const GRACE_MS = 4000;
+
+/**
+ * Shows once the realtime connection has been down for 4 s. The grace applies
+ * to every disconnect, including launch and resume from background, when the
+ * socket always starts "not connected" for a moment. (Before, `stale` stayed
+ * true after the first outage, so every later blip flashed the banner at once.)
+ */
 export function OfflineBanner() {
   const { value: connected, loaded } = useRtdbValue<boolean>(".info/connected");
-  // "stale" flips after the connection has been down for a while; the banner
-  // is derived so a reconnect hides it without another state write.
   const [stale, setStale] = useState(false);
   useEffect(() => {
-    if (!loaded || connected) return;
-    const t = setTimeout(() => setStale(true), 4000);
+    if (!loaded) return;
+    if (connected) {
+      const reset = setTimeout(() => setStale(false), 0);
+      return () => clearTimeout(reset);
+    }
+    const t = setTimeout(() => setStale(true), GRACE_MS);
     return () => clearTimeout(t);
   }, [connected, loaded]);
   const show = loaded && !connected && stale;

@@ -1,8 +1,8 @@
-import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { adminDb } from "@/lib/firebase/admin";
+import { destroyAsset } from "@/lib/server/cloudinary";
 import { errorResponse, guard, readJson } from "@/lib/server/guard";
 import { swallow } from "@/lib/swallow";
 const bodySchema = z.union([
@@ -13,19 +13,10 @@ const bodySchema = z.union([
   z.object({ messageId: z.string().min(1).max(128) }).strict(),
 ]);
 
-function configureCloudinary() {
-  const cloud_name = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const api_key = process.env.CLOUDINARY_API_KEY;
-  const api_secret = process.env.CLOUDINARY_API_SECRET;
-  if (!cloud_name || !api_key || !api_secret) throw new Error("cloudinary_not_configured");
-  cloudinary.config({ cloud_name, api_key, api_secret, secure: true });
-}
-
 async function destroyAll(ids: string[], resourceType: "image" | "video" = "image") {
   const unique = Array.from(new Set(ids.filter(Boolean)));
   if (!unique.length) return 0;
-  configureCloudinary();
-  await Promise.all(unique.map((id) => cloudinary.uploader.destroy(id, { resource_type: resourceType, invalidate: true }).catch(swallow)));
+  await Promise.all(unique.map((id) => destroyAsset(id, resourceType).catch(swallow)));
   return unique.length;
 }
 

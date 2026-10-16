@@ -30,7 +30,9 @@
 | `pnpm profile:chat` | React Profiler run of a 300-message thread in happy-dom; prints mount and append cost |
 | `pnpm analyze` | production build with the bundle analyzer report |
 | `pnpm knip` | dead code / unused exports / unused deps; must be clean |
-| `pnpm cloudinary:presets` | create/update the two upload presets through the Admin API |
+| `pnpm cloudinary:presets` | create/update the two upload presets (Signed mode, delivery type authenticated) |
+| `pnpm migrate-media` | dry run: counts public assets under `tincan/` and docs referencing them; `--yes` moves them to authenticated delivery and rewrites every stored URL with signed variants |
+| `pnpm export` | backup: dated `exports/<time>/firestore.json` + `media.csv` (gitignored, private) |
 | `pnpm tick:dry` | `GET $TICK_URL/api/tick?dry=1` and print what the tick would do |
 | `pnpm reset:dry` / `pnpm reset` | wipe all data except the owner's `users` doc (owner = first email in `ALLOWED_EMAILS`); dry run by default |
 | `pnpm icons` | regenerate PWA icons and badge from the inline SVG |
@@ -50,6 +52,10 @@
 - **Push**: More → Notifications → "Send a test". A failure there means the token, the VAPID key or the service worker registration.
 - **Tick**: cron-job.org history should show 200s; `pnpm tick:dry` locally against production to see the plan.
 - **Dependencies**: `pnpm outdated`, `pnpm audit --prod`.
+
+## Backups
+
+Spark has **no managed Firestore exports**, so `pnpm export` is the only backup. It writes every collection, plus the `private` and `items` subcollections, with tagged timestamps, and a CSV of every media URL. The signed URLs in the CSV open the originals, so keep the folder somewhere private. Cloudinary keeps the media itself. Run it before risky changes and every few weeks.
 
 ## Resetting data
 

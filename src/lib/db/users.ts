@@ -41,9 +41,9 @@ function cleanupAvatar(): Promise<void> {
  */
 export async function uploadAvatar(uid: string, me: UserDoc, file: File, onProgress?: (f: number) => void): Promise<void> {
   const { blob } = await compressImage(file, { maxWidthOrHeight: 512, maxSizeMB: 0.15 });
-  const up = await uploadToCloudinary(blob, { kind: "image", onProgress });
+  const up = await uploadToCloudinary(blob, { kind: "image", purpose: "avatar", onProgress });
   await updateDoc(userRef(uid), {
-    avatar: { url: up.url, publicId: up.publicId },
+    avatar: { url: up.url, publicId: up.publicId, variants: up.variants },
     previousAvatarPublicId: me.avatar?.publicId ?? null,
   });
   if (me.avatar?.publicId) await cleanupAvatar();

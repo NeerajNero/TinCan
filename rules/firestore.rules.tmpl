@@ -31,7 +31,17 @@ service cloud.firestore {
       return !(field in data) || (data[field] is string && data[field].size() <= max);
     }
     /** Media we render must come from our own Cloudinary cloud (or GIPHY for gifs). */
-    function cloudinaryUrl(url) { return url is string && url.matches('^https://res\\.cloudinary\\.com/__CLOUDINARY_CLOUD__/.*'); }
+    // Our cloud's delivery URLs: authenticated (signed, s--sig--) or legacy public upload.
+    function cloudinaryUrl(url) { return url is string && url.matches('^https://res\\.cloudinary\\.com/__CLOUDINARY_CLOUD__/(image|video)/(upload|authenticated/s--[A-Za-z0-9_-]{8}--)/.*'); }
+    // Signed variant URLs stored next to an asset (see /api/media/urls); each must be ours.
+    function variantOk(v, k) { return !(k in v) || cloudinaryUrl(v[k]); }
+    function variantsOk(m) {
+      return !('variants' in m) || (m.variants is map
+        && m.variants.keys().hasOnly(['w320', 'w640', 'w800', 'blur', 'original', 'face', 'audio'])
+        && variantOk(m.variants, 'w320') && variantOk(m.variants, 'w640') && variantOk(m.variants, 'w800')
+        && variantOk(m.variants, 'blur') && variantOk(m.variants, 'original') && variantOk(m.variants, 'face')
+        && variantOk(m.variants, 'audio'));
+    }
     function giphyUrl(url) { return url is string && url.matches('^https://media[0-9]*\\.giphy\\.com/.*'); }
 
     // ── users/{uid} ──────────────────────────────────────────────────────
@@ -46,7 +56,7 @@ service cloud.firestore {
           && strMax(incoming(), 'bio', 120) && strMax(incoming(), 'city', 80) && strMax(incoming(), 'name', 120)
           && incoming().tz is string && incoming().tz.size() > 0 && incoming().tz.size() <= 64
           && incoming().fcmTokens is list && incoming().fcmTokens.size() <= 10
-          && (!('avatar' in incoming()) || incoming().avatar == null || cloudinaryUrl(incoming().avatar.url))
+          && (!('avatar' in incoming()) || incoming().avatar == null || (cloudinaryUrl(incoming().avatar.url) && variantsOk(incoming().avatar)))
           && chatBgOk();
       }
       // Chat background: a short built-in id, or "photo" pointing at one of our Cloudinary assets.
@@ -119,7 +129,7 @@ service cloud.firestore {
         return !('media' in incoming()) || incoming().media == null
           || (incoming().type == 'gif' && giphyUrl(incoming().media.url))
           || (incoming().type == 'sticker' && incoming().media.stickerId is string)
-          || (incoming().type in ['image', 'voice'] && cloudinaryUrl(incoming().media.url));
+          || (incoming().type in ['image', 'voice'] && cloudinaryUrl(incoming().media.url) && variantsOk(incoming().media));
       }
 
       allow read: if allowed();
@@ -288,7 +298,7 @@ service cloud.firestore {
     match /memories/{memoryId} {
       allow read: if allowed();
       allow create: if allowed() && incoming().uploaderId == uid()
-        && cloudinaryUrl(incoming().url) && strMax(incoming(), 'caption', 500)
+        && cloudinaryUrl(incoming().url) && variantsOk(incoming()) && strMax(incoming(), 'caption', 500)
         && isServerTime(incoming().createdAt);
       // Only the uploader edits caption/date/place; the asset fields never change.
       allow update: if allowed()
@@ -297,6 +307,12 @@ service cloud.firestore {
         && incoming().url == existing().url
         && incoming().publicId == existing().publicId
         && strMax(incoming(), 'caption', 500);
+      // Either of you may unlink a photo from a place that is being deleted in the same batch
+      // (or is already gone): only placeId may change, and only to null.
+      allow update: if allowed()
+        && onlyChanges(['placeId']) && incoming().placeId == null
+        && existing().get('placeId', null) is string
+        && !existsAfter(/databases/$(database)/documents/places/$(existing().placeId));
       allow delete: if allowed() && existing().uploaderId == uid();
     }
 

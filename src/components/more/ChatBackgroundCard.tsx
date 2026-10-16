@@ -9,15 +9,14 @@ import { Card } from "@/components/ui/Card";
 import { CHAT_BG_BY_ID } from "@/content/chat-backgrounds";
 import { usePair } from "@/hooks/usePair";
 import { useTheme } from "@/hooks/useTheme";
-import { thumbUrl } from "@/lib/cloudinary";
-import { safeCloudinary } from "@/lib/safeUrl";
+import { chatBgPhotoUrl } from "@/lib/mediaUrl";
 
 export function ChatBackgroundCard() {
   const { uid, me } = usePair();
   const { resolved } = useTheme();
   const [open, setOpen] = useState(false);
   const pref = me.chatBg ?? null;
-  const photo = pref?.id === "photo" ? safeCloudinary(pref.photoUrl) : null;
+  const photo = pref?.id === "photo" ? chatBgPhotoUrl(pref.photoUrl) : null;
   const builtIn = pref?.id !== "photo" ? CHAT_BG_BY_ID[pref?.id ?? "plain"] : null;
 
   return (
@@ -25,7 +24,7 @@ export function ChatBackgroundCard() {
       <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl border border-border" style={builtIn ? builtInStyle(pref, resolved) : undefined} aria-hidden>
         {photo && (
           // eslint-disable-next-line @next/next/no-img-element -- Cloudinary thumbnail
-          <img src={thumbUrl(photo)} alt="" decoding="async" loading="lazy" className="h-full w-full object-cover" />
+          <img src={photo} alt="" decoding="async" loading="lazy" className="h-full w-full object-cover" />
         )}
       </span>
       <div className="min-w-0 flex-1">

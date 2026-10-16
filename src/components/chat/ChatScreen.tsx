@@ -254,7 +254,7 @@ function Thread({ uid, tz, chatBg, friendUid, friendName, friendDoc, needsMessag
         onScheduled={() => setSchedule({ open: false, draft: "" })}
       />
       <ImageViewer
-        src={viewing?.media?.url ?? null}
+        media={viewing?.media ?? null}
         caption={viewing?.text}
         actions={
           viewing ? (

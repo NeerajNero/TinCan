@@ -132,7 +132,7 @@ export function PixelScreen() {
       const blob = await new Promise<Blob | null>((r) => c.toBlob(r, "image/png"));
       if (!blob) return;
       const up = await uploadToCloudinary(blob, { kind: "image" });
-      const id = await sendMedia(uid, "image", { url: up.url, publicId: up.publicId, w: 320, h: 320, bytes: up.bytes }, "🟪 Pixel art");
+      const id = await sendMedia(uid, "image", { url: up.url, publicId: up.publicId, variants: up.variants, w: 320, h: 320, bytes: up.bytes }, "🟪 Pixel art");
       if (friendUid) void notify("message", { toUid: friendUid, body: "📷 Pixel art", data: { messageId: id } });
     } finally {
       setSnapping(false);

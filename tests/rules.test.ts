@@ -8,7 +8,7 @@ import { resolve } from "node:path";
 
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { child, get, push, ref, remove, set, update } from "firebase/database";
-import { doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 
 const root = resolve(__dirname, "..");
@@ -97,6 +97,16 @@ describe("messages", () => {
     await assertSucceeds(setDoc(doc(db, "messages/i1"), { ...base, media: { url: `https://res.cloudinary.com/${CLOUD}/image/upload/v1/tincan/images/a.jpg`, publicId: "tincan/images/a" } }));
     await assertFails(setDoc(doc(db, "messages/i2"), { ...base, media: { url: "https://evil.example/x.jpg", publicId: "x" } }));
   });
+  it("authenticated media with signed variants is accepted; a foreign variant is not", async () => {
+    const db = asA().firestore();
+    const base = { senderId: A, type: "image", text: "", status: "sent", reactions: {}, deliveredAt: null, readAt: null, deletedFor: [], deletedForEveryone: false, createdAt: serverTimestamp() };
+    const signed = (t: string) => `https://res.cloudinary.com/${CLOUD}/image/authenticated/s--AbCd_12---/${t}/tincan/images/a`;
+    const variants = { w320: signed("w_320"), w640: signed("w_640"), w800: signed("w_800"), blur: signed("e_blur:2000"), original: signed("v1") };
+    await assertSucceeds(setDoc(doc(db, "messages/a1"), { ...base, media: { url: variants.original, publicId: "tincan/images/a", variants } }));
+    await assertFails(setDoc(doc(db, "messages/a2"), { ...base, media: { url: variants.original, publicId: "tincan/images/a", variants: { ...variants, w320: "https://evil.example/x.jpg" } } }));
+    await assertFails(setDoc(doc(db, "messages/a3"), { ...base, media: { url: variants.original, publicId: "tincan/images/a", variants: { ...variants, extra: signed("x") } } }));
+    await assertFails(setDoc(doc(db, "messages/a4"), { ...base, media: { url: `https://res.cloudinary.com/${CLOUD}/image/authenticated/v1/tincan/images/a`, publicId: "tincan/images/a" } }));
+  });
 });
 
 describe("private bodies", () => {
@@ -122,6 +132,25 @@ describe("private bodies", () => {
     await assertFails(getDoc(doc(db, "envelopes/e1/private/body")));
     await assertSucceeds(updateDoc(doc(db, "envelopes/e1"), { openedAt: serverTimestamp() }));
     await assertSucceeds(getDoc(doc(db, "envelopes/e1/private/body")));
+  });
+});
+
+describe("places", () => {
+  it("deleting a place may unlink the friend's photos, but only in the same batch and only placeId", async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, "pair/main"), { uids: [A, B], roomTz: "UTC" });
+      await setDoc(doc(db, "places/p1"), { name: "Cafe", lat: 1, lng: 2, kind: "been", addedBy: A });
+      await setDoc(doc(db, "memories/m1"), { uploaderId: B, url: `https://res.cloudinary.com/${CLOUD}/image/upload/v1/tincan/images/b.jpg`, publicId: "tincan/images/b", w: 4, h: 3, caption: "", placeId: "p1" });
+    });
+    const db = asA().firestore();
+    // While the place still exists, A can't touch B's photo.
+    await assertFails(updateDoc(doc(db, "memories/m1"), { placeId: null }));
+    const batch = writeBatch(db);
+    batch.delete(doc(db, "places/p1"));
+    batch.update(doc(db, "memories/m1"), { placeId: null });
+    await assertSucceeds(batch.commit());
+    // Once it's gone, nothing but placeId may change.
+    await assertFails(updateDoc(doc(db, "memories/m1"), { caption: "mine now" }));
   });
 });
 

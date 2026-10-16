@@ -12,7 +12,8 @@ const bodySchema = z.object({ kind: z.enum(["image", "audio"]), bytes: z.number(
 /**
  * POST /api/media/sign — a short-lived signature for one upload with a fixed
  * parameter set. The client must send exactly these params; Cloudinary
- * rejects anything else. Presets stay named but must be switched to Signed.
+ * rejects anything else. Presets stay named but must be in Signed mode, and
+ * assets are uploaded with delivery type `authenticated`.
  */
 export async function POST(req: Request) {
   try {
@@ -30,6 +31,8 @@ export async function POST(req: Request) {
     const params: Record<string, string | number> = {
       timestamp,
       folder: kind === "image" ? "tincan/images" : "tincan/audio",
+      // Private delivery: unsigned URLs for these assets return 401. See /api/media/urls.
+      type: "authenticated",
       upload_preset: kind === "image" ? (process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_IMAGE ?? "tincan_image") : (process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_AUDIO ?? "tincan_audio"),
       ...(kind === "image" ? { transformation: "c_limit,w_1080,h_1080,q_auto:low" } : {}),
     };

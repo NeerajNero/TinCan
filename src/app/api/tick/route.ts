@@ -241,6 +241,13 @@ export async function GET(req: Request) {
     await abandonStaleGames(ctx);
     await petHunger(ctx, pair);
 
+    // A live run answers with counts only: cron-job.org keeps response bodies in its history, and the
+    // action details carry nicknames, scheduled-message text and capsule titles. Details: ?dry=1 (pnpm tick:dry).
+    if (!dry) {
+      const jobs: Record<string, number> = {};
+      for (const a of ctx.actions) jobs[a.job] = (jobs[a.job] ?? 0) + 1;
+      return NextResponse.json({ ok: true, now: now.toISOString(), actions: ctx.actions.length, jobs });
+    }
     return NextResponse.json({ dry, now: now.toISOString(), roomTz, today: ctx.today, localMinutes: minutes, actions: ctx.actions });
   } catch (err) {
     console.error("[api/tick]", err);

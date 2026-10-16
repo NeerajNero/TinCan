@@ -58,7 +58,6 @@ function connectSrc(databaseUrl?: string): string[] {
     // Uploads, and the worker's image caches.
     "https://api.cloudinary.com",
     "https://res.cloudinary.com",
-    "https://api.giphy.com",
     "https://*.giphy.com",
     "https://api.open-meteo.com",
     "https://geocoding-api.open-meteo.com",

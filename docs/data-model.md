@@ -8,7 +8,7 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 | --- | --- | --- | --- | --- |
 | `users/{uid}` | uid | owner only | 2 single docs | name, nickname, email (immutable), photoURL, avatar{url,publicId}, bio, tz, city, lat, lng, fcmTokens[], notif{enabled,…}, wordleSolved, chatBg{id, photoUrl?, photoPublicId?} (id ≤ 24 chars; photoUrl must be our Cloudinary cloud), createdAt (immutable). No other top-level fields allowed. |
 | `pair/main` | fixed | either | 1 doc | uids[≤2] (can only grow, never lose a uid), roomTz, friendsSince, nextMeetup, relationship, streak, plant, pet, garden.stickers, records, focusSessions, milestonesSummary, tripsSummary, counters |
-| `messages/{id}` | auto | sender creates; recipient marks delivered/read; sender edits/deletes; either reacts (own key) / hides for self | latest 50 + ≤3 pages by scroll, then a button; unread ≤99; latest 1 | text ≤2000, type in text/image/voice/gif/sticker/system, createdAt == server time, media URL must be our Cloudinary cloud (gif: media*.giphy.com) |
+| `messages/{id}` | auto | sender creates; recipient marks delivered/read; sender edits/deletes; either reacts (own key) / hides for self | latest 50 + ≤3 pages by scroll, then a button; unread ≤99; latest 1 | text ≤2000, type in text/image/voice/gif/sticker/system, createdAt == server time, media URL must be our Cloudinary cloud (gif: media*.giphy.com); `media.variants` = signed delivery URLs, each validated as ours |
 | `checkins/{dateKey}` | room day | each uid sets only its own key | 1 doc | `{uid: true}` |
 | `moods/{dateKey}_{uid}` | own day + uid | owner | 2 docs today; ≤70 per month | emoji, note ≤80, dateKey, uid (mirror fields must match id) |
 | `dailyQuestions/{dateKey}` | room day | each uid only its own `answers.{uid}`; `dateKey` mirror | 1 doc today; history 30/page by `dateKey` | questionIndex |
@@ -17,7 +17,7 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 | `envelopes/{id}` + `private/body` | auto | author; recipient sets openedAt once | ≤50 for me + ≤50 by me | body readable by author, or recipient after opening |
 | `jar/{id}` | auto | author creates (text ≤500); recipient sets drawnAt | ≤100 for me + ≤100 by me | `drawnAt: null` on create so `== null` queries work |
 | `scheduled/{id}` | auto | sender; delivered by the tick (admin) | ≤50 pending | sendAt, sentAt, messageId |
-| `memories/{id}` | auto | uploader (edit/delete); create requires our Cloudinary URL | 40/page by takenAt; ≤30 per place | caption ≤500, takenAt, placeId, sharedAsset |
+| `memories/{id}` | auto | uploader (edit/delete); create requires our Cloudinary URL | 40/page by takenAt; ≤30 per place | caption ≤500, takenAt, placeId, sharedAsset, `variants` (signed URLs). Either user may null `placeId` when its place is deleted in the same batch |
 | `places/{id}` | auto | either | ≤200 | name ≤80, note ≤1000, kind been/want, visitedAt |
 | `milestones/{id}` | auto | either | ≤100 | mirrored to `pair.milestonesSummary` |
 | `lists/{kind}/items/{id}` | auto | shared, **except `gifts`: author-only read/write** | ≤200 per list | text ≤200, note ≤1000, url ≤500, order |
@@ -31,6 +31,10 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 | `push/{id}`, `tickLog/{jobKey}`, `quota/{uid}_{day}` | — | **admin only** | — | push log (~200), job idempotency, API daily caps |
 
 Composite indexes: none. Every query is a single-field order or equality-only filters; sorting by a second field happens client-side. If you ever add one, create `firestore.indexes.json`, reference it in `firebase.json`, and include it in `rules:deploy`.
+
+## Media references
+
+Every stored asset reference is `{ url, publicId, variants }` (messages.media, memories, journal/capsule `media[]`, users.avatar). `url` is the signed original; `variants` holds the signed URLs from `src/lib/media-variants.json`. `users.chatBg.photoUrl` is the memory's signed w640 variant. Render through `variantUrl()` / `CloudImage` only. Docs written before the migration may still hold public `/upload/` URLs, which are transformed client-side until `pnpm migrate-media --yes` runs.
 
 ## Realtime Database
 

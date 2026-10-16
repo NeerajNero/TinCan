@@ -9,8 +9,10 @@
 | Build fails on Vercel with Node error | Node < 22 | `engines.node: 22.x` is pinned; check the project's Node setting |
 | Push test says sent but nothing arrives | notifications blocked at OS level, worker not registered (dev mode), or stale token | production build only; More → Notifications → re-enable; tokens auto-prune on failure |
 | Push arrives but tapping opens nothing | notification URL not same-origin | `sw.ts` only opens same-origin URLs by design; check `composePush` `url` |
-| GIF button missing | `NEXT_PUBLIC_GIPHY_API_KEY` absent, or set as a Sensitive variable on Vercel | add it as a plain variable; redeploy |
 | GIPHY 429 | free key rate limit | the panel debounces 500 ms and caches trending; wait |
+| Photos show 🚫 or 401 in the network tab | the doc has no signed `variants` and the asset is authenticated | run `pnpm migrate-media` (dry run) and then `--yes` |
+| Upload fails right after Cloudinary accepts it | `/api/media/urls` failed (secret missing, rate limit) | check `/api/health`; retry |
+| GIF tab missing | `GIPHY_API_KEY` not set on the server | add it on Vercel (server-only) and redeploy |
 | Image "Photo unavailable" | URL not under `res.cloudinary.com/<cloud>/` | `lib/safeUrl.ts` blocks it; check the cloud name env |
 | Upload fails with signature error | preset not in Signed mode, or clock skew | switch preset to Signed in the Cloudinary console; retry |
 | Lint: "Calling setState in an effect" / "ref during render" | React Compiler rules | see docs/conventions.md → React & lint |

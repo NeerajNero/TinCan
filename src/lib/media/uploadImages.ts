@@ -16,7 +16,7 @@ export async function uploadImages(files: File[], onProgress?: (fraction: number
           report();
         },
       });
-      return { url: up.url, publicId: up.publicId, w: up.w ?? w, h: up.h ?? h };
+      return { url: up.url, publicId: up.publicId, variants: up.variants, w: up.w ?? w, h: up.h ?? h };
     }),
   );
 }
