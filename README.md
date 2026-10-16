@@ -115,7 +115,7 @@ The rules enforce all of this, not just the UI.
 
 | Data | Where |
 | --- | --- |
-| Profiles, messages, journal, memories metadata, lists, plans, game results, moods, daily answers | Firestore (Google, your chosen region) |
+| Profiles, messages, journal, memories metadata, lists, plans, game results, moods, daily answers | Firestore (Google, your chosen region; its transport also fetches a 1-pixel `www.google.com/images/cleardot.gif` to test connectivity) |
 | Presence, typing, pings, lamps, live game boards, canvases, watch/listen state, timers | Realtime Database (Google, `asia-southeast1` if you followed the checklist) |
 | Photos, voice notes, avatars | Cloudinary, **private**: authenticated delivery, loadable only through signed URLs stored on the docs |
 | Static content (questions, decks, word lists) | Bundled with the app |

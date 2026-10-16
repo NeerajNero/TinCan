@@ -63,6 +63,8 @@ Home may subscribe only to `pair/main`, `users/{friend}`, today's `checkins`, to
 
 ## Metered Firestore
 
+Firestore is initialised in `lib/firebase/client.ts` with persistent multi-tab cache and `experimentalAutoDetectLongPolling: true` (the SDK default, made explicit): on networks that break the streaming WebChannel transport it probes `www.google.com/images/cleardot.gif` and falls back to long-polling. `lib/firestoreHealth.ts` counts server → cache transitions of the `pair/main` listener for More → Diagnostics.
+
 All client code imports Firestore from `@/lib/firebase/fs`, a thin re-export of `firebase/firestore` that counts server-served reads and writes. More → Usage meter extrapolates the session to a day against the Spark quota. Importing from `firebase/firestore` directly in client code bypasses the meter and is wrong.
 
 ## Push notifications

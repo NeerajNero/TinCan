@@ -21,6 +21,7 @@
 | Daily history empty / index error | ordering by `__name__` descending | queries order by the `dateKey` field (auto-indexed); never add composite indexes |
 | Usage meter shows a spike | an unbounded listener or a screen re-subscribing per render | find the screen; every query needs `limit` or a single doc |
 | Offline banner forever on one phone, other devices fine | that device pinned RTDB to long-polling (`firebase:previous_websocket_failure`) and the transport was blocked | fixed in 16b; check More → Diagnostics: "RTDB transport", "RTDB connected" and the error list. Copy diagnostics and share the text |
+| Firestore "offline (from cache)" on cellular, WebChannel transport errors, then `img-src` blocked `www.google.com/images/cleardot.gif` | Firestore's connectivity probe was blocked, so it never decided to fall back to long-polling | fixed in 16d (`FIRESTORE_PROBE_IMG` in `csp.ts`); Diagnostics → "Firestore reconnects" shows how often it dropped this session |
 | A deploy doesn't show up on the installed app | the old JS is still running | the app checks on launch and resume and offers "Update available, tap to reload"; Diagnostics shows app build vs worker build |
 | CSP violation from `StrategyHandler` (service worker) | the worker fetched a host missing from connect-src | add it to `connectSrc()` in `csp.ts` (the worker policy shares it) |
 | `Cannot read properties of undefined (reading 'emoji')` | a lookup indexed a game catalogue with a stored type it doesn't know | use `gameInfo()` from `lib/games/catalog.ts` |

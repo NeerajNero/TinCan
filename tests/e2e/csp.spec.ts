@@ -2,7 +2,8 @@
  * The CSP is enforced and the app loads without a single violation, in the
  * page *and* in the service worker (whose runtime-cache fetches are governed
  * by connect-src). Images from every host the worker caches are requested so
- * those routes actually run.
+ * those routes actually run, plus Firestore's connectivity probe image, which
+ * the page loads directly (img-src, path-limited to /images/).
  */
 import { expect, test, type BrowserContext, type Page, type Worker } from "@playwright/test";
 
@@ -14,12 +15,14 @@ declare global {
   var __cspWorker: string[] | undefined;
 }
 
-const WORKER_ROUTED_IMAGES = [
+const IMAGES = [
   "https://res.cloudinary.com/demo/image/upload/sample.jpg",
   "https://tile.openstreetmap.org/0/0/0.png",
   "https://media1.giphy.com/media/3o7TKSjRrfIPjeiVyM/200.gif",
   "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
   "https://lh3.googleusercontent.com/a/default-user=s96-c",
+  // Firestore WebChannel probe; bypasses the worker, governed by the page's img-src.
+  "https://www.google.com/images/cleardot.gif",
 ];
 
 async function watchPage(page: Page) {
@@ -65,7 +68,7 @@ test("no CSP violations on /signin, in the page or the service worker", async ({
   const worker = await controlledWorker(page, context);
   await expect(page.getByRole("button", { name: /google/i })).toBeVisible();
 
-  // Exercise every worker image route (CacheFirst fetches → connect-src).
+  // Exercise every worker image route (CacheFirst fetches → connect-src) and the Firestore probe.
   await page.evaluate(async (urls) => {
     await Promise.all(
       urls.map(
@@ -78,7 +81,7 @@ test("no CSP violations on /signin, in the page or the service worker", async ({
           }),
       ),
     );
-  }, WORKER_ROUTED_IMAGES);
+  }, IMAGES);
 
   const pageViolations = await page.evaluate(() => window.__csp);
   const workerViolations = await worker.evaluate(() => globalThis.__cspWorker ?? []);

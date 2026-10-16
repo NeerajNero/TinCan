@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, Copy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -13,6 +13,7 @@ import { pairRef } from "@/lib/db/refs";
 import { diagEntries, type DiagEntry } from "@/lib/diagLog";
 import { rtdbPrefersLongPolling } from "@/lib/firebase/client";
 import { onSnapshot } from "@/lib/firebase/fs";
+import { getFirestoreHealth, subscribeFirestoreHealth, type FirestoreHealth } from "@/lib/firestoreHealth";
 
 /** Owner-only troubleshooting panel. Listeners exist only while it's open. */
 export function DiagnosticsCard() {
@@ -49,6 +50,16 @@ interface Connection {
 }
 
 const fmtAge = (ms: number) => (ms < 60_000 ? `${Math.round(ms / 1000)} s` : ms < 3_600_000 ? `${Math.round(ms / 60_000)} min` : `${(ms / 3_600_000).toFixed(1)} h`);
+
+function fmtHealth(h: FirestoreHealth, now: number): string {
+  if (h.online === null) return "no snapshot yet";
+  const times = h.offlineCount === 1 ? "once" : `${h.offlineCount} times`;
+  const parts = [`went offline ${times} this session`];
+  if (h.lastOfflineAt !== null) parts.push(`last ${fmtAge(now - h.lastOfflineAt)} ago`);
+  if (h.offlineMs > 0) parts.push(`${fmtAge(h.offlineMs)} offline in total`);
+  if (h.online === false) parts.push("offline now");
+  return parts.join(", ");
+}
 
 async function workerInfo(): Promise<WorkerInfo> {
   if (!("serviceWorker" in navigator)) return { controller: false, active: "unsupported", waiting: false, installing: false, build: "—" };
@@ -90,6 +101,7 @@ function DiagnosticsPanel() {
   const [csp, setCsp] = useState("checking…");
   const [token, setToken] = useState<{ issuedAt: number; expiresAt: number } | null>(null);
   const [log, setLog] = useState<readonly DiagEntry[]>(() => diagEntries());
+  const health = useSyncExternalStore(subscribeFirestoreHealth, getFirestoreHealth, getFirestoreHealth);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -126,6 +138,7 @@ function DiagnosticsPanel() {
     ["RTDB transport", rtdbPrefersLongPolling() ? "long-polling first (a WebSocket failed this session)" : "WebSocket first"],
     ["RTDB server offset", typeof offset === "number" ? `${Math.round(offset)} ms` : "—"],
     ["Firestore", fs ? `${fs.fromCache ? "offline (from cache)" : "online"}${fs.pending ? ", writes pending" : ""}, updated ${fmtAge(now.getTime() - fs.at)} ago` : "waiting…"],
+    ["Firestore reconnects", fmtHealth(health, now.getTime())],
     ["Firestore last error", fsError ?? firestoreLast?.text ?? "none"],
     ["CSP", csp],
     ["Network", `${navigator.onLine ? "online" : "offline"}${conn ? ` · ${conn.type ?? "?"} / ${conn.effectiveType ?? "?"}${conn.downlink ? ` · ${conn.downlink} Mb/s` : ""}${conn.saveData ? " · data saver" : ""}` : ""}`],

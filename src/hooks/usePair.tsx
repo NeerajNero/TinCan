@@ -8,6 +8,7 @@ import { Splash } from "@/components/ui/Splash";
 import { useAuth } from "@/hooks/useAuth";
 import { pairRef, userRef } from "@/lib/db/refs";
 import { onSnapshot, type DocumentSnapshot } from "@/lib/firebase/fs";
+import { recordFirestoreSnapshot } from "@/lib/firestoreHealth";
 import type { PairDoc, UserDoc } from "@/lib/types";
 
 export interface PairContextValue {
@@ -66,13 +67,16 @@ export function PairProvider({ children }: { children: React.ReactNode }) {
     };
   }, [uid]);
 
-  // pair/main
+  // pair/main (also feeds the Diagnostics "went offline" counter)
   useEffect(() => {
     if (!uid) return;
     const unsub = onSnapshot(
       pairRef(),
       { includeMetadataChanges: true },
-      (snap) => setPair(settle(snap)),
+      (snap) => {
+        recordFirestoreSnapshot(snap);
+        setPair(settle(snap));
+      },
       (err) => setError(err.message),
     );
     return () => {

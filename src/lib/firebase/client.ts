@@ -29,7 +29,15 @@ export function getFirebaseAuth(): Auth {
   return auth;
 }
 
-/** Firestore with offline persistence (multi-tab) in the browser. */
+/**
+ * Firestore with offline persistence (multi-tab) in the browser.
+ *
+ * `experimentalAutoDetectLongPolling` is the SDK default since v9.22, but it is
+ * set explicitly here so nobody has to look it up: on networks that break the
+ * streaming WebChannel transport (seen on cellular), the SDK probes
+ * `www.google.com/images/cleardot.gif` (allowed by img-src in csp.ts) and falls
+ * back to long-polling instead of staying offline.
+ */
 export function getDb(): Firestore {
   if (db) return db;
   const app = getFirebaseApp();
@@ -40,6 +48,7 @@ export function getDb(): Firestore {
   try {
     db = initializeFirestore(app, {
       localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+      experimentalAutoDetectLongPolling: true,
     });
   } catch {
     // Already initialised (e.g. after HMR) — reuse the existing instance.

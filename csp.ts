@@ -29,6 +29,14 @@ const host = (url: string) => {
   }
 };
 
+/**
+ * Firestore's WebChannel transport probes connectivity with
+ * `https://www.google.com/images/cleardot.gif` (an <img>, so img-src) when a
+ * stream fails, which is how it decides to fall back to long-polling on
+ * networks that break WebChannel. Path-limited: nothing else on google.com.
+ */
+export const FIRESTORE_PROBE_IMG = "https://www.google.com/images/";
+
 /** Public radio streams (src/content/radio.json): played by <audio>, never cached. */
 export const RADIO_ORIGINS = unique((radio as Array<{ url: string }>).map((s) => origin(s.url)));
 
@@ -76,7 +84,12 @@ function connectSrc(databaseUrl?: string): string[] {
  * headers, not the page's). Its fetches for the runtime caches are connect-src.
  */
 export function buildWorkerCsp(databaseUrl?: string): string {
-  return [`default-src 'self'`, `script-src 'self'`, `connect-src ${connectSrc(databaseUrl).join(" ")}`].join("; ");
+  return [
+    `default-src 'self'`,
+    `script-src 'self'`,
+    `img-src 'self' ${FIRESTORE_PROBE_IMG}`,
+    `connect-src ${connectSrc(databaseUrl).join(" ")}`,
+  ].join("; ");
 }
 
 export function buildCsp({ nonce, projectId, authDomain, databaseUrl, dev = false }: CspEnv): string {
@@ -118,6 +131,7 @@ export function buildCsp({ nonce, projectId, authDomain, databaseUrl, dev = fals
       "https://*.googleusercontent.com",
       "https://tile.openstreetmap.org",
       "https://*.tile.openstreetmap.org",
+      FIRESTORE_PROBE_IMG,
     ],
     "media-src": ["'self'", "blob:", "https://res.cloudinary.com", ...RADIO_ORIGINS],
     "frame-src": [...firebaseAuthFrames, "https://accounts.google.com", "https://www.youtube.com", "https://www.youtube-nocookie.com", ...rtdbTransport],
