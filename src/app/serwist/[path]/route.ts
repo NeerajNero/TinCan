@@ -19,7 +19,11 @@ const PUBLIC_FIREBASE_KEYS = [
   "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
   "NEXT_PUBLIC_FIREBASE_APP_ID",
 ] as const;
-const define = Object.fromEntries(PUBLIC_FIREBASE_KEYS.map((k) => [`process.env.${k}`, JSON.stringify(process.env[k] ?? "")]));
+const define = {
+  ...Object.fromEntries(PUBLIC_FIREBASE_KEYS.map((k) => [`process.env.${k}`, JSON.stringify(process.env[k] ?? "")])),
+  // Same id the app shows in More → Diagnostics, so a stale worker is easy to spot.
+  "process.env.NEXT_PUBLIC_BUILD_ID": JSON.stringify(buildRevision().slice(0, 12)),
+};
 
 // Serves the bundled worker at /serwist/sw.js (scope "/", see next.config headers).
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } = createSerwistRoute({

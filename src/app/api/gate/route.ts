@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isOwnerEmail } from "@/lib/allowlist";
 import { errorResponse, guard, GuardError } from "@/lib/server/guard";
 
 /**
@@ -8,8 +9,8 @@ import { errorResponse, guard, GuardError } from "@/lib/server/guard";
  */
 export async function POST(req: Request) {
   try {
-    await guard(req, "gate");
-    return NextResponse.json({ allowed: true });
+    const caller = await guard(req, "gate");
+    return NextResponse.json({ allowed: true, owner: isOwnerEmail(caller.email) });
   } catch (err) {
     if (err instanceof GuardError && err.status === 403) return NextResponse.json({ allowed: false });
     return errorResponse(err, "gate");

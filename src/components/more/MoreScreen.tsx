@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ChatBackgroundCard } from "@/components/more/ChatBackgroundCard";
+import { DiagnosticsCard } from "@/components/more/DiagnosticsCard";
 import { NotificationsCard } from "@/components/more/NotificationsCard";
 import { PairCard } from "@/components/more/PairCard";
 import { ProfileCard } from "@/components/more/ProfileCard";
@@ -51,6 +52,7 @@ export function MoreScreen() {
       <NotificationsCard />
       <SoundsCard />
       <UsageCard />
+      <DiagnosticsCard />
 
       <Card className="flex flex-col gap-3">
         <Button variant="soft" onClick={handleSignOut} disabled={busy} className="self-start">

@@ -80,6 +80,12 @@ export function buildWorkerCsp(databaseUrl?: string): string {
 }
 
 export function buildCsp({ nonce, projectId, authDomain, databaseUrl, dev = false }: CspEnv): string {
+  const dbHost = databaseUrl ? host(databaseUrl) : "";
+  // The Realtime Database falls back to long-polling when a WebSocket fails (common on mobile
+  // networks), and then *sticks* to it on that device (localStorage previous_websocket_failure).
+  // Long-polling loads <script src="https://<db>/.lp?…"> inside a hidden iframe and pings
+  // disconnects through an iframe, so the database hosts must be in script-src and frame-src.
+  const rtdbTransport = unique(["https://*.firebasedatabase.app", "https://*.firebaseio.com", dbHost ? `https://${dbHost}` : ""]);
   const firebaseAuthFrames = unique([projectId ? `https://${projectId}.firebaseapp.com` : "", authDomain ? `https://${authDomain}` : ""]);
 
   const directives: Record<string, string[]> = {
@@ -96,6 +102,7 @@ export function buildCsp({ nonce, projectId, authDomain, databaseUrl, dev = fals
       "https://www.youtube.com",
       "https://s.ytimg.com",
       "https://apis.google.com",
+      ...rtdbTransport,
       dev ? "'unsafe-eval'" : "",
     ]),
     "style-src": ["'self'", "'unsafe-inline'"],
@@ -113,7 +120,7 @@ export function buildCsp({ nonce, projectId, authDomain, databaseUrl, dev = fals
       "https://*.tile.openstreetmap.org",
     ],
     "media-src": ["'self'", "blob:", "https://res.cloudinary.com", ...RADIO_ORIGINS],
-    "frame-src": [...firebaseAuthFrames, "https://accounts.google.com", "https://www.youtube.com", "https://www.youtube-nocookie.com"],
+    "frame-src": [...firebaseAuthFrames, "https://accounts.google.com", "https://www.youtube.com", "https://www.youtube-nocookie.com", ...rtdbTransport],
     "connect-src": connectSrc(databaseUrl),
   };
   return Object.entries(directives)

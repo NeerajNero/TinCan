@@ -18,6 +18,8 @@ export interface ToastInput {
   body?: string;
   /** Where a tap goes. */
   url?: string;
+  /** Instead of navigating, run this on tap (e.g. reload for an update). */
+  onTap?: () => void;
   /** Lamp colour dot, ping bounce, etc. */
   accent?: string;
   bounce?: boolean;
@@ -86,7 +88,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               onDismiss={() => remove(t.id)}
               onTap={() => {
                 remove(t.id);
-                if (t.url) router.push(t.url);
+                if (t.onTap) t.onTap();
+                else if (t.url) router.push(t.url);
               }}
             />
           ))}

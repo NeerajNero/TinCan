@@ -23,6 +23,8 @@ interface AuthContextValue {
   user: User | null;
   status: AuthStatus;
   error: string | null;
+  /** The first allowlisted email (from /api/gate); gates owner-only screens like Diagnostics. */
+  isOwner: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -30,7 +32,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const gateKey = (uid: string) => `tincan-gate:${uid}`;
 
-async function askGate(user: User): Promise<boolean> {
+async function askGate(user: User): Promise<{ allowed: boolean; owner: boolean }> {
   const token = await user.getIdToken();
   const res = await fetch("/api/gate", {
     method: "POST",
@@ -40,12 +42,13 @@ async function askGate(user: User): Promise<boolean> {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(body.error ?? `gate_${res.status}`);
   }
-  const data = (await res.json()) as { allowed: boolean };
-  return data.allowed;
+  const data = (await res.json()) as { allowed: boolean; owner?: boolean };
+  return { allowed: data.allowed, owner: data.owner === true };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
   // NEXT_PUBLIC_* values are inlined at build time, so server and client agree here.
   const [status, setStatus] = useState<AuthStatus>(() => (firebaseConfigured ? "loading" : "error"));
   const [error, setError] = useState<string | null>(() =>
@@ -74,7 +77,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       try {
-        if (sessionStorage.getItem(gateKey(u.uid)) === "allowed") {
+        const cached = sessionStorage.getItem(gateKey(u.uid));
+        if (cached === "allowed" || cached === "owner") {
+          setIsOwner(cached === "owner");
           setStatus("allowed");
           return;
         }
@@ -83,11 +88,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setStatus("checking");
       try {
-        const allowed = await askGate(u);
+        const { allowed, owner } = await askGate(u);
         if (cancelled) return;
         if (allowed) {
+          setIsOwner(owner);
           try {
-            sessionStorage.setItem(gateKey(u.uid), "allowed");
+            sessionStorage.setItem(gateKey(u.uid), owner ? "owner" : "allowed");
           } catch {
             // ignore
           }
@@ -124,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await doSignOut();
   }, [user]);
 
-  const value = useMemo(() => ({ user, status, error, signOut }), [user, status, error, signOut]);
+  const value = useMemo(() => ({ user, status, error, isOwner, signOut }), [user, status, error, isOwner, signOut]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

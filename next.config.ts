@@ -1,12 +1,19 @@
+import { spawnSync } from "node:child_process";
+
 import bundleAnalyzer from "@next/bundle-analyzer";
 import { withSerwist } from "@serwist/turbopack";
 import type { NextConfig } from "next";
 
+
 import { buildWorkerCsp } from "./csp";
 
 
+/** Short commit id of this build (Vercel's, else local git), shown in More → Diagnostics. */
+const BUILD_ID = (process.env.VERCEL_GIT_COMMIT_SHA || spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" }).stdout?.trim() || "local").slice(0, 12);
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
   // Cache Components is intentionally left off. Tincan renders everything on the
   // client against Firebase, and @serwist/turbopack's route handler exports the
   // classic segment configs (`dynamic`, `revalidate`) that Next 16 rejects when

@@ -20,6 +20,8 @@
 | `pnpm rules:build` warns about one email | `ALLOWED_EMAILS` has one entry | fine for solo testing; add the second before the friend signs in |
 | Daily history empty / index error | ordering by `__name__` descending | queries order by the `dateKey` field (auto-indexed); never add composite indexes |
 | Usage meter shows a spike | an unbounded listener or a screen re-subscribing per render | find the screen; every query needs `limit` or a single doc |
+| Offline banner forever on one phone, other devices fine | that device pinned RTDB to long-polling (`firebase:previous_websocket_failure`) and the transport was blocked | fixed in 16b; check More → Diagnostics: "RTDB transport", "RTDB connected" and the error list. Copy diagnostics and share the text |
+| A deploy doesn't show up on the installed app | the old JS is still running | the app checks on launch and resume and offers "Update available, tap to reload"; Diagnostics shows app build vs worker build |
 | CSP violation from `StrategyHandler` (service worker) | the worker fetched a host missing from connect-src | add it to `connectSrc()` in `csp.ts` (the worker policy shares it) |
 | `Cannot read properties of undefined (reading 'emoji')` | a lookup indexed a game catalogue with a stored type it doesn't know | use `gameInfo()` from `lib/games/catalog.ts` |
 | CSP violation in console (request blocked) | a new origin (CDN, stream URL) | add it to the matching directive in `csp.ts`; to unblock users meanwhile set `CSP_REPORT_ONLY=1` on Vercel and redeploy |

@@ -192,6 +192,8 @@ Everything runs on free tiers. Limits below were correct when written; check eac
 | Symptom | Fix |
 | --- | --- |
 | **"You're offline" banner even though the network is fine, or blank screens** | Usually the CSP blocking something. Set `CSP_REPORT_ONLY=1` on Vercel, redeploy, and read the console's `Content-Security-Policy` lines. Add the host to `csp.ts`, then unset the flag. |
+| **Offline banner never goes away on one phone** | Open More → Diagnostics (owner account) and look at "RTDB connected", "RTDB transport" and the error list. **Copy diagnostics** puts it all on the clipboard to share. |
+| **A new deploy isn't showing on the installed app** | Reopen the app; it checks for updates on launch and resume and shows "Update available, tap to reload". |
 | **Push not arriving** | Each person must turn on More → Notifications on each phone, and Android must allow notifications for the installed app. Use "Send a test". Push never works in `pnpm dev`. A message push is skipped while the other person has the chat open. |
 | **Upload fails** | Check the presets: both must be **Signed** with delivery type **authenticated** (`pnpm cloudinary:presets`). Then check `/api/health` (Cloudinary secret set?). |
 | **Old photos show 🚫** | They're still on public delivery or lack signed variants. Run `pnpm migrate-media`, then `--yes`. |

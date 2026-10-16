@@ -48,9 +48,34 @@ export function getDb(): Firestore {
   return db;
 }
 
+/**
+ * The RTDB SDK remembers one failed WebSocket forever (localStorage
+ * `firebase:previous_websocket_failure`) and from then on starts every session
+ * with long-polling on that device. Clear it before the first connection so
+ * each launch tries the WebSocket first; if it really fails, the SDK falls back
+ * (and the CSP allows long-polling) and sets the flag again for this session.
+ */
+const WS_FAILURE_KEY = "firebase:previous_websocket_failure";
+
 export function getRtdb(): Database {
-  rtdb ??= getDatabase(getFirebaseApp());
+  if (!rtdb) {
+    try {
+      localStorage.removeItem(WS_FAILURE_KEY);
+    } catch {
+      // storage blocked; the SDK treats that as "failed" anyway
+    }
+    rtdb = getDatabase(getFirebaseApp());
+  }
   return rtdb;
+}
+
+/** For More → Diagnostics: is this device currently pinned to long-polling? */
+export function rtdbPrefersLongPolling(): boolean {
+  try {
+    return localStorage.getItem(WS_FAILURE_KEY) === "true";
+  } catch {
+    return true;
+  }
 }
 
 export const googleProvider = new GoogleAuthProvider();

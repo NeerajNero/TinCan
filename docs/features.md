@@ -78,7 +78,7 @@ Heavy together screens are code-split through `together/lazy.tsx`. `ChatDrawer` 
 
 ## More (`/more`) — `components/more/MoreScreen.tsx`
 
-`ProfileCard` (nickname, city via `onboarding/CityPicker` → Open-Meteo geocode, avatar upload, bio), `PairCard` (friends-since, next meetup, relationship preset from `content/relationships.ts`, pet name, room tz), `ThemeSwitch` (`hooks/useTheme`), `ChatBackgroundCard`, `NotificationsCard` (master switch + per-type toggles, test push), `SoundsCard` (`lib/sounds`), `UsageCard` (metered Firestore reads/writes vs Spark quota), sign out.
+`ProfileCard` (nickname, city via `onboarding/CityPicker` → Open-Meteo geocode, avatar upload, bio), `PairCard` (friends-since, next meetup, relationship preset from `content/relationships.ts`, pet name, room tz), `ThemeSwitch` (`hooks/useTheme`), `ChatBackgroundCard`, `NotificationsCard` (master switch + per-type toggles, test push), `SoundsCard` (`lib/sounds`), `UsageCard` (metered Firestore reads/writes vs Spark quota), `DiagnosticsCard` (owner only: build, worker, auth, RTDB, Firestore, CSP, network, last 20 errors from `lib/diagLog.ts`, Copy diagnostics), sign out. `shell/UpdateWatcher` checks for new deploys on launch and resume.
 
 ## Pet (`/pet`) — `components/pet/PetScreen.tsx`
 

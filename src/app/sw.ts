@@ -97,6 +97,16 @@ if (firebaseConfig.apiKey && firebaseConfig.appId) {
   });
 }
 
+/* ── updates & diagnostics ─────────────────────────────────────────────── */
+// The build this worker came from (inlined by the route handler), for More → Diagnostics.
+const WORKER_BUILD = process.env.NEXT_PUBLIC_BUILD_ID || "dev";
+
+self.addEventListener("message", (event) => {
+  const data = event.data as { type?: string } | undefined;
+  if (data?.type === "SKIP_WAITING") void self.skipWaiting();
+  if (data?.type === "VERSION") event.ports[0]?.postMessage({ build: WORKER_BUILD });
+});
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const requested = new URL((event.notification.data as { url?: string } | undefined)?.url ?? "/", self.location.origin);

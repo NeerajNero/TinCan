@@ -9,6 +9,7 @@ import { TakenScreen } from "@/components/auth/TakenScreen";
 import { LiveEventsProvider } from "@/components/live/LiveEventsProvider";
 import { PresenceProvider } from "@/components/live/PresenceProvider";
 import { PushController } from "@/components/push/PushController";
+import { UpdateWatcher } from "@/components/shell/UpdateWatcher";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 import { Splash } from "@/components/ui/Splash";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,6 +39,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                 <PresenceProvider>
                   <LiveEventsProvider>
                     <PushController />
+                    <UpdateWatcher />
                     {children}
                   </LiveEventsProvider>
                 </PresenceProvider>

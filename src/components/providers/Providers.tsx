@@ -6,6 +6,10 @@ import { LazyMotion } from "framer-motion";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { useDocumentScrollLock } from "@/hooks/useDocumentScrollLock";
+import { installDiagLog } from "@/lib/diagLog";
+
+// Capture errors from the very first render on (More → Diagnostics).
+installDiagLog();
 
 const loadMotionFeatures = () => import("@/lib/motionFeatures").then((mod) => mod.default);
 
