@@ -45,3 +45,7 @@ next-env.d.ts
 /firestore.rules
 /database.rules.json
 /.firebaserc
+
+# firebase emulator logs (pnpm test:rules)
+*-debug.log
+ui-debug.log

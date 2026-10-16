@@ -106,7 +106,7 @@ Both people sign in with Google, pick a nickname and city, and the pair is forme
 | `pnpm dev` | Next dev server (service worker and push are disabled in dev) |
 | `pnpm build` / `pnpm start` | Production build and server |
 | `pnpm typecheck` / `pnpm lint` | Must both pass before a commit |
-| `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`) |
+| `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`); passing |
 | `pnpm rules:build` | Fills `rules/*.tmpl` → `firestore.rules`, `database.rules.json`, `.firebaserc` (all gitignored) |
 | `pnpm rules:deploy` | `rules:build`, then `firebase deploy --only firestore:rules,database` |
 | `pnpm cloudinary:presets` | Creates/updates the two upload presets |

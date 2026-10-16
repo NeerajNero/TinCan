@@ -9,6 +9,8 @@ brew install --cask temurin   # Java, once (the emulators need it)
 pnpm test:rules               # = rules:build + emulators:exec + vitest
 ```
 
+The emulators write `firestore-debug.log` and `database-debug.log` into the repo root; they are gitignored.
+
 Covers: allowlist deny, message create/update constraints and Cloudinary URL prefix, capsule and envelope private bodies, gifts-list privacy, `pair.uids` immutability, RTDB pings ownership and presence validation. Add a case for every rule you touch (allow + deny).
 
 ## Static

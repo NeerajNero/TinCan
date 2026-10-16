@@ -4,6 +4,7 @@ Newest first. Every behaviour change adds a line here in the same commit (see `d
 
 ## 2026-10-16
 
+- **test:rules**: verified green (10 tests) with Java installed; emulator debug logs gitignored; vitest config renamed to `.mts` to silence the CommonJS warning.
 - **docs**: `docs/` (architecture, data model, features, API, security, operations, conventions, adding-a-feature, testing, troubleshooting), this changelog, detailed README, and the "docs with every change" rule in `CLAUDE.md`.
 - **shell**: pending spinner on the tapped tab, route `loading.tsx` fallback, no exit-wait on tab transitions.
 - **phase 15a: security**: shared API guard (revocation-checked tokens, allowlist, 16 KB bodies, strict zod, token bucket, Firestore daily caps in `quota/*`), timing-safe tick secret, signed Cloudinary uploads via `POST /api/media/sign`, media URL allowlist in rules and `lib/safeUrl.ts`, security headers with CSP Report-Only, rule shape/size validation, emulator rules tests (`pnpm test:rules`), same-origin notification clicks, dependency overrides (`jose`, `@grpc/grpc-js`).
