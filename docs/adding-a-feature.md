@@ -54,7 +54,13 @@ Add an entry to `src/content/howto.ts` (title, label ≤ 40 chars, 3–4 steps s
 
 ## Finish
 
-1. `pnpm typecheck && pnpm lint` green (`pnpm build` too if config/worker/deps changed).
-2. **Update the docs in the same commit**: the relevant `docs/*.md` page(s) (features, data-model, api, security, operations as applicable) and a `CHANGELOG.md` entry under the current date. If a convention changed, update `docs/conventions.md`; if the spec changed, update `CLAUDE.md`.
-3. Commit (`area: what changed`), push.
-4. Report: what was built, what was skipped, and what the owner must do manually (rules deploy, console settings, env on Vercel).
+In Claude Code, `/ship [commit title]` runs this whole list (`.claude/skills/ship/SKILL.md`).
+
+1. **Checks, always:** `pnpm typecheck`, `pnpm lint`, `pnpm knip` (nothing but the `.css` hint) and `pnpm test`.
+2. **Checks, when the change touches:**
+   - `rules/*.tmpl` → `pnpm test:rules` (Java + `.env`), and the owner runs `pnpm rules:deploy`.
+   - `csp.ts`, `next.config.ts`, `src/proxy.ts`, `src/app/sw.ts`, layout, `Sheet`/`Portal`, the YouTube player or dependencies → `pnpm test:e2e` (it builds first). Only the two known third-party messages in `tests/e2e/violations.ts` are ignored.
+   - A bundle budget, a new dependency or a heavy import → before/after with `pnpm size`: save a baseline from the pre-change build (`pnpm build && pnpm size --save before.json`), then `pnpm build && pnpm size --compare before.json`. Heavy code that isn't needed on first paint loads through `next/dynamic` or `import()`.
+3. **Docs in the same commit:** the relevant `docs/*.md` page(s) (features, data-model, api, security, operations, testing, troubleshooting as applicable) and a `CHANGELOG.md` line under today's date. Conventions → `docs/conventions.md`; product or rules → `CLAUDE.md`; setup steps, scripts or the privacy table → `README.md`; games and slow features → `src/content/howto.ts`.
+4. **Commit and push:** `area: what changed` (or `phase N: name`), staging only this change's files, never `.env*` or `exports/`. Push every commit; the remote is the backup.
+5. **Report:** what was built, what was skipped or simplified, check results, which docs were updated, bundle numbers if a budget applied, and what the owner must do by hand (rules deploy, env on Vercel, console settings, a phone test list).

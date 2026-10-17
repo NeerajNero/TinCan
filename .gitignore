@@ -56,3 +56,6 @@ ui-debug.log
 
 # data exports (pnpm export): private, never commit
 /exports/
+
+# Claude Code: personal overrides stay local (.claude/settings.json is shared)
+/.claude/settings.local.json

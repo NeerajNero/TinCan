@@ -98,6 +98,7 @@ Both people sign in with Google and pick a nickname and city; that forms the pai
 | `pnpm migrate-media` | Dry run: counts public media to make private. `pnpm migrate-media --yes` moves it to authenticated delivery and re-signs every stored URL |
 | `pnpm cloudinary:presets` | Creates/updates the two upload presets (Signed, authenticated) |
 | `pnpm analyze` / `pnpm knip` / `pnpm profile:chat` | Bundle report / dead-code check / chat render profile |
+| `pnpm size` | Initial JS per route (raw + gzip) from a production build; `--save` / `--compare` for before/after |
 
 ---
 
@@ -212,6 +213,7 @@ Next.js 16 (App Router, Turbopack), TypeScript, Tailwind v4 and Framer Motion, i
 
 - **Spec and rules:** [`CLAUDE.md`](CLAUDE.md), covering screens, data model, feature specs, security and build order.
 - **Developer docs:** [`docs/`](docs/README.md), covering architecture, data model, features → code, API, security, operations, conventions, adding a feature, testing and troubleshooting.
+- **Working with Claude Code:** `CLAUDE.md` loads automatically. `.claude/settings.json` (shared) pre-approves the routine checks (`pnpm typecheck`, `lint`, `test`, `knip`, `build`, `size`, the test suites, read-only git) and always asks before `rules:deploy`, `reset`, `migrate-media`, `cloudinary:presets`, `export` or `firebase deploy`. Put personal overrides in `.claude/settings.local.json` (gitignored). `/ship [commit title]` runs the finish checklist from [`docs/adding-a-feature.md`](docs/adding-a-feature.md): checks, docs, CHANGELOG, commit, push, summary. On a new machine, copy `.env` over securely (it's not in git), then follow the setup checklist above.
 
 ## License
 
