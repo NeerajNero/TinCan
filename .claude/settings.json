@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm test:rules)",
+      "Bash(pnpm test:e2e)",
+      "Bash(pnpm knip)",
+      "Bash(pnpm build)",
+      "Bash(pnpm size)",
+      "Bash(pnpm size *)",
+      "Bash(pnpm rules:build)",
+      "Bash(pnpm tick:dry)",
+      "Bash(pnpm profile:chat)",
+      "Bash(pnpm vitest run *)",
+      "Bash(npx playwright test *)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch)",
+      "Bash(git branch --show-current)"
+    ],
+    "ask": [
+      "Bash(pnpm rules:deploy*)",
+      "Bash(pnpm reset*)",
+      "Bash(pnpm migrate-media*)",
+      "Bash(pnpm cloudinary:presets*)",
+      "Bash(pnpm export*)",
+      "Bash(firebase deploy*)"
+    ]
+  }
+}

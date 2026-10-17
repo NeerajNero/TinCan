@@ -430,7 +430,8 @@ of a task must say which docs were updated.
   errors go through `errorMessage()` (`src/lib/swallow.ts`). Pure logic lives in `src/lib` so `pnpm test`
   (vitest unit tests in `tests/unit`) can cover it; `pnpm profile:chat` measures the chat list.
 - `pnpm typecheck` and `pnpm lint` must pass before each commit. One commit per phase, and
-  `git push` after every commit — the remote is the backup.
+  `git push` after every commit — the remote is the backup. The full finish list (knip, tests, e2e when relevant,
+  `pnpm size` for bundle budgets, docs) is in `docs/adding-a-feature.md` → Finish; `/ship` runs it.
 - Rules deploy via Firebase CLI: `pnpm rules:deploy` → `firebase deploy --only firestore:rules,database`.
 - Accessibility basics: buttons have labels, tap targets ≥ 44 px, colour is never the only signal.
 - Anything read back from storage that names a game goes through `gameInfo()` in

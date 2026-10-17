@@ -29,6 +29,7 @@
 | `pnpm test:e2e` | production build + Playwright layout smoke test (mobile viewport; first run `npx playwright install chromium`) |
 | `pnpm profile:chat` | React Profiler run of a 300-message thread in happy-dom; prints mount and append cost |
 | `pnpm analyze` | production build with the bundle analyzer report |
+| `pnpm size [routes…] [--save f] [--compare f]` | after `pnpm build`: starts `next start` on `SIZE_PORT` (3999), sums each route's initial JS (raw and gzip -9), prints a table and stops the server. `--save` keeps a baseline and `--compare` adds a Δ column. This is the number bundle budgets refer to |
 | `pnpm knip` | dead code / unused exports / unused deps; must be clean |
 | `pnpm cloudinary:presets` | create/update the two upload presets (Signed mode, delivery type authenticated) |
 | `pnpm migrate-media` | dry run: counts public assets under `tincan/` and docs referencing them; `--yes` moves them to authenticated delivery and rewrites every stored URL with signed variants |
