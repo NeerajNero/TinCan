@@ -6,6 +6,8 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
+import { collectErrors } from "./violations";
+
 const VIDEO = "M7lc1UVf-VE";
 // Firebase Auth adds its own hidden iframe; pick the player.
 const PLAYER = 'iframe[src^="https://www.youtube-nocookie.com/embed/"]';
@@ -16,12 +18,8 @@ const PAUSED = 2;
 // window.__yt / window.__ytPlayer are declared by the harness (src/components/dev/YouTubeHarness.tsx).
 
 async function open(page: Page, query: string) {
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  page.on("console", (m) => {
-    // YouTube's own iframe logs noise (unrecognised features, postMessage before load); only our frame's errors count.
-    if (m.type() === "error" && /Content Security Policy|Permissions policy violation|Invalid video id/i.test(m.text())) errors.push(m.text());
-  });
+  // YouTube's own iframe logs noise (unrecognised features, postMessage before load); only policy and id errors count.
+  const errors = collectErrors(page, (text) => /Content Security Policy|Permissions policy violation|Invalid video id/i.test(text));
   await page.goto(`/e2e/youtube?v=${VIDEO}&${query}`);
   await page.waitForFunction(() => window.__yt?.ready === true, null, { timeout: 30_000 });
   return errors;

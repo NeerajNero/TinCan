@@ -369,7 +369,8 @@ radio stations (6 public stream URLs with names).
   nonce in the root layout makes every page dynamically rendered: the accepted cost of a strict policy.
   The service worker has its own CSP (`buildWorkerCsp`, header on `/serwist/*`); every host it fetches for
   a runtime cache must be in connect-src. `CSP_REPORT_ONLY=1` switches both to report-only.
-  `pnpm test:e2e` fails on any violation in the page or the worker. Other headers in `next.config.ts`: nosniff, DENY framing, strict referrer, Permissions-Policy (`buildPermissionsPolicy`
+  `pnpm test:e2e` fails on any violation in the page or the worker, except two known third-party messages ignored
+  (and logged) by `tests/e2e/violations.ts`: Google's gen_204 beacon and YouTube's compute-pressure probe. Other headers in `next.config.ts`: nosniff, DENY framing, strict referrer, Permissions-Policy (`buildPermissionsPolicy`
   in `csp.ts`) allowing microphone(self) and delegating autoplay/encrypted-media/fullscreen/picture-in-picture to the YouTube origins. The worker caches images (Cloudinary 30 d/500, OSM tiles, GIPHY,
   ytimg 7 d) CacheFirst and never caches Firebase, Google APIs or `/api/*`.
 - Rules validate shapes and sizes (message text ≤ 2000, captions ≤ 500, notes ≤ 1000, no unknown

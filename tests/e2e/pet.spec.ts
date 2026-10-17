@@ -7,14 +7,12 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
+import { collectErrors } from "./violations";
+
 // window.__pet is declared by the harness (src/components/dev/PetHarness.tsx).
 
 async function open(page: Page, query = "") {
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  page.on("console", (m) => {
-    if (m.type() === "error") errors.push(m.text());
-  });
+  const errors = collectErrors(page);
   await page.goto(`/e2e/pet${query}`);
   await page.waitForFunction(() => Array.isArray(window.__pet?.writes));
   // Let LazyMotion's feature bundle load before driving animations.
