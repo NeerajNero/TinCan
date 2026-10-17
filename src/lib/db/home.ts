@@ -1,11 +1,11 @@
 /**
  * Firestore writes made from Home: check-ins, the streak/plant transaction,
- * mood check-ins and sleep/wake system messages.
+ * mood check-ins and the sleep/wake line (written by `createSystemMessage`).
  */
 import { dayUserId, daysBetween } from "@/lib/dates";
 import { pairRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
-import { addDoc, collection, doc, runTransaction, serverTimestamp, setDoc, type DocumentReference } from "@/lib/firebase/fs";
+import { doc, runTransaction, serverTimestamp, setDoc, type DocumentReference } from "@/lib/firebase/fs";
 import { nextStreak } from "@/lib/streak";
 import type { DateKey, MoodDoc, PairDoc, Plant, PresenceStatus, Streak } from "@/lib/types";
 
@@ -65,19 +65,6 @@ export function setMood(dateKey: DateKey, uid: string, emoji: string, note: stri
 }
 
 /* ── system messages ───────────────────────────────────────────────────── */
-
-export async function postSystemMessage(senderId: string, text: string): Promise<void> {
-  await addDoc(collection(getDb(), "messages"), {
-    senderId,
-    type: "system",
-    text,
-    status: "sent",
-    reactions: {},
-    deletedFor: [],
-    deletedForEveryone: false,
-    createdAt: serverTimestamp(),
-  });
-}
 
 export function sleepWakeText(nickname: string, status: PresenceStatus): string {
   return status === "sleeping" ? `🌙 ${nickname} went to sleep` : `☀️ ${nickname} is up and about`;

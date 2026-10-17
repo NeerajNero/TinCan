@@ -8,7 +8,8 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 | --- | --- | --- | --- | --- |
 | `users/{uid}` | uid | owner only | 2 single docs | name, nickname, email (immutable), photoURL, avatar{url,publicId}, bio, tz, city, lat, lng, fcmTokens[], notif{enabled,…}, wordleSolved, chatBg{id, photoUrl?, photoPublicId?} (id ≤ 24 chars; photoUrl must be our Cloudinary cloud), createdAt (immutable). No other top-level fields allowed. |
 | `pair/main` | fixed | either | 1 doc | uids[≤2] (can only grow, never lose a uid), roomTz, friendsSince, nextMeetup, relationship, streak, plant, pet, garden.stickers, records, focusSessions, milestonesSummary, tripsSummary, counters |
-| `messages/{id}` | auto | sender creates; recipient marks delivered/read; sender edits/deletes; either reacts (own key) / hides for self | latest 50 + ≤3 pages by scroll, then a button; unread ≤99; latest 1 | text ≤2000, type in text/image/voice/gif/sticker/system, createdAt == server time, media URL must be our Cloudinary cloud (gif: media*.giphy.com); `media.variants` = signed delivery URLs, each validated as ours |
+| `messages/{id}` | auto | sender creates; recipient marks delivered/read; sender edits/deletes; either reacts (own key) / hides for self | latest 50 + ≤3 pages by scroll, then a button; unread ≤99; latest 1 | text ≤2000, type in text/image/voice/gif/sticker/system, createdAt == server time, media URL must be our Cloudinary cloud (gif: media*.giphy.com); `media.variants` = signed delivery URLs, each validated as ours; system lines (`type: "system"`) also carry `kind` (string ≤32) and optional `meta` (flat map ≤8 keys), allowed on system lines only, written by `lib/chat/system.createSystemMessage` (server: `postSystemMessageAdmin`) without `deliveredAt`/`readAt` |
+| `playlists/{room}` | `watch` or `listen` | either; `updatedBy` must be the writer | 1 doc on that screen | `{ items[≤50]{videoId, title ≤200, addedBy, addedAt (client ms)}, updatedAt, updatedBy }`; only those three keys; every edit is a transaction over `lib/playlist.ts`; thumbnails derived (`i.ytimg.com/vi/{id}/mqdefault.jpg`), never stored |
 | `checkins/{dateKey}` | room day | each uid sets only its own key | 1 doc | `{uid: true}` |
 | `moods/{dateKey}_{uid}` | own day + uid | owner | 2 docs today; ≤70 per month | emoji, note ≤80, dateKey, uid (mirror fields must match id) |
 | `dailyQuestions/{dateKey}` | room day | each uid only its own `answers.{uid}`; `dateKey` mirror | 1 doc today; history 30/page by `dateKey` | questionIndex |
@@ -53,6 +54,7 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 | `twenty/main` | both | — | 20 Questions (one round at a time) |
 | `trivia/{id}` | both | — | live trivia cursor |
 | `watch/main`, `listen/main`, `listen/queue` | both | — | watch/listen together |
+| `roomchat/{room}/{pushId}` (`room` = `watch` / `listen`) | owner creates (`uid == auth.uid`), either deletes, no edits; either may remove the whole room | uid, text 1–500 chars, at number ≤ now; no other children | Watch / Listen side chat (`hooks/useRoomChat`): one `orderByKey().limitToLast(60)` query while the screen is open, newest 50 shown; the sender trims anything beyond 50 after each send |
 | `radio/main`, `timer/main`, `cook/{recipeId}` | both | — | radio, focus timer, cook-along |
 
 `.indexOn: ["open"]` on `games` serves the one landing query. All other RTDB reads are single nodes.

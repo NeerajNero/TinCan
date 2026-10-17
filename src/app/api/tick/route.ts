@@ -131,7 +131,7 @@ async function capsulesUnlocked(ctx: Ctx) {
     if (ctx.now.getTime() - data.unlockAt.toMillis() > CAPSULE_LOOKBACK_MS) continue;
     await once(ctx, "capsule-unlocked", `capsule-${d.id}`, async () => {
       for (const uid of ctx.uids) await push(ctx, uid, "capsule-unlocked", { body: `“${data.title ?? "A capsule"}” is ready to open` });
-      if (!ctx.dry) await postSystemMessageAdmin(data.authorId, `⏳ A time capsule unlocked: “${data.title ?? "untitled"}”`);
+      if (!ctx.dry) await postSystemMessageAdmin(data.authorId, "capsule-unlock", `⏳ A time capsule unlocked: “${data.title ?? "untitled"}”`);
       return `unlocked “${data.title ?? d.id}”`;
     });
   }
@@ -202,7 +202,7 @@ async function petHunger(ctx: Ctx, pair: PairDoc) {
   await once(ctx, "pet-hungry", `pet-hungry-${ctx.today}`, async () => {
     for (const uid of ctx.uids) await push(ctx, uid, "petHungry", { title: `${pet.name} is hungry 🍽️`, body: emptyAt <= ctx.now.getTime() ? `${pet.name}'s bowl has been empty for a while` : `${pet.name} runs out of food in under 2 hours` });
     const [first] = ctx.uids;
-    if (!ctx.dry && first !== undefined) await postSystemMessageAdmin(first, `🍽️ ${pet.name} is getting hungry — someone feed them?`);
+    if (!ctx.dry && first !== undefined) await postSystemMessageAdmin(first, "pet-hungry", `🍽️ ${pet.name} is getting hungry — someone feed them?`, { pet: pet.name });
     return `warned about ${pet.name}`;
   });
 }

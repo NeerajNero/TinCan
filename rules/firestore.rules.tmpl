@@ -123,7 +123,14 @@ service cloud.firestore {
 
       function messageFields() {
         return ['senderId', 'type', 'text', 'media', 'replyTo', 'reactions', 'status',
-                'deliveredAt', 'readAt', 'editedAt', 'deletedFor', 'deletedForEveryone', 'createdAt'];
+                'deliveredAt', 'readAt', 'editedAt', 'deletedFor', 'deletedForEveryone', 'createdAt',
+                'kind', 'meta'];
+      }
+      // kind + meta exist on system lines only: a short kind id and a small flat map.
+      function systemExtrasOk() {
+        return (incoming().type == 'system' || (!('kind' in incoming()) && !('meta' in incoming())))
+          && (!('kind' in incoming()) || (incoming().kind is string && incoming().kind.size() > 0 && incoming().kind.size() <= 32))
+          && (!('meta' in incoming()) || (incoming().meta is map && incoming().meta.size() <= 8));
       }
       function mediaOk() {
         return !('media' in incoming()) || incoming().media == null
@@ -140,9 +147,22 @@ service cloud.firestore {
         && incoming().type in ['text', 'image', 'voice', 'gif', 'sticker', 'system']
         && incoming().text is string && incoming().text.size() <= 2000
         && mediaOk()
+        && systemExtrasOk()
         && isServerTime(incoming().createdAt);
       allow update: if allowed() && (recipientMarks() || senderEdits() || reacts() || hidesForSelf());
       // Deleting is a flag (deletedForEveryone), never a hard delete.
+      allow delete: if false;
+    }
+
+    // ── playlists/{room}: the saved Watch / Listen lists ────────────────
+    match /playlists/{room} {
+      function roomOk() { return room in ['watch', 'listen']; }
+      allow read: if allowed() && roomOk();
+      allow create, update: if allowed() && roomOk()
+        && incoming().keys().hasOnly(['items', 'updatedAt', 'updatedBy'])
+        && incoming().items is list && incoming().items.size() <= 50
+        && incoming().updatedBy == uid()
+        && isServerTime(incoming().updatedAt);
       allow delete: if false;
     }
 

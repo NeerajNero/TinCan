@@ -109,6 +109,20 @@
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
       ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
     },
+    "roomchat": {
+      "$room": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && ($room === 'watch' || $room === 'listen')",
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && ($room === 'watch' || $room === 'listen') && !newData.exists()",
+        "$msg": {
+          ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && ($room === 'watch' || $room === 'listen') && ((!data.exists() && newData.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && !newData.exists()))",
+          ".validate": "newData.hasChildren(['uid', 'text', 'at']) && newData.child('text').isString() && newData.child('text').val().length >= 1 && newData.child('text').val().length <= 500 && newData.child('at').isNumber() && newData.child('at').val() <= now",
+          "uid": { ".validate": "newData.isString()" },
+          "text": { ".validate": true },
+          "at": { ".validate": true },
+          "$other": { ".validate": false }
+        }
+      }
+    },
     "radio": {
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
       ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"

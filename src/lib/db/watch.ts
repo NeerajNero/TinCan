@@ -30,8 +30,9 @@ export function writePlayer(kind: "watch" | "listen", patch: Partial<PlayerNode>
   return update(r(`${kind}/main`), { ...patch, updatedAt: serverTimestamp() });
 }
 
-export function loadVideo(kind: "watch" | "listen", by: string, videoId: string, title: string, thumb: string): Promise<void> {
-  return set(r(`${kind}/main`), { videoId, title, thumb, playing: false, positionSec: 0, updatedAt: serverTimestamp(), by });
+/** Starts paused unless `playing` (a joined player then starts it through the normal sync). */
+export function loadVideo(kind: "watch" | "listen", by: string, videoId: string, title: string, thumb: string, playing = false): Promise<void> {
+  return set(r(`${kind}/main`), { videoId, title, thumb, playing, positionSec: 0, updatedAt: serverTimestamp(), by });
 }
 
 /* ── listen queue ──────────────────────────────────────────────────────── */
@@ -47,6 +48,13 @@ export function subscribeQueue(cb: (items: Array<QueueItem & { id: string }>) =>
 }
 
 export const enqueue = (item: QueueItem) => set(push(r("listen/queue")), item);
+/** Append several tracks in order with one multi-path write (push keys sort by creation). */
+export function enqueueMany(items: QueueItem[]): Promise<void> {
+  if (items.length === 0) return Promise.resolve();
+  const patch: Record<string, QueueItem> = {};
+  for (const item of items) patch[push(r("listen/queue")).key as string] = item;
+  return update(r("listen/queue"), patch);
+}
 export const dequeue = (id: string) => remove(r(`listen/queue/${id}`));
 
 /**

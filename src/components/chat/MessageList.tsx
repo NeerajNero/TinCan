@@ -7,6 +7,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { UploadBubble } from "@/components/chat/media/UploadBubble";
 import { MessageBubble } from "@/components/chat/MessageBubble";
+import { SystemPill } from "@/components/chat/SystemPill";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { AUTO_LOAD_PAGES } from "@/hooks/useMessages";
 import type { Upload } from "@/hooks/useUploads";
@@ -63,7 +64,7 @@ export function MessageList(props: MessageListProps) {
 
   const visible = messages.filter((m) => !m.deletedFor.includes(uid));
   const today = dateKeyIn(tz);
-  const firstUnreadId = visible.find((m) => initialUnread.has(m.id))?.id ?? null;
+  const firstUnreadId = visible.find((m) => m.type !== "system" && initialUnread.has(m.id))?.id ?? null;
 
   function scrollToBottom(behavior: ScrollBehavior = "auto") {
     const el = scroller.current;
@@ -161,7 +162,9 @@ export function MessageList(props: MessageListProps) {
   return (
     <div className="relative min-h-0 flex-1">
       {backdrop}
-      <div ref={scroller} onScroll={onScroll} className="h-full overflow-y-auto px-3 py-3 [overflow-anchor:none]">
+      {/* `relative`: the backdrop is absolutely positioned, so an unpositioned scroller would paint its
+          in-flow children (system lines, day separators) underneath it. */}
+      <div ref={scroller} onScroll={onScroll} className="relative h-full overflow-y-auto px-3 py-3 [overflow-anchor:none]">
         {loadingOlder && <p className="py-2 text-center text-xs text-muted">Loading older…</p>}
         {ready && hasMore && !loadingOlder && !autoLoad && (
           <div className="flex justify-center py-2">
@@ -198,9 +201,7 @@ export function MessageList(props: MessageListProps) {
                   </div>
                 )}
                 {m.type === "system" ? (
-                  <p className="mx-auto max-w-[90%] rounded-full bg-surface px-3 py-1 text-center text-xs font-semibold text-muted shadow-[0_1px_2px_rgba(0,0,0,0.08)]">
-                    {m.text}
-                  </p>
+                  <SystemPill message={m} />
                 ) : (
                   <MessageBubble
                     message={m}

@@ -29,6 +29,7 @@ Pages under `src/app/(app)/**` are thin: they render one screen component. Logic
 - Typing: `hooks/useTyping.ts` (RTDB `typing/{uid}`, 1.5 s throttle, 3 s expiry). Unread badge: `hooks/useChatMeta.tsx`.
 - Rendered URLs are filtered by `lib/safeUrl.ts`; links auto-linked by `lib/linkify.tsx`.
 - **Backgrounds**: `ChatBackground` is one absolute layer behind the scroller (`backdrop` prop of `MessageList`); `ChatBackgroundPicker` (palette button in `ChatHeader`, and More → Chat background) writes `users/{me}.chatBg`. Built-ins live in `content/chat-backgrounds.ts`; the photo option reads one bounded page of `memories`.
+- **System lines**: every writer goes through `lib/chat/system.createSystemMessage(kind, text, meta?)` (server: `postSystemMessageAdmin(senderId, kind, text, meta?)`), sharing `systemMessageData` in `lib/chat/systemKinds.ts`: `{ type: "system", kind, text, meta?, senderId, status: "sent", createdAt }`. Kinds: sleep, wake, relationship, game-result, game-cancel, twenty-result, pet-adopt, pet-fed, pet-level, pet-hungry, garden-sticker, capsule-unlock, hangout. `SystemPill` shows the text, else a line derived from kind + meta, else ✨, so a row is never empty; old lines render unchanged. System lines never count as unread (badge, divider), never get read/delivered writes and never show ticks; the Home preview and toasts use the same `systemLine()`. The scroller is `relative` so the absolute background layer can't paint over in-flow rows (the phase 18 blank-gap bug).
 - **Rendering cost**: `MessageBubble` is `React.memo` with stable callbacks; presence lives in `PresenceProvider` and typing in `useFriendTyping` inside the header, so the list never re-renders for them. `pnpm profile:chat` measures it.
 
 ## Play (`/play`) — `components/play/PlayScreen.tsx`
@@ -42,22 +43,26 @@ Pages under `src/app/(app)/**` are thin: they render one screen component. Logic
 | Screen | Route | Component | State |
 | --- | --- | --- | --- |
 | 20 Questions | `/play/twenty` | `TwentyScreen` | RTDB `twenty/main`, `lib/db/twenty` |
-| Hangout wheel | `/play/wheel` | `WheelScreen` | result posted to chat |
+| Hangout wheel | `/play/wheel` | `WheelScreen` | "Let's!" posts a `hangout` system line + message push |
 | Trivia duel | `/play/trivia`, `/play/trivia/[id]` | `TriviaScreen` | Firestore `trivia/{id}` + RTDB cursor; `lib/trivia`, `lib/seeded` |
 | Know-me quiz | `/play/quiz`, `/play/quiz/[id]` | `QuizScreen` | `quizzes/{id}` |
 | Daily word | `/play/word` | `WordleScreen` | `wordle/{dateKey}_{uid}`, `lib/wordle` |
 | Whiteboard | `/play/whiteboard` | `together/WhiteboardScreen` + `SharedCanvas` | RTDB `whiteboard/*`, `cursors/*`; snapshot → Cloudinary → chat |
 | Pixel art | `/play/pixel` | `together/PixelScreen` | RTDB `pixel/grid` (1024 chars) |
 | Pictionary | `/play/pictionary[/id]` | `together/PictionaryScreen` | RTDB `pictionary/{id}`, `lib/db/pictionary` |
-| Watch together | `/play/watch` | `together/WatchScreen`, `YouTubePlayer`, `JoinOverlay`, `hooks/useSyncedPlayer` | RTDB `watch/main`, `lib/youtube` (loader, error text), `lib/playerSync` (drift plan) |
-| Listen together | `/play/listen` | `together/ListenScreen` (200 px player under the cover card) | RTDB `listen/main`, `listen/queue` |
+| Watch together | `/play/watch` | `together/WatchScreen`, `YouTubePlayer`, `JoinOverlay`, `hooks/useSyncedPlayer`, `together/Playlist`, `together/ChatDrawer` | RTDB `watch/main`, `roomchat/watch`; Firestore `playlists/watch`; `lib/youtube` (loader, error text), `lib/playerSync` (drift plan) |
+| Listen together | `/play/listen` | `together/ListenScreen` (200 px player under the cover card), `together/Playlist`, `together/ChatDrawer` | RTDB `listen/main`, `listen/queue`, `roomchat/listen`; Firestore `playlists/listen` |
 | Radio | `/play/radio` | `together/RadioScreen` | RTDB `radio/main`, `content/radio.json` |
 | Focus timer | `/play/timer` | `together/TimerScreen` | RTDB `timer/main`; sessions → `pair.focusSessions` |
 | Cook-along | `/play/cook[/id]` | `together/CookScreen` | `recipes/{id}` + RTDB `cook/{id}` |
 
 **YouTube player rules** (watch and listen). `loadYouTubeApi()` in `lib/youtube.ts` loads `iframe_api` once per page, resolves at once when `YT.Player` exists, and wraps any existing `onYouTubeIframeAPIReady`. `YouTubePlayer` builds one player per mount, and only once its node is mounted, the API is loaded and a video id is known. Later ids are cued on the same player and unmounting destroys it. It passes `host: youtube-nocookie.com` and our `origin`. Local Play/Pause (`toggle` in `useSyncedPlayer`) calls the player inside the click handler, then writes RTDB. Remote state is applied only after this client joins: a one-time "Tap to join" overlay, a local Play/Pause, or loading the video yourself. Listen keeps the player at 200 px tall, the minimum YouTube allows, under an opaque cover, never hidden or 1 px. `onError` codes go to the Diagnostics log, and the player shows a friendly line. Codes 101 and 150 read "This video can't be embedded".
 
-Heavy together screens are code-split through `together/lazy.tsx`. `ChatDrawer` gives any together screen a slide-up view of the main chat.
+Heavy together screens are code-split through `together/lazy.tsx`.
+
+**Playlists** (watch and listen). `hooks/usePlaylist` holds the one Firestore listener (`playlists/{room}`) and edits through `lib/db/playlists.ts` transactions over the pure `lib/playlist.ts` helpers (`addItem` with dedupe and optional index for undo, `removeItem`, `moveItem`, `isFull`; 50 max). `together/Playlist.tsx`: `StarButton` next to the current title (filled = saved; tapping it removes with a 4 s "Tap to undo" toast), `SaveChip` ("Save to playlist?" for 5 s after a new link), and the collapsible `PlaylistSection` ("Playlist (N)", closed by default, open state per room in localStorage via `lib/localPref`; the rows are `PlaylistRows`, loaded on open): 64 px lazy thumbnails, two-line titles, who-added avatar, now-playing highlight, drag handle (`Reorder`), swipe-left or ⋮ to remove. Watch rows load through the same gesture-safe path as a pasted link. Listen rows play now (`loadVideo(..., playing = true)`, applied by the joined player's sync), "+ Queue" adds one to `listen/queue`, and "Queue all" appends every unqueued item in one multi-path write (`enqueueMany`). The 51st save toasts "Playlist is full — remove one first".
+
+**Room chat** (watch and listen). `together/ChatDrawer` is a side chat at RTDB `roomchat/{room}`, not the main chat: no push, no Chat-tab badge. `hooks/useRoomChat` keeps one `orderByKey().limitToLast(60)` listener while the screen is mounted (so the unread dot works with the drawer closed) and shows the newest 50; after each successful send the sender deletes anything older in one multi-path update (`lib/roomChat.trimPatch`). The drawer opens at 55dvh over the video and expands to 92dvh by dragging or tapping the grabber (`Sheet`'s `expandedHeight`). Bubbles use the main-chat styles without ticks, reactions, replies, edits or media, with avatars and times; the composer is text/emoji only (1–500 chars) and shares `lib/composerKeys.ts` (desktop Enter sends, touch Enter is a newline) with the main composer. Long-press or right-click a message for Copy / Share to main chat (posts "📺 …" or "🎧 …" as a normal message and pushes it). ⋮ → Clear chat (with confirm) removes the room node. The red dot compares the friend's newest `at` with a per-room last-seen time in localStorage.
 
 ## Memories (`/memories`) — `components/memories/MemoriesHub.tsx`
 

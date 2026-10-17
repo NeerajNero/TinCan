@@ -1,7 +1,7 @@
 "use client";
 
-import { AnimatePresence, m } from "framer-motion";
-import { useEffect, useState } from "react";
+import { AnimatePresence, m, type PanInfo } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 import { Portal, Z } from "@/components/ui/Portal";
 import { cn } from "@/lib/cn";
@@ -22,6 +22,8 @@ interface SheetProps {
   maxHeight?: string;
   /** Set false when the content manages its own scrolling (a chat list). */
   scroll?: boolean;
+  /** Opens at `height`; dragging (or tapping) the grabber up expands to this, down collapses or closes. */
+  expandedHeight?: string;
 }
 
 /**
@@ -41,7 +43,24 @@ export function useStickyValue<T>(value: T | null): T | null {
  * and stacked above the tab bar, the chat header and Leaflet's panes. Children
  * mount only while open, so per-open state starts fresh. Escape closes it.
  */
-export function Sheet({ open, onClose, label, children, className, tone = "surface", height, maxHeight = "85dvh", scroll = true }: SheetProps) {
+export function Sheet({ open, onClose, label, children, className, tone = "surface", height, maxHeight = "85dvh", scroll = true, expandedHeight }: SheetProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (!open) setExpanded(false);
+  }
+  const big = Boolean(expandedHeight && expanded);
+  const panned = useRef(false);
+  function onGrabberPan(_: unknown, info: PanInfo) {
+    panned.current = true;
+    if (info.offset.y < -30) setExpanded(true);
+    else if (info.offset.y > 60) {
+      if (big) setExpanded(false);
+      else onClose();
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -77,13 +96,33 @@ export function Sheet({ open, onClose, label, children, className, tone = "surfa
                 "fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-[480px] flex-col rounded-t-[28px] pt-3 shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)]",
                 tone === "bg" ? "bg-bg" : "bg-surface",
               )}
-              style={{ zIndex: Z.sheet, height, maxHeight, paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}
+              style={{
+                zIndex: Z.sheet,
+                height: big ? expandedHeight : height,
+                maxHeight: big ? expandedHeight : maxHeight,
+                paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
+                transition: expandedHeight ? "height 220ms ease, max-height 220ms ease" : undefined,
+              }}
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 420, damping: 38 }}
             >
-              <div className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-border" aria-hidden />
+              {expandedHeight ? (
+                <m.button
+                  type="button"
+                  onPanEnd={onGrabberPan}
+                  onPointerDown={() => (panned.current = false)}
+                  onClick={() => !panned.current && setExpanded((v) => !v)}
+                  aria-label={big ? "Shrink" : "Expand"}
+                  aria-expanded={big}
+                  className="-mt-3 mb-1 grid h-8 w-full shrink-0 cursor-grab touch-none place-items-center"
+                >
+                  <span className="h-1.5 w-10 rounded-full bg-border" aria-hidden />
+                </m.button>
+              ) : (
+                <div className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-border" aria-hidden />
+              )}
               <div className={cn("flex min-h-0 flex-1 flex-col", scroll ? "overflow-y-auto overscroll-contain" : "overflow-hidden", className ?? "px-4")}>{children}</div>
             </m.div>
           </>

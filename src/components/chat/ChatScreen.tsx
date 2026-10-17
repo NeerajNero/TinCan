@@ -125,7 +125,7 @@ function Thread({ uid, tz, chatBg, friendUid, friendName, friendDoc, needsMessag
   useEffect(() => {
     if (!visible || !ready) return;
     const toRead = messages.filter(
-      (m) => m.senderId === friendUid && !m.readAt && !m.pending && !reading.current.has(m.id),
+      (m) => m.senderId === friendUid && m.type !== "system" && !m.readAt && !m.pending && !reading.current.has(m.id),
     );
     if (toRead.length === 0) return;
     toRead.forEach((m) => reading.current.add(m.id));

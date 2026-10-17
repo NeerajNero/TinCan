@@ -73,7 +73,7 @@ Data-only FCM messages (no `notification` key) so the worker alone decides what 
 
 ## Bundle budget
 
-`pnpm analyze` (`ANALYZE=true next build`) writes the Turbopack bundle report. Measured on the prerendered `/chat` HTML (module scripts only, gzip): about 480 KB, of which Firebase is ~230 KB and React ~70 KB. Things deliberately kept off the initial path: `firebase/messaging` (loaded when push is enabled), `browser-image-compression` (first upload), `chess.js` (game screen only, through `lib/games/all.ts`), Leaflet, YouTube, and the together screens (`play/together/lazy.tsx`). Client API schemas use `zod/mini`.
+`pnpm analyze` (`ANALYZE=true next build`) writes the Turbopack bundle report. Measured on the prerendered `/chat` HTML (module scripts only, gzip): about 480 KB, of which Firebase is ~230 KB and React ~70 KB. Things deliberately kept off the initial path: `firebase/messaging` (loaded when push is enabled), `browser-image-compression` (first upload), `chess.js` (game screen only, through `lib/games/all.ts`), Leaflet, YouTube, the together screens (`play/together/lazy.tsx`) and the open playlist's rows (`PlaylistRows`, loaded when the section opens, since `Reorder` pulls in framer-motion's layout runtime, ~20 KB gzip). Client API schemas use `zod/mini`.
 
 ## Service worker caching
 

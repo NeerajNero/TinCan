@@ -136,13 +136,13 @@ export const HOWTO: Record<HowToKey, HowTo> = {
   watch: {
     title: "Watch together",
     label: "YouTube in sync",
-    steps: ["🔗 Paste a YouTube link", "▶️ Play, pause and seek — it happens on both phones", "🔄 If you drift more than a couple of seconds, it catches up", "💬 The chat button opens chat without leaving the video"],
+    steps: ["🔗 Paste a YouTube link", "▶️ Play, pause and seek on both phones; if you drift, it catches up", "⭐ Tap ★ by the title to keep a video in your shared playlist", "💬 The chat button opens a Watch-only chat, apart from your main chat"],
     tip: "Start it on a call so you can laugh at the same moment.",
   },
   listen: {
     title: "Listen together",
     label: "Music in sync · shared queue",
-    steps: ["🔗 Add YouTube songs to the shared queue", "🎧 Play and pause together — audio only, no video", "⏭️ The next song in the queue starts on its own", "💬 Chat about it from the chat button"],
+    steps: ["🔗 Add YouTube songs to the shared queue; the next one starts on its own", "🎧 Play and pause together — audio only, no video", "⭐ Tap ★ to keep a song in your playlist, then queue it any time", "💬 The chat button opens a Listen-only chat, apart from your main chat"],
   },
   radio: {
     title: "Radio",

@@ -2,6 +2,7 @@ import "server-only";
 
 import { FieldValue } from "firebase-admin/firestore";
 
+import { systemMessageData, type SystemKind, type SystemMeta } from "@/lib/chat/systemKinds";
 import { adminDb, adminMessaging, adminRtdb } from "@/lib/firebase/admin";
 import { composePush, TOGGLE_FOR, type PushPayload, type PushType } from "@/lib/pushTypes";
 import type { NotifPrefs } from "@/lib/types";
@@ -99,18 +100,7 @@ async function logPush(toUid: string, type: string, sent: number) {
 }
 
 /** A system line in the chat, written by the server. */
-export async function postSystemMessageAdmin(senderId: string, text: string): Promise<string> {
-  const ref = await adminDb().collection("messages").add({
-    senderId,
-    type: "system",
-    text,
-    status: "sent",
-    reactions: {},
-    deliveredAt: null,
-    readAt: null,
-    deletedFor: [],
-    deletedForEveryone: false,
-    createdAt: FieldValue.serverTimestamp(),
-  });
+export async function postSystemMessageAdmin(senderId: string, kind: SystemKind, text: string, meta?: SystemMeta): Promise<string> {
+  const ref = await adminDb().collection("messages").add(systemMessageData(senderId, kind, text, meta, FieldValue.serverTimestamp()));
   return ref.id;
 }

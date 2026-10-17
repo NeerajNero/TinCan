@@ -1,6 +1,7 @@
 /**
  * Firestore access for the single chat thread. Queries are always bounded.
  */
+import { systemLine } from "@/lib/chat/systemKinds";
 import { getDb } from "@/lib/firebase/client";
 import {
   addDoc,
@@ -111,7 +112,7 @@ export async function sendMedia(
 }
 
 /** Short label for a non-text message, used in previews, quotes and pushes. */
-export function mediaLabel(m: Pick<Message, "type" | "text" | "deletedForEveryone">): string {
+export function mediaLabel(m: Pick<Message, "type" | "text" | "deletedForEveryone" | "kind" | "meta">): string {
   if (m.deletedForEveryone) return "This message was deleted";
   switch (m.type) {
     case "image":
@@ -122,6 +123,8 @@ export function mediaLabel(m: Pick<Message, "type" | "text" | "deletedForEveryon
       return "GIF";
     case "sticker":
       return "Sticker";
+    case "system":
+      return systemLine(m);
     default:
       return m.text;
   }

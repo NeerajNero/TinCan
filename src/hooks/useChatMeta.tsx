@@ -29,8 +29,10 @@ export function ChatMetaProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!friendUid) return;
     const unsub = onSnapshot(unreadQuery(friendUid), (snap) => {
-      setUnreadCount(snap.size);
-      const toDeliver = snap.docs
+      // Server-written system lines from before phase 18 carry readAt: null; they never count or get ticks.
+      const incoming = snap.docs.filter((d) => d.data().type !== "system");
+      setUnreadCount(incoming.length);
+      const toDeliver = incoming
         .filter((d) => !d.metadata.hasPendingWrites && d.data().status === "sent" && !delivering.current.has(d.id))
         .map((d) => d.id);
       if (toDeliver.length) {

@@ -35,6 +35,7 @@
 | `pnpm export` | backup: dated `exports/<time>/firestore.json` + `media.csv` (gitignored, private) |
 | `pnpm tick:dry` | `GET $TICK_URL/api/tick?dry=1` and print what the tick would do |
 | `pnpm reset:dry` / `pnpm reset` | wipe all data except the owner's `users` doc (owner = first email in `ALLOWED_EMAILS`); dry run by default |
+| `node scripts/inspect-system-messages.mjs [limit]` | read-only: counts the latest 500 messages per type, kind and field set (never prints text); for diagnosing chat rendering |
 | `pnpm icons` | regenerate PWA icons and badge from the inline SVG |
 
 ## Deploying

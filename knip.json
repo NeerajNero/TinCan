@@ -3,13 +3,13 @@
   "entry": [
     "scripts/*.mjs",
     "src/app/sw.ts",
-    "tests/**/*.test.ts",
+    "tests/**/*.test.{ts,tsx}",
     "tests/e2e/*.spec.ts",
     "vitest.rules.config.mts"
   ],
   "project": [
     "src/**/*.{ts,tsx}",
-    "tests/**/*.ts",
+    "tests/**/*.{ts,tsx}",
     "scripts/**/*.mjs"
   ],
   "ignoreBinaries": [

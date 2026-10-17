@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import ideas from "@/content/hangout-ideas.json";
 import { usePair } from "@/hooks/usePair";
-import { sendText } from "@/lib/db/messages";
+import { createSystemMessage } from "@/lib/chat/system";
 import { notify } from "@/lib/notify";
 import { randomSeed, seededOrder } from "@/lib/seeded";
 
@@ -20,7 +20,7 @@ function sample(seed: number): string[] {
 }
 
 export function WheelScreen() {
-  const { uid, friendUid } = usePair();
+  const { friendUid } = usePair();
   const [seed, setSeed] = useState(randomSeed);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<number | null>(null);
@@ -54,8 +54,8 @@ export function WheelScreen() {
     if (result === null || posted) return;
     const text = `🎡 Let's: ${items[result]}`;
     setPosted(true);
-    const id = await sendText(uid, text, null);
-    if (friendUid) void notify("message", { toUid: friendUid, body: text, data: { messageId: id } });
+    const id = await createSystemMessage("hangout", text, { idea: (items[result] ?? "").slice(0, 80) });
+    if (friendUid && id) void notify("message", { toUid: friendUid, body: text, data: { messageId: id } });
   }
 
   const r = 150;

@@ -5,8 +5,9 @@ import { useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
 import { setMyStatus, useMyStatus } from "@/hooks/usePresence";
+import { createSystemMessage } from "@/lib/chat/system";
 import { cn } from "@/lib/cn";
-import { postSystemMessage, sleepWakeText } from "@/lib/db/home";
+import { sleepWakeText } from "@/lib/db/home";
 
 /** "Good night" / "Good morning": flips my presence status and leaves a note in chat. */
 export function SleepToggle() {
@@ -21,7 +22,7 @@ export function SleepToggle() {
     const next = sleeping ? "awake" : "sleeping";
     try {
       await setMyStatus(uid, next);
-      await postSystemMessage(uid, sleepWakeText(me.nickname, next));
+      await createSystemMessage(next === "sleeping" ? "sleep" : "wake", sleepWakeText(me.nickname, next), { who: me.nickname });
     } finally {
       setBusy(false);
     }

@@ -10,11 +10,12 @@ import { Input, Label } from "@/components/ui/Input";
 import { RELATIONSHIPS } from "@/content/relationships";
 import { usePair } from "@/hooks/usePair";
 import { useRelationship } from "@/hooks/useRelationship";
+import { createSystemMessage } from "@/lib/chat/system";
 import { cn } from "@/lib/cn";
 import { dateKeyToLocalDate, isDateKey } from "@/lib/dates";
-import { postSystemMessage } from "@/lib/db/home";
 import { setFriendsSince, setNextMeetup, setRelationship } from "@/lib/db/pair";
 import { renamePet } from "@/lib/db/pet";
+import { swallow } from "@/lib/swallow";
 import type { NextMeetup } from "@/lib/types";
 
 function prettyDate(key: string | null | undefined): string | null {
@@ -23,7 +24,7 @@ function prettyDate(key: string | null | undefined): string | null {
 
 /** Us two: who's on the other end, friends-since, next meetup, and the pet's name (phase 12). */
 export function PairCard() {
-  const { uid, me, pair, friend } = usePair();
+  const { me, pair, friend } = usePair();
   const preset = useRelationship();
 
   const meetupValue = pair.nextMeetup
@@ -54,7 +55,7 @@ export function PairCard() {
               if (id === preset.id) return close();
               const next = RELATIONSHIPS.find((r) => r.id === id);
               await setRelationship(id);
-              if (next) void postSystemMessage(uid, `${next.emoji} ${me.nickname} changed us to ${next.label}`);
+              if (next) createSystemMessage("relationship", `${next.emoji} ${me.nickname} changed us to ${next.label}`, { who: me.nickname, relationship: next.id }).catch(swallow);
               close();
             }}
           />

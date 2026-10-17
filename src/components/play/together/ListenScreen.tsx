@@ -1,20 +1,24 @@
 "use client";
 
 import { Play, Pause, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { ChatDrawer } from "@/components/play/together/ChatDrawer";
 import { JoinOverlay } from "@/components/play/together/JoinOverlay";
 import { LazyYouTubePlayer as YouTubePlayer } from "@/components/play/together/lazy";
+import { PlaylistSection, SaveChip, StarButton, useSaveSuggestion } from "@/components/play/together/Playlist";
 import { VideoPicker } from "@/components/play/together/WatchScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
+import { usePlaylist } from "@/hooks/usePlaylist";
 import { useSyncedPlayer } from "@/hooks/useSyncedPlayer";
-import { advanceQueue, dequeue, enqueue, loadVideo, subscribeQueue, type QueueItem } from "@/lib/db/watch";
+import { advanceQueue, dequeue, enqueue, enqueueMany, loadVideo, subscribeQueue, type QueueItem } from "@/lib/db/watch";
 import { recordTogetherEvent } from "@/lib/garden";
+import { hasVideo, type PlaylistItem } from "@/lib/playlist";
 import { safeThumb } from "@/lib/safeUrl";
+import { swallow } from "@/lib/swallow";
 
 export function ListenScreen() {
   const { uid, me, friend } = usePair();
@@ -28,6 +32,20 @@ export function ListenScreen() {
   );
   const { node, ready, joined, onReady, onStateChange, join, toggle, syncToFriend, markJoined } = useSyncedPlayer("listen", uid, onEnded);
   useEffect(() => subscribeQueue(setQueue), []);
+
+  const playlist = usePlaylist("listen", uid);
+  const { suggestion, suggest, dismiss } = useSaveSuggestion();
+  const isSaved = (id: string) => hasVideo(playlist.items ?? [], id);
+  const currentId = node?.videoId ?? null;
+  const saved = currentId !== null && isSaved(currentId);
+  const queuedIds = useMemo(() => new Set(queue.map((q) => q.videoId)), [queue]);
+  const thumbOf = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  const queueItem = (item: PlaylistItem) => ({ videoId: item.videoId, title: item.title, thumb: thumbOf(item.videoId), addedBy: uid });
+  /** Plays now for both: this phone has joined, and a joined player starts it through the normal sync. */
+  const playNow = (item: PlaylistItem) => {
+    markJoined();
+    loadVideo("listen", uid, item.videoId, item.title, thumbOf(item.videoId), true).catch(swallow);
+  };
 
   const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
 
@@ -59,6 +77,7 @@ export function ListenScreen() {
               <p className="truncate font-semibold">{node?.title ?? "Nothing playing"}</p>
               <p className="text-xs text-muted">{node?.videoId ? (!ready ? "Starting the player…" : node.playing ? "Playing for both" : "Paused") : "Add a track below"}</p>
             </div>
+            {currentId && playlist.items !== null && <StarButton saved={saved} onToggle={() => (saved ? playlist.remove(currentId) : void playlist.save(currentId, node?.title ?? "YouTube video"))} />}
             {node?.videoId && (
               <button type="button" onClick={toggle} disabled={!ready} aria-label={node.playing ? "Pause for both" : "Play for both"} className="tap grid size-12 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-white disabled:opacity-50">
                 {node.playing ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
@@ -77,6 +96,14 @@ export function ListenScreen() {
               await loadVideo("listen", uid, id, title, thumb);
             }
             else await enqueue({ videoId: id, title, thumb, addedBy: uid });
+            if (!isSaved(id)) suggest(id, title);
+          }}
+        />
+        <SaveChip
+          show={suggestion !== null && !isSaved(suggestion.videoId)}
+          onSave={() => {
+            if (suggestion) void playlist.save(suggestion.videoId, suggestion.title);
+            dismiss();
           }}
         />
       </Card>
@@ -97,7 +124,18 @@ export function ListenScreen() {
           </div>
         ))}
       </section>
-      <ChatDrawer />
+      <PlaylistSection
+        room="listen"
+        items={playlist.items}
+        currentVideoId={currentId}
+        onPlay={playNow}
+        onRemove={playlist.remove}
+        onMove={playlist.move}
+        onQueue={(item) => enqueue(queueItem(item)).catch(swallow)}
+        onQueueAll={() => enqueueMany((playlist.items ?? []).filter((i) => !queuedIds.has(i.videoId)).map(queueItem)).catch(swallow)}
+        queuedIds={queuedIds}
+      />
+      <ChatDrawer room="listen" />
     </div>
   );
 }

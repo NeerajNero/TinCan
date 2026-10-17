@@ -75,7 +75,7 @@ export function useMessages(uid: string): MessagesState {
   useEffect(() => {
     const current = pages.current;
     attach(latestQuery(), (size, docs) => {
-      setInitialUnread(new Set(docs.filter((m) => m.senderId !== uid && !m.readAt).map((m) => m.id)));
+      setInitialUnread(new Set(docs.filter((m) => m.senderId !== uid && m.type !== "system" && !m.readAt).map((m) => m.id)));
       setReady(true);
       setHasMore(size >= PAGE_SIZE);
     });

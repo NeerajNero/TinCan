@@ -91,6 +91,16 @@ describe("messages", () => {
     await assertFails(setDoc(doc(db, "messages/m5"), { ...base, text: "ok", createdAt: new Date(0) }));
     await assertFails(setDoc(doc(db, "messages/m6"), { ...base, text: "ok", extra: "field" }));
   });
+  it("kind and meta are allowed on system lines only, and stay small", async () => {
+    const db = asA().firestore();
+    const sys = { senderId: A, type: "system", text: "🍪 Sam fed Mochi", status: "sent", reactions: {}, deletedFor: [], deletedForEveryone: false, createdAt: serverTimestamp() };
+    await assertSucceeds(setDoc(doc(db, "messages/s1"), { ...sys, kind: "pet-fed", meta: { who: "Sam", pet: "Mochi" } }));
+    await assertSucceeds(setDoc(doc(db, "messages/s2"), sys)); // the pre-phase-18 shape
+    await assertFails(setDoc(doc(db, "messages/s3"), { ...sys, type: "text", kind: "pet-fed" }));
+    await assertFails(setDoc(doc(db, "messages/s4"), { ...sys, type: "text", meta: { a: 1 } }));
+    await assertFails(setDoc(doc(db, "messages/s5"), { ...sys, kind: "x".repeat(33) }));
+    await assertFails(setDoc(doc(db, "messages/s6"), { ...sys, meta: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [`k${i}`, i])) }));
+  });
   it("image media must point at our Cloudinary cloud", async () => {
     const db = asA().firestore();
     const base = { senderId: A, type: "image", text: "", status: "sent", reactions: {}, deliveredAt: null, readAt: null, deletedFor: [], deletedForEveryone: false, createdAt: serverTimestamp() };
@@ -190,5 +200,49 @@ describe("rtdb pings", () => {
     await assertSucceeds(update(ref(asA().database(), `presence/${A}`), { online: true, page: "/" }));
     await assertFails(update(ref(asB().database(), `presence/${A}`), { online: false }));
     await assertFails(update(ref(asA().database(), `presence/${A}`), { page: "x".repeat(101) }));
+  });
+});
+
+describe("playlists", () => {
+  const item = (n: number) => ({ videoId: `vid${String(n).padStart(8, "0")}`, title: `Song ${n}`, addedBy: A, addedAt: n });
+  const items = (count: number) => Array.from({ length: count }, (_, i) => item(i));
+  it("both of you may save up to 50 items, signed with your own uid", async () => {
+    await assertSucceeds(setDoc(doc(asA().firestore(), "playlists/watch"), { items: items(50), updatedAt: serverTimestamp(), updatedBy: A }));
+    await assertSucceeds(setDoc(doc(asB().firestore(), "playlists/watch"), { items: items(2), updatedAt: serverTimestamp(), updatedBy: B }));
+    await assertSucceeds(getDoc(doc(asB().firestore(), "playlists/watch")));
+  });
+  it("over 50 items, someone else's updatedBy, extra keys or an unknown room are rejected", async () => {
+    const db = asA().firestore();
+    await assertFails(setDoc(doc(db, "playlists/listen"), { items: items(51), updatedAt: serverTimestamp(), updatedBy: A }));
+    await assertFails(setDoc(doc(db, "playlists/listen"), { items: items(1), updatedAt: serverTimestamp(), updatedBy: B }));
+    await assertFails(setDoc(doc(db, "playlists/listen"), { items: items(1), updatedAt: serverTimestamp(), updatedBy: A, extra: true }));
+    await assertFails(setDoc(doc(db, "playlists/radio"), { items: items(1), updatedAt: serverTimestamp(), updatedBy: A }));
+    await assertFails(getDoc(doc(asStranger().firestore(), "playlists/watch")));
+  });
+});
+
+describe("rtdb roomchat", () => {
+  const msg = (uid: string, text = "hi") => ({ uid, text, at: Date.now() - 1000 });
+  it("the owner creates; the wrong uid, over 500 chars or an unknown room are rejected", async () => {
+    const db = asA().database();
+    await assertSucceeds(set(push(ref(db, "roomchat/watch")), msg(A)));
+    await assertSucceeds(set(push(ref(db, "roomchat/listen")), msg(A, "x".repeat(500))));
+    await assertFails(set(push(ref(db, "roomchat/watch")), msg(B)));
+    await assertFails(set(push(ref(db, "roomchat/watch")), msg(A, "x".repeat(501))));
+    await assertFails(set(push(ref(db, "roomchat/watch")), msg(A, "")));
+    await assertFails(set(push(ref(db, "roomchat/radio")), msg(A)));
+    await assertFails(set(push(ref(db, "roomchat/watch")), { ...msg(A), extra: 1 }));
+    await assertFails(set(push(ref(db, "roomchat/watch")), { ...msg(A), at: Date.now() + 60_000 }));
+    await assertFails(get(ref(asStranger().database(), "roomchat/watch")));
+  });
+  it("no edits; either of you may delete (trim) or clear the room", async () => {
+    const a = push(ref(asA().database(), "roomchat/watch"));
+    await assertSucceeds(set(a, msg(A)));
+    await assertFails(set(a, msg(A, "edited")));
+    await assertFails(update(a, { text: "edited" }));
+    await assertSucceeds(update(ref(asB().database(), "roomchat/watch"), { [a.key as string]: null }));
+    await assertSucceeds(set(push(ref(asB().database(), "roomchat/watch")), msg(B)));
+    await assertSucceeds(remove(ref(asA().database(), "roomchat/watch")));
+    await assertFails(set(ref(asA().database(), "roomchat/watch"), { x: msg(A) }));
   });
 });

@@ -121,7 +121,7 @@ Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign
   media{url,publicId,variants{w320,w640,w800,blur,original|audio},w,h,durationMs,bytes},
   replyTo{id,preview,senderId,type},
   reactions{uid:emoji}, status(sent|delivered|read), deliveredAt, readAt, editedAt,
-  deletedFor[], deletedForEveryone, createdAt
+  deletedFor[], deletedForEveryone, createdAt, kind?, meta?  (kind/meta: system lines only)
 `checkins/{dateKey}`: {uid:true}  — written once per user per day on app open
 `moods/{dateKey}_{uid}`: emoji, note, at
 `dailyQuestions/{dateKey}`: questionIndex, answers{uid:{text,at}}
@@ -142,6 +142,8 @@ Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign
 `wordle/{dateKey}_{uid}`: guesses[], solved, at
 `trivia/{id}`: questionIds[10], answers{uid:[...]}, scores{}, startedAt
 `recipes/{id}`: title, ingredients[], steps[], addedBy
+`playlists/{room}` (room: watch|listen): items[{videoId, title, addedBy, addedAt (client ms)}] (≤ 50, unique
+  by videoId), updatedAt, updatedBy — edited only in transactions; thumbnails derived, never stored
 `push/{id}`: (server-only log) toUid, type, sentAt   — for de-duplication, prune to last 200
 `tickLog/{jobKey}`: ranAt — idempotency for /api/tick jobs
 
@@ -169,6 +171,7 @@ radio stations (6 public stream URLs with names).
 `timer/main`: {mode(focus|break), endsAt, startedBy, running}
 `cook/{recipeId}`: {checked{stepIdx:true}, by}
 `twenty/{gameId}`: {holderUid, secret, questionsAsked, status}
+`roomchat/{room}/{pushId}` (room: watch|listen): {uid, text (1–500), at} — the Watch/Listen side chat, newest 50 kept
 
 ## Chat — WhatsApp-like spec
 - Single thread. Firestore listener on last 50 messages ordered by createdAt desc; "load older"
@@ -184,6 +187,10 @@ radio stations (6 public stream URLs with names).
 - Deleted-for-everyone shows "This message was deleted". Edited shows "edited".
 - Message types: text (with link preview-free auto-linking), image, voice, GIF (GIPHY if key),
   sticker (bundled SVG set), system (good night, game results, pet events, capsule unlocked).
+- System lines are `{ type: "system", kind, text, meta?, senderId, status: "sent", createdAt }`, written only by
+  `createSystemMessage(kind, text, meta?)` in `src/lib/chat/system.ts` (server: `postSystemMessageAdmin`; shared
+  shape `systemMessageData` in `systemKinds.ts`). No deliveredAt/readAt: they never count as unread, never get
+  receipts or ticks. `SystemPill` shows text, else a line from kind + meta, else ✨ — never an empty row.
 - Day separators ("Today", "Yesterday", date), unread divider on open, jump-to-bottom FAB,
   unread count badge on the Chat tab, last-message preview on Home.
 - Images: compress in browser (max 1080 px, ~0.3 MB, JPEG/WebP) → signed upload to preset
@@ -302,10 +309,21 @@ radio stations (6 public stream URLs with names).
   Cloudinary and posts it to chat.
 - **Pixel art**: 32×32 shared grid, 16-colour palette, shared cursors, snapshot to chat.
 - **Watch together**: paste a YouTube URL; IFrame Player; play/pause/seek broadcast via RTDB;
-  drift correction if >2 s apart; small side chat uses the main chat. One IFrame API loader
+  drift correction if >2 s apart; the side chat is the Watch room chat (below). One IFrame API loader
   (`src/lib/youtube.ts`); the player is built only once a video id is known and destroyed on route
   change. Local Play/Pause drives the player inside the tap, then writes RTDB; remote state applies only
   after a one-time "Tap to join". onError codes go to Diagnostics (101/150: "can't be embedded").
+- **Playlists** (watch and listen): ★ by the current title saves to `playlists/{room}` (filled = saved; tap again
+  removes with a 4 s Undo toast); "Save to playlist?" chip for 5 s after a new link; collapsible "Playlist (N)"
+  under the player (closed by default, remembered per room on the device; rows load lazily because `Reorder`
+  brings framer's layout runtime) with thumbnails, who-added avatar, now-playing, drag to reorder, swipe-left or ⋮
+  to remove; 50 max ("Playlist is full — remove one first"). Watch rows load through the gesture-safe path; Listen
+  rows play now, "+ Queue" / "Queue all" append to the live `listen/queue`, which stays as it was.
+- **Room chat** (watch and listen): the chat drawer is a separate thread at RTDB `roomchat/{room}` (one
+  `limitToLast` listener while the screen is open; sender trims beyond 50 after each send), not the main chat: no
+  push, no Chat badge, a dot on the drawer button for the friend's unseen messages (last-seen in localStorage).
+  Opens at 55dvh, drag up to full. Text/emoji only; long-press → Copy / Share to main chat ("📺 …" / "🎧 …");
+  ⋮ → Clear chat.
 - **Listen together**: same mechanism, audio-only UI (the player stays at a real 200 px size under an
   opaque thumbnail card, never display:none or 1 px),
   shared queue (RTDB list). **Radio**: 6 curated public stream URLs, synced play/pause.
@@ -331,6 +349,9 @@ radio stations (6 public stream URLs with names).
 - `tickLog`, `push`: admin-only (no client access).
 - RTDB: `presence/{uid}`, `typing/{uid}`, `cursors/{uid}`, `lamp/{uid}` writable only by `uid`;
   `pings/{uid}` writable by the other user; shared nodes writable by both allowlisted users.
+  `roomchat/{watch|listen}/{id}`: create only as yourself, delete by either, no edits, text 1–500, at ≤ now.
+- `messages`: `kind`/`meta` only on system lines. `playlists/{watch|listen}`: keys items/updatedAt/updatedBy only,
+  ≤ 50 items, updatedBy == caller.
 
 ## Security (phase 15a)
 - API routes share one guard (`src/lib/server/guard.ts`): ID token verified with revocation
@@ -431,7 +452,7 @@ CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–17 shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–18 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -468,6 +489,8 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
     server-side, access audit, `pnpm export` backup, polish, README rewrite.
 17. ✅ **Pet life** — part-based sprite animation, tap reactions, petting, feed/sleep/wake/level-up
     sequences, idle life, friend replays, chirps.
+18. ✅ **Rooms & fixes** — system lines fixed (blank gaps) and normalised, Watch/Listen playlists, separate
+    Watch/Listen room chat.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

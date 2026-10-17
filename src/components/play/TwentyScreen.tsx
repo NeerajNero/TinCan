@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
+import { createSystemMessage } from "@/lib/chat/system";
 import { cn } from "@/lib/cn";
-import { postSystemMessage } from "@/lib/db/home";
 import { answerQuestion, askQuestion, clearRound, finalGuess, judgeGuess, MAX_QUESTIONS, parseQuestions, randomSecret, startRound, subscribeTwenty, type TwentyAnswer, type TwentyNode } from "@/lib/db/twenty";
 import { notify } from "@/lib/notify";
+import { swallow } from "@/lib/swallow";
 
 const ROUTE = "/play/twenty";
 
@@ -60,7 +61,7 @@ export function TwentyScreen() {
     await finalGuess(node, g);
     setText("");
     const won = g.toLowerCase() === node.secret.toLowerCase();
-    void postSystemMessage(uid, won ? `🔍 ${nameOf(node.guesserUid)} guessed "${node.secret}" in ${asked} questions!` : `🔍 ${nameOf(node.guesserUid)} guessed "${g}" — it was "${node.secret}"`);
+    createSystemMessage("twenty-result", won ? `🔍 ${nameOf(node.guesserUid)} guessed "${node.secret}" in ${asked} questions!` : `🔍 ${nameOf(node.guesserUid)} guessed "${g}" — it was "${node.secret}"`, { won: won ? 1 : 0 }).catch(swallow);
     void notify("yourTurn", { toUid: node.holderUid, body: `20 Questions: final guess "${g}"`, data: { url: ROUTE } });
   }
 

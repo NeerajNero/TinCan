@@ -1,17 +1,18 @@
 
 import { PET_SPECIES } from "@/content/pets";
-import { postSystemMessage } from "@/lib/db/home";
+import { createSystemMessage } from "@/lib/chat/system";
 import { pairRef } from "@/lib/db/refs";
 import { updateDoc } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { sinceFor } from "@/lib/pet";
 import { writeKey } from "@/lib/petLife";
+import { swallow } from "@/lib/swallow";
 import type { PetDoc, PetSpecies } from "@/lib/types";
 
 export function adoptPet(species: PetSpecies, name: string, by: string, nickname: string): Promise<void> {
   const now = Date.now();
   const pet: PetDoc = { name: name.trim().slice(0, 24) || PET_SPECIES[species].name, species, hungerAt: now, happyAt: now, sleepAt: 0, level: 1, bornAt: now };
-  void postSystemMessage(by, `🐾 ${nickname} adopted ${pet.name} the ${PET_SPECIES[species].name}!`);
+  createSystemMessage("pet-adopt", `🐾 ${nickname} adopted ${pet.name} the ${PET_SPECIES[species].name}!`, { who: nickname, pet: pet.name }).catch(swallow);
   return updateDoc(pairRef(), { pet });
 }
 
@@ -28,7 +29,7 @@ function stamp(field: "hungerAt" | "happyAt" | "sleepAt", value: number): Promis
 }
 
 export function feedPet(pet: PetDoc, by: string, nickname: string): Promise<void> {
-  void postSystemMessage(by, `🍪 ${nickname} fed ${pet.name}`);
+  createSystemMessage("pet-fed", `🍪 ${nickname} fed ${pet.name}`, { who: nickname, pet: pet.name }).catch(swallow);
   return stamp("hungerAt", Date.now());
 }
 
@@ -42,6 +43,6 @@ export const wakePet = () => stamp("sleepAt", 0);
 export async function announceLevel(pet: PetDoc, level: number, by: string): Promise<void> {
   if (level <= pet.level) return;
   await updateDoc(pairRef(), { "pet.level": level });
-  void postSystemMessage(by, `🎉 ${pet.name} reached level ${level}!`);
+  createSystemMessage("pet-level", `🎉 ${pet.name} reached level ${level}!`, { pet: pet.name, level }).catch(swallow);
   if (level >= 2) void recordTogetherEvent("pet-level-2", by);
 }

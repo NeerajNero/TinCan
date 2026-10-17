@@ -8,6 +8,7 @@ import { AttachmentStrip } from "@/components/chat/media/AttachmentStrip";
 import { MediaPanel } from "@/components/chat/media/MediaPanel";
 import { useTypingWriter } from "@/hooks/useTyping";
 import { cn } from "@/lib/cn";
+import { autoGrow, enterSends } from "@/lib/composerKeys";
 import { MAX_TEXT } from "@/lib/db/messages";
 import { focusNoScroll } from "@/lib/focus";
 import type { Gif } from "@/lib/giphy";
@@ -41,13 +42,6 @@ interface ComposerProps {
 const MAX_ROWS = 6;
 const CANCEL_SLIDE_PX = 80;
 const MIN_VOICE_MS = 600;
-
-function isTouchDevice() {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(hover: none) and (pointer: coarse)").matches
-  );
-}
 
 export function Composer(props: ComposerProps) {
   const {
@@ -94,11 +88,7 @@ export function Composer(props: ComposerProps) {
 
   // Auto-grow up to MAX_ROWS lines.
   useEffect(() => {
-    const el = textarea.current;
-    if (!el) return;
-    el.style.height = "0px";
-    const line = parseFloat(getComputedStyle(el).lineHeight) || 22;
-    el.style.height = `${Math.min(el.scrollHeight, line * MAX_ROWS + 20)}px`;
+    autoGrow(textarea.current, MAX_ROWS);
   }, [text]);
 
   const trimmed = text.trim();
@@ -137,8 +127,7 @@ export function Composer(props: ComposerProps) {
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Escape" && editing) onCancelEdit();
-    if (e.key !== "Enter" || isTouchDevice()) return;
-    if (e.shiftKey) return; // newline
+    if (!enterSends(e)) return;
     e.preventDefault();
     void submit();
   }

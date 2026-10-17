@@ -212,6 +212,9 @@ export interface MessageDoc {
   deletedFor: string[];
   deletedForEveryone: boolean;
   createdAt: Timestamp | null;
+  /** System lines only (see src/lib/chat/systemKinds.ts). Older lines have neither. */
+  kind?: string;
+  meta?: Record<string, string | number>;
 }
 
 /** A message as the chat renders it. */

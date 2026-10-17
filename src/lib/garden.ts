@@ -6,10 +6,11 @@
  */
 
 import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
-import { postSystemMessage } from "@/lib/db/home";
+import { createSystemMessage } from "@/lib/chat/system";
 import { pairRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
 import { runTransaction, serverTimestamp } from "@/lib/firebase/fs";
+import { swallow } from "@/lib/swallow";
 import type { PairDoc } from "@/lib/types";
 
 export type { GardenEvent };
@@ -30,6 +31,6 @@ export async function recordTogetherEvent(kind: GardenEvent, by: string): Promis
   } catch {
     return false;
   }
-  if (unlocked) void postSystemMessage(by, `${sticker.emoji} You two unlocked the ${sticker.name}!`);
+  if (unlocked) createSystemMessage("garden-sticker", `${sticker.emoji} You two unlocked the ${sticker.name}!`, { sticker: kind }).catch(swallow);
   return unlocked;
 }

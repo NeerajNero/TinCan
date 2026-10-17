@@ -5,7 +5,7 @@
 import { onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, update } from "firebase/database";
 
 
-import { postSystemMessage } from "@/lib/db/home";
+import { createSystemMessage } from "@/lib/chat/system";
 import { pairRef } from "@/lib/db/refs";
 import { getDb, getRtdb } from "@/lib/firebase/client";
 import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "@/lib/firebase/fs";
@@ -194,7 +194,7 @@ export async function cancelGame(game: LiveGame, me: string, nameOf: (uid: strin
     if (!current || current.status !== "active" || (current.moves ?? 0) > 0) return;
     return { ...current, status: "finished", open: false, winnerId: null, endReason: "cancelled", lastMoveAt: Date.now() } satisfies GameNode;
   });
-  if (res.committed) void postSystemMessage(me, `✕ ${nameOf(me)} cancelled the ${gameInfo(game.type).name} game`);
+  if (res.committed) createSystemMessage("game-cancel", `✕ ${nameOf(me)} cancelled the ${gameInfo(game.type).name} game`, { game: gameInfo(game.type).name }).catch(swallow);
   return res.committed;
 }
 
@@ -250,7 +250,7 @@ async function recordResult(game: LiveGame, by: string, nameOf: (uid: string) =>
     records[game.type] = rec;
     tx.update(pairRef(), { records });
   }).catch(swallow);
-  void postSystemMessage(by, describeResult(game, nameOf));
+  createSystemMessage("game-result", describeResult(game, nameOf), { game: gameInfo(game.type).name }).catch(swallow);
   if (game.winnerId && game.type === "chess") void recordTogetherEvent("chess-win", by);
   if (game.winnerId && game.type === "connectfour") void recordTogetherEvent("c4-win", by);
   const opponent = game.players.first === by ? game.players.second : game.players.first;
@@ -303,6 +303,6 @@ export async function recordGenericResult(game: Exclude<ResultGame, GameType>, p
   }).catch(swallow);
   const [host] = players;
   if (host === undefined) return;
-  void postSystemMessage(host, resultLine(game, winnerId ? nameOf(winnerId) : null));
+  createSystemMessage("game-result", resultLine(game, winnerId ? nameOf(winnerId) : null), { game: gameInfo(game).name }).catch(swallow);
   if (game === "trivia") void recordTogetherEvent("trivia", host);
 }

@@ -14,11 +14,13 @@ Default deny. `allowed()` requires a signed-in, `email_verified`, allowlisted us
 
 - **Ownership**: `users/{uid}` own-write; `email`/`createdAt` immutable; no unknown top-level fields. `availability`, `moods`, `wordle` own-write.
 - **Messages**: create only as sender with `createdAt == request.time`, text ≤2000, type enum, media URLs must be `https://res.cloudinary.com/<cloud>/` (gif: `https://media*.giphy.com/`). Recipient may only touch `deliveredAt/readAt/status`; sender edits/deletes; either sets only its own `reactions.{uid}` / `deletedFor` entry.
+- **System lines**: `kind` (string ≤32) and `meta` (map ≤8 keys) are accepted only when `type == "system"`; other types may not carry them.
+- **Playlists**: `playlists/{watch|listen}` only; keys limited to `items`, `updatedAt` (server time), `updatedBy` (must be the writer); `items.size() <= 50`.
 - **Private bodies**: `capsules/{id}/private/body` readable by author or when `request.time >= unlockAt`; `envelopes/{id}/private/body` readable by author, or by `forUid` once `openedAt` is set.
 - **Gifts list** is readable/writable only by whoever added the item.
 - **pair/main**: `uids` can only grow and never lose a uid.
 - **Admin only**: `push`, `tickLog`, `quota`, `scheduled` delivery fields.
-- **RTDB**: `presence/typing/cursors` own-write with validated shapes (presence page ≤100 chars, cursor coords 0–1); `pings/{uid}/{id}` created by the other user, deleted by owner; `games` validate `type/state/turn/status/open/endReason/players` and allow an unchanged opponent reaction on a transaction rewrite; `whiteboard`/`pictionary` strokes ≤24k chars; `pixel/grid` exactly 1024 chars.
+- **RTDB**: `presence/typing/cursors` own-write with validated shapes (presence page ≤100 chars, cursor coords 0–1); `pings/{uid}/{id}` created by the other user, deleted by owner; `games` validate `type/state/turn/status/open/endReason/players` and allow an unchanged opponent reaction on a transaction rewrite; `whiteboard`/`pictionary` strokes ≤24k chars; `pixel/grid` exactly 1024 chars. `roomchat/{watch|listen}/{id}`: create only when empty with `uid == auth.uid`, delete by either (trim, clear), no edits; text 1–500 chars, `at` ≤ now, no other children; unknown rooms denied.
 
 Covered by `tests/rules.test.ts` (emulator). Run `pnpm test:rules` after any rules change.
 
