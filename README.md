@@ -136,6 +136,7 @@ The rules enforce all of this, not just the UI.
 | **YouTube (Google)** | The video URL (oEmbed title lookup), thumbnails, and playback through the privacy-enhanced `youtube-nocookie.com` player | Watch / listen together |
 | **OpenStreetMap tile servers** | Which map tiles you view (≈ the area) and your IP | Memory map |
 | **Radio Paradise, Radio France** | Your IP while a station plays | Radio |
+| **All India Radio / Prasar Bharati** (`radio.wavespb.com`, its CloudFront hosts) | Your IP while an Indian station plays | Radio |
 | **cron-job.org** | That `/api/tick` ran and how many actions it took (no names or text) | Every 15 min |
 
 Fonts are self-hosted, so Google Fonts receives nothing.

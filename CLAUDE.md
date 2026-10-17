@@ -152,7 +152,8 @@ Static content lives in `src/content/*.json`, not the DB: daily questions (365+)
 would-you-rather (150+), never-have-I-ever (150+), truth/dare (100+ each), conversation cards
 (150+), hangout ideas (60+), pictionary words (300+), 20-questions secret words (200+),
 pet species (3 SVG sprite sets × 4 moods), plant stages (10 SVGs), garden stickers (24 SVGs),
-radio stations (6 public stream URLs with names).
+radio stations (`src/content/radio.json`: 6 World streams + 6 official All India Radio / Prasar Bharati HLS
+streams, each with id, name, region, language (India), format mp3|aac|hls, URL, extra hosts, attribution).
 
 ## Data model — RTDB
 `presence/{uid}`: {online, lastSeen, status(awake|sleeping), page}
@@ -326,7 +327,15 @@ radio stations (6 public stream URLs with names).
   ⋮ → Clear chat.
 - **Listen together**: same mechanism, audio-only UI (the player stays at a real 200 px size under an
   opaque thumbnail card, never display:none or 1 px),
-  shared queue (RTDB list). **Radio**: 6 curated public stream URLs, synced play/pause.
+  shared queue (RTDB list). **Radio**: curated public streams in "India" (official All India Radio channels from
+  the akashvani.gov.in player: Vividh Bharati, FM Gold, FM Rainbow, Raagam, AIR Kannada, AIR Telugu — no
+  commercial FM, no mirrors) and "World" sections, language chip on Indian stations, synced play/pause, tap-to-start
+  fallback, attribution line, last-played station per user in localStorage. HLS plays natively where
+  `canPlayType("application/vnd.apple.mpegurl")` is truthy (Android Chrome); elsewhere `hls.js/light` (pinned, ~110 KB
+  gzip) is dynamically imported on the Radio route for that station only; a stream without CORS shows "This station
+  only plays in the mobile app". Stream hosts (and redirect/segment hosts, listed per station as `hosts`) go to
+  media-src, HLS hosts also to connect-src, exact hosts only; the service worker never intercepts them
+  (`RADIO_HOSTNAMES` bypass in `sw.ts`).
 - **Focus timer**: shared Pomodoro 25/5; both see the same countdown; chime at phase end.
 - **Cook-along**: pick a recipe (both can add recipes); steps tick off live for both.
 - **Mood history**: month calendar with both users' emoji per day.
@@ -453,7 +462,7 @@ CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–18 shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–19 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -492,6 +501,7 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
     sequences, idle life, friend replays, chirps.
 18. ✅ **Rooms & fixes** — system lines fixed (blank gaps) and normalised, Watch/Listen playlists, separate
     Watch/Listen room chat.
+19. ✅ **Indian radio** — six official All India Radio HLS stations, India/World sections, native HLS or lazy hls.js.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

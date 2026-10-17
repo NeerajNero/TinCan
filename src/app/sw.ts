@@ -5,6 +5,8 @@ import { initializeApp } from "firebase/app";
 import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw";
 import { CacheableResponsePlugin, CacheFirst, ExpirationPlugin, NetworkOnly, Serwist, type PrecacheEntry, type RuntimeCaching, type SerwistGlobalConfig } from "serwist";
 
+import { RADIO_HOSTNAMES } from "../lib/radio";
+
 // `self.__SW_MANIFEST` is replaced with the precache manifest at build time.
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -63,6 +65,12 @@ const serwist = new Serwist({
       },
     ],
   },
+});
+
+// Radio streams (playlists, segments, endless mp3) never go through the worker: registered before
+// Serwist's fetch listener, this stops it without respondWith(), so the browser fetches them itself.
+self.addEventListener("fetch", (event) => {
+  if (RADIO_HOSTNAMES.has(new URL(event.request.url).hostname)) event.stopImmediatePropagation();
 });
 
 serwist.addEventListeners();

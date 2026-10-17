@@ -50,6 +50,21 @@ describe("CSP", () => {
     expect(directive(csp, "object-src")).toEqual(["'none'"]);
   });
 
+  it("lets <audio> play every radio stream, and hls.js fetch only the HLS hosts", () => {
+    const csp = buildCsp({ nonce: "n" });
+    const media = directive(csp, "media-src");
+    const connect = directive(csp, "connect-src");
+    // All India Radio: WAVES redirects to a fixed CloudFront host per stream; the rest are on one distribution.
+    const air = ["https://radio.wavespb.com", "https://d1tmej9eu7kw5c.cloudfront.net", "https://d1cvqgmbcpg5yn.cloudfront.net", "https://d3r9rhourdc02u.cloudfront.net"];
+    for (const h of [...air, "https://stream.radioparadise.com", "https://icecast.radiofrance.fr"]) expect(media).toContain(h);
+    for (const h of air) expect(connect).toContain(h);
+    // mp3 streams play through <audio> only; nothing fetches them.
+    expect(connect).not.toContain("https://stream.radioparadise.com");
+    expect(connect).not.toContain("https://icecast.radiofrance.fr");
+    // Exact hosts, never a CloudFront wildcard.
+    expect([...media, ...connect].some((h) => h.includes("*.cloudfront.net"))).toBe(false);
+  });
+
   it("gives the worker every host it caches", () => {
     const worker = buildWorkerCsp();
     for (const h of ["https://res.cloudinary.com", "https://*.giphy.com", "https://i.ytimg.com", "https://tile.openstreetmap.org"]) expect(directive(worker, "connect-src")).toContain(h);

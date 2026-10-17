@@ -11,16 +11,9 @@
  * cross-origin bypasses the worker. Hosts are listed in connect-src too where
  * the worker or fetch() touches them.
  */
-import radio from "./src/content/radio.json";
+import { RADIO_HLS_ORIGINS, RADIO_MEDIA_ORIGINS } from "./src/lib/radio";
 
 const unique = (xs: string[]) => [...new Set(xs.filter(Boolean))];
-const origin = (url: string) => {
-  try {
-    return new URL(url).origin;
-  } catch {
-    return "";
-  }
-};
 const host = (url: string) => {
   try {
     return new URL(url).host;
@@ -38,7 +31,7 @@ const host = (url: string) => {
 export const FIRESTORE_PROBE_IMG = "https://www.google.com/images/";
 
 /** The two YouTube player origins (watch/listen together embed the nocookie one; the API script comes from www). */
-export const YOUTUBE_ORIGINS = ["https://www.youtube-nocookie.com", "https://www.youtube.com"];
+const YOUTUBE_ORIGINS = ["https://www.youtube-nocookie.com", "https://www.youtube.com"];
 
 /**
  * Permissions-Policy (static, set in next.config.ts). Playback features are
@@ -71,8 +64,6 @@ export function buildPermissionsPolicy(): string {
   ].join(", ");
 }
 
-/** Public radio streams (src/content/radio.json): played by <audio>, never cached. */
-export const RADIO_ORIGINS = unique((radio as Array<{ url: string }>).map((s) => origin(s.url)));
 
 interface CspEnv {
   /** Per-request nonce from src/proxy.ts; Next stamps it on its inline bootstrap scripts, the layout on the theme script. */
@@ -109,7 +100,9 @@ function connectSrc(databaseUrl?: string): string[] {
     "https://*.googleusercontent.com",
     "https://tile.openstreetmap.org",
     "https://*.tile.openstreetmap.org",
-    ...RADIO_ORIGINS,
+    // Radio over hls.js (desktop browsers without native HLS) fetches playlists and segments.
+    // Plain mp3/aac and native HLS play through <audio>: media-src only. The worker never touches streams.
+    ...RADIO_HLS_ORIGINS,
   ]);
 }
 
@@ -167,7 +160,7 @@ export function buildCsp({ nonce, projectId, authDomain, databaseUrl, dev = fals
       "https://*.tile.openstreetmap.org",
       FIRESTORE_PROBE_IMG,
     ],
-    "media-src": ["'self'", "blob:", "https://res.cloudinary.com", ...RADIO_ORIGINS],
+    "media-src": ["'self'", "blob:", "https://res.cloudinary.com", ...RADIO_MEDIA_ORIGINS],
     "frame-src": [...firebaseAuthFrames, "https://accounts.google.com", "https://www.youtube.com", "https://www.youtube-nocookie.com", ...rtdbTransport],
     "connect-src": connectSrc(databaseUrl),
   };

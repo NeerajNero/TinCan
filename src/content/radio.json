@@ -3,6 +3,8 @@
     "id": "rp-main",
     "name": "Radio Paradise · Main Mix",
     "genre": "Eclectic, hand-picked",
+    "region": "World",
+    "format": "mp3",
     "url": "https://stream.radioparadise.com/mp3-128",
     "attribution": "Radio Paradise (radioparadise.com) — listener-supported, free to stream",
     "verified": true
@@ -11,6 +13,8 @@
     "id": "rp-mellow",
     "name": "Radio Paradise · Mellow",
     "genre": "Soft and slow",
+    "region": "World",
+    "format": "mp3",
     "url": "https://stream.radioparadise.com/mellow-128",
     "attribution": "Radio Paradise (radioparadise.com)",
     "verified": true
@@ -19,6 +23,8 @@
     "id": "rp-rock",
     "name": "Radio Paradise · Rock",
     "genre": "Guitars up",
+    "region": "World",
+    "format": "mp3",
     "url": "https://stream.radioparadise.com/rock-128",
     "attribution": "Radio Paradise (radioparadise.com)",
     "verified": true
@@ -27,6 +33,8 @@
     "id": "fip",
     "name": "FIP",
     "genre": "Paris, anything goes",
+    "region": "World",
+    "format": "mp3",
     "url": "https://icecast.radiofrance.fr/fip-midfi.mp3",
     "attribution": "FIP — Radio France (radiofrance.fr/fip)",
     "verified": true
@@ -35,6 +43,8 @@
     "id": "fip-jazz",
     "name": "FIP Jazz",
     "genre": "Late-night jazz",
+    "region": "World",
+    "format": "mp3",
     "url": "https://icecast.radiofrance.fr/fipjazz-midfi.mp3",
     "attribution": "FIP — Radio France",
     "verified": true
@@ -43,8 +53,82 @@
     "id": "fip-electro",
     "name": "FIP Electro",
     "genre": "Electronic, chill",
+    "region": "World",
+    "format": "mp3",
     "url": "https://icecast.radiofrance.fr/fipelectro-midfi.mp3",
     "attribution": "FIP — Radio France",
+    "verified": true
+  },
+  {
+    "id": "air-vividh-bharati",
+    "name": "Vividh Bharati",
+    "genre": "Film songs, all day",
+    "region": "India",
+    "language": "Hindi",
+    "format": "hls",
+    "url": "https://radio.wavespb.com/live/146ed6ec6dea5a24/146ed6ec6dea5a24.m3u8",
+    "hosts": [
+      "d1tmej9eu7kw5c.cloudfront.net"
+    ],
+    "attribution": "All India Radio / Prasar Bharati",
+    "verified": true
+  },
+  {
+    "id": "air-fm-gold",
+    "name": "FM Gold · Delhi",
+    "genre": "News and old favourites",
+    "region": "India",
+    "language": "Hindi",
+    "format": "hls",
+    "url": "https://d3r9rhourdc02u.cloudfront.net/assets/radio/airdelhi03/air003_Auto.m3u8",
+    "attribution": "All India Radio / Prasar Bharati",
+    "verified": true
+  },
+  {
+    "id": "air-fm-rainbow",
+    "name": "FM Rainbow · Delhi",
+    "genre": "Music, chat, requests",
+    "region": "India",
+    "language": "Hindi",
+    "format": "hls",
+    "url": "https://d3r9rhourdc02u.cloudfront.net/assets/radio/airdelhi02/air002_Auto.m3u8",
+    "attribution": "All India Radio / Prasar Bharati",
+    "verified": true
+  },
+  {
+    "id": "air-raagam",
+    "name": "Raagam",
+    "genre": "Indian classical, round the clock",
+    "region": "India",
+    "language": "Classical",
+    "format": "hls",
+    "url": "https://d3r9rhourdc02u.cloudfront.net/assets/radio/airbang04/air036_Auto.m3u8",
+    "attribution": "All India Radio / Prasar Bharati",
+    "verified": true
+  },
+  {
+    "id": "air-kannada",
+    "name": "AIR Kannada · Bengaluru",
+    "genre": "Akashvani Karnataka",
+    "region": "India",
+    "language": "Kannada",
+    "format": "hls",
+    "url": "https://d3r9rhourdc02u.cloudfront.net/assets/radio/airbang01/air033_Auto.m3u8",
+    "attribution": "All India Radio / Prasar Bharati",
+    "verified": true
+  },
+  {
+    "id": "air-telugu",
+    "name": "AIR Telugu · Hyderabad",
+    "genre": "Akashvani Telangana",
+    "region": "India",
+    "language": "Telugu",
+    "format": "hls",
+    "url": "https://radio.wavespb.com/live/1c701f7b70df2568/1c701f7b70df2568.m3u8",
+    "hosts": [
+      "d1cvqgmbcpg5yn.cloudfront.net"
+    ],
+    "attribution": "All India Radio / Prasar Bharati",
     "verified": true
   }
 ]

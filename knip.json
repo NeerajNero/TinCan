@@ -9,6 +9,7 @@
   ],
   "project": [
     "src/**/*.{ts,tsx}",
+    "csp.ts",
     "tests/**/*.{ts,tsx}",
     "scripts/**/*.mjs"
   ],

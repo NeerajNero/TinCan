@@ -146,8 +146,8 @@ export const HOWTO: Record<HowToKey, HowTo> = {
   },
   radio: {
     title: "Radio",
-    label: "Six live stations",
-    steps: ["📻 Pick one of six live stations", "▶️ Play and pause together", "🎶 It's live, so you both hear the same song at the same time"],
+    label: "Live stations · India and World",
+    steps: ["📻 Pick a station: All India Radio under India, more under World", "▶️ Play and pause together", "🎶 It's live, so you both hear the same song at the same time", "🔁 Your last station waits in the top card for one-tap replay"],
   },
   timer: {
     title: "Focus timer",

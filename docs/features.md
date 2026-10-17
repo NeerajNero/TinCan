@@ -52,7 +52,7 @@ Pages under `src/app/(app)/**` are thin: they render one screen component. Logic
 | Pictionary | `/play/pictionary[/id]` | `together/PictionaryScreen` | RTDB `pictionary/{id}`, `lib/db/pictionary` |
 | Watch together | `/play/watch` | `together/WatchScreen`, `YouTubePlayer`, `JoinOverlay`, `hooks/useSyncedPlayer`, `together/Playlist`, `together/ChatDrawer` | RTDB `watch/main`, `roomchat/watch`; Firestore `playlists/watch`; `lib/youtube` (loader, error text), `lib/playerSync` (drift plan) |
 | Listen together | `/play/listen` | `together/ListenScreen` (200 px player under the cover card), `together/Playlist`, `together/ChatDrawer` | RTDB `listen/main`, `listen/queue`, `roomchat/listen`; Firestore `playlists/listen` |
-| Radio | `/play/radio` | `together/RadioScreen` | RTDB `radio/main`, `content/radio.json` |
+| Radio | `/play/radio` | `together/RadioScreen` ("India" and "World" sections, language chips, last-played station per user in localStorage) | RTDB `radio/main`; `content/radio.json` via `lib/radio.ts`; HLS natively where the browser supports it, else lazy `hls.js/light` (CORS-less streams: "This station only plays in the mobile app") |
 | Focus timer | `/play/timer` | `together/TimerScreen` | RTDB `timer/main`; sessions → `pair.focusSessions` |
 | Cook-along | `/play/cook[/id]` | `together/CookScreen` | `recipes/{id}` + RTDB `cook/{id}` |
 
