@@ -200,6 +200,7 @@ Everything runs on free tiers. Limits below were correct when written; check eac
 | **Old photos show 🚫** | They're still on public delivery or lack signed variants. Run `pnpm migrate-media`, then `--yes`. |
 | **Sign-in loops** | The email isn't in `ALLOWED_EMAILS` on Vercel, or `FIREBASE_SERVICE_ACCOUNT` is wrong. `/api/health` tells you which. |
 | **`permission-denied` in the console** | Rules changed but weren't deployed: `pnpm rules:deploy`. |
+| **A radio station stopped playing** | Check More → Diagnostics for a `[csp]` line (blocked host) versus a dead URL, then get the current official URL from the All India Radio player. Step by step: [docs/troubleshooting.md → A radio station stopped playing](docs/troubleshooting.md#a-radio-station-stopped-playing) and [docs/operations.md → Updating radio stations](docs/operations.md#updating-radio-stations). |
 
 More in [`docs/troubleshooting.md`](docs/troubleshooting.md).
 

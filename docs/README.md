@@ -9,7 +9,7 @@ Everything about how Tincan is built and how to change it. `CLAUDE.md` at the re
 | [features.md](features.md) | You need to find the code for a screen or understand what it does |
 | [api.md](api.md) | You're calling or changing an API route |
 | [security.md](security.md) | Rules, the API guard, signed uploads, CSP, tests |
-| [operations.md](operations.md) | Env, scripts, deploy, cron, Cloudinary, resets, health checks |
+| [operations.md](operations.md) | Env, scripts, deploy, cron, Cloudinary, radio stations, resets, health checks |
 | [conventions.md](conventions.md) | Code style and the patterns every file follows (including the lint rules that bite) |
 | [adding-a-feature.md](adding-a-feature.md) | Step-by-step for a new screen, collection, push type, or game |
 | [testing.md](testing.md) | Rules tests and the manual checklists |

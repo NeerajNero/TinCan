@@ -36,3 +36,25 @@
 | `pnpm profile:chat` fails to start a worker | jsdom needs Node 22 | the config uses happy-dom; keep it |
 | Tick does nothing | wrong `x-tick-secret`, or the 15-minute window already passed and `tickLog` has the key | `pnpm tick:dry`; delete the `tickLog` doc to re-run a job |
 | Home countdown shows a trip not the meetup | `pair.nextMeetup` empty → nearest trip is the fallback | set the next meetup in More |
+| Radio station silent, "Tap to start audio" does nothing, or "only plays in the mobile app" | the stream URL died, moved to a new host (CSP block), or lacks CORS on desktop | see [A radio station stopped playing](#a-radio-station-stopped-playing) below |
+
+## A radio station stopped playing
+
+Stream URLs live only in `src/content/radio.json`. The CSP and the service worker take their host lists from it through `src/lib/radio.ts`, so fixing a station never means editing `csp.ts` or `sw.ts`. The full procedure is in [operations.md → Updating radio stations](operations.md#updating-radio-stations).
+
+**What you see on the phone.** On Android the app plays HLS natively, and any failure, whether a dead URL or a CSP block, looks the same: `play()` fails and the screen shows "Tap to start audio on this device", and tapping it does nothing. On a desktop browser without native HLS (hls.js), a stream that answers with an HTTP error (404, 403…) shows "This browser can't play this station — try it on your phone". A request that gets no response at all shows "This station only plays in the mobile app". No response means a stream without CORS headers, or a connect-src block.
+
+**Dead URL or CSP block?**
+
+1. Open More → Diagnostics (owner account). A CSP block leaves a line such as `[csp] media-src blocked https://<host>/…` (native) or `[csp] connect-src blocked https://<host>/…` (hls.js). If one is there, the stream works and our policy refused it, which usually means the stream now redirects to a new host. Find the new host (`curl -s -o /dev/null -w "%{redirect_url}\n" <url>`), add it to that station's `hosts` in `radio.json`, and redeploy.
+2. No `[csp]` line: test the URL itself.
+
+   ```bash
+   curl -sI <url> | grep -iE "^HTTP|content-type"
+   ```
+
+   - 404, 403 or a timeout: the URL is dead. Get the current one from the official player (`https://akashvani.gov.in/radio/live.php?channel=<id>`, see operations.md) and replace `url`.
+   - 200 with `application/vnd.apple.mpegurl`: the URL is fine. Fetch the playlist (`curl -sL <url>`) and one segment from it; a missing segment means the broadcaster is down, so wait.
+3. Plays on the phone but not on a laptop with "only plays in the mobile app": expected for the `d3r9rhourdc02u.cloudfront.net` stations (FM Gold, FM Rainbow, Raagam, AIR Kannada). They send no CORS headers, so only native HLS on Android can play them.
+
+After a fix, run `pnpm vitest run tests/unit/csp.test.ts tests/unit/radio.test.ts`, push to redeploy, and check playback on a phone (both phones follow, no `[csp]` line in Diagnostics).
