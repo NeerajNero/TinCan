@@ -9,7 +9,7 @@
  * `pair/main` snapshot (that listener already runs with metadata changes for
  * the whole session), so this costs no extra listener or reads.
  */
-import type { DocumentSnapshot } from "firebase/firestore";
+import type { DocumentSnapshot } from "@/lib/firebase/fs";
 
 export interface FirestoreHealth {
   /** null until the first snapshot arrived. */

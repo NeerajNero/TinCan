@@ -10,7 +10,8 @@
 
 ## Firebase access
 
-- Client Firestore imports come from `@/lib/firebase/fs` (metered), never from `firebase/firestore` directly. RTDB helpers from `@/lib/rtdb`; the RTDB SDK is imported directly where needed.
+- Client Firestore imports come from `@/lib/firebase/fs` (metered, failures reported) and the RTDB SDK from `@/lib/firebase/rt` (failures reported), never from `firebase/firestore` or `firebase/database` directly: ESLint `no-restricted-imports` enforces it outside `src/lib/firebase`, `tests` and `scripts`. Home's small RTDB helpers stay in `@/lib/rtdb`. Both wrappers log a rejected write or a denied read/listener (`[write] update trivia/abc → PERMISSION_DENIED`) to More → Diagnostics and, in development, toast it; a listener never needs its own cancel callback just to be noticed, though it may pass one.
+- RTDB transactions that two clients can race (a shared "start") run with `applyLocally: false`: an optimistic local result the server then rejects would otherwise leave that phone's view stale until the next write (phase 21).
 - Every Firestore query is bounded: a single doc, or `limit(n)`. Pagination through `usePagedCollection`. Equality filters + one orderBy only (no composite indexes).
 - Timestamps are `serverTimestamp()`; documents also carry `…Ms` numbers derived client-side only for rendering. Day keys use `dateKeyIn` / `roomDateKey` / `ownDateKey` from `lib/dates`.
 - RTDB listeners attach in the screen that needs them and detach on unmount; app-wide listeners live only in `LiveEventsProvider` and `PresenceController`.

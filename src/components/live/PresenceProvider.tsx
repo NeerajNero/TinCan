@@ -1,9 +1,9 @@
 "use client";
 
-import { onValue } from "firebase/database";
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
+import { onValue } from "@/lib/firebase/rt";
 import { presencePath, rtdbRef } from "@/lib/rtdb";
 import type { PresenceNode } from "@/lib/types";
 

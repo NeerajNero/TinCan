@@ -1,8 +1,8 @@
 "use client";
 
-import { get, limitToLast, onChildAdded, query, remove } from "firebase/database";
 import { useEffect, useState } from "react";
 
+import { get, limitToLast, onChildAdded, query, remove } from "@/lib/firebase/rt";
 import { pingsPath, rtdbRef } from "@/lib/rtdb";
 import type { PingKind, PingNode } from "@/lib/types";
 

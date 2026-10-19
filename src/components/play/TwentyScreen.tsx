@@ -67,7 +67,7 @@ export function TwentyScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader help="twenty" emoji="🔍" title="20 Questions" back="/play" screenName="20 Questions" />
+      <SubHeader help="twenty" emoji="🔍" title="20 Questions" back="/play" screenName="20 Questions" invite={{ activity: "twenty", route: "/play/twenty", label: "20 Questions" }} />
 
       {node === undefined && <Card className="py-8 text-center text-muted">Loading…</Card>}
 

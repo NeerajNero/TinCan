@@ -14,15 +14,17 @@ Default deny. `allowed()` requires a signed-in, `email_verified`, allowlisted us
 
 - **Ownership**: `users/{uid}` own-write; `email`/`createdAt` immutable; no unknown top-level fields. `availability`, `moods`, `wordle` own-write.
 - **Messages**: create only as sender with `createdAt == request.time`, text ≤2000, type enum, media URLs must be `https://res.cloudinary.com/<cloud>/` (gif: `https://media*.giphy.com/`). Recipient may only touch `deliveredAt/readAt/status`; sender edits/deletes; either sets only its own `reactions.{uid}` / `deletedFor` entry.
-- **System lines**: `kind` (string ≤32) and `meta` (map ≤8 keys) are accepted only when `type == "system"`; other types may not carry them.
+- **System lines**: `kind` (string ≤32) and `meta` (map ≤8 keys) are accepted only when `type == "system"`; other types may not carry them. `kind == "invite"` additionally requires `meta` to hold exactly `route` (a same-origin path `^/…`, never `//host`, ≤ 100), `activity` (≤ 32), `label` (1–80), `expiresAt` (number) and optionally `roundId` (≤ 64), so a card can only ever send Join inside the app.
 - **Playlists**: `playlists/{watch|listen}` only; keys limited to `items`, `updatedAt` (server time), `updatedBy` (must be the writer); `items.size() <= 50`.
 - **Private bodies**: `capsules/{id}/private/body` readable by author or when `request.time >= unlockAt`; `envelopes/{id}/private/body` readable by author, or by `forUid` once `openedAt` is set.
 - **Gifts list** is readable/writable only by whoever added the item.
 - **pair/main**: `uids` can only grow and never lose a uid.
 - **Admin only**: `push`, `tickLog`, `quota`, `scheduled` delivery fields.
-- **RTDB**: `presence/typing/cursors` own-write with validated shapes (presence page ≤100 chars, cursor coords 0–1); `pings/{uid}/{id}` created by the other user, deleted by owner; `games` validate `type/state/turn/status/open/endReason/players` and allow an unchanged opponent reaction on a transaction rewrite; `whiteboard`/`pictionary` strokes ≤24k chars; `pixel/grid` exactly 1024 chars. `roomchat/{watch|listen}/{id}`: create only when empty with `uid == auth.uid`, delete by either (trim, clear), no edits; text 1–500 chars, `at` ≤ now, no other children; unknown rooms denied.
+- **RTDB**: `presence/typing/cursors` own-write with validated shapes (presence page ≤100 chars, cursor coords 0–1); `pings/{uid}/{id}` created by the other user, deleted by owner; `invites/{uid}/{id}` the same, plus owner-only read and a validated shape (`from == auth.uid`, activity ≤ 32, label 1–80, same-origin `route`, `at ≤ now`, no other children); `trivia/{id}` (live duel) validates `qIndex`/`qStartedAt` numbers, `startedBy` string, and `joined/{uid}` / `answered/{uid}` as numbers that are the caller's own key or unchanged (the start/advance transactions rewrite the node), nothing else; `games` validate `type/state/turn/status/open/endReason/players` and allow an unchanged opponent reaction on a transaction rewrite; `whiteboard`/`pictionary` strokes ≤24k chars; `pixel/grid` exactly 1024 chars. `roomchat/{watch|listen}/{id}`: create only when empty with `uid == auth.uid`, delete by either (trim, clear), no edits; text 1–500 chars, `at` ≤ now, no other children; unknown rooms denied.
 
-Covered by `tests/rules.test.ts` (emulator). Run `pnpm test:rules` after any rules change.
+Covered by `tests/rules.test.ts` (emulator) and, for the live trivia handshake end to end, `tests/trivia-live.test.ts`. Run `pnpm test:rules` after any rules change.
+
+A rule that silently denies a path is now visible: both SDK wrappers (`lib/firebase/fs.ts`, `lib/firebase/rt.ts`) log every rejected write and every denied read or listener to More → Diagnostics, and development shows a toast. Phase 21's live trivia stall was exactly this: the RTDB template had no `trivia` node, so the cursor listener was denied and, with no cancel callback, never fired.
 
 ## API guard (`src/lib/server/guard.ts`)
 

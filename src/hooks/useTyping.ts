@@ -1,10 +1,10 @@
 "use client";
 
-import { remove, serverTimestamp, set } from "firebase/database";
 import { useCallback, useEffect, useRef } from "react";
 
 import { useNow } from "@/hooks/useNow";
 import { useRtdbValue } from "@/hooks/useRtdbValue";
+import { remove, serverTimestamp, set } from "@/lib/firebase/rt";
 import { rtdbRef } from "@/lib/rtdb";
 import { swallow } from "@/lib/swallow";
 const TYPING_TTL_MS = 3000;

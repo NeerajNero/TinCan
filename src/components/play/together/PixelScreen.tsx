@@ -149,6 +149,7 @@ export function PixelScreen() {
         title="Pixel art"
         back="/play"
         screenName="pixel art"
+        invite={{ activity: "pixel", route: "/play/pixel", label: "Pixel art" }}
         action={
           <Button variant="soft" onClick={snapshot} disabled={snapping} className="px-3 py-2 text-sm">
             {snapping ? "Sending…" : "Snapshot"}

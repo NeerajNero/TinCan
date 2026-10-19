@@ -96,7 +96,7 @@ export function RadioScreen() {
 
   return (
     <div className="flex flex-col gap-3">
-      <SubHeader help="radio" emoji="📻" title="Radio" back="/play" screenName="the radio" />
+      <SubHeader help="radio" emoji="📻" title="Radio" back="/play" screenName="the radio" invite={{ activity: "radio", route: "/play/radio", label: "the Radio" }} />
       <audio ref={audio} preload="none" />
       <Card className="flex items-center gap-3">
         <span className="text-3xl" aria-hidden>

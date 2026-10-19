@@ -175,6 +175,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
 `timer/main`: {mode(focus|break), endsAt, startedBy, running}
 `cook/{recipeId}`: {checked{stepIdx:true}, by}
 `twenty/{gameId}`: {holderUid, secret, questionsAsked, status}
+`trivia/{roundId}`: {joined{uid: ms}, qIndex?, qStartedAt?, startedBy?, answered{uid: choice}} — the live duel cursor (see Trivia duel)
+`invites/{uid}/{pushId}`: {from, activity, label, route, at} — a queue like pings; the receiver shows a Join / Not now toast and deletes it
 `roomchat/{room}/{pushId}` (room: watch|listen): {uid, text (1–500), at} — the Watch/Listen side chat, newest 50 kept
 
 ## Chat — WhatsApp-like spec
@@ -195,6 +197,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   `createSystemMessage(kind, text, meta?)` in `src/lib/chat/system.ts` (server: `postSystemMessageAdmin`; shared
   shape `systemMessageData` in `systemKinds.ts`). No deliveredAt/readAt: they never count as unread, never get
   receipts or ticks. `SystemPill` shows text, else a line from kind + meta, else ✨ — never an empty row.
+  Kinds: sleep, wake, relationship, game-result, game-cancel, twenty-result, pet-adopt, pet-fed, pet-level,
+  pet-hungry, garden-sticker, capsule-unlock, hangout, invite. `invite` lines render as `InvitePill` (see Invites).
 - Day separators ("Today", "Yesterday", date), unread divider on open, jump-to-bottom FAB,
   unread count badge on the Chat tab, last-message preview on Home.
 - Images: compress in browser (max 1080 px, ~0.3 MB, JPEG/WebP) → signed upload to preset
@@ -303,6 +307,13 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - **Hangout wheel**: spinning wheel of virtual hangout ideas; result posts to chat with "Let's!"
 - **Trivia duel**: 10 random questions from the bank, 15 s each, can be played live (both
   online, synced via RTDB) or async (each plays when free; results compare when both done).
+  Live handshake: opening `/play/trivia/{id}` as either player auto-joins (`openLiveSession` writes
+  `trivia/{id}/joined/{me}` on its first snapshot); whichever client first sees both joined starts the
+  round in a server-only transaction (`qIndex: 0`, `qStartedAt: now + 3 s` countdown, idempotent). Nothing
+  waits for the host. If no question has appeared 10 s after opening, or the backend refused a read/write,
+  the screen offers "Couldn't connect — play async instead" (`switchToAsync`: `mode: "async"` + the live
+  node removed; the other phone sees the node go and gets the same offer). Lobby "Play live" still needs the
+  friend online.
   Every question carries a one-line factual `explanation` (≤ 140 chars, unit-tested); after an
   answer or timeout the right option and the explanation stay up for `REVEAL_MS` (4 s) in both
   modes before the next question, and the results list repeats it under each answer.
@@ -351,6 +362,22 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - **Focus timer**: shared Pomodoro 25/5; both see the same countdown; chime at phase end.
 - **Cook-along**: pick a recipe (both can add recipes); steps tick off live for both.
 - **Mood history**: month calendar with both users' emoji per day.
+- **Invites** (phase 21): one helper, `startInvite(activity, route, label, meta?)` from
+  `hooks/useStartInvite` (binds me + friend; the lib is `lib/db/invites.ts`, pure parts in `lib/invites.ts`),
+  used by every game and together activity. It (a) posts a chat card via
+  `createSystemMessage("invite", "🎯 Neeraj started a Trivia duel", { route, activity, label, roundId?, expiresAt })`
+  (`expiresAt` = +2 h), rendered by `InvitePill` with a Join button that navigates to `route?join=1` (board
+  games and Pictionary auto-accept on arrival; trivia auto-joins anyway); the button reads "Expired" after
+  `expiresAt` or "Ended" when the referenced round is finished / declined / taken (one lookup per round per
+  session); (b) queues an in-app toast at RTDB `invites/{friendUid}/{pushId}` = `{ from, activity, label,
+  route, at }`, shown with Join / Not now while their app is open, deleted after showing, ignored if older
+  than 2 min on open (`hooks/useIncomingInvites`, mounted by `LiveEventsProvider`, which skips its usual
+  message toast for `invite` lines); (c) sends the existing `invite` push. Starting a board game, a trivia
+  round, a Pictionary round or publishing a quiz calls it automatically; every other activity (decks, 20
+  Questions, daily word, whiteboard, pixel art, watch, listen, radio, focus timer, cook-along) has an Invite
+  button in its header (`SubHeader invite=`), and the friend-here line's old Nudge is the same button.
+  Rate limit: one invite per activity per 2 minutes per person (client cooldown; the button shows "Invited ✓",
+  a second tap toasts "Already invited"). Labels complete the sentence "🎯 {nickname} started …".
 - **How-to sheets**: every game, together activity and slow feature (pet, plant, garden, jar, capsules,
   envelopes, daily question, call-time finder) has an entry in `src/content/howto.ts`, shown by the ? in
   its header (auto-opens once per device) and used for Play tile sub-labels. No tours or tooltips.
@@ -369,10 +396,15 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - `scheduled`: readable/deletable by sender only; delivery is done by the server (admin).
 - `tickLog`, `push`: admin-only (no client access).
 - RTDB: `presence/{uid}`, `typing/{uid}`, `cursors/{uid}`, `lamp/{uid}` writable only by `uid`;
-  `pings/{uid}` writable by the other user; shared nodes writable by both allowlisted users.
+  `pings/{uid}` and `invites/{uid}` children creatable by the other user (`from == auth.uid`, validated
+  shape, `route` a same-origin path) and deletable by the owner, `invites/{uid}` readable by the owner only;
+  shared nodes writable by both allowlisted users. `trivia/{id}`: `qIndex`/`qStartedAt` numbers, `startedBy`
+  string, `joined/{uid}` and `answered/{uid}` numbers that are the caller's own or unchanged (transactions
+  rewrite the node), nothing else.
   `roomchat/{watch|listen}/{id}`: create only as yourself, delete by either, no edits, text 1–500, at ≤ now.
-- `messages`: `kind`/`meta` only on system lines. `playlists/{watch|listen}`: keys items/updatedAt/updatedBy only,
-  ≤ 50 items, updatedBy == caller.
+- `messages`: `kind`/`meta` only on system lines; `kind == "invite"` requires meta keys route (same-origin path),
+  activity (≤ 32), label (1–80), expiresAt (number) and optionally roundId (≤ 64), nothing else.
+  `playlists/{watch|listen}`: keys items/updatedAt/updatedBy only, ≤ 50 items, updatedBy == caller.
 
 ## Security (phase 15a)
 - API routes share one guard (`src/lib/server/guard.ts`): ID token verified with revocation
@@ -435,6 +467,14 @@ of a task must say which docs were updated.
 - All timestamps are `serverTimestamp()`; never trust client clocks for ordering.
 - `src/lib/firebase/client.ts` (browser, singletons) and `src/lib/firebase/admin.ts` (server,
   from `FIREBASE_SERVICE_ACCOUNT` base64 JSON). Never import admin in client code.
+- Client code imports Firestore from `@/lib/firebase/fs` and the RTDB SDK from `@/lib/firebase/rt`, never
+  `firebase/firestore` or `firebase/database` directly (ESLint `no-restricted-imports`, lifted only under
+  `src/lib/firebase`, tests and scripts). Both wrappers report every rejected write (set/update/remove/
+  push/transaction/onDisconnect, setDoc/updateDoc/addDoc/deleteDoc/batch/transaction) and every denied
+  read or listener (get/getDoc/getDocs, onValue/onChildAdded/onSnapshot, even without a caller error
+  callback) to the Diagnostics log as `[write] op path → code` / `[read] …`; in development a
+  permission-denied also shows as a toast (`WriteFailureToasts`). Never attach a listener that can't fail
+  visibly.
 - Thin pages, logic in `src/lib/**` and hooks in `src/hooks/**`. Static decks in `src/content`.
 - Every API route validates input with zod and verifies the Firebase ID token.
 - TypeScript is `strict` + `noUncheckedIndexedAccess`; ESLint errors on `any`, missing hook deps and import
@@ -475,7 +515,7 @@ CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–20 shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–21 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -517,6 +557,9 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 19. ✅ **Indian radio** — six official All India Radio HLS stations, India/World sections, native HLS or lazy hls.js.
 20. ✅ **Meanings** — WordNet definitions for every daily word (static letter files, "What does it mean?" after
     finishing), a factual explanation on every trivia question with a reveal pause in both modes.
+21. ✅ **Live trivia fix + invites** — reported Firebase wrappers (Diagnostics + dev toast), the missing
+    `trivia/{id}` RTDB rule and a host-free live handshake with an async fallback, emulator tests for the
+    stall and every live write, `startInvite` (chat Join card, RTDB toast queue, push) on every activity.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

@@ -18,6 +18,8 @@ export const ROUND_SIZE = 10;
 export const QUESTION_MS = 15_000;
 /** How long the answer + explanation stay on screen before the next question. */
 export const REVEAL_MS = 4_000;
+/** Live mode: "Get ready" countdown between both players joining and question one. */
+export const LIVE_COUNTDOWN_MS = 3_000;
 const POINTS_CORRECT = 10;
 const SPEED_BONUS_MAX = 5;
 

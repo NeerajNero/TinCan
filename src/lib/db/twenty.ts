@@ -1,8 +1,8 @@
 /** 20 Questions at RTDB twenty/main — one round at a time between the two of you. */
-import { onValue, ref, update } from "firebase/database";
 
 import secrets from "@/content/twenty-secrets.json";
 import { getRtdb } from "@/lib/firebase/client";
+import { onValue, ref, update } from "@/lib/firebase/rt";
 
 type TwentyStatus = "setup" | "asking" | "done";
 export type TwentyAnswer = "yes" | "no" | "sortof";

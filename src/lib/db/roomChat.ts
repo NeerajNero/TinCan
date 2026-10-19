@@ -1,7 +1,6 @@
 /** RTDB access for the Watch / Listen room chats (roomchat/{room}). One bounded query per screen. */
-import { limitToLast, onValue, orderByKey, push, query, ref, remove, serverTimestamp, update } from "firebase/database";
-
 import { getRtdb } from "@/lib/firebase/client";
+import { limitToLast, onValue, orderByKey, push, query, ref, remove, serverTimestamp, update } from "@/lib/firebase/rt";
 import { ROOM_CHAT_WINDOW, trimPatch, type ChatRoom, type RoomMessage } from "@/lib/roomChat";
 
 const roomRef = (room: ChatRoom) => ref(getRtdb(), `roomchat/${room}`);

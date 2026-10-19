@@ -5,6 +5,7 @@ import { AnimatePresence, m } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import { InvitePill } from "@/components/chat/InvitePill";
 import { UploadBubble } from "@/components/chat/media/UploadBubble";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { SystemPill } from "@/components/chat/SystemPill";
@@ -201,7 +202,7 @@ export function MessageList(props: MessageListProps) {
                   </div>
                 )}
                 {m.type === "system" ? (
-                  <SystemPill message={m} />
+                  m.kind === "invite" ? <InvitePill message={m} /> : <SystemPill message={m} />
                 ) : (
                   <MessageBubble
                     message={m}

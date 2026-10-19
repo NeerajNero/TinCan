@@ -2,7 +2,7 @@
 
 import { AnimatePresence, m } from "framer-motion";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -33,6 +33,7 @@ const ChessBoard = dynamic(() => import("@/components/play/boards/ChessBoard").t
 export function GameScreen({ gameId }: { gameId: string }) {
   const { uid, me, friend } = usePair();
   const router = useRouter();
+  const autoJoin = useSearchParams().get("join") === "1";
   const [game, setGame] = useState<LiveGame | null | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [burst, setBurst] = useState(0);
@@ -45,6 +46,14 @@ export function GameScreen({ gameId }: { gameId: string }) {
     const unsub = subscribeGame(gameId, (g) => setGame(g));
     return () => unsub();
   }, [gameId]);
+
+  // Arrived through an invite's Join: accept without the extra tap (once).
+  const joinedRef = useRef(false);
+  useEffect(() => {
+    if (!autoJoin || joinedRef.current || !game || game.status !== "invited" || game.createdBy === uid) return;
+    joinedRef.current = true;
+    void acceptGame(game.id);
+  }, [autoJoin, game, uid]);
 
   const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
   const engine = game ? engineFor(game.type) : null;
@@ -110,7 +119,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji={meta.emoji} title={meta.name} back="/play" help={HOWTO_FOR_GAME[game.type]} />
+      <SubHeader emoji={meta.emoji} title={meta.name} back="/play" help={HOWTO_FOR_GAME[game.type]} invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: game.type, route: gameRoute(game.id), label: `a game of ${meta.name}`, roundId: game.id }} />
 
       {/* sticky turn header */}
       <div className="sticky top-0 z-10 -mx-4 bg-bg/90 px-4 py-2 backdrop-blur-md">
@@ -126,7 +135,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
           {game.status === "finished" && (game.winnerId ? (game.winnerId === uid ? "You won! 🎉" : `${nameOf(game.winnerId)} won`) : game.endReason === "abandoned" ? "Abandoned" : game.endReason === "cancelled" ? "Cancelled" : "Draw")}
           {game.status === "declined" && "Declined"}
         </p>
-        <FriendHereBadge screenName={meta.name} />
+        <FriendHereBadge invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: game.type, route: gameRoute(game.id), label: `a game of ${meta.name}`, roundId: game.id }} />
       </div>
 
       {game.status === "invited" && game.createdBy !== uid && (

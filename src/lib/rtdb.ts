@@ -2,9 +2,8 @@
  * Realtime Database paths and the small writes Home makes. Everything here is
  * ephemeral; nothing is read back except through `useRtdbValue`.
  */
-import { onDisconnect, push, ref, serverTimestamp, set, update, type DatabaseReference } from "firebase/database";
-
 import { getRtdb } from "@/lib/firebase/client";
+import { onDisconnect, push, ref, serverTimestamp, set, update, type DatabaseReference } from "@/lib/firebase/rt";
 import type { LampNode, PingKind, PresenceStatus } from "@/lib/types";
 
 const LAMP_DURATION_MS = 10 * 60 * 1000;

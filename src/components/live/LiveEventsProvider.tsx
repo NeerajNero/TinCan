@@ -1,12 +1,12 @@
 "use client";
 
-import { onValue } from "firebase/database";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { useToast } from "@/components/toast/ToastProvider";
 import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
 import { useChatMeta } from "@/hooks/useChatMeta";
+import { useIncomingInvites } from "@/hooks/useIncomingInvites";
 import { useIncomingPings, type IncomingPing } from "@/hooks/useIncomingPings";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
@@ -16,6 +16,7 @@ import { backfillDateKey, dailyRef } from "@/lib/db/daily";
 import { gameRoute, resultForRecipient, subscribeOpenGames, type LiveGame } from "@/lib/db/games";
 import { mediaLabel } from "@/lib/db/messages";
 import { onSnapshot } from "@/lib/firebase/fs";
+import { onValue } from "@/lib/firebase/rt";
 import { lampPath, rtdbRef } from "@/lib/rtdb";
 import { playSound } from "@/lib/sounds";
 import { swallow } from "@/lib/swallow";
@@ -47,6 +48,7 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
   const { lastMessage } = useChatMeta();
   const { toast } = useToast();
   const pathname = usePathname();
+  const router = useRouter();
   const visible = useVisible();
   const now = useNow(60_000);
   const today = roomDateKey(pair, now);
@@ -76,6 +78,10 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     const p = PINGS[incoming.kind];
     toast({ key: "ping", emoji: p.emoji, title: `${friendName} ${p.sentence}`, url: "/", bounce: true, vibrate: false });
   }, [incoming, friendName, toast]);
+
+  /* ── invites (RTDB queue → Join / Not now toast) ───────────────────── */
+  const goJoin = useCallback((route: string) => router.push(route), [router]);
+  useIncomingInvites(uid, goJoin);
 
   /* ── lamp ──────────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -109,6 +115,7 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     if (m.id === lastMessageId.current) return;
     lastMessageId.current = m.id;
     if (m.senderId !== friendUid || m.pending || m.deletedForEveryone) return;
+    if (m.kind === "invite") return; // the invite queue shows its own Join / Not now toast
     if (m.createdAtMs < mountedAt - 5_000) return;
     if (pathRef.current === "/chat" || !visibleRef.current) return;
     const system = m.type === "system";

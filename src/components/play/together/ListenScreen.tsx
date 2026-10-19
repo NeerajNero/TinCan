@@ -57,6 +57,7 @@ export function ListenScreen() {
         title="Listen together"
         back="/play"
         screenName="Listen together"
+        invite={{ activity: "listen", route: "/play/listen", label: "Listen together" }}
         action={
           <Button variant="soft" onClick={syncToFriend} disabled={!node?.videoId} className="px-3 py-2 text-sm">
             Sync

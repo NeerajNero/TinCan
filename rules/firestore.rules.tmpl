@@ -130,7 +130,18 @@ service cloud.firestore {
       function systemExtrasOk() {
         return (incoming().type == 'system' || (!('kind' in incoming()) && !('meta' in incoming())))
           && (!('kind' in incoming()) || (incoming().kind is string && incoming().kind.size() > 0 && incoming().kind.size() <= 32))
-          && (!('meta' in incoming()) || (incoming().meta is map && incoming().meta.size() <= 8));
+          && (!('meta' in incoming()) || (incoming().meta is map && incoming().meta.size() <= 8))
+          && (incoming().get('kind', '') != 'invite' || inviteMetaOk(incoming().get('meta', {})));
+      }
+      // An invite line (phase 21) carries where Join goes and when the card expires.
+      function inviteMetaOk(m) {
+        return m.keys().hasAll(['route', 'activity', 'label', 'expiresAt'])
+          && m.keys().hasOnly(['route', 'activity', 'label', 'expiresAt', 'roundId'])
+          && m.route is string && m.route.matches('^/([A-Za-z0-9_?=&.-][A-Za-z0-9/_?=&.-]{0,98})?$')
+          && m.activity is string && m.activity.size() >= 1 && m.activity.size() <= 32
+          && m.label is string && m.label.size() >= 1 && m.label.size() <= 80
+          && m.expiresAt is number
+          && (!('roundId' in m) || (m.roundId is string && m.roundId.size() <= 64));
       }
       function mediaOk() {
         return !('media' in incoming()) || incoming().media == null

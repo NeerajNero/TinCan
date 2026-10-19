@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/Card";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { HOWTO } from "@/content/howto";
 import { usePair } from "@/hooks/usePair";
+import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
 import { acceptGame, declineGame, gameRoute, inviteGame, isLive, loadRecentResults, recordFor, rematch, uidOf, type GameResultDoc } from "@/lib/db/games";
@@ -29,6 +30,7 @@ export function PlayScreen() {
   const { games } = useLiveEvents();
   const friendPresence = useFriendPresence();
   const router = useRouter();
+  const startInvite = useStartInvite();
   const [busy, setBusy] = useState<GameType | null>(null);
   const today = roomDateKey(pair);
   const [wordMine, setWordMine] = useState<{ done: boolean; solved: boolean } | null>(null);
@@ -61,6 +63,7 @@ export function PlayScreen() {
     setBusy(type);
     try {
       const id = await inviteGame(type, uid, friendUid);
+      void startInvite(type, gameRoute(id), `a game of ${gameInfo(type).name}`, { roundId: id });
       router.push(gameRoute(id));
     } finally {
       setBusy(null);

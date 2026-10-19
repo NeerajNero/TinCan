@@ -9,6 +9,16 @@ const eslintConfig = defineConfig([
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "react-hooks/exhaustive-deps": "error",
+      // Every Firebase read/write goes through the reported wrappers (metering + Diagnostics).
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "firebase/firestore", message: "Import from @/lib/firebase/fs (metered, failures reported)." },
+            { name: "firebase/database", message: "Import from @/lib/firebase/rt (failures reported)." },
+          ],
+        },
+      ],
       "import/order": [
         "error",
         {
@@ -20,6 +30,10 @@ const eslintConfig = defineConfig([
         },
       ],
     },
+  },
+  {
+    files: ["src/lib/firebase/**", "tests/**", "scripts/**"],
+    rules: { "no-restricted-imports": "off" },
   },
   // Override default ignores of eslint-config-next.
   globalIgnores([

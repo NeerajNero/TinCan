@@ -9,6 +9,12 @@ import { Z } from "@/components/ui/Portal";
 import { cn } from "@/lib/cn";
 import type { UserDoc } from "@/lib/types";
 
+interface ToastAction {
+  label: string;
+  onPress: () => void;
+  primary?: boolean;
+}
+
 export interface ToastInput {
   /** Collapses an earlier toast with the same key (e.g. repeated pings). */
   key?: string;
@@ -20,6 +26,8 @@ export interface ToastInput {
   url?: string;
   /** Instead of navigating, run this on tap (e.g. reload for an update). */
   onTap?: () => void;
+  /** Buttons under the text (invites: Join / Not now). Pressing one dismisses the toast. */
+  actions?: ToastAction[];
   /** Lamp colour dot, ping bounce, etc. */
   accent?: string;
   bounce?: boolean;
@@ -103,10 +111,9 @@ function ToastCard({ toast, onDismiss, onTap }: { toast: Toast; onDismiss: () =>
   function onDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.y < -40 || info.velocity.y < -400) onDismiss();
   }
+  const actions = toast.actions ?? [];
   return (
-    <m.button
-      type="button"
-      onClick={onTap}
+    <m.div
       drag="y"
       dragConstraints={{ top: 0, bottom: 0 }}
       dragElastic={{ top: 0.6, bottom: 0 }}
@@ -117,29 +124,48 @@ function ToastCard({ toast, onDismiss, onTap }: { toast: Toast; onDismiss: () =>
       animate={{ y: 0, opacity: 1, scale: 1 }}
       exit={{ y: -40, opacity: 0, scale: 0.96 }}
       transition={{ type: "spring", stiffness: 480, damping: 34 }}
-      className="card pointer-events-auto flex w-full items-center gap-3 rounded-[20px] px-3.5 py-2.5 text-left shadow-lg"
+      className="card pointer-events-auto flex w-full flex-col gap-2 rounded-[20px] px-3.5 py-2.5 shadow-lg"
       role="status"
     >
-      {toast.avatar ? (
-        <Avatar user={toast.avatar} size={36} />
-      ) : (
-        <m.span
-          aria-hidden
-          className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xl"
-          animate={toast.bounce ? { y: [0, -6, 0], rotate: [0, -12, 12, 0] } : { y: 0, rotate: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut", repeat: toast.bounce ? 1 : 0 }}
-        >
-          {toast.emoji ?? "🥫"}
-        </m.span>
-      )}
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5">
-          {toast.accent && <span aria-hidden className="size-2.5 rounded-full" style={{ background: toast.accent, boxShadow: `0 0 8px ${toast.accent}` }} />}
-          <span className={cn("truncate font-heading text-[15px] font-semibold")}>{toast.title}</span>
+      <button type="button" onClick={onTap} className="flex w-full items-center gap-3 text-left">
+        {toast.avatar ? (
+          <Avatar user={toast.avatar} size={36} />
+        ) : (
+          <m.span
+            aria-hidden
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-xl"
+            animate={toast.bounce ? { y: [0, -6, 0], rotate: [0, -12, 12, 0] } : { y: 0, rotate: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut", repeat: toast.bounce ? 1 : 0 }}
+          >
+            {toast.emoji ?? "🥫"}
+          </m.span>
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-1.5">
+            {toast.accent && <span aria-hidden className="size-2.5 rounded-full" style={{ background: toast.accent, boxShadow: `0 0 8px ${toast.accent}` }} />}
+            <span className={cn("truncate font-heading text-[15px] font-semibold")}>{toast.title}</span>
+          </span>
+          {toast.body && <span className="block truncate text-sm text-muted">{toast.body}</span>}
         </span>
-        {toast.body && <span className="block truncate text-sm text-muted">{toast.body}</span>}
-      </span>
-    </m.button>
+      </button>
+      {actions.length > 0 && (
+        <div className="flex justify-end gap-2">
+          {actions.map((a) => (
+            <button
+              key={a.label}
+              type="button"
+              onClick={() => {
+                onDismiss();
+                a.onPress();
+              }}
+              className={cn("tap min-h-11 rounded-full px-4 text-sm font-bold", a.primary ? "bg-accent text-accent-ink" : "bg-surface-2 text-text")}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </m.div>
   );
 }
 

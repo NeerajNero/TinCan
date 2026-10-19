@@ -11,12 +11,10 @@ import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { bumpTally, flipNext, resetDeck, respond, setPick, subscribeDeck, type DeckNode } from "@/lib/db/decks";
 import { cardIndexAt, convoCard, dareCard, DECK_META, nhieCard, truthCard, wyrCard, type DeckKind } from "@/lib/decks";
-import { notify } from "@/lib/notify";
 
 export function DeckScreen({ kind }: { kind: DeckKind }) {
   const { uid, me, friend, friendUid } = usePair();
   const [node, setNode] = useState<DeckNode | null | undefined>(undefined);
-  const [nudged, setNudged] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const meta = DECK_META[kind];
   const friendName = friend?.nickname ?? "your friend";
@@ -43,13 +41,6 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
     if (kind === "nhie") void bumpTally(kind, { points: { [uid]: mine === "have" ? 1 : 0, [friendUid]: theirs === "have" ? 1 : 0 } });
   }, [node, both, kind, mine, theirs, uid, friendUid]);
 
-  function nudge() {
-    if (!friendUid || nudged) return;
-    setNudged(true);
-    void notify("invite", { toUid: friendUid, body: `wants to play ${meta.name} ${meta.emoji}`, data: { url: `/play/deck/${kind}` } });
-    setTimeout(() => setNudged(false), 60_000);
-  }
-
   return (
     <div className="flex flex-col gap-4">
       <SubHeader
@@ -58,11 +49,7 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
         title={meta.name}
         back="/play"
         screenName={meta.name}
-        action={
-          <Button variant="soft" onClick={nudge} disabled={!friendUid || nudged} className="px-3 py-2 text-sm">
-            {nudged ? "Nudged" : "Nudge"}
-          </Button>
-        }
+        invite={{ activity: kind, route: `/play/deck/${kind}`, label: meta.name }}
       />
 
       {node === undefined && <Card className="py-10 text-center text-muted">Shuffling…</Card>}

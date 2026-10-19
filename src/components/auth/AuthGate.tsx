@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { PresenceController } from "@/components/auth/PresenceController";
 import { SetupScreen } from "@/components/auth/SetupScreen";
 import { TakenScreen } from "@/components/auth/TakenScreen";
+import { WriteFailureToasts } from "@/components/dev/WriteFailureToasts";
 import { LiveEventsProvider } from "@/components/live/LiveEventsProvider";
 import { PresenceProvider } from "@/components/live/PresenceProvider";
 import { PushController } from "@/components/push/PushController";
@@ -40,6 +41,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                   <LiveEventsProvider>
                     <PushController />
                     <UpdateWatcher />
+                    {process.env.NODE_ENV === "development" && <WriteFailureToasts />}
                     {children}
                   </LiveEventsProvider>
                 </PresenceProvider>

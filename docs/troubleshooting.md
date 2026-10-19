@@ -2,7 +2,9 @@
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| `permission-denied` in console after a change | rules template changed but not deployed, or the client writes a field the rule doesn't allow | `pnpm rules:deploy`; compare the write with `rules/*.tmpl`; add the field to the allowed keys |
+| `permission-denied` in console after a change | rules template changed but not deployed, or the client writes a field the rule doesn't allow | `pnpm rules:deploy`; compare the write with `rules/*.tmpl`; add the field to the allowed keys. Since phase 21 every rejected write and denied listener is a `[write]` / `[read]` line in More → Diagnostics (and a toast in dev) with the op, path and code |
+| A screen sits on "Connecting…" / "Loading…" forever on both phones | an RTDB listener on a path the rules don't know: the SDK drops a denied subscription silently when no cancel callback is given | check Diagnostics for `[read] onValue <path> → PERMISSION_DENIED`; add the node to `rules/database.rules.json.tmpl` and deploy. The live trivia duel did this until phase 21 (no `trivia` node). Live trivia itself now offers "Play async instead" after 10 s |
+| Invite card's Join does nothing / goes to the wrong place | the stored `meta.route` failed `parseInviteMeta` (the card then renders as a plain pill) or the round is over ("Ended") | routes must be same-origin paths ≤ 100 chars; see `lib/invites.ts` and the rules on `messages` meta |
 | `permission_denied` from RTDB on a game move | transaction rewrote a node including the opponent's field | the `games` rule allows an unchanged opponent `reaction`; any new per-user field needs the same treatment |
 | Sign-in loops to the sign-in page | email not in `ALLOWED_EMAILS` on Vercel, or `/api/gate` 500 because `FIREBASE_SERVICE_ACCOUNT` is wrong | check `/api/health` booleans; re-base64 the service account on one line |
 | `ERR_REQUIRE_ESM` / jose crash on Vercel | firebase-admin's jwks-rsa requiring jose v6 | keep the `pnpm.overrides.jose = 5.10.0` in package.json |

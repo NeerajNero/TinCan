@@ -2,13 +2,13 @@
  * Live games in RTDB (games/{id}), results in Firestore, records on pair/main.
  * State is stored as a JSON string so RTDB's array quirks never bite.
  */
-import { onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, update } from "firebase/database";
 
 
 import { createSystemMessage } from "@/lib/chat/system";
 import { pairRef } from "@/lib/db/refs";
 import { getDb, getRtdb } from "@/lib/firebase/client";
 import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "@/lib/firebase/fs";
+import { onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, update } from "@/lib/firebase/rt";
 import { initialStateFor, loadEngine, other, type GameType, type Player } from "@/lib/games";
 import { gameInfo, resultLine, type ResultGame } from "@/lib/games/catalog";
 import { recordTogetherEvent } from "@/lib/garden";
@@ -102,7 +102,7 @@ export async function inviteGame(type: GameType, me: string, friend: string): Pr
     endReason: null,
   };
   await update(node, { ...g, createdAt: rtdbNow(), lastMoveAt: rtdbNow() });
-  void notify("invite", { toUid: friend, body: `wants to play ${gameInfo(type).name} ${gameInfo(type).emoji}`, data: { url: gameRoute(node.key as string) } });
+  // The invite card, toast and push come from `startInvite` in the caller (PlayScreen).
   return node.key as string;
 }
 

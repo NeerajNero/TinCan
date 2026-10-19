@@ -1,9 +1,8 @@
 /** Pictionary rounds at RTDB pictionary/{id}; strokes live under pictionary/{id}/strokes. */
-import { equalTo, onValue, orderByChild, push, query, ref, runTransaction, serverTimestamp, set, update } from "firebase/database";
 
 import words from "@/content/pictionary-words.json";
 import { getRtdb } from "@/lib/firebase/client";
-import { notify } from "@/lib/notify";
+import { equalTo, onValue, orderByChild, push, query, ref, runTransaction, serverTimestamp, set, update } from "@/lib/firebase/rt";
 
 export const ROUNDS = 3;
 export const ROUND_MS = 60_000;
@@ -99,7 +98,7 @@ export async function invitePictionary(me: string, friend: string): Promise<stri
     roundOver: false,
   };
   await set(node, { ...data, createdAt: serverTimestamp() });
-  void notify("invite", { toUid: friend, body: "wants to play Pictionary 🎨", data: { url: pictRoute(node.key as string) } });
+  // The invite card, toast and push come from `startInvite` in the caller (PictionaryLobby).
   return node.key as string;
 }
 

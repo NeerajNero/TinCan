@@ -1,8 +1,8 @@
 "use client";
 
-import { get, onValue } from "firebase/database";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
+import { get, onValue } from "@/lib/firebase/rt";
 import {
   armPresenceOnDisconnect,
   presenceHeartbeat,

@@ -18,6 +18,7 @@ export const SYSTEM_KINDS = [
   "garden-sticker",
   "capsule-unlock",
   "hangout",
+  "invite",
 ] as const;
 export type SystemKind = (typeof SYSTEM_KINDS)[number];
 
@@ -80,6 +81,8 @@ function systemText(kind: unknown, meta?: SystemMeta | null): string {
       return "⏳ A time capsule unlocked";
     case "hangout":
       return "🎡 Let's hang out!";
+    case "invite":
+      return `🎯 An invite to ${str(m, "label") ?? "play"}`;
     default:
       return FALLBACK;
   }

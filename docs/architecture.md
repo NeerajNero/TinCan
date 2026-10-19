@@ -49,7 +49,7 @@ The document never scrolls. `html`/`body` are clamped in `globals.css`; `AppShel
 ## Realtime split
 
 - **Firestore** holds anything that must survive: messages, journal, memories, lists, results, the pair doc. All listeners are bounded (`limit(n)` or a single doc) — see data-model.md for the full table.
-- **RTDB** holds anything high-frequency or ephemeral: presence, typing, the ping queue, lamps, cursors, live boards, canvases, watch/listen sync, timers, deck state. Listeners are attached only while the screen using them is mounted; the only app-wide RTDB listeners are presence (friend), pings (me), lamp (me), open games and the connection probe.
+- **RTDB** holds anything high-frequency or ephemeral: presence, typing, the ping queue, lamps, cursors, live boards, canvases, watch/listen sync, timers, deck state. Listeners are attached only while the screen using them is mounted; the only app-wide RTDB listeners are presence (friend), pings (me), invites (me), lamp (me), open games and the connection probe. Every SDK call goes through `lib/firebase/fs.ts` / `lib/firebase/rt.ts`, which report rejected writes and denied reads to Diagnostics.
 
 ## Mirrored summaries (how Home stays cheap)
 

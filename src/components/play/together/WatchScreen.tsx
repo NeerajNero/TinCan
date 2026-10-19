@@ -79,6 +79,7 @@ export function WatchScreen() {
         title="Watch together"
         back="/play"
         screenName="Watch together"
+        invite={{ activity: "watch", route: "/play/watch", label: "Watch together" }}
         action={
           <Button variant="soft" onClick={syncToFriend} disabled={!node?.videoId} className="px-3 py-2 text-sm">
             Sync to {friend?.nickname ?? "friend"}

@@ -2,19 +2,15 @@
 
 import { formatDistanceToNowStrict } from "date-fns";
 import { usePathname } from "next/navigation";
-import { useRef, useState } from "react";
 
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { useFriendPresence } from "@/components/live/PresenceProvider";
+import { InviteButton, type InviteSpec } from "@/components/play/InviteButton";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { gameRoute } from "@/lib/db/games";
 import { DECK_META, type DeckKind } from "@/lib/deckMeta";
 import { gameInfo } from "@/lib/games/catalog";
-import { notify } from "@/lib/notify";
-
-const NUDGE_EVERY_MS = 60_000;
-const lastNudge = new Map<string, number>();
 
 const LABELS: Array<[RegExp, string]> = [
   [/^\/$/, "on Home"],
@@ -39,14 +35,15 @@ const LABELS: Array<[RegExp, string]> = [
   [/^\/pet/, "with the pet"],
 ];
 
-/** One line under a game's header: here · elsewhere (with Nudge) · offline. No listeners of its own. */
-export function FriendHereBadge({ screenName }: { screenName: string }) {
+/**
+ * One line under a game's header: here · elsewhere (with a compact Invite,
+ * the same `startInvite` as the header button) · offline. No listeners of its own.
+ */
+export function FriendHereBadge({ invite }: { invite?: InviteSpec }) {
   const { friend, friendUid } = usePair();
   const { games } = useLiveEvents();
   const friendPresence = useFriendPresence();
   const pathname = usePathname();
-  const [nudgedAt, setNudgedAt] = useState(0);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   if (!friend || !friendUid) return null;
 
   const name = friend.nickname;
@@ -62,27 +59,13 @@ export function FriendHereBadge({ screenName }: { screenName: string }) {
     return LABELS.find(([re]) => re.test(p))?.[1] ?? "somewhere in Tincan";
   }
 
-  const canNudge = nudgedAt === 0;
-  function nudge() {
-    if (!friendUid || !canNudge) return;
-    if (Date.now() - (lastNudge.get(pathname) ?? 0) < NUDGE_EVERY_MS) return;
-    lastNudge.set(pathname, Date.now());
-    setNudgedAt(Date.now());
-    void notify("invite", { toUid: friendUid, body: `is on ${screenName} — come join? 👋`, data: { url: pathname } });
-    timer.current = setTimeout(() => setNudgedAt(0), NUDGE_EVERY_MS);
-  }
-
   return (
     <p className={cn("flex items-center gap-2 px-1 text-xs", here ? "font-bold text-[var(--accent)]" : "text-muted")} aria-live="polite">
       <span aria-hidden>{online ? "●" : "○"}</span>
       <span className="min-w-0 truncate">
         {here ? `${name} is here` : online ? `${name} is ${labelFor(page)}` : friendPresence?.lastSeen ? `last seen ${formatDistanceToNowStrict(new Date(friendPresence.lastSeen), { addSuffix: true })}` : `${name} is offline`}
       </span>
-      {online && !here && (
-        <button type="button" onClick={nudge} disabled={!canNudge} className="tap -my-2 rounded-full bg-accent-soft px-2.5 text-[11px] font-bold text-text disabled:opacity-50">
-          {nudgedAt ? "Nudged" : "Nudge"}
-        </button>
-      )}
+      {online && !here && invite && <InviteButton spec={invite} compact />}
     </p>
   );
 }

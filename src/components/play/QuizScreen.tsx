@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { usePair } from "@/hooks/usePair";
+import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { createQuiz, deleteQuiz, MAX_QUIZ_QUESTIONS, MIN_QUESTIONS, quizzesCol, recentQuizzes, submitQuiz, updateQuiz, type QuizDoc, type QuizQuestion } from "@/lib/db/quizzes";
 import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
@@ -51,6 +52,7 @@ export function QuizList() {
         title="Know-me quiz"
         back="/play"
         screenName="Know-me quiz"
+        invite={{ activity: "quiz", route: "/play/quiz", label: "the Know-me quizzes" }}
         action={
           <Button onClick={() => router.push("/play/quiz/new")} className="px-4 py-2 text-sm">
             Write one
@@ -146,6 +148,7 @@ function AuthorView({ quiz, uid, friendUid, nameOf }: { quiz: Quiz; uid: string;
 
 function QuizEditor({ uid, friendUid, quiz, onDone }: { uid: string; friendUid: string | null; quiz: Quiz | null; onDone?: () => void }) {
   const router = useRouter();
+  const startInvite = useStartInvite();
   const [title, setTitle] = useState(quiz?.title ?? "");
   const [questions, setQuestions] = useState<QuizQuestion[]>(quiz?.questions.length ? quiz.questions : Array.from({ length: MIN_QUESTIONS }, blankQ));
   const [busy, setBusy] = useState(false);
@@ -162,7 +165,7 @@ function QuizEditor({ uid, friendUid, quiz, onDone }: { uid: string; friendUid: 
       let id = quiz?.id;
       if (id) await updateQuiz(id, title, questions, publish);
       else id = await createQuiz(uid, title, questions, publish);
-      if (publish && friendUid) void notify("invite", { toUid: friendUid, body: "made a know-me quiz for you 🪞", data: { url: `/play/quiz/${id}` } });
+      if (publish && friendUid && id) void startInvite("quiz", `/play/quiz/${id}`, "a Know-me quiz", { roundId: id });
       if (onDone) onDone();
       else router.replace(`/play/quiz/${id}`);
     } finally {

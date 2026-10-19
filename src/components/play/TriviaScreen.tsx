@@ -7,18 +7,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
+import type { InviteSpec } from "@/components/play/InviteButton";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
+import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
-import { advanceLive, answerLive, createRound, recentRounds, startLive, submitAnswers, subscribeLive, triviaRef, type LiveCursor, type TriviaRoundDoc } from "@/lib/db/trivia";
+import { advanceLive, answerLive, createRound, openLiveSession, recentRounds, submitAnswers, switchToAsync, triviaRef, type LiveStatus, type TriviaRoundDoc } from "@/lib/db/trivia";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
+import { errorMessage } from "@/lib/swallow";
 import { pointsFor, QUESTION_MS, REVEAL_MS, ROUND_SIZE, shuffledOptions, totalScore, TRIVIA_BANK, type TriviaAnswer } from "@/lib/trivia";
 
 const route = (id: string) => `/play/trivia/${id}`;
+/** Live mode that hasn't produced a question by then offers async instead. */
+const LIVE_GIVE_UP_MS = 10_000;
+const inviteFor = (id: string, mode: "live" | "async"): InviteSpec => ({ activity: "trivia", route: route(id), label: mode === "live" ? "a live Trivia duel" : "a Trivia round", roundId: id });
 
 function bankQuestion(id: number | undefined) {
   const q = id === undefined ? undefined : TRIVIA_BANK[id];
@@ -31,6 +37,7 @@ function bankQuestion(id: number | undefined) {
 export function TriviaLobby() {
   const { uid, me, friend, friendUid } = usePair();
   const router = useRouter();
+  const startInvite = useStartInvite();
   const presence = useFriendPresence();
   const [rounds, setRounds] = useState<Array<TriviaRoundDoc & { id: string }> | null>(null);
   const [busy, setBusy] = useState(false);
@@ -46,7 +53,8 @@ export function TriviaLobby() {
     setBusy(true);
     try {
       const id = await createRound(uid, [uid, friendUid], mode);
-      void notify("invite", { toUid: friendUid, body: mode === "live" ? "Trivia duel, live! Join now ⚡" : "started a trivia round — play when you're free 🧠", data: { url: route(id) } });
+      const inv = inviteFor(id, mode);
+      void startInvite(inv.activity, inv.route, inv.label, { roundId: id });
       router.push(route(id));
     } finally {
       setBusy(false);
@@ -113,7 +121,7 @@ export function TriviaRound({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader help="trivia" emoji={round.mode === "live" ? "⚡" : "🧠"} title={round.mode === "live" ? "Live duel" : "Trivia round"} back="/play/trivia" screenName="Trivia duel" />
+      <SubHeader help="trivia" emoji={round.mode === "live" ? "⚡" : "🧠"} title={round.mode === "live" ? "Live duel" : "Trivia round"} back="/play/trivia" screenName="Trivia duel" invite={mineDone && theirsDone ? undefined : inviteFor(id, round.mode)} />
       {mineDone && theirsDone && <Results round={round} uid={uid} friendUid={friendUid} nameOf={nameOf} />}
       {mineDone && !theirsDone && (
         <Card className="flex flex-col items-center gap-2 py-8 text-center">
@@ -264,21 +272,28 @@ function AsyncPlay({ round, uid, friendUid, theirsDone }: { round: TriviaRoundDo
 }
 
 function LivePlay({ round, uid, friendUid, theirsDone }: { round: TriviaRoundDoc & { id: string }; uid: string; friendUid: string | null; theirsDone: boolean }) {
-  const [cursor, setCursor] = useState<LiveCursor | null | undefined>(undefined);
+  const { friend } = usePair();
+  const [status, setStatus] = useState<LiveStatus>({ phase: "connecting" });
+  const [openedAt] = useState(() => Date.now());
+  const [switching, setSwitching] = useState(false);
+  const [switchError, setSwitchError] = useState<string | null>(null);
   const answers = useRef<TriviaAnswer[]>([]);
   const finish = useFinisher(round, uid, friendUid, theirsDone);
   const now = useNow(250);
   const submitted = useRef(false);
+  const friendName = friend?.nickname ?? "them";
 
-  useEffect(() => {
-    const unsub = subscribeLive(round.id, setCursor);
-    return () => unsub();
-  }, [round.id]);
+  // Auto-join: opening the round as either player enters the live session (phase 21).
+  useEffect(() => openLiveSession(round.id, uid, round.players, setStatus), [round.id, uid, round.players]);
 
-  const qIndex = cursor?.qIndex ?? -1;
-  const deadline = (cursor?.qStartedAt ?? 0) + QUESTION_MS;
+  const cursor = status.phase === "playing" ? status.cursor : null;
+  const qIndex = status.phase === "playing" ? status.qIndex : -1;
+  const qStartedAt = cursor?.qStartedAt ?? 0;
+  const deadline = qStartedAt + QUESTION_MS;
   const bothAnswered = Boolean(cursor?.answered && friendUid && cursor.answered[uid] !== undefined && cursor.answered[friendUid] !== undefined);
   const timedOut = cursor ? now.getTime() > deadline + 800 : false;
+  const countdownLeft = Math.max(0, qStartedAt - now.getTime());
+  const stale = status.phase !== "playing" && now.getTime() - openedAt >= LIVE_GIVE_UP_MS;
 
   // Advance in lockstep after the reveal has been on screen: whoever notices first wins the transaction.
   useEffect(() => {
@@ -307,25 +322,65 @@ function LivePlay({ round, uid, friendUid, theirsDone }: { round: TriviaRoundDoc
     [qIndex, round, uid],
   );
 
-  if (cursor === undefined) return <Card className="py-8 text-center text-muted">Connecting…</Card>;
-  if (cursor === null || qIndex < 0) {
+  async function playAsync() {
+    setSwitching(true);
+    setSwitchError(null);
+    try {
+      await switchToAsync(round.id);
+    } catch (err) {
+      setSwitchError(errorMessage(err, "Couldn't switch — try again"));
+      setSwitching(false);
+    }
+  }
+  const asyncButton = (
+    <Button variant="soft" onClick={() => void playAsync()} disabled={switching} className="px-5">
+      {switching ? "Switching…" : "Play async instead"}
+    </Button>
+  );
+
+  if (status.phase === "error" || (status.phase === "connecting" && stale)) {
+    return (
+      <Card className="flex flex-col items-center gap-3 py-8 text-center">
+        <span className="text-5xl" aria-hidden>
+          📡
+        </span>
+        <p className="font-semibold">Couldn&apos;t connect</p>
+        <p className="text-sm text-muted">{status.phase === "error" ? `Live mode was refused (${status.code}). ` : "Live mode didn't start. "}You can still play this round async — each at your own pace.</p>
+        {asyncButton}
+        {switchError && <p className="text-xs text-red-500">{switchError}</p>}
+      </Card>
+    );
+  }
+  if (status.phase === "connecting") return <Card className="py-8 text-center text-muted">Connecting…</Card>;
+  if (status.phase === "waiting") {
+    const theyJoined = Boolean(friendUid && typeof status.cursor.joined?.[friendUid] === "number");
     return (
       <Card className="flex flex-col items-center gap-3 py-8 text-center">
         <span className="text-5xl" aria-hidden>
           ⚡
         </span>
-        <p className="text-sm text-muted">Both of you see the same question at the same time. Start when you&apos;re both here.</p>
-        <Button onClick={() => void startLive(round.id)} className="px-6">
-          Start for both
-        </Button>
+        <p className="font-semibold">You&apos;re in</p>
+        <p className="text-sm text-muted">{theyJoined ? "Both here — starting…" : `Waiting for ${friendName} to join. They got a push; it starts the moment they open this round.`}</p>
+        {stale && !theyJoined && asyncButton}
+        {switchError && <p className="text-xs text-red-500">{switchError}</p>}
       </Card>
     );
   }
   if (qIndex >= ROUND_SIZE) return <Card className="py-8 text-center text-muted">Tallying…</Card>;
+  if (countdownLeft > 0) {
+    return (
+      <Card className="flex flex-col items-center gap-2 py-10 text-center">
+        <p className="text-sm font-bold uppercase tracking-wide text-muted">Both here — get ready</p>
+        <m.p key={Math.ceil(countdownLeft / 1000)} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="font-heading text-6xl font-semibold tabular-nums">
+          {Math.ceil(countdownLeft / 1000)}
+        </m.p>
+      </Card>
+    );
+  }
   return (
     <>
       <Question key={qIndex} round={round} index={qIndex} deadline={deadline} onAnswer={onAnswer} />
-      {cursor.answered?.[uid] !== undefined && !bothAnswered && <p className="text-center text-xs text-muted">Waiting for them…</p>}
+      {cursor?.answered?.[uid] !== undefined && !bothAnswered && <p className="text-center text-xs text-muted">Waiting for {friendName}…</p>}
     </>
   );
 }

@@ -27,6 +27,21 @@
         }
       }
     },
+    "invites": {
+      "$uid": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid",
+        "$pushId": {
+          ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && ((!data.exists() && newData.exists() && $uid !== auth.uid) || (data.exists() && !newData.exists() && $uid === auth.uid))",
+          ".validate": "newData.hasChildren(['from', 'activity', 'label', 'route', 'at']) && newData.child('from').val() === auth.uid && newData.child('activity').isString() && newData.child('activity').val().length >= 1 && newData.child('activity').val().length <= 32 && newData.child('label').isString() && newData.child('label').val().length >= 1 && newData.child('label').val().length <= 80 && newData.child('route').isString() && newData.child('route').val().matches(/^\\/([a-zA-Z0-9_?=&.-][a-zA-Z0-9\\/_?=&.-]{0,98})?$/) && newData.child('at').isNumber() && newData.child('at').val() <= now",
+          "from": { ".validate": true },
+          "activity": { ".validate": true },
+          "label": { ".validate": true },
+          "route": { ".validate": true },
+          "at": { ".validate": true },
+          "$other": { ".validate": false }
+        }
+      }
+    },
     "lamp": {
       "$uid": {
         ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
@@ -138,6 +153,22 @@
     "twenty": {
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
       ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
+    },
+    "trivia": {
+      "$roundId": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        "qIndex": { ".validate": "newData.isNumber()" },
+        "qStartedAt": { ".validate": "newData.isNumber()" },
+        "startedBy": { ".validate": "newData.isString()" },
+        "joined": {
+          "$uid": { ".validate": "newData.isNumber() && ($uid === auth.uid || (data.exists() && newData.val() === data.val()))" }
+        },
+        "answered": {
+          "$uid": { ".validate": "newData.isNumber() && ($uid === auth.uid || (data.exists() && newData.val() === data.val()))" }
+        },
+        "$other": { ".validate": false }
+      }
     }
   }
 }

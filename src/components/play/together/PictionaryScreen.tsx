@@ -1,7 +1,7 @@
 "use client";
 
 import { Eraser, Pen } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/Input";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { useRtdbValue } from "@/hooks/useRtdbValue";
+import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
 import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRound, invitePictionary, nextRound, parseGuesses, parseOptions, pictRoute, ROUND_MS, ROUNDS, submitGuess, subscribeOpenPictionary, subscribePictionary, type LivePictionary } from "@/lib/db/pictionary";
@@ -30,6 +31,7 @@ function winnerIdOf(g: LivePictionary): string | null {
 export function PictionaryLobby() {
   const { uid, me, friend, friendUid } = usePair();
   const router = useRouter();
+  const startInvite = useStartInvite();
   const [open, setOpen] = useState<LivePictionary[]>([]);
   const [busy, setBusy] = useState(false);
   const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
@@ -41,6 +43,7 @@ export function PictionaryLobby() {
     setBusy(true);
     try {
       const id = await invitePictionary(uid, friendUid);
+      void startInvite("pictionary", pictRoute(id), "Pictionary", { roundId: id });
       router.push(pictRoute(id));
     } finally {
       setBusy(false);
@@ -67,6 +70,7 @@ export function PictionaryLobby() {
 export function PictionaryGame({ id }: { id: string }) {
   const { uid, me, friend } = usePair();
   const router = useRouter();
+  const autoJoin = useSearchParams().get("join") === "1";
   const [game, setGame] = useState<LivePictionary | null | undefined>(undefined);
   const { value: offset } = useRtdbValue<number>(".info/serverTimeOffset");
   const now = useNow(250);
@@ -80,6 +84,14 @@ export function PictionaryGame({ id }: { id: string }) {
   const nameOf = (who: string) => (who === uid ? me.nickname : (friend?.nickname ?? "Friend"));
 
   useEffect(() => subscribePictionary(id, setGame), [id]);
+
+  // Arrived through an invite's Join: accept without the extra tap (once).
+  const joinedRef = useRef(false);
+  useEffect(() => {
+    if (!autoJoin || joinedRef.current || !game || game.status !== "invited" || game.createdBy === uid) return;
+    joinedRef.current = true;
+    void acceptPictionary(game.id);
+  }, [autoJoin, game, uid]);
 
   const drawer = game?.drawerUid === uid;
   const serverNow = now.getTime() + (offset ?? 0);
@@ -124,7 +136,7 @@ export function PictionaryGame({ id }: { id: string }) {
 
   return (
     <div className="-mb-6 flex min-h-0 flex-1 flex-col gap-3">
-      <SubHeader help="pictionary" emoji="🎨" title={`Pictionary · round ${Math.min(game.round, ROUNDS)}/${ROUNDS}`} back="/play/pictionary" screenName="Pictionary" />
+      <SubHeader help="pictionary" emoji="🎨" title={`Pictionary · round ${Math.min(game.round, ROUNDS)}/${ROUNDS}`} back="/play/pictionary" screenName="Pictionary" invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: "pictionary", route: pictRoute(game.id), label: "Pictionary", roundId: game.id }} />
 
       <div className="card flex items-center gap-3 rounded-[20px] px-3 py-2">
         <span className="min-w-0 flex-1 text-sm">

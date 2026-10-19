@@ -246,3 +246,89 @@ describe("rtdb roomchat", () => {
     await assertFails(set(ref(asA().database(), "roomchat/watch"), { x: msg(A) }));
   });
 });
+
+describe("rtdb trivia live node", () => {
+  const node = (db: ReturnType<typeof asA>["database"] extends () => infer R ? R : never, id = "r1") => ref(db, `trivia/${id}`);
+  it("each player joins under their own uid only", async () => {
+    await assertSucceeds(update(node(asA().database()), { [`joined/${A}`]: Date.now() }));
+    await assertSucceeds(update(node(asB().database()), { [`joined/${B}`]: Date.now() }));
+    await assertFails(update(node(asA().database()), { [`joined/${B}`]: Date.now() }));
+    await assertFails(update(node(asA().database()), { [`joined/${A}`]: "soon" }));
+    await assertFails(get(node(asStranger().database())));
+  });
+  it("starting rewrites the node with the other player's join left as it was", async () => {
+    const dbA = asA().database();
+    await assertSucceeds(update(node(dbA), { [`joined/${A}`]: 1000 }));
+    await assertSucceeds(update(node(asB().database()), { [`joined/${B}`]: 2000 }));
+    // The transaction's shape: everything plus the new cursor fields.
+    await assertSucceeds(set(node(dbA), { joined: { [A]: 1000, [B]: 2000 }, qIndex: 0, qStartedAt: Date.now() + 3000, startedBy: A }));
+    await assertFails(set(node(dbA), { joined: { [A]: 1000, [B]: 2001 }, qIndex: 0, qStartedAt: Date.now(), startedBy: A }));
+    await assertFails(update(node(dbA), { qIndex: "zero" }));
+    await assertFails(update(node(dbA), { extra: true }));
+  });
+  it("answers are own-key only; advancing clears them and keeps the rest", async () => {
+    const dbA = asA().database();
+    const dbB = asB().database();
+    await env$.withSecurityRulesDisabled((ctx) => set(ref(ctx.database(), "trivia/r1"), { joined: { [A]: 1, [B]: 2 }, qIndex: 0, qStartedAt: 5, startedBy: A }));
+    await assertSucceeds(update(node(dbA), { [`answered/${A}`]: 2 }));
+    await assertSucceeds(update(node(dbB), { [`answered/${B}`]: -1 }));
+    await assertFails(update(node(dbA), { [`answered/${B}`]: 3 }));
+    await assertFails(update(node(dbA), { [`answered/${A}`]: "b" }));
+    // advanceLive from B: whole-node rewrite with answered gone and A's join untouched.
+    await assertSucceeds(set(node(dbB), { joined: { [A]: 1, [B]: 2 }, qIndex: 1, qStartedAt: 6, startedBy: A }));
+    // Either player may drop the live node (switch to async).
+    await assertSucceeds(remove(node(dbB)));
+  });
+});
+
+describe("rtdb invites", () => {
+  const invite = (from: string, extra: Record<string, unknown> = {}) => ({ from, activity: "trivia", label: "a Trivia duel", route: "/play/trivia/abc?join=1", at: Date.now() - 500, ...extra });
+  it("the other user creates, the owner deletes, nobody else reads", async () => {
+    const dbA = asA().database();
+    const dbB = asB().database();
+    const pushed = push(ref(dbB, `invites/${A}`));
+    await assertSucceeds(set(pushed, invite(B)));
+    await assertFails(set(push(ref(dbA, `invites/${A}`)), invite(A)));
+    await assertFails(set(push(ref(dbB, `invites/${A}`)), invite(A)));
+    await assertFails(remove(child(ref(dbB, `invites/${A}`), pushed.key as string)));
+    await assertSucceeds(get(ref(dbA, `invites/${A}`)));
+    await assertFails(get(ref(dbB, `invites/${A}`)));
+    await assertSucceeds(remove(child(ref(dbA, `invites/${A}`), pushed.key as string)));
+  });
+  it("validates the shape: activity ≤ 32, label 1–80, a same-origin route, at ≤ now, nothing else", async () => {
+    const q = ref(asB().database(), `invites/${A}`);
+    await assertFails(set(push(q), invite(B, { label: "" })));
+    await assertFails(set(push(q), invite(B, { label: "x".repeat(81) })));
+    await assertFails(set(push(q), invite(B, { activity: "x".repeat(33) })));
+    await assertFails(set(push(q), invite(B, { route: "https://evil.example/" })));
+    await assertFails(set(push(q), invite(B, { route: "//evil.example/" })));
+    await assertFails(set(push(q), invite(B, { route: "/play/" + "x".repeat(100) })));
+    await assertFails(set(push(q), invite(B, { at: Date.now() + 60_000 })));
+    await assertFails(set(push(q), invite(B, { extra: 1 })));
+    const { at: _at, ...noAt } = invite(B);
+    void _at;
+    await assertFails(set(push(q), noAt));
+    await assertSucceeds(set(push(q), invite(B, { route: "/play/watch" })));
+  });
+});
+
+describe("invite system lines", () => {
+  const sys = (meta: Record<string, unknown> | undefined, kind = "invite") => ({ senderId: A, type: "system", kind, text: "🎯 Sam started a Trivia duel", status: "sent", reactions: {}, deletedFor: [], deletedForEveryone: false, createdAt: serverTimestamp(), ...(meta ? { meta } : {}) });
+  const meta = { route: "/play/trivia/abc", activity: "trivia", label: "a Trivia duel", expiresAt: Date.now() + 7_200_000 };
+  it("needs route, activity, label and expiresAt; roundId is optional; nothing else", async () => {
+    const db = asA().firestore();
+    await assertSucceeds(setDoc(doc(db, "messages/v1"), sys(meta)));
+    await assertSucceeds(setDoc(doc(db, "messages/v2"), sys({ ...meta, roundId: "abc" })));
+    await assertFails(setDoc(doc(db, "messages/v3"), sys(undefined)));
+    const { expiresAt: _e, ...noExpiry } = meta;
+    void _e;
+    await assertFails(setDoc(doc(db, "messages/v4"), sys(noExpiry)));
+    await assertFails(setDoc(doc(db, "messages/v5"), sys({ ...meta, extra: 1 })));
+    await assertFails(setDoc(doc(db, "messages/v6"), sys({ ...meta, route: "https://evil.example/" })));
+    await assertFails(setDoc(doc(db, "messages/v6b"), sys({ ...meta, route: "//evil.example/" })));
+    await assertFails(setDoc(doc(db, "messages/v7"), sys({ ...meta, label: "" })));
+    await assertFails(setDoc(doc(db, "messages/v8"), sys({ ...meta, expiresAt: "later" })));
+    // Other kinds keep the loose shape.
+    await assertSucceeds(setDoc(doc(db, "messages/v9"), sys({ who: "Sam" }, "pet-fed")));
+  });
+});

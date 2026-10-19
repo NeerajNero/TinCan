@@ -10,12 +10,12 @@ import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { usePair } from "@/hooks/usePair";
+import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { addRecipe, deleteRecipe, editRecipe, recipeRef, recipesQuery, type RecipeDoc } from "@/lib/db/recipes";
 import { resetCook, setCookStep, subscribeCook } from "@/lib/db/together";
 import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
-import { notify } from "@/lib/notify";
 
 interface Recipe extends RecipeDoc {
   id: string;
@@ -133,7 +133,8 @@ export function CookDetail({ id }: { id: string }) {
   const [recipe, setRecipe] = useState<Recipe | null | undefined>(undefined);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [by, setBy] = useState<string | null>(null);
-  const [nudged, setNudged] = useState(false);
+  const startInvite = useStartInvite();
+  const [invited, setInvited] = useState(false);
   const completed = useRef(false);
 
   useEffect(() => {
@@ -161,18 +162,19 @@ export function CookDetail({ id }: { id: string }) {
   if (recipe === undefined) return <Card className="py-8 text-center text-muted">Loading…</Card>;
   if (recipe === null) return <Card className="py-8 text-center text-muted">This recipe is gone.</Card>;
 
-  function nudge() {
-    if (!friendUid || nudged) return;
-    setNudged(true);
-    void notify("invite", { toUid: friendUid, body: `is cooking ${recipe!.title} — join in? 🍳`, data: { url: `/play/cook/${id}` } });
+  const invite = { activity: "cook" as const, route: `/play/cook/${id}`, label: `cooking ${recipe.title}`.slice(0, 80) };
+  async function startTogether() {
+    if (!friendUid || invited) return;
+    const res = await startInvite(invite.activity, invite.route, invite.label);
+    if (res.ok) setInvited(true);
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader help="cook" emoji="🍳" title={recipe.title} back="/play/cook" screenName={`cooking ${recipe.title}`} />
+      <SubHeader help="cook" emoji="🍳" title={recipe.title} back="/play/cook" screenName={`cooking ${recipe.title}`} invite={invite} />
       <div className="flex gap-2">
-        <Button onClick={nudge} disabled={!friendUid || nudged} className="flex-1">
-          {nudged ? `Nudged ${friend?.nickname ?? ""}` : "Start cooking together"}
+        <Button onClick={() => void startTogether()} disabled={!friendUid || invited} className="flex-1">
+          {invited ? `Invited ${friend?.nickname ?? ""} ✓` : "Start cooking together"}
         </Button>
         <Button variant="ghost" onClick={() => void resetCook(id)}>
           Reset

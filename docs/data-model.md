@@ -8,7 +8,7 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 | --- | --- | --- | --- | --- |
 | `users/{uid}` | uid | owner only | 2 single docs | name, nickname, email (immutable), photoURL, avatar{url,publicId}, bio, tz, city, lat, lng, fcmTokens[], notif{enabled,…}, wordleSolved, chatBg{id, photoUrl?, photoPublicId?} (id ≤ 24 chars; photoUrl must be our Cloudinary cloud), createdAt (immutable). No other top-level fields allowed. |
 | `pair/main` | fixed | either | 1 doc | uids[≤2] (can only grow, never lose a uid), roomTz, friendsSince, nextMeetup, relationship, streak, plant, pet, garden.stickers, records, focusSessions, milestonesSummary, tripsSummary, counters |
-| `messages/{id}` | auto | sender creates; recipient marks delivered/read; sender edits/deletes; either reacts (own key) / hides for self | latest 50 + ≤3 pages by scroll, then a button; unread ≤99; latest 1 | text ≤2000, type in text/image/voice/gif/sticker/system, createdAt == server time, media URL must be our Cloudinary cloud (gif: media*.giphy.com); `media.variants` = signed delivery URLs, each validated as ours; system lines (`type: "system"`) also carry `kind` (string ≤32) and optional `meta` (flat map ≤8 keys), allowed on system lines only, written by `lib/chat/system.createSystemMessage` (server: `postSystemMessageAdmin`) without `deliveredAt`/`readAt` |
+| `messages/{id}` | auto | sender creates; recipient marks delivered/read; sender edits/deletes; either reacts (own key) / hides for self | latest 50 + ≤3 pages by scroll, then a button; unread ≤99; latest 1 | text ≤2000, type in text/image/voice/gif/sticker/system, createdAt == server time, media URL must be our Cloudinary cloud (gif: media*.giphy.com); `media.variants` = signed delivery URLs, each validated as ours; system lines (`type: "system"`) also carry `kind` (string ≤32) and optional `meta` (flat map ≤8 keys), allowed on system lines only, written by `lib/chat/system.createSystemMessage` (server: `postSystemMessageAdmin`) without `deliveredAt`/`readAt`; `kind == "invite"` requires `meta` = { route (same-origin path ≤ 100), activity (≤ 32), label (1–80), expiresAt (number), roundId? (≤ 64) } and nothing else |
 | `playlists/{room}` | `watch` or `listen` | either; `updatedBy` must be the writer | 1 doc on that screen | `{ items[≤50]{videoId, title ≤200, addedBy, addedAt (client ms)}, updatedAt, updatedBy }`; only those three keys; every edit is a transaction over `lib/playlist.ts`; thumbnails derived (`i.ytimg.com/vi/{id}/mqdefault.jpg`), never stored |
 | `checkins/{dateKey}` | room day | each uid sets only its own key | 1 doc | `{uid: true}` |
 | `moods/{dateKey}_{uid}` | own day + uid | owner | 2 docs today; ≤70 per month | emoji, note ≤80, dateKey, uid (mirror fields must match id) |
@@ -44,6 +44,7 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 | `presence/{uid}` | owner | online bool, lastSeen number, status awake/sleeping, page ≤100 chars | PresenceController; read by LiveEvents (friend) |
 | `typing/{uid}` | owner | number | chat header |
 | `pings/{uid}/{pushId}` | **other** user creates; **owner** deletes | from == auth.uid, kind string, at | ping queue (`useIncomingPings`) |
+| `invites/{uid}/{pushId}` | **other** user creates; **owner** deletes; **owner** reads | from == auth.uid, activity 1–32, label 1–80, route a same-origin path (`/…`, never `//host`, ≤ 100), at number ≤ now; no other children | invite toast queue (`useIncomingInvites`): Join / Not now, deleted once shown, dropped if > 2 min old on open |
 | `lamp/{uid}` | either | on, color, until | lamps |
 | `cursors/{uid}` | owner | x,y numbers in 0–1 | whiteboard |
 | `whiteboard/strokes/{id}`, `whiteboard/live/{uid}` | both / owner | points string ≤24k, hex colour, width number | SharedCanvas |
@@ -52,7 +53,7 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 | `cards/{deck}` | both | — | deck games |
 | `pictionary/{id}` (+ strokes, live) | both | stroke/live limits as whiteboard | pictionary |
 | `twenty/main` | both | — | 20 Questions (one round at a time) |
-| `trivia/{id}` | both | — | live trivia cursor |
+| `trivia/{id}` | both | qIndex, qStartedAt numbers; startedBy string; `joined/{uid}` and `answered/{uid}` numbers, own key or unchanged (transactions rewrite the node); nothing else | live trivia session: `joined/{uid}` on open, start transaction once both joined, `answered` per question, cleared on advance; removed by `switchToAsync` |
 | `watch/main`, `listen/main`, `listen/queue` | both | — | watch/listen together |
 | `roomchat/{room}/{pushId}` (`room` = `watch` / `listen`) | owner creates (`uid == auth.uid`), either deletes, no edits; either may remove the whole room | uid, text 1–500 chars, at number ≤ now; no other children | Watch / Listen side chat (`hooks/useRoomChat`): one `orderByKey().limitToLast(60)` query while the screen is open, newest 50 shown; the sender trims anything beyond 50 after each send |
 | `radio/main`, `timer/main`, `cook/{recipeId}` | both | — | radio, focus timer, cook-along |

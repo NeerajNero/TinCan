@@ -2,9 +2,8 @@
  * Shared surfaces in RTDB: whiteboard/pictionary strokes + live previews,
  * cursors, the 32×32 pixel grid, radio, and the focus timer.
  */
-import { limitToLast, onValue, orderByKey, push, query, ref, remove, runTransaction, serverTimestamp, set, update } from "firebase/database";
-
 import { getRtdb } from "@/lib/firebase/client";
+import { limitToLast, onValue, orderByKey, push, query, ref, remove, runTransaction, serverTimestamp, set, update } from "@/lib/firebase/rt";
 import { swallow } from "@/lib/swallow";
 export interface Stroke {
   uid: string;

@@ -1,8 +1,8 @@
 /** Shared deck state at RTDB cards/{deck}. Either person flips; responses are keyed by uid. */
-import { onValue, ref, runTransaction, serverTimestamp, set, update } from "firebase/database";
 
 import { deckSize, type DeckKind } from "@/lib/decks";
 import { getRtdb } from "@/lib/firebase/client";
+import { onValue, ref, runTransaction, serverTimestamp, set, update } from "@/lib/firebase/rt";
 import { randomSeed } from "@/lib/seeded";
 
 export interface DeckNode {

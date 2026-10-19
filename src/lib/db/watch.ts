@@ -1,7 +1,7 @@
 /** Watch/listen together at watch/main and listen/main, plus the listen queue. */
-import { onValue, push, ref, remove, runTransaction, serverTimestamp, set, update } from "firebase/database";
-
 import { getRtdb } from "@/lib/firebase/client";
+import { onValue, push, ref, remove, runTransaction, serverTimestamp, set, update } from "@/lib/firebase/rt";
+
 
 export interface PlayerNode {
   videoId: string | null;
