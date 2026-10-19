@@ -1,56 +1,3307 @@
 {
-  "among": { "pos": "preposition", "meaning": "in the middle of, or surrounded by, a group of things or people", "example": "a cottage among the trees" },
-  "awoke": { "pos": "verb", "meaning": "past tense of awake: stopped sleeping", "example": "she awoke before dawn" },
-  "begun": { "pos": "verb", "meaning": "past participle of begin: started", "example": "the show had already begun" },
-  "chose": { "pos": "verb", "meaning": "past tense of choose: picked out from several options", "example": "he chose the blue one" },
-  "clung": { "pos": "verb", "meaning": "past tense of cling: held on tightly", "example": "the child clung to her hand" },
-  "could": { "pos": "verb", "meaning": "past tense of can: was able to; also used to ask politely or suggest", "example": "could you pass the salt?" },
-  "crept": { "pos": "verb", "meaning": "past tense of creep: moved slowly and quietly", "example": "the cat crept towards the bird" },
-  "dealt": { "pos": "verb", "meaning": "past tense of deal: handed out, or handled a matter", "example": "she dealt the cards" },
-  "doing": { "pos": "verb", "meaning": "present participle of do: performing or carrying out an action", "example": "what are you doing?" },
-  "drank": { "pos": "verb", "meaning": "past tense of drink: swallowed a liquid", "example": "he drank a glass of water" },
-  "dwelt": { "pos": "verb", "meaning": "past tense of dwell: lived in a place", "example": "they dwelt by the river" },
-  "eaten": { "pos": "verb", "meaning": "past participle of eat: consumed as food", "example": "the cake was all eaten" },
-  "flung": { "pos": "verb", "meaning": "past tense of fling: threw with force", "example": "she flung the door open" },
-  "froze": { "pos": "verb", "meaning": "past tense of freeze: turned to ice, or stopped still", "example": "the lake froze overnight" },
-  "hunky": { "pos": "adjective", "meaning": "informal: strong and attractive (of a man); 'hunky-dory' means fine", "example": "a hunky lifeguard" },
-  "knelt": { "pos": "verb", "meaning": "past tense of kneel: rested on the knees", "example": "he knelt to tie his shoe" },
-  "leapt": { "pos": "verb", "meaning": "past tense of leap: jumped high or far", "example": "the deer leapt over the fence" },
-  "lived": { "pos": "verb", "meaning": "past tense of live: was alive, or had a home somewhere", "example": "they lived in Pune for years" },
-  "meant": { "pos": "verb", "meaning": "past tense of mean: intended, or signified", "example": "I meant to call you" },
-  "media": { "pos": "noun", "meaning": "plural of medium: newspapers, TV, radio and the internet as a whole", "example": "the story was all over the media" },
-  "ought": { "pos": "verb", "meaning": "used to say what is the right or sensible thing to do", "example": "you ought to rest" },
-  "pouty": { "pos": "adjective", "meaning": "pushing the lips out in a sulky or playful way", "example": "a pouty expression" },
-  "radii": { "pos": "noun", "meaning": "plural of radius: lines from the centre of a circle to its edge", "example": "circles of different radii" },
-  "recut": { "pos": "verb", "meaning": "to cut again, especially to re-edit a film", "example": "the director recut the ending" },
-  "riper": { "pos": "adjective", "meaning": "comparative of ripe: more fully grown and ready to eat", "example": "the mangoes are riper this week" },
-  "shall": { "pos": "verb", "meaning": "used to talk about the future or to make an offer or suggestion", "example": "shall we dance?" },
-  "shalt": { "pos": "verb", "meaning": "old form of shall, used with 'thou'", "example": "thou shalt not steal" },
-  "shied": { "pos": "verb", "meaning": "past tense of shy: drew back suddenly in fear or dislike", "example": "the horse shied at the noise" },
-  "shone": { "pos": "verb", "meaning": "past tense of shine: gave out light, or did very well", "example": "the moon shone brightly" },
-  "shown": { "pos": "verb", "meaning": "past participle of show: displayed or made visible", "example": "the film was shown twice" },
-  "since": { "pos": "preposition", "meaning": "from a time in the past until now; also 'because'", "example": "we've been friends since school" },
-  "slept": { "pos": "verb", "meaning": "past tense of sleep: rested with eyes closed and mind at rest", "example": "I slept for nine hours" },
-  "slung": { "pos": "verb", "meaning": "past tense of sling: threw carelessly, or hung loosely", "example": "he slung the bag over his shoulder" },
-  "slunk": { "pos": "verb", "meaning": "past tense of slink: moved away quietly, often out of shame", "example": "the dog slunk off" },
-  "snuck": { "pos": "verb", "meaning": "informal past tense of sneak: moved secretly", "example": "we snuck into the kitchen" },
-  "spied": { "pos": "verb", "meaning": "past tense of spy: caught sight of, or watched secretly", "example": "she spied a kite in the sky" },
-  "spilt": { "pos": "verb", "meaning": "past tense of spill: let liquid flow out by accident", "example": "no use crying over spilt milk" },
-  "stank": { "pos": "verb", "meaning": "past tense of stink: smelt very bad", "example": "the bin stank" },
-  "stood": { "pos": "verb", "meaning": "past tense of stand: was upright on the feet, or stayed in a position", "example": "we stood in the rain" },
-  "stunk": { "pos": "verb", "meaning": "past participle of stink: smelt very bad", "example": "the fridge has stunk for days" },
-  "swore": { "pos": "verb", "meaning": "past tense of swear: promised solemnly, or used rude words", "example": "he swore to keep the secret" },
-  "swung": { "pos": "verb", "meaning": "past tense of swing: moved back and forth or in a curve", "example": "the gate swung shut" },
-  "their": { "pos": "determiner", "meaning": "belonging to them", "example": "they lost their keys" },
-  "these": { "pos": "determiner", "meaning": "plural of this: the ones here", "example": "these shoes are new" },
-  "those": { "pos": "determiner", "meaning": "plural of that: the ones there", "example": "those hills are far away" },
-  "threw": { "pos": "verb", "meaning": "past tense of throw: sent through the air with the hand", "example": "she threw the ball" },
-  "turbo": { "pos": "noun", "meaning": "short for turbocharger: a device that gives an engine extra power", "example": "a car with a turbo" },
-  "twixt": { "pos": "preposition", "meaning": "old or poetic form of betwixt: between", "example": "twixt the cup and the lip" },
-  "until": { "pos": "preposition", "meaning": "up to the point in time or the event mentioned", "example": "wait until morning" },
-  "where": { "pos": "adverb", "meaning": "in or to what place", "example": "where are you?" },
-  "which": { "pos": "determiner", "meaning": "asking or specifying one out of a set", "example": "which one do you want?" },
-  "whose": { "pos": "determiner", "meaning": "belonging to whom or which", "example": "whose phone is this?" },
-  "would": { "pos": "verb", "meaning": "past of will: used for imagined situations, wishes and polite requests", "example": "I would love some tea" },
-  "wrote": { "pos": "verb", "meaning": "past tense of write: put words on paper or a screen", "example": "she wrote him a letter" }
+  "about": {
+    "pos": "adverb",
+    "meaning": "roughly; also concerning something",
+    "example": "about ten minutes"
+  },
+  "above": {
+    "pos": "preposition",
+    "meaning": "higher than or over something",
+    "example": "the shelf above the sink"
+  },
+  "acorn": {
+    "pos": "noun",
+    "meaning": "the nut of an oak tree, sitting in a little cup",
+    "example": "squirrels bury acorns"
+  },
+  "actor": {
+    "pos": "noun",
+    "meaning": "a person who acts in films, TV or plays",
+    "example": "her favourite actor"
+  },
+  "acute": {
+    "pos": "adjective",
+    "meaning": "sharp or severe; (of an angle) less than 90°",
+    "example": "acute pain"
+  },
+  "admit": {
+    "pos": "verb",
+    "meaning": "confess that something is true, or let someone in",
+    "example": "he admitted he was wrong"
+  },
+  "adobe": {
+    "pos": "noun",
+    "meaning": "sun-dried clay brick, or a house built from it",
+    "example": "an adobe house"
+  },
+  "adopt": {
+    "pos": "verb",
+    "meaning": "take a child as your own, or take up a new idea or habit",
+    "example": "they adopted a puppy"
+  },
+  "adult": {
+    "pos": "noun",
+    "meaning": "a grown-up person",
+    "example": "adults only"
+  },
+  "after": {
+    "pos": "preposition",
+    "meaning": "later than, or following",
+    "example": "after dinner"
+  },
+  "again": {
+    "pos": "adverb",
+    "meaning": "once more",
+    "example": "say it again"
+  },
+  "agent": {
+    "pos": "noun",
+    "meaning": "a person who acts for others, e.g. in travel, property or spying",
+    "example": "a travel agent"
+  },
+  "agree": {
+    "pos": "verb",
+    "meaning": "have the same opinion, or say yes to something",
+    "example": "we agreed to meet at six"
+  },
+  "ahead": {
+    "pos": "adverb",
+    "meaning": "in front, or further on in time",
+    "example": "the road ahead"
+  },
+  "aisle": {
+    "pos": "noun",
+    "meaning": "a passage between rows of seats or shelves",
+    "example": "the aisle of a plane"
+  },
+  "alarm": {
+    "pos": "noun",
+    "meaning": "a warning sound or device; sudden fear",
+    "example": "the alarm went off at 7"
+  },
+  "album": {
+    "pos": "noun",
+    "meaning": "a collection of songs released together, or a book for photos",
+    "example": "her new album"
+  },
+  "alert": {
+    "pos": "adjective",
+    "meaning": "quick to notice things; also a warning",
+    "example": "stay alert"
+  },
+  "alien": {
+    "pos": "noun",
+    "meaning": "a being from another planet; foreign or strange",
+    "example": "aliens in a sci-fi film"
+  },
+  "alley": {
+    "pos": "noun",
+    "meaning": "a narrow lane between buildings",
+    "example": "a back alley"
+  },
+  "allow": {
+    "pos": "verb",
+    "meaning": "let someone do something",
+    "example": "dogs aren't allowed inside"
+  },
+  "alone": {
+    "pos": "adverb",
+    "meaning": "with no one else",
+    "example": "home alone"
+  },
+  "along": {
+    "pos": "preposition",
+    "meaning": "moving beside or following the length of",
+    "example": "walk along the beach"
+  },
+  "alter": {
+    "pos": "verb",
+    "meaning": "change something slightly",
+    "example": "alter the dress"
+  },
+  "amber": {
+    "pos": "noun",
+    "meaning": "a hard yellow-orange fossil resin, or that colour",
+    "example": "the amber traffic light"
+  },
+  "among": {
+    "pos": "preposition",
+    "meaning": "in the middle of, or surrounded by, a group of things or people",
+    "example": "a cottage among the trees"
+  },
+  "amuse": {
+    "pos": "verb",
+    "meaning": "make someone laugh or smile",
+    "example": "the puppy amused the kids"
+  },
+  "angel": {
+    "pos": "noun",
+    "meaning": "a heavenly being with wings; a very kind person",
+    "example": "you're an angel"
+  },
+  "anger": {
+    "pos": "noun",
+    "meaning": "a strong feeling of being upset or annoyed",
+    "example": "shaking with anger"
+  },
+  "angle": {
+    "pos": "noun",
+    "meaning": "the space between two lines that meet, measured in degrees",
+    "example": "a right angle is 90°"
+  },
+  "anime": {
+    "pos": "noun",
+    "meaning": "Japanese animated films and series",
+    "example": "we binged an anime series"
+  },
+  "ankle": {
+    "pos": "noun",
+    "meaning": "the joint between the foot and the leg",
+    "example": "she twisted her ankle"
+  },
+  "annoy": {
+    "pos": "verb",
+    "meaning": "make someone a little angry",
+    "example": "the noise annoyed me"
+  },
+  "antic": {
+    "pos": "noun",
+    "meaning": "a playful or silly act (usually 'antics')",
+    "example": "the puppy's antics"
+  },
+  "apple": {
+    "pos": "noun",
+    "meaning": "a round crisp fruit with red, green or yellow skin",
+    "example": "an apple a day"
+  },
+  "apply": {
+    "pos": "verb",
+    "meaning": "put something on; make a formal request; put to use",
+    "example": "apply for a job"
+  },
+  "apron": {
+    "pos": "noun",
+    "meaning": "a cloth tied around the waist to keep clothes clean while cooking",
+    "example": "a kitchen apron"
+  },
+  "arena": {
+    "pos": "noun",
+    "meaning": "a large venue for sports or concerts",
+    "example": "a sold-out arena"
+  },
+  "argue": {
+    "pos": "verb",
+    "meaning": "give reasons for a view, or quarrel",
+    "example": "they argued about the bill"
+  },
+  "arise": {
+    "pos": "verb",
+    "meaning": "come up or happen",
+    "example": "if a problem arises"
+  },
+  "aroma": {
+    "pos": "noun",
+    "meaning": "a pleasant smell",
+    "example": "the aroma of fresh coffee"
+  },
+  "array": {
+    "pos": "noun",
+    "meaning": "an impressive range of things set out in order",
+    "example": "an array of snacks"
+  },
+  "arrow": {
+    "pos": "noun",
+    "meaning": "a thin pointed shaft shot from a bow; a sign pointing the way",
+    "example": "follow the arrows"
+  },
+  "asset": {
+    "pos": "noun",
+    "meaning": "something valuable you own, or a useful quality",
+    "example": "her patience is an asset"
+  },
+  "attic": {
+    "pos": "noun",
+    "meaning": "the room or space just under a roof",
+    "example": "boxes in the attic"
+  },
+  "audio": {
+    "pos": "noun",
+    "meaning": "sound, especially recorded or transmitted",
+    "example": "the audio cut out"
+  },
+  "award": {
+    "pos": "noun",
+    "meaning": "a prize given for an achievement",
+    "example": "she won an award for her film"
+  },
+  "aware": {
+    "pos": "adjective",
+    "meaning": "knowing about something",
+    "example": "aware of the risks"
+  },
+  "awoke": {
+    "pos": "verb",
+    "meaning": "past tense of awake: stopped sleeping",
+    "example": "she awoke before dawn"
+  },
+  "azure": {
+    "pos": "noun",
+    "meaning": "a bright sky blue",
+    "example": "an azure sea"
+  },
+  "bacon": {
+    "pos": "noun",
+    "meaning": "salted or smoked meat from a pig's back or belly",
+    "example": "bacon and eggs"
+  },
+  "badge": {
+    "pos": "noun",
+    "meaning": "a small pin or emblem showing identity or rank",
+    "example": "a police badge"
+  },
+  "badly": {
+    "pos": "adverb",
+    "meaning": "in a poor way; also very much",
+    "example": "he played badly"
+  },
+  "bagel": {
+    "pos": "noun",
+    "meaning": "a ring-shaped bread roll with a chewy crust",
+    "example": "a bagel with cream cheese"
+  },
+  "balmy": {
+    "pos": "adjective",
+    "meaning": "pleasantly warm (of weather)",
+    "example": "a balmy evening"
+  },
+  "basic": {
+    "pos": "adjective",
+    "meaning": "simple and essential",
+    "example": "basic cooking skills"
+  },
+  "basil": {
+    "pos": "noun",
+    "meaning": "a fragrant herb used in Italian and Thai cooking",
+    "example": "fresh basil on the pizza"
+  },
+  "basin": {
+    "pos": "noun",
+    "meaning": "a wide bowl for washing; a sink; the area drained by a river",
+    "example": "wash up in the basin"
+  },
+  "basis": {
+    "pos": "noun",
+    "meaning": "the foundation an idea or system rests on",
+    "example": "on a weekly basis"
+  },
+  "batch": {
+    "pos": "noun",
+    "meaning": "a quantity made or dealt with at one time",
+    "example": "a batch of cookies"
+  },
+  "beast": {
+    "pos": "noun",
+    "meaning": "a large or wild animal",
+    "example": "a mythical beast"
+  },
+  "begun": {
+    "pos": "verb",
+    "meaning": "past participle of begin: started",
+    "example": "the show had already begun"
+  },
+  "being": {
+    "pos": "noun",
+    "meaning": "a living creature; also existence",
+    "example": "a human being"
+  },
+  "belly": {
+    "pos": "noun",
+    "meaning": "the stomach area",
+    "example": "a full belly"
+  },
+  "bezel": {
+    "pos": "noun",
+    "meaning": "the rim that holds a watch face or surrounds a phone screen",
+    "example": "a thin bezel"
+  },
+  "birch": {
+    "pos": "noun",
+    "meaning": "a slender tree with thin peeling, often white, bark",
+    "example": "a silver birch"
+  },
+  "birth": {
+    "pos": "noun",
+    "meaning": "being born; the start of something",
+    "example": "the birth of their daughter"
+  },
+  "bison": {
+    "pos": "noun",
+    "meaning": "a large shaggy wild ox of North America",
+    "example": "bison roam the plains"
+  },
+  "blade": {
+    "pos": "noun",
+    "meaning": "the flat cutting edge of a knife or sword; a single piece of grass",
+    "example": "a sharp blade"
+  },
+  "blame": {
+    "pos": "verb",
+    "meaning": "say someone is responsible for something bad",
+    "example": "don't blame me"
+  },
+  "blast": {
+    "pos": "noun",
+    "meaning": "an explosion or strong gust; great fun (informal)",
+    "example": "we had a blast"
+  },
+  "blaze": {
+    "pos": "noun",
+    "meaning": "a large bright fire",
+    "example": "the blaze spread quickly"
+  },
+  "blimp": {
+    "pos": "noun",
+    "meaning": "a small airship",
+    "example": "a blimp over the stadium"
+  },
+  "blind": {
+    "pos": "adjective",
+    "meaning": "unable to see",
+    "example": "a blind dog"
+  },
+  "bloat": {
+    "pos": "verb",
+    "meaning": "swell with gas or liquid",
+    "example": "feeling bloated after lunch"
+  },
+  "blood": {
+    "pos": "noun",
+    "meaning": "the red liquid that circulates in the body",
+    "example": "blood type O"
+  },
+  "blown": {
+    "pos": "adjective",
+    "meaning": "moved by wind; (of a fuse) burnt out",
+    "example": "blown away by the wind"
+  },
+  "blues": {
+    "pos": "noun",
+    "meaning": "slow, soulful music rooted in Black American song; low spirits",
+    "example": "a blues guitarist"
+  },
+  "bluff": {
+    "pos": "verb",
+    "meaning": "pretend to be confident or to have something you don't; a steep cliff",
+    "example": "bluffing at poker"
+  },
+  "blunt": {
+    "pos": "adjective",
+    "meaning": "not sharp; very direct in speech",
+    "example": "a blunt knife"
+  },
+  "board": {
+    "pos": "noun",
+    "meaning": "a flat piece of wood; a group that runs an organisation",
+    "example": "a chess board"
+  },
+  "bonus": {
+    "pos": "noun",
+    "meaning": "an extra payment or benefit",
+    "example": "a year-end bonus"
+  },
+  "boost": {
+    "pos": "noun",
+    "meaning": "a push or increase that helps",
+    "example": "a boost to morale"
+  },
+  "booth": {
+    "pos": "noun",
+    "meaning": "a small enclosed space, like a phone booth or a restaurant seat",
+    "example": "a photo booth"
+  },
+  "bossy": {
+    "pos": "adjective",
+    "meaning": "fond of telling others what to do",
+    "example": "a bossy older sister"
+  },
+  "botch": {
+    "pos": "verb",
+    "meaning": "do something badly or clumsily",
+    "example": "they botched the repair"
+  },
+  "bound": {
+    "pos": "adjective",
+    "meaning": "tied up; heading somewhere; certain to happen",
+    "example": "bound for Mumbai"
+  },
+  "bowel": {
+    "pos": "noun",
+    "meaning": "the intestine",
+    "example": "a bowel movement"
+  },
+  "brace": {
+    "pos": "verb",
+    "meaning": "prepare for something hard; a support that holds things straight",
+    "example": "brace yourself"
+  },
+  "braid": {
+    "pos": "noun",
+    "meaning": "hair (or rope) woven from three strands",
+    "example": "a long braid"
+  },
+  "brain": {
+    "pos": "noun",
+    "meaning": "the organ inside the skull that controls thought and the body",
+    "example": "use your brain"
+  },
+  "bread": {
+    "pos": "noun",
+    "meaning": "a staple food baked from flour dough",
+    "example": "a loaf of bread"
+  },
+  "break": {
+    "pos": "verb",
+    "meaning": "separate into pieces; a short rest",
+    "example": "break a glass"
+  },
+  "breed": {
+    "pos": "noun",
+    "meaning": "a variety of domestic animal; to produce young",
+    "example": "a breed of dog"
+  },
+  "brine": {
+    "pos": "noun",
+    "meaning": "salty water, used to pickle food",
+    "example": "olives in brine"
+  },
+  "brink": {
+    "pos": "noun",
+    "meaning": "the edge of something, especially a dangerous point",
+    "example": "on the brink of tears"
+  },
+  "brush": {
+    "pos": "noun",
+    "meaning": "a tool with bristles for hair, paint or cleaning",
+    "example": "a paint brush"
+  },
+  "brute": {
+    "pos": "noun",
+    "meaning": "a savage or violent person or animal",
+    "example": "a brute of a man"
+  },
+  "buddy": {
+    "pos": "noun",
+    "meaning": "a close friend",
+    "example": "my old buddy"
+  },
+  "buggy": {
+    "pos": "noun",
+    "meaning": "a light carriage or pushchair; full of bugs (of software)",
+    "example": "a baby buggy"
+  },
+  "built": {
+    "pos": "adjective",
+    "meaning": "made or constructed; shaped a certain way",
+    "example": "a well-built house"
+  },
+  "bulky": {
+    "pos": "adjective",
+    "meaning": "large and awkward to carry",
+    "example": "a bulky parcel"
+  },
+  "bully": {
+    "pos": "noun",
+    "meaning": "someone who hurts or frightens weaker people",
+    "example": "stand up to a bully"
+  },
+  "bunny": {
+    "pos": "noun",
+    "meaning": "a rabbit, especially in children's talk",
+    "example": "the Easter bunny"
+  },
+  "butch": {
+    "pos": "adjective",
+    "meaning": "having a tough, masculine look",
+    "example": "a butch haircut"
+  },
+  "cabin": {
+    "pos": "noun",
+    "meaning": "a small simple house, often of wood; a room on a ship or plane",
+    "example": "a log cabin"
+  },
+  "cable": {
+    "pos": "noun",
+    "meaning": "a thick wire or rope; the TV service that uses one",
+    "example": "a charging cable"
+  },
+  "cameo": {
+    "pos": "noun",
+    "meaning": "a brief appearance by a famous person in a film; a carved brooch",
+    "example": "a cameo by the director"
+  },
+  "canal": {
+    "pos": "noun",
+    "meaning": "an artificial waterway for boats or irrigation",
+    "example": "the canals of Venice"
+  },
+  "caper": {
+    "pos": "noun",
+    "meaning": "a playful prank or adventure; a pickled flower bud",
+    "example": "a heist caper"
+  },
+  "carol": {
+    "pos": "noun",
+    "meaning": "a joyful Christmas song",
+    "example": "singing carols"
+  },
+  "carve": {
+    "pos": "verb",
+    "meaning": "cut wood or stone into a shape; slice cooked meat",
+    "example": "carve a pumpkin"
+  },
+  "catch": {
+    "pos": "verb",
+    "meaning": "grab something moving; get an illness",
+    "example": "catch the ball"
+  },
+  "cater": {
+    "pos": "verb",
+    "meaning": "provide food for an event; look after needs",
+    "example": "they catered the wedding"
+  },
+  "cedar": {
+    "pos": "noun",
+    "meaning": "an evergreen tree with fragrant wood",
+    "example": "a cedar chest"
+  },
+  "chain": {
+    "pos": "noun",
+    "meaning": "a series of linked metal rings; a series of connected things",
+    "example": "a bike chain"
+  },
+  "chalk": {
+    "pos": "noun",
+    "meaning": "a soft white stick for writing on a blackboard",
+    "example": "chalk on the pavement"
+  },
+  "cheat": {
+    "pos": "verb",
+    "meaning": "act dishonestly to gain an advantage",
+    "example": "he cheated at cards"
+  },
+  "chess": {
+    "pos": "noun",
+    "meaning": "a board game for two with 16 pieces each; checkmate the king to win",
+    "example": "a game of chess"
+  },
+  "chest": {
+    "pos": "noun",
+    "meaning": "the front of the body between neck and stomach; a large box",
+    "example": "a treasure chest"
+  },
+  "chief": {
+    "pos": "noun",
+    "meaning": "the leader; most important",
+    "example": "the chief of the village"
+  },
+  "chill": {
+    "pos": "noun",
+    "meaning": "a feeling of cold; to relax (informal)",
+    "example": "a chill in the air"
+  },
+  "chime": {
+    "pos": "noun",
+    "meaning": "a ringing sound, as of bells",
+    "example": "the chime of the clock"
+  },
+  "china": {
+    "pos": "noun",
+    "meaning": "fine porcelain dishes",
+    "example": "the good china for guests"
+  },
+  "chips": {
+    "pos": "noun",
+    "meaning": "fried potato pieces: fries (UK) or crisps (US)",
+    "example": "fish and chips"
+  },
+  "choke": {
+    "pos": "verb",
+    "meaning": "be unable to breathe because something blocks the throat",
+    "example": "choke on a bone"
+  },
+  "chord": {
+    "pos": "noun",
+    "meaning": "several musical notes played together",
+    "example": "a guitar chord"
+  },
+  "chore": {
+    "pos": "noun",
+    "meaning": "a routine task, often around the house",
+    "example": "doing the chores"
+  },
+  "chose": {
+    "pos": "verb",
+    "meaning": "past tense of choose: picked out from several options",
+    "example": "he chose the blue one"
+  },
+  "chute": {
+    "pos": "noun",
+    "meaning": "a sloping channel things slide down; short for parachute",
+    "example": "a laundry chute"
+  },
+  "civil": {
+    "pos": "adjective",
+    "meaning": "polite; relating to ordinary citizens",
+    "example": "be civil to each other"
+  },
+  "clash": {
+    "pos": "noun",
+    "meaning": "a fight or disagreement; colours that don't go together",
+    "example": "a clash of opinions"
+  },
+  "class": {
+    "pos": "noun",
+    "meaning": "a group of students taught together; a category",
+    "example": "maths class"
+  },
+  "clear": {
+    "pos": "adjective",
+    "meaning": "easy to see through or understand",
+    "example": "clear water"
+  },
+  "cleat": {
+    "pos": "noun",
+    "meaning": "a stud on the sole of a sports shoe for grip",
+    "example": "football cleats"
+  },
+  "cling": {
+    "pos": "verb",
+    "meaning": "hold on tightly",
+    "example": "the baby clung to her mother"
+  },
+  "cloak": {
+    "pos": "noun",
+    "meaning": "a long loose outer garment without sleeves",
+    "example": "a hooded cloak"
+  },
+  "clone": {
+    "pos": "noun",
+    "meaning": "an exact genetic copy of a living thing",
+    "example": "Dolly the sheep was a clone"
+  },
+  "cloth": {
+    "pos": "noun",
+    "meaning": "fabric made by weaving or knitting",
+    "example": "a piece of cloth"
+  },
+  "cloud": {
+    "pos": "noun",
+    "meaning": "a white or grey mass of water droplets in the sky",
+    "example": "not a cloud in the sky"
+  },
+  "clown": {
+    "pos": "noun",
+    "meaning": "a comic performer with a painted face and silly clothes",
+    "example": "a circus clown"
+  },
+  "clung": {
+    "pos": "verb",
+    "meaning": "past tense of cling: held on tightly",
+    "example": "the child clung to her hand"
+  },
+  "colon": {
+    "pos": "noun",
+    "meaning": "the punctuation mark (:); also the large intestine",
+    "example": "a colon introduces a list"
+  },
+  "comet": {
+    "pos": "noun",
+    "meaning": "an icy body that grows a glowing tail as it nears the sun",
+    "example": "Halley's comet"
+  },
+  "comfy": {
+    "pos": "adjective",
+    "meaning": "comfortable (informal)",
+    "example": "a comfy sofa"
+  },
+  "conch": {
+    "pos": "noun",
+    "meaning": "a large spiral seashell",
+    "example": "blow into a conch"
+  },
+  "coral": {
+    "pos": "noun",
+    "meaning": "a hard sea growth built by tiny animals; a pinkish-orange colour",
+    "example": "a coral reef"
+  },
+  "could": {
+    "pos": "verb",
+    "meaning": "past tense of can: was able to; also used to ask politely or suggest",
+    "example": "could you pass the salt?"
+  },
+  "court": {
+    "pos": "noun",
+    "meaning": "a place where legal cases are heard; a marked area for tennis or basketball",
+    "example": "a tennis court"
+  },
+  "crack": {
+    "pos": "noun",
+    "meaning": "a thin break or gap; a sharp sound",
+    "example": "a crack in the cup"
+  },
+  "craft": {
+    "pos": "noun",
+    "meaning": "a skill in making things by hand; a boat or aircraft",
+    "example": "arts and crafts"
+  },
+  "crane": {
+    "pos": "noun",
+    "meaning": "a tall machine for lifting heavy loads; a long-legged, long-necked bird",
+    "example": "a crane at the port"
+  },
+  "crank": {
+    "pos": "noun",
+    "meaning": "a handle you turn to work a machine; a grumpy or eccentric person",
+    "example": "turn the crank"
+  },
+  "crash": {
+    "pos": "noun",
+    "meaning": "a violent collision or loud noise; a computer failing",
+    "example": "a car crash"
+  },
+  "cream": {
+    "pos": "noun",
+    "meaning": "the thick fatty part of milk; a thick lotion",
+    "example": "strawberries and cream"
+  },
+  "crepe": {
+    "pos": "noun",
+    "meaning": "a thin pancake; a crinkled fabric or paper",
+    "example": "a crepe with lemon and sugar"
+  },
+  "crept": {
+    "pos": "verb",
+    "meaning": "past tense of creep: moved slowly and quietly",
+    "example": "the cat crept towards the bird"
+  },
+  "crisp": {
+    "pos": "adjective",
+    "meaning": "firm, dry and easily broken; fresh and cold",
+    "example": "crisp toast"
+  },
+  "croak": {
+    "pos": "verb",
+    "meaning": "make a deep hoarse sound, like a frog",
+    "example": "frogs croak at night"
+  },
+  "crook": {
+    "pos": "noun",
+    "meaning": "a criminal; a bend or hook",
+    "example": "a small-time crook"
+  },
+  "cross": {
+    "pos": "verb",
+    "meaning": "go across; a mark or shape like ×; angry",
+    "example": "cross the road"
+  },
+  "crown": {
+    "pos": "noun",
+    "meaning": "a jewelled headdress worn by a king or queen",
+    "example": "a golden crown"
+  },
+  "crude": {
+    "pos": "adjective",
+    "meaning": "rough and simple; (of oil) unrefined",
+    "example": "a crude drawing"
+  },
+  "crush": {
+    "pos": "verb",
+    "meaning": "squeeze until broken or flat; a short-lived infatuation",
+    "example": "crush the garlic"
+  },
+  "crust": {
+    "pos": "noun",
+    "meaning": "the hard outer part of bread or pizza; the Earth's outer layer",
+    "example": "a crispy pizza crust"
+  },
+  "cumin": {
+    "pos": "noun",
+    "meaning": "a warm, earthy spice used in Indian cooking",
+    "example": "cumin seeds in the tadka"
+  },
+  "curry": {
+    "pos": "noun",
+    "meaning": "a spiced dish of meat or vegetables in sauce",
+    "example": "a chicken curry"
+  },
+  "curse": {
+    "pos": "verb",
+    "meaning": "swear; a spell meant to bring bad luck",
+    "example": "the witch's curse"
+  },
+  "curve": {
+    "pos": "noun",
+    "meaning": "a smoothly bending line",
+    "example": "a curve in the road"
+  },
+  "cycle": {
+    "pos": "noun",
+    "meaning": "a series of events that repeats; a bicycle",
+    "example": "the water cycle"
+  },
+  "dairy": {
+    "pos": "noun",
+    "meaning": "milk and foods made from it, like cheese and butter",
+    "example": "a dairy allergy"
+  },
+  "daisy": {
+    "pos": "noun",
+    "meaning": "a small flower with white petals and a yellow centre",
+    "example": "a daisy chain"
+  },
+  "dealt": {
+    "pos": "verb",
+    "meaning": "past tense of deal: handed out, or handled a matter",
+    "example": "she dealt the cards"
+  },
+  "debut": {
+    "pos": "noun",
+    "meaning": "a first public appearance",
+    "example": "her film debut"
+  },
+  "decal": {
+    "pos": "noun",
+    "meaning": "a sticker with a design that transfers to a surface",
+    "example": "a decal on the laptop"
+  },
+  "decay": {
+    "pos": "verb",
+    "meaning": "rot or gradually break down",
+    "example": "tooth decay"
+  },
+  "decoy": {
+    "pos": "noun",
+    "meaning": "something used to lure or distract",
+    "example": "a wooden duck decoy"
+  },
+  "denim": {
+    "pos": "noun",
+    "meaning": "sturdy cotton fabric used for jeans",
+    "example": "a denim jacket"
+  },
+  "dense": {
+    "pos": "adjective",
+    "meaning": "closely packed; thick",
+    "example": "a dense forest"
+  },
+  "derby": {
+    "pos": "noun",
+    "meaning": "a match between local rivals; a famous horse race; a bowler hat",
+    "example": "the Mumbai derby"
+  },
+  "digit": {
+    "pos": "noun",
+    "meaning": "any numeral from 0 to 9; a finger or toe",
+    "example": "a four-digit PIN"
+  },
+  "dinky": {
+    "pos": "adjective",
+    "meaning": "small and cute, or small and insignificant",
+    "example": "a dinky little flat"
+  },
+  "dodgy": {
+    "pos": "adjective",
+    "meaning": "unreliable, suspicious or unsafe",
+    "example": "a dodgy internet connection"
+  },
+  "doing": {
+    "pos": "verb",
+    "meaning": "present participle of do: performing or carrying out an action",
+    "example": "what are you doing?"
+  },
+  "dolly": {
+    "pos": "noun",
+    "meaning": "a child's doll; a wheeled platform for moving heavy things",
+    "example": "a camera dolly"
+  },
+  "dowdy": {
+    "pos": "adjective",
+    "meaning": "dull and old-fashioned in appearance",
+    "example": "a dowdy coat"
+  },
+  "dozen": {
+    "pos": "noun",
+    "meaning": "twelve",
+    "example": "a dozen eggs"
+  },
+  "draft": {
+    "pos": "noun",
+    "meaning": "a first version of a piece of writing; a current of cold air",
+    "example": "a first draft"
+  },
+  "drank": {
+    "pos": "verb",
+    "meaning": "past tense of drink: swallowed a liquid",
+    "example": "he drank a glass of water"
+  },
+  "drawn": {
+    "pos": "adjective",
+    "meaning": "pulled or sketched; looking tired and strained",
+    "example": "curtains drawn shut"
+  },
+  "drill": {
+    "pos": "noun",
+    "meaning": "a tool for making holes; a repeated practice exercise",
+    "example": "a power drill"
+  },
+  "drone": {
+    "pos": "noun",
+    "meaning": "a remote-controlled aircraft; a dull hum; a male bee",
+    "example": "a camera drone"
+  },
+  "droop": {
+    "pos": "verb",
+    "meaning": "hang or bend down limply",
+    "example": "the flowers drooped"
+  },
+  "drove": {
+    "pos": "verb",
+    "meaning": "past tense of drive; a large moving group of animals",
+    "example": "we drove to Goa"
+  },
+  "drown": {
+    "pos": "verb",
+    "meaning": "die from being underwater and unable to breathe",
+    "example": "the sailor nearly drowned"
+  },
+  "dusky": {
+    "pos": "adjective",
+    "meaning": "dim, as at dusk; dark in colour",
+    "example": "the dusky evening sky"
+  },
+  "dwarf": {
+    "pos": "noun",
+    "meaning": "a very small person or being in legends; a small planet or star",
+    "example": "the seven dwarfs"
+  },
+  "dwell": {
+    "pos": "verb",
+    "meaning": "live in a place; keep thinking about something",
+    "example": "don't dwell on it"
+  },
+  "dwelt": {
+    "pos": "verb",
+    "meaning": "past tense of dwell: lived in a place",
+    "example": "they dwelt by the river"
+  },
+  "eaten": {
+    "pos": "verb",
+    "meaning": "past participle of eat: consumed as food",
+    "example": "the cake was all eaten"
+  },
+  "enact": {
+    "pos": "verb",
+    "meaning": "make into law; act out",
+    "example": "parliament enacted the bill"
+  },
+  "enemy": {
+    "pos": "noun",
+    "meaning": "someone who is against you or hates you",
+    "example": "friends, not enemies"
+  },
+  "entry": {
+    "pos": "noun",
+    "meaning": "a way in; an item in a list or competition",
+    "example": "no entry"
+  },
+  "fable": {
+    "pos": "noun",
+    "meaning": "a short story with a moral, often with talking animals",
+    "example": "Aesop's fables"
+  },
+  "faced": {
+    "pos": "adjective",
+    "meaning": "having a particular kind of face; confronted with (past of face)",
+    "example": "red-faced"
+  },
+  "faint": {
+    "pos": "adjective",
+    "meaning": "weak or dim; to lose consciousness briefly",
+    "example": "a faint sound"
+  },
+  "fancy": {
+    "pos": "adjective",
+    "meaning": "elaborate or expensive; to like or want",
+    "example": "a fancy restaurant"
+  },
+  "fault": {
+    "pos": "noun",
+    "meaning": "a mistake or flaw; responsibility for a problem",
+    "example": "it's not your fault"
+  },
+  "favor": {
+    "pos": "noun",
+    "meaning": "a kind act done for someone; to prefer",
+    "example": "do me a favor"
+  },
+  "feral": {
+    "pos": "adjective",
+    "meaning": "wild, especially of a domestic animal gone wild",
+    "example": "feral cats"
+  },
+  "ferry": {
+    "pos": "noun",
+    "meaning": "a boat that carries people and cars across water",
+    "example": "the ferry to the island"
+  },
+  "fixed": {
+    "pos": "adjective",
+    "meaning": "repaired; set firmly in place",
+    "example": "a fixed price"
+  },
+  "flame": {
+    "pos": "noun",
+    "meaning": "the hot glowing part of a fire",
+    "example": "the candle's flame"
+  },
+  "flank": {
+    "pos": "noun",
+    "meaning": "the side of something, e.g. of a body or army",
+    "example": "the horse's flank"
+  },
+  "flare": {
+    "pos": "noun",
+    "meaning": "a sudden burst of flame or light; a signal light",
+    "example": "a flare lit up the sky"
+  },
+  "fleck": {
+    "pos": "noun",
+    "meaning": "a small spot or speck",
+    "example": "flecks of paint"
+  },
+  "fleet": {
+    "pos": "noun",
+    "meaning": "a group of ships or vehicles under one command",
+    "example": "a fleet of taxis"
+  },
+  "float": {
+    "pos": "verb",
+    "meaning": "rest on the surface of a liquid or in the air",
+    "example": "leaves float on the pond"
+  },
+  "flock": {
+    "pos": "noun",
+    "meaning": "a group of birds or sheep",
+    "example": "a flock of geese"
+  },
+  "flood": {
+    "pos": "noun",
+    "meaning": "an overflow of water onto normally dry land",
+    "example": "floods after the monsoon"
+  },
+  "floss": {
+    "pos": "noun",
+    "meaning": "thin thread for cleaning between teeth",
+    "example": "floss every night"
+  },
+  "flung": {
+    "pos": "verb",
+    "meaning": "past tense of fling: threw with force",
+    "example": "she flung the door open"
+  },
+  "flunk": {
+    "pos": "verb",
+    "meaning": "fail an exam or course (informal)",
+    "example": "he flunked maths"
+  },
+  "flush": {
+    "pos": "verb",
+    "meaning": "go red in the face; wash out with a rush of water",
+    "example": "flush the toilet"
+  },
+  "foamy": {
+    "pos": "adjective",
+    "meaning": "full of or covered with foam",
+    "example": "a foamy cappuccino"
+  },
+  "foggy": {
+    "pos": "adjective",
+    "meaning": "full of fog; unclear",
+    "example": "a foggy morning"
+  },
+  "forge": {
+    "pos": "verb",
+    "meaning": "shape metal by heating and hammering; fake a signature",
+    "example": "forge a sword"
+  },
+  "forth": {
+    "pos": "adverb",
+    "meaning": "forward or out",
+    "example": "back and forth"
+  },
+  "found": {
+    "pos": "verb",
+    "meaning": "set up an organisation; past tense of find",
+    "example": "she found her keys"
+  },
+  "frame": {
+    "pos": "noun",
+    "meaning": "a border for a picture; a basic structure",
+    "example": "a photo frame"
+  },
+  "freak": {
+    "pos": "noun",
+    "meaning": "someone obsessed with something; a very unusual event",
+    "example": "a fitness freak"
+  },
+  "frill": {
+    "pos": "noun",
+    "meaning": "a decorative ruffle on clothes; an extra",
+    "example": "no frills"
+  },
+  "froze": {
+    "pos": "verb",
+    "meaning": "past tense of freeze: turned to ice, or stopped still",
+    "example": "the lake froze overnight"
+  },
+  "fungi": {
+    "pos": "noun",
+    "meaning": "plural of fungus: mushrooms, moulds and yeasts",
+    "example": "fungi grow in damp places"
+  },
+  "furor": {
+    "pos": "noun",
+    "meaning": "an outbreak of public anger or excitement",
+    "example": "the decision caused a furor"
+  },
+  "fussy": {
+    "pos": "adjective",
+    "meaning": "hard to please; too concerned with details",
+    "example": "a fussy eater"
+  },
+  "fuzzy": {
+    "pos": "adjective",
+    "meaning": "covered in soft fine hair; blurry",
+    "example": "a fuzzy photo"
+  },
+  "gauge": {
+    "pos": "verb",
+    "meaning": "measure or judge; an instrument that measures",
+    "example": "a fuel gauge"
+  },
+  "genie": {
+    "pos": "noun",
+    "meaning": "a magical spirit that grants wishes",
+    "example": "the genie in Aladdin's lamp"
+  },
+  "ghost": {
+    "pos": "noun",
+    "meaning": "the spirit of a dead person, imagined as a pale figure",
+    "example": "a haunted-house ghost"
+  },
+  "giant": {
+    "pos": "noun",
+    "meaning": "a huge imaginary person; very large",
+    "example": "a giant in the fairy tale"
+  },
+  "giddy": {
+    "pos": "adjective",
+    "meaning": "dizzy; excited and silly",
+    "example": "giddy with excitement"
+  },
+  "given": {
+    "pos": "adjective",
+    "meaning": "already stated or assumed; past participle of give",
+    "example": "a given name"
+  },
+  "glare": {
+    "pos": "verb",
+    "meaning": "stare angrily; harsh bright light",
+    "example": "the glare of the sun"
+  },
+  "glean": {
+    "pos": "verb",
+    "meaning": "gather information bit by bit",
+    "example": "glean the facts"
+  },
+  "glint": {
+    "pos": "noun",
+    "meaning": "a small flash of light",
+    "example": "a glint of gold"
+  },
+  "globe": {
+    "pos": "noun",
+    "meaning": "a ball-shaped model of the Earth; the world",
+    "example": "spin the globe"
+  },
+  "glove": {
+    "pos": "noun",
+    "meaning": "a covering for the hand with a part for each finger",
+    "example": "woolly gloves"
+  },
+  "goofy": {
+    "pos": "adjective",
+    "meaning": "silly in a funny way",
+    "example": "a goofy grin"
+  },
+  "gouge": {
+    "pos": "verb",
+    "meaning": "cut or scoop out roughly",
+    "example": "gouged a hole in the wall"
+  },
+  "gourd": {
+    "pos": "noun",
+    "meaning": "a large fleshy fruit with a hard skin, like a pumpkin or bottle gourd",
+    "example": "a bottle gourd curry"
+  },
+  "grace": {
+    "pos": "noun",
+    "meaning": "elegance of movement; a short prayer before a meal",
+    "example": "she danced with grace"
+  },
+  "grade": {
+    "pos": "noun",
+    "meaning": "a mark for schoolwork; a level or quality",
+    "example": "a good grade"
+  },
+  "grand": {
+    "pos": "adjective",
+    "meaning": "impressive and large; a thousand (slang)",
+    "example": "a grand palace"
+  },
+  "grave": {
+    "pos": "noun",
+    "meaning": "a hole where a dead body is buried; very serious",
+    "example": "flowers on the grave"
+  },
+  "grill": {
+    "pos": "verb",
+    "meaning": "cook over direct heat on metal bars",
+    "example": "grill the paneer"
+  },
+  "grind": {
+    "pos": "verb",
+    "meaning": "crush into powder; hard tedious work",
+    "example": "grind the spices"
+  },
+  "groin": {
+    "pos": "noun",
+    "meaning": "the area where the thighs meet the body",
+    "example": "a groin strain"
+  },
+  "groom": {
+    "pos": "noun",
+    "meaning": "the man getting married; to brush and clean an animal",
+    "example": "the bride and groom"
+  },
+  "gross": {
+    "pos": "adjective",
+    "meaning": "disgusting (informal); total before deductions",
+    "example": "gross, there's a hair in it"
+  },
+  "guava": {
+    "pos": "noun",
+    "meaning": "a tropical fruit with pink or white flesh and many seeds",
+    "example": "guava with chilli salt"
+  },
+  "guess": {
+    "pos": "verb",
+    "meaning": "give an answer without being sure",
+    "example": "guess the word"
+  },
+  "habit": {
+    "pos": "noun",
+    "meaning": "something you do regularly, often without thinking",
+    "example": "a bad habit"
+  },
+  "handy": {
+    "pos": "adjective",
+    "meaning": "useful; nearby",
+    "example": "a handy tool"
+  },
+  "hatch": {
+    "pos": "verb",
+    "meaning": "come out of an egg; a small door or opening",
+    "example": "the chicks hatched"
+  },
+  "heady": {
+    "pos": "adjective",
+    "meaning": "exciting and intoxicating",
+    "example": "the heady days of youth"
+  },
+  "heart": {
+    "pos": "noun",
+    "meaning": "the organ that pumps blood; the centre of feelings",
+    "example": "my heart was racing"
+  },
+  "hefty": {
+    "pos": "adjective",
+    "meaning": "large and heavy; (of a sum) large",
+    "example": "a hefty fine"
+  },
+  "heron": {
+    "pos": "noun",
+    "meaning": "a tall wading bird with long legs and a long beak",
+    "example": "a heron by the lake"
+  },
+  "hippo": {
+    "pos": "noun",
+    "meaning": "a huge thick-skinned African animal that lives in rivers",
+    "example": "a hippo yawning"
+  },
+  "hobby": {
+    "pos": "noun",
+    "meaning": "an activity done for pleasure in free time",
+    "example": "painting is her hobby"
+  },
+  "horse": {
+    "pos": "noun",
+    "meaning": "a large four-legged animal ridden or used for pulling loads",
+    "example": "ride a horse"
+  },
+  "hover": {
+    "pos": "verb",
+    "meaning": "stay in one place in the air",
+    "example": "a hummingbird hovers"
+  },
+  "humor": {
+    "pos": "noun",
+    "meaning": "the quality of being funny; a mood",
+    "example": "a sense of humor"
+  },
+  "hunky": {
+    "pos": "adjective",
+    "meaning": "informal: strong and attractive (of a man); 'hunky-dory' means fine",
+    "example": "a hunky lifeguard"
+  },
+  "husky": {
+    "pos": "noun",
+    "meaning": "a thick-coated sled dog; (of a voice) deep and hoarse",
+    "example": "a husky pulling a sled"
+  },
+  "icing": {
+    "pos": "noun",
+    "meaning": "a sweet coating on cakes",
+    "example": "chocolate icing"
+  },
+  "idiom": {
+    "pos": "noun",
+    "meaning": "a phrase whose meaning isn't literal, like 'break a leg'",
+    "example": "an English idiom"
+  },
+  "igloo": {
+    "pos": "noun",
+    "meaning": "a dome-shaped shelter built from blocks of snow",
+    "example": "an Inuit igloo"
+  },
+  "image": {
+    "pos": "noun",
+    "meaning": "a picture; the way something appears",
+    "example": "a blurry image"
+  },
+  "index": {
+    "pos": "noun",
+    "meaning": "an alphabetical list at the back of a book; a measure",
+    "example": "look it up in the index"
+  },
+  "inept": {
+    "pos": "adjective",
+    "meaning": "clumsy or incompetent",
+    "example": "an inept attempt"
+  },
+  "input": {
+    "pos": "noun",
+    "meaning": "something put in, like data or a contribution",
+    "example": "we need your input"
+  },
+  "irony": {
+    "pos": "noun",
+    "meaning": "saying the opposite of what you mean; an outcome contrary to expectation",
+    "example": "the irony of a fire station burning down"
+  },
+  "issue": {
+    "pos": "noun",
+    "meaning": "an important topic or problem; one edition of a magazine",
+    "example": "a minor issue"
+  },
+  "itchy": {
+    "pos": "adjective",
+    "meaning": "having an itch",
+    "example": "an itchy sweater"
+  },
+  "jeans": {
+    "pos": "noun",
+    "meaning": "trousers made of denim",
+    "example": "a pair of blue jeans"
+  },
+  "jerky": {
+    "pos": "adjective",
+    "meaning": "moving in sudden stops and starts; dried strips of meat",
+    "example": "jerky movements"
+  },
+  "jetty": {
+    "pos": "noun",
+    "meaning": "a landing stage or small pier",
+    "example": "boats tied to the jetty"
+  },
+  "joint": {
+    "pos": "noun",
+    "meaning": "where two bones meet; shared by two or more",
+    "example": "a knee joint"
+  },
+  "joker": {
+    "pos": "noun",
+    "meaning": "a person who likes jokes; the extra playing card",
+    "example": "the joker in the pack"
+  },
+  "judge": {
+    "pos": "verb",
+    "meaning": "decide who wins or who is right; the official in a court",
+    "example": "don't judge a book by its cover"
+  },
+  "jumpy": {
+    "pos": "adjective",
+    "meaning": "nervous and easily startled",
+    "example": "jumpy after the horror film"
+  },
+  "kiosk": {
+    "pos": "noun",
+    "meaning": "a small booth selling newspapers, snacks or tickets",
+    "example": "a kiosk at the station"
+  },
+  "kitty": {
+    "pos": "noun",
+    "meaning": "a kitten or cat; a shared pool of money",
+    "example": "here, kitty!"
+  },
+  "knead": {
+    "pos": "verb",
+    "meaning": "press and fold dough with your hands",
+    "example": "knead the roti dough"
+  },
+  "knelt": {
+    "pos": "verb",
+    "meaning": "past tense of kneel: rested on the knees",
+    "example": "he knelt to tie his shoe"
+  },
+  "knock": {
+    "pos": "verb",
+    "meaning": "hit something, especially a door, to make a noise",
+    "example": "knock before entering"
+  },
+  "koala": {
+    "pos": "noun",
+    "meaning": "a grey tree-dwelling Australian marsupial that eats eucalyptus",
+    "example": "a sleepy koala"
+  },
+  "labor": {
+    "pos": "noun",
+    "meaning": "work, especially hard physical work; giving birth",
+    "example": "manual labor"
+  },
+  "laser": {
+    "pos": "noun",
+    "meaning": "a device that makes an intense narrow beam of light",
+    "example": "a laser pointer"
+  },
+  "lasso": {
+    "pos": "noun",
+    "meaning": "a rope with a loop for catching cattle or horses",
+    "example": "the cowboy swung his lasso"
+  },
+  "leapt": {
+    "pos": "verb",
+    "meaning": "past tense of leap: jumped high or far",
+    "example": "the deer leapt over the fence"
+  },
+  "lease": {
+    "pos": "verb",
+    "meaning": "rent property or equipment by contract",
+    "example": "a two-year lease"
+  },
+  "least": {
+    "pos": "adjective",
+    "meaning": "the smallest amount",
+    "example": "the least I can do"
+  },
+  "ledge": {
+    "pos": "noun",
+    "meaning": "a narrow shelf sticking out from a wall or cliff",
+    "example": "a window ledge"
+  },
+  "leggy": {
+    "pos": "adjective",
+    "meaning": "having long legs",
+    "example": "a leggy model"
+  },
+  "level": {
+    "pos": "adjective",
+    "meaning": "flat and even; a height or standard",
+    "example": "the next level"
+  },
+  "light": {
+    "pos": "noun",
+    "meaning": "the brightness that lets us see; not heavy",
+    "example": "turn on the light"
+  },
+  "lilac": {
+    "pos": "noun",
+    "meaning": "a shrub with fragrant purple or white flowers; a pale purple",
+    "example": "a lilac dress"
+  },
+  "limbo": {
+    "pos": "noun",
+    "meaning": "an uncertain in-between state; a dance under a low bar",
+    "example": "stuck in limbo"
+  },
+  "limit": {
+    "pos": "noun",
+    "meaning": "the furthest point or amount allowed",
+    "example": "the speed limit"
+  },
+  "lived": {
+    "pos": "verb",
+    "meaning": "past tense of live: was alive, or had a home somewhere",
+    "example": "they lived in Pune for years"
+  },
+  "liver": {
+    "pos": "noun",
+    "meaning": "a large organ that cleans the blood",
+    "example": "the liver processes alcohol"
+  },
+  "livid": {
+    "pos": "adjective",
+    "meaning": "furiously angry",
+    "example": "livid about the delay"
+  },
+  "lobby": {
+    "pos": "noun",
+    "meaning": "an entrance hall; to try to influence politicians",
+    "example": "the hotel lobby"
+  },
+  "local": {
+    "pos": "adjective",
+    "meaning": "belonging to a particular area",
+    "example": "a local shop"
+  },
+  "lodge": {
+    "pos": "noun",
+    "meaning": "a small house, e.g. for hunters or skiers; to become stuck",
+    "example": "a ski lodge"
+  },
+  "lofty": {
+    "pos": "adjective",
+    "meaning": "very tall; noble or grand",
+    "example": "lofty ceilings"
+  },
+  "logic": {
+    "pos": "noun",
+    "meaning": "clear, sound reasoning",
+    "example": "there's no logic to it"
+  },
+  "loose": {
+    "pos": "adjective",
+    "meaning": "not tight or fixed",
+    "example": "a loose tooth"
+  },
+  "lorry": {
+    "pos": "noun",
+    "meaning": "a large road vehicle for carrying goods (UK for truck)",
+    "example": "a lorry on the highway"
+  },
+  "lying": {
+    "pos": "verb",
+    "meaning": "telling untruths; resting flat",
+    "example": "lying on the sofa"
+  },
+  "madam": {
+    "pos": "noun",
+    "meaning": "a polite form of address for a woman",
+    "example": "yes, madam"
+  },
+  "maize": {
+    "pos": "noun",
+    "meaning": "corn, the cereal plant with yellow kernels",
+    "example": "roasted maize"
+  },
+  "mammy": {
+    "pos": "noun",
+    "meaning": "a mother (informal, Irish and Southern US)",
+    "example": "my mammy"
+  },
+  "manga": {
+    "pos": "noun",
+    "meaning": "Japanese comics",
+    "example": "a manga series"
+  },
+  "mango": {
+    "pos": "noun",
+    "meaning": "a sweet juicy tropical fruit with orange flesh",
+    "example": "Alphonso mangoes"
+  },
+  "maple": {
+    "pos": "noun",
+    "meaning": "a tree with hand-shaped leaves, known for its syrup",
+    "example": "maple syrup"
+  },
+  "march": {
+    "pos": "verb",
+    "meaning": "walk with regular steps; the third month",
+    "example": "soldiers march in step"
+  },
+  "mason": {
+    "pos": "noun",
+    "meaning": "a person who builds with stone or brick",
+    "example": "a stone mason"
+  },
+  "match": {
+    "pos": "noun",
+    "meaning": "a game between two sides; a small stick that lights a flame; to go together",
+    "example": "a cricket match"
+  },
+  "maybe": {
+    "pos": "adverb",
+    "meaning": "perhaps",
+    "example": "maybe tomorrow"
+  },
+  "meant": {
+    "pos": "verb",
+    "meaning": "past tense of mean: intended, or signified",
+    "example": "I meant to call you"
+  },
+  "media": {
+    "pos": "noun",
+    "meaning": "plural of medium: newspapers, TV, radio and the internet as a whole",
+    "example": "the story was all over the media"
+  },
+  "medic": {
+    "pos": "noun",
+    "meaning": "a doctor or medical worker, especially in the army",
+    "example": "call a medic"
+  },
+  "mercy": {
+    "pos": "noun",
+    "meaning": "kindness shown to someone you could punish",
+    "example": "show mercy"
+  },
+  "merit": {
+    "pos": "noun",
+    "meaning": "the quality of deserving praise; to deserve",
+    "example": "judged on merit"
+  },
+  "meter": {
+    "pos": "noun",
+    "meaning": "a device that measures use, e.g. of electricity; the unit of length",
+    "example": "the electricity meter"
+  },
+  "might": {
+    "pos": "noun",
+    "meaning": "power or strength; past tense of may",
+    "example": "with all his might"
+  },
+  "mimic": {
+    "pos": "verb",
+    "meaning": "copy someone's voice or actions",
+    "example": "the parrot mimics speech"
+  },
+  "mince": {
+    "pos": "verb",
+    "meaning": "cut food into very small pieces; minced meat",
+    "example": "mince the garlic"
+  },
+  "minus": {
+    "pos": "preposition",
+    "meaning": "less, taking away",
+    "example": "ten minus three"
+  },
+  "mocha": {
+    "pos": "noun",
+    "meaning": "coffee flavoured with chocolate",
+    "example": "a mocha latte"
+  },
+  "model": {
+    "pos": "noun",
+    "meaning": "a small copy of something; someone who shows off clothes; a type",
+    "example": "a model aeroplane"
+  },
+  "moody": {
+    "pos": "adjective",
+    "meaning": "having changeable moods; often gloomy",
+    "example": "a moody teenager"
+  },
+  "moral": {
+    "pos": "adjective",
+    "meaning": "concerned with right and wrong; the lesson of a story",
+    "example": "the moral of the story"
+  },
+  "motto": {
+    "pos": "noun",
+    "meaning": "a short phrase stating a belief or aim",
+    "example": "the school motto"
+  },
+  "mound": {
+    "pos": "noun",
+    "meaning": "a small hill or heap",
+    "example": "a mound of earth"
+  },
+  "mount": {
+    "pos": "verb",
+    "meaning": "climb onto; a mountain",
+    "example": "mount the horse"
+  },
+  "mouse": {
+    "pos": "noun",
+    "meaning": "a small rodent with a long tail; a computer pointing device",
+    "example": "a mouse ran across the floor"
+  },
+  "mucky": {
+    "pos": "adjective",
+    "meaning": "dirty or muddy",
+    "example": "mucky boots"
+  },
+  "muddy": {
+    "pos": "adjective",
+    "meaning": "covered in mud",
+    "example": "muddy boots"
+  },
+  "mummy": {
+    "pos": "noun",
+    "meaning": "a preserved body wrapped in cloth; a child's word for mother",
+    "example": "an Egyptian mummy"
+  },
+  "music": {
+    "pos": "noun",
+    "meaning": "sounds arranged in melody and rhythm to be sung or played",
+    "example": "listen to music"
+  },
+  "musty": {
+    "pos": "adjective",
+    "meaning": "smelling stale and damp",
+    "example": "a musty old room"
+  },
+  "needy": {
+    "pos": "adjective",
+    "meaning": "needing a lot of attention; poor",
+    "example": "a needy puppy"
+  },
+  "nerve": {
+    "pos": "noun",
+    "meaning": "a fibre that carries signals in the body; courage",
+    "example": "lost my nerve"
+  },
+  "noble": {
+    "pos": "adjective",
+    "meaning": "having high moral qualities; of aristocratic rank",
+    "example": "a noble gesture"
+  },
+  "noose": {
+    "pos": "noun",
+    "meaning": "a loop of rope that tightens when pulled",
+    "example": "a hangman's noose"
+  },
+  "north": {
+    "pos": "noun",
+    "meaning": "the direction to your left when facing the sunrise",
+    "example": "birds fly north in spring"
+  },
+  "notch": {
+    "pos": "noun",
+    "meaning": "a small V-shaped cut; a level",
+    "example": "a notch on the belt"
+  },
+  "nylon": {
+    "pos": "noun",
+    "meaning": "a strong synthetic fabric or fibre",
+    "example": "nylon stockings"
+  },
+  "olive": {
+    "pos": "noun",
+    "meaning": "a small bitter fruit pressed for oil; its dull green colour",
+    "example": "olives on the pizza"
+  },
+  "optic": {
+    "pos": "adjective",
+    "meaning": "relating to the eye or vision",
+    "example": "the optic nerve"
+  },
+  "organ": {
+    "pos": "noun",
+    "meaning": "a body part with a particular job, like the heart; a large keyboard instrument",
+    "example": "the heart is a vital organ"
+  },
+  "otter": {
+    "pos": "noun",
+    "meaning": "a playful furry animal that swims and eats fish",
+    "example": "otters floating on their backs"
+  },
+  "ought": {
+    "pos": "verb",
+    "meaning": "used to say what is the right or sensible thing to do",
+    "example": "you ought to rest"
+  },
+  "ounce": {
+    "pos": "noun",
+    "meaning": "a small unit of weight, about 28 grams",
+    "example": "an ounce of gold"
+  },
+  "ozone": {
+    "pos": "noun",
+    "meaning": "a form of oxygen; the layer of it that shields Earth from UV",
+    "example": "the ozone layer"
+  },
+  "paddy": {
+    "pos": "noun",
+    "meaning": "a flooded field where rice is grown",
+    "example": "paddy fields"
+  },
+  "paint": {
+    "pos": "noun",
+    "meaning": "a coloured liquid spread on surfaces; to apply it",
+    "example": "a tin of paint"
+  },
+  "parry": {
+    "pos": "verb",
+    "meaning": "ward off a blow",
+    "example": "parry the attack"
+  },
+  "party": {
+    "pos": "noun",
+    "meaning": "a social gathering to celebrate; a political group",
+    "example": "a birthday party"
+  },
+  "patch": {
+    "pos": "noun",
+    "meaning": "a piece of material covering a hole; a small area",
+    "example": "a patch on the jeans"
+  },
+  "peach": {
+    "pos": "noun",
+    "meaning": "a soft juicy fruit with fuzzy skin and a stone",
+    "example": "a ripe peach"
+  },
+  "peaky": {
+    "pos": "adjective",
+    "meaning": "pale and ill-looking",
+    "example": "you look a bit peaky"
+  },
+  "pecan": {
+    "pos": "noun",
+    "meaning": "a sweet nut like a walnut, from a North American tree",
+    "example": "pecan pie"
+  },
+  "pedal": {
+    "pos": "noun",
+    "meaning": "a foot lever on a bicycle, car or piano",
+    "example": "push the pedals"
+  },
+  "penny": {
+    "pos": "noun",
+    "meaning": "a one-cent or one-pence coin; a tiny amount of money",
+    "example": "not a penny left"
+  },
+  "petal": {
+    "pos": "noun",
+    "meaning": "one of the coloured leaf-like parts of a flower",
+    "example": "rose petals"
+  },
+  "petty": {
+    "pos": "adjective",
+    "meaning": "small and unimportant; mean over small things",
+    "example": "petty arguments"
+  },
+  "pique": {
+    "pos": "noun",
+    "meaning": "a feeling of irritation from hurt pride",
+    "example": "left in a fit of pique"
+  },
+  "pitch": {
+    "pos": "noun",
+    "meaning": "a playing field; how high or low a sound is; to throw",
+    "example": "a cricket pitch"
+  },
+  "pizza": {
+    "pos": "noun",
+    "meaning": "a flat round bread baked with tomato, cheese and toppings",
+    "example": "a slice of pizza"
+  },
+  "plain": {
+    "pos": "adjective",
+    "meaning": "simple, not decorated; clear; a flat area of land",
+    "example": "plain white rice"
+  },
+  "plant": {
+    "pos": "noun",
+    "meaning": "a living thing that grows in soil, like a flower or tree; a factory",
+    "example": "water the plants"
+  },
+  "plate": {
+    "pos": "noun",
+    "meaning": "a flat dish for food",
+    "example": "a plate of biryani"
+  },
+  "plier": {
+    "pos": "noun",
+    "meaning": "a gripping tool (usually 'pliers')",
+    "example": "a pair of pliers"
+  },
+  "plumb": {
+    "pos": "adjective",
+    "meaning": "exactly vertical; completely (informal)",
+    "example": "the wall isn't plumb"
+  },
+  "plush": {
+    "pos": "adjective",
+    "meaning": "soft and luxurious",
+    "example": "a plush toy"
+  },
+  "point": {
+    "pos": "noun",
+    "meaning": "a sharp end; a dot; the main idea; to aim a finger",
+    "example": "the point of the pencil"
+  },
+  "poise": {
+    "pos": "noun",
+    "meaning": "calm, graceful composure",
+    "example": "she answered with poise"
+  },
+  "poker": {
+    "pos": "noun",
+    "meaning": "a card game with betting; a metal rod for stirring a fire",
+    "example": "a game of poker"
+  },
+  "polar": {
+    "pos": "adjective",
+    "meaning": "relating to the North or South Pole; complete opposites",
+    "example": "a polar bear"
+  },
+  "polka": {
+    "pos": "noun",
+    "meaning": "a lively dance; 'polka dots' are round spots",
+    "example": "a polka-dot dress"
+  },
+  "pound": {
+    "pos": "noun",
+    "meaning": "a unit of weight (about 450 g); British money; to hit hard",
+    "example": "a pound of apples"
+  },
+  "pouty": {
+    "pos": "adjective",
+    "meaning": "pushing the lips out in a sulky or playful way",
+    "example": "a pouty expression"
+  },
+  "prank": {
+    "pos": "noun",
+    "meaning": "a playful trick",
+    "example": "an April Fools' prank"
+  },
+  "price": {
+    "pos": "noun",
+    "meaning": "the amount of money something costs",
+    "example": "the price of petrol"
+  },
+  "prism": {
+    "pos": "noun",
+    "meaning": "a transparent block that splits light into a rainbow",
+    "example": "a glass prism"
+  },
+  "privy": {
+    "pos": "adjective",
+    "meaning": "sharing in a secret; an outdoor toilet",
+    "example": "privy to the plan"
+  },
+  "prone": {
+    "pos": "adjective",
+    "meaning": "likely to suffer from; lying face down",
+    "example": "prone to colds"
+  },
+  "prune": {
+    "pos": "noun",
+    "meaning": "a dried plum; to trim a plant",
+    "example": "prune the roses"
+  },
+  "pulse": {
+    "pos": "noun",
+    "meaning": "the regular beat of blood in your arteries; edible seeds like lentils",
+    "example": "check his pulse"
+  },
+  "pupil": {
+    "pos": "noun",
+    "meaning": "a school student; the dark centre of the eye",
+    "example": "the pupils lined up"
+  },
+  "purge": {
+    "pos": "verb",
+    "meaning": "get rid of unwanted things or people",
+    "example": "purge old files"
+  },
+  "pygmy": {
+    "pos": "adjective",
+    "meaning": "very small for its kind",
+    "example": "a pygmy hippo"
+  },
+  "quack": {
+    "pos": "noun",
+    "meaning": "the sound a duck makes; a fake doctor",
+    "example": "the ducks quacked"
+  },
+  "quail": {
+    "pos": "noun",
+    "meaning": "a small plump game bird; to cower in fear",
+    "example": "quail eggs"
+  },
+  "quake": {
+    "pos": "noun",
+    "meaning": "shaking; short for earthquake",
+    "example": "a quake shook the city"
+  },
+  "queen": {
+    "pos": "noun",
+    "meaning": "a female ruler or a king's wife",
+    "example": "the queen of England"
+  },
+  "quest": {
+    "pos": "noun",
+    "meaning": "a long search for something",
+    "example": "a quest for treasure"
+  },
+  "quiet": {
+    "pos": "adjective",
+    "meaning": "making little or no noise",
+    "example": "a quiet room"
+  },
+  "rabid": {
+    "pos": "adjective",
+    "meaning": "infected with rabies; fanatical",
+    "example": "a rabid dog"
+  },
+  "radar": {
+    "pos": "noun",
+    "meaning": "a system that uses radio waves to detect objects",
+    "example": "the plane showed up on radar"
+  },
+  "radii": {
+    "pos": "noun",
+    "meaning": "plural of radius: lines from the centre of a circle to its edge",
+    "example": "circles of different radii"
+  },
+  "radio": {
+    "pos": "noun",
+    "meaning": "broadcasting by radio waves; the device that receives it",
+    "example": "turn on the radio"
+  },
+  "rally": {
+    "pos": "noun",
+    "meaning": "a large gathering; to recover; a long exchange in tennis",
+    "example": "a political rally"
+  },
+  "range": {
+    "pos": "noun",
+    "meaning": "the extent between limits; a selection; a stove",
+    "example": "a wide range of colours"
+  },
+  "ratty": {
+    "pos": "adjective",
+    "meaning": "shabby and worn; irritable (UK)",
+    "example": "a ratty old jumper"
+  },
+  "reach": {
+    "pos": "verb",
+    "meaning": "stretch out to touch; arrive at",
+    "example": "reach the top shelf"
+  },
+  "realm": {
+    "pos": "noun",
+    "meaning": "a kingdom; an area of activity",
+    "example": "the realm of fantasy"
+  },
+  "rebel": {
+    "pos": "noun",
+    "meaning": "a person who fights against authority",
+    "example": "a rebel without a cause"
+  },
+  "recut": {
+    "pos": "verb",
+    "meaning": "to cut again, especially to re-edit a film",
+    "example": "the director recut the ending"
+  },
+  "relay": {
+    "pos": "verb",
+    "meaning": "pass along; a race run in stages by a team",
+    "example": "a 4x100 m relay"
+  },
+  "resin": {
+    "pos": "noun",
+    "meaning": "a sticky substance from trees, or a synthetic version used in plastics",
+    "example": "epoxy resin"
+  },
+  "rhino": {
+    "pos": "noun",
+    "meaning": "a huge thick-skinned animal with one or two horns on its nose",
+    "example": "a one-horned rhino in Assam"
+  },
+  "right": {
+    "pos": "adjective",
+    "meaning": "correct; the opposite of left; a lawful entitlement",
+    "example": "the right answer"
+  },
+  "riper": {
+    "pos": "adjective",
+    "meaning": "comparative of ripe: more fully grown and ready to eat",
+    "example": "the mangoes are riper this week"
+  },
+  "rival": {
+    "pos": "noun",
+    "meaning": "a person or team you compete with",
+    "example": "arch rivals"
+  },
+  "rivet": {
+    "pos": "noun",
+    "meaning": "a metal pin that joins plates; to hold attention completely",
+    "example": "riveted to the screen"
+  },
+  "roach": {
+    "pos": "noun",
+    "meaning": "a cockroach",
+    "example": "a roach under the fridge"
+  },
+  "roomy": {
+    "pos": "adjective",
+    "meaning": "spacious",
+    "example": "a roomy car"
+  },
+  "rowdy": {
+    "pos": "adjective",
+    "meaning": "noisy and disorderly",
+    "example": "a rowdy crowd"
+  },
+  "ruler": {
+    "pos": "noun",
+    "meaning": "a flat strip for measuring and drawing lines; a person who governs",
+    "example": "a 30 cm ruler"
+  },
+  "rupee": {
+    "pos": "noun",
+    "meaning": "the currency of India (also Pakistan, Nepal and Sri Lanka)",
+    "example": "a hundred rupees"
+  },
+  "salon": {
+    "pos": "noun",
+    "meaning": "a shop for hair or beauty treatments",
+    "example": "a hair salon"
+  },
+  "salty": {
+    "pos": "adjective",
+    "meaning": "tasting of salt",
+    "example": "salty chips"
+  },
+  "samba": {
+    "pos": "noun",
+    "meaning": "a lively Brazilian dance and its music",
+    "example": "dancing the samba"
+  },
+  "sandy": {
+    "pos": "adjective",
+    "meaning": "covered with sand; light yellowish brown",
+    "example": "a sandy beach"
+  },
+  "sappy": {
+    "pos": "adjective",
+    "meaning": "overly sentimental",
+    "example": "a sappy love song"
+  },
+  "sassy": {
+    "pos": "adjective",
+    "meaning": "lively, bold and a bit cheeky",
+    "example": "a sassy reply"
+  },
+  "satyr": {
+    "pos": "noun",
+    "meaning": "a Greek mythological creature, part man and part goat",
+    "example": "a satyr playing pipes"
+  },
+  "savor": {
+    "pos": "verb",
+    "meaning": "enjoy slowly and fully",
+    "example": "savor every bite"
+  },
+  "savoy": {
+    "pos": "noun",
+    "meaning": "a crinkly-leaved cabbage",
+    "example": "savoy cabbage"
+  },
+  "savvy": {
+    "pos": "noun",
+    "meaning": "shrewd practical knowledge",
+    "example": "tech-savvy"
+  },
+  "scale": {
+    "pos": "noun",
+    "meaning": "a device for weighing; the skin plates of a fish; relative size",
+    "example": "step on the scale"
+  },
+  "scone": {
+    "pos": "noun",
+    "meaning": "a small round cake, often eaten with jam and cream",
+    "example": "scones at tea time"
+  },
+  "scope": {
+    "pos": "noun",
+    "meaning": "the range of what something covers",
+    "example": "beyond the scope of this talk"
+  },
+  "score": {
+    "pos": "noun",
+    "meaning": "the points in a game; to gain points",
+    "example": "the final score was 2–1"
+  },
+  "scrap": {
+    "pos": "noun",
+    "meaning": "a small leftover piece; to get rid of",
+    "example": "scraps of paper"
+  },
+  "screw": {
+    "pos": "noun",
+    "meaning": "a metal pin with a spiral thread turned to fasten things",
+    "example": "tighten the screw"
+  },
+  "seedy": {
+    "pos": "adjective",
+    "meaning": "shabby and disreputable",
+    "example": "a seedy hotel"
+  },
+  "sense": {
+    "pos": "noun",
+    "meaning": "sight, hearing, etc.; good judgement; meaning",
+    "example": "common sense"
+  },
+  "serve": {
+    "pos": "verb",
+    "meaning": "give food or help to someone; be useful for",
+    "example": "serve dinner"
+  },
+  "setup": {
+    "pos": "noun",
+    "meaning": "the way something is arranged",
+    "example": "a home office setup"
+  },
+  "shady": {
+    "pos": "adjective",
+    "meaning": "giving shade; dishonest",
+    "example": "a shady deal"
+  },
+  "shaft": {
+    "pos": "noun",
+    "meaning": "a long handle or rod; a vertical passage",
+    "example": "a lift shaft"
+  },
+  "shall": {
+    "pos": "verb",
+    "meaning": "used to talk about the future or to make an offer or suggestion",
+    "example": "shall we dance?"
+  },
+  "shalt": {
+    "pos": "verb",
+    "meaning": "old form of shall, used with 'thou'",
+    "example": "thou shalt not steal"
+  },
+  "share": {
+    "pos": "verb",
+    "meaning": "have or use together; a part of something divided",
+    "example": "share the pizza"
+  },
+  "shark": {
+    "pos": "noun",
+    "meaning": "a large fierce fish with sharp teeth",
+    "example": "a great white shark"
+  },
+  "sharp": {
+    "pos": "adjective",
+    "meaning": "having a fine cutting edge; clear; exactly (of time)",
+    "example": "a sharp knife"
+  },
+  "sheer": {
+    "pos": "adjective",
+    "meaning": "complete; very steep; (of fabric) very thin",
+    "example": "sheer luck"
+  },
+  "sheet": {
+    "pos": "noun",
+    "meaning": "a large piece of fabric for a bed; a flat piece of paper",
+    "example": "a bed sheet"
+  },
+  "shell": {
+    "pos": "noun",
+    "meaning": "the hard outer case of an egg, nut or sea creature",
+    "example": "a seashell"
+  },
+  "shied": {
+    "pos": "verb",
+    "meaning": "past tense of shy: drew back suddenly in fear or dislike",
+    "example": "the horse shied at the noise"
+  },
+  "shift": {
+    "pos": "verb",
+    "meaning": "move or change; a work period",
+    "example": "the night shift"
+  },
+  "shoal": {
+    "pos": "noun",
+    "meaning": "a large group of fish; a sandbank",
+    "example": "a shoal of sardines"
+  },
+  "shock": {
+    "pos": "noun",
+    "meaning": "a sudden upsetting surprise; an electric jolt",
+    "example": "the news came as a shock"
+  },
+  "shone": {
+    "pos": "verb",
+    "meaning": "past tense of shine: gave out light, or did very well",
+    "example": "the moon shone brightly"
+  },
+  "shook": {
+    "pos": "verb",
+    "meaning": "past tense of shake",
+    "example": "she shook her head"
+  },
+  "shoot": {
+    "pos": "verb",
+    "meaning": "fire a gun or arrow; take a photo; a new plant growth",
+    "example": "shoot the ball at the goal"
+  },
+  "short": {
+    "pos": "adjective",
+    "meaning": "small in length or height; not long in time",
+    "example": "a short walk"
+  },
+  "shove": {
+    "pos": "verb",
+    "meaning": "push roughly",
+    "example": "shove the box aside"
+  },
+  "shown": {
+    "pos": "verb",
+    "meaning": "past participle of show: displayed or made visible",
+    "example": "the film was shown twice"
+  },
+  "shred": {
+    "pos": "verb",
+    "meaning": "tear or cut into thin strips; a tiny piece",
+    "example": "shred the cabbage"
+  },
+  "shrew": {
+    "pos": "noun",
+    "meaning": "a tiny mouse-like animal with a pointed snout",
+    "example": "a shrew in the garden"
+  },
+  "shuck": {
+    "pos": "verb",
+    "meaning": "remove the husk or shell from corn or shellfish",
+    "example": "shuck the corn"
+  },
+  "shunt": {
+    "pos": "verb",
+    "meaning": "push or move aside",
+    "example": "shunted to a side track"
+  },
+  "since": {
+    "pos": "preposition",
+    "meaning": "from a time in the past until now; also 'because'",
+    "example": "we've been friends since school"
+  },
+  "siren": {
+    "pos": "noun",
+    "meaning": "a loud warning sound, as on an ambulance; a mythical sea singer",
+    "example": "the ambulance siren"
+  },
+  "skate": {
+    "pos": "noun",
+    "meaning": "a boot with a blade or wheels for gliding; to move on them",
+    "example": "ice skates"
+  },
+  "skimp": {
+    "pos": "verb",
+    "meaning": "spend or use too little",
+    "example": "don't skimp on the cheese"
+  },
+  "skunk": {
+    "pos": "noun",
+    "meaning": "a black-and-white animal that sprays a foul smell when threatened",
+    "example": "a skunk's spray"
+  },
+  "slack": {
+    "pos": "adjective",
+    "meaning": "loose; lazy or careless",
+    "example": "a slack rope"
+  },
+  "slain": {
+    "pos": "verb",
+    "meaning": "killed violently (past participle of slay)",
+    "example": "the dragon was slain"
+  },
+  "slant": {
+    "pos": "noun",
+    "meaning": "a sloping position; a biased view",
+    "example": "the roof has a slant"
+  },
+  "slate": {
+    "pos": "noun",
+    "meaning": "a grey rock that splits into flat sheets, used for roofs; to criticise",
+    "example": "a slate roof"
+  },
+  "sleek": {
+    "pos": "adjective",
+    "meaning": "smooth, glossy and streamlined",
+    "example": "a sleek car"
+  },
+  "slept": {
+    "pos": "verb",
+    "meaning": "past tense of sleep: rested with eyes closed and mind at rest",
+    "example": "I slept for nine hours"
+  },
+  "slice": {
+    "pos": "noun",
+    "meaning": "a thin flat piece cut from something",
+    "example": "a slice of cake"
+  },
+  "slick": {
+    "pos": "adjective",
+    "meaning": "smooth and glossy; skilfully done",
+    "example": "a slick presentation"
+  },
+  "slide": {
+    "pos": "verb",
+    "meaning": "move smoothly over a surface; a playground chute",
+    "example": "slide down the hill"
+  },
+  "slime": {
+    "pos": "noun",
+    "meaning": "a thick slippery substance",
+    "example": "snail slime"
+  },
+  "sling": {
+    "pos": "noun",
+    "meaning": "a bandage supporting an injured arm; to throw casually",
+    "example": "an arm in a sling"
+  },
+  "slope": {
+    "pos": "noun",
+    "meaning": "a surface at an angle",
+    "example": "a ski slope"
+  },
+  "sloth": {
+    "pos": "noun",
+    "meaning": "a slow-moving tree animal; laziness",
+    "example": "a sloth hanging from a branch"
+  },
+  "slump": {
+    "pos": "verb",
+    "meaning": "fall suddenly; sit heavily",
+    "example": "sales slumped"
+  },
+  "slung": {
+    "pos": "verb",
+    "meaning": "past tense of sling: threw carelessly, or hung loosely",
+    "example": "he slung the bag over his shoulder"
+  },
+  "slunk": {
+    "pos": "verb",
+    "meaning": "past tense of slink: moved away quietly, often out of shame",
+    "example": "the dog slunk off"
+  },
+  "smart": {
+    "pos": "adjective",
+    "meaning": "clever; neat and stylish",
+    "example": "a smart idea"
+  },
+  "smear": {
+    "pos": "verb",
+    "meaning": "spread or rub messily",
+    "example": "smear butter on the toast"
+  },
+  "smile": {
+    "pos": "noun",
+    "meaning": "a happy expression with the corners of the mouth turned up",
+    "example": "a warm smile"
+  },
+  "smith": {
+    "pos": "noun",
+    "meaning": "a person who works metal, like a blacksmith",
+    "example": "the smith hammered the iron"
+  },
+  "smoke": {
+    "pos": "noun",
+    "meaning": "the grey cloud given off by something burning",
+    "example": "smoke from the chimney"
+  },
+  "snare": {
+    "pos": "noun",
+    "meaning": "a trap for small animals; a drum",
+    "example": "a rabbit snare"
+  },
+  "snarl": {
+    "pos": "verb",
+    "meaning": "growl angrily; a tangled knot",
+    "example": "the dog snarled"
+  },
+  "snipe": {
+    "pos": "noun",
+    "meaning": "a wading bird; to criticise from the sidelines",
+    "example": "sniping at colleagues"
+  },
+  "snuck": {
+    "pos": "verb",
+    "meaning": "informal past tense of sneak: moved secretly",
+    "example": "we snuck into the kitchen"
+  },
+  "snuff": {
+    "pos": "noun",
+    "meaning": "powdered tobacco sniffed up the nose; to put out a candle",
+    "example": "snuff out the candle"
+  },
+  "soggy": {
+    "pos": "adjective",
+    "meaning": "soaked and soft",
+    "example": "soggy cereal"
+  },
+  "solid": {
+    "pos": "adjective",
+    "meaning": "firm and not liquid or hollow",
+    "example": "solid ground"
+  },
+  "sooty": {
+    "pos": "adjective",
+    "meaning": "covered with soot",
+    "example": "a sooty chimney"
+  },
+  "sound": {
+    "pos": "noun",
+    "meaning": "something you hear; healthy or reliable",
+    "example": "the sound of rain"
+  },
+  "south": {
+    "pos": "noun",
+    "meaning": "the direction opposite north",
+    "example": "a trip down south"
+  },
+  "spade": {
+    "pos": "noun",
+    "meaning": "a digging tool with a flat blade; the ♠ card suit",
+    "example": "dig with a spade"
+  },
+  "spare": {
+    "pos": "adjective",
+    "meaning": "extra, kept in reserve; to let off",
+    "example": "a spare tyre"
+  },
+  "spark": {
+    "pos": "noun",
+    "meaning": "a tiny fiery particle; to set off",
+    "example": "a spark from the fire"
+  },
+  "spear": {
+    "pos": "noun",
+    "meaning": "a long pole with a sharp point",
+    "example": "a fishing spear"
+  },
+  "spell": {
+    "pos": "verb",
+    "meaning": "write the letters of a word; a magic charm; a short period",
+    "example": "spell your name"
+  },
+  "spelt": {
+    "pos": "noun",
+    "meaning": "an ancient type of wheat; past tense of spell",
+    "example": "spelt flour"
+  },
+  "spice": {
+    "pos": "noun",
+    "meaning": "a strong-flavoured seasoning like cumin or pepper",
+    "example": "a spice box"
+  },
+  "spied": {
+    "pos": "verb",
+    "meaning": "past tense of spy: caught sight of, or watched secretly",
+    "example": "she spied a kite in the sky"
+  },
+  "spike": {
+    "pos": "noun",
+    "meaning": "a sharp point; a sudden sharp rise",
+    "example": "a spike in prices"
+  },
+  "spilt": {
+    "pos": "verb",
+    "meaning": "past tense of spill: let liquid flow out by accident",
+    "example": "no use crying over spilt milk"
+  },
+  "spine": {
+    "pos": "noun",
+    "meaning": "the backbone; the edge of a book",
+    "example": "sit up straight to protect your spine"
+  },
+  "spite": {
+    "pos": "noun",
+    "meaning": "a desire to hurt or annoy; 'in spite of' means despite",
+    "example": "out of spite"
+  },
+  "split": {
+    "pos": "verb",
+    "meaning": "divide or break apart; a crack",
+    "example": "split the bill"
+  },
+  "spoke": {
+    "pos": "verb",
+    "meaning": "past tense of speak; a bar from a wheel's hub to its rim",
+    "example": "she spoke softly"
+  },
+  "spook": {
+    "pos": "noun",
+    "meaning": "a ghost; to frighten",
+    "example": "the noise spooked the horse"
+  },
+  "spout": {
+    "pos": "noun",
+    "meaning": "a tube through which liquid pours",
+    "example": "the kettle's spout"
+  },
+  "spray": {
+    "pos": "noun",
+    "meaning": "liquid in fine drops; to scatter it",
+    "example": "a spray of perfume"
+  },
+  "spree": {
+    "pos": "noun",
+    "meaning": "a short burst of indulgence",
+    "example": "a shopping spree"
+  },
+  "spunk": {
+    "pos": "noun",
+    "meaning": "courage and spirit",
+    "example": "she has spunk"
+  },
+  "squad": {
+    "pos": "noun",
+    "meaning": "a small team or group",
+    "example": "the cricket squad"
+  },
+  "staff": {
+    "pos": "noun",
+    "meaning": "the people who work for an organisation; a long stick",
+    "example": "hotel staff"
+  },
+  "stage": {
+    "pos": "noun",
+    "meaning": "a platform for performers; a step in a process",
+    "example": "walk on stage"
+  },
+  "stain": {
+    "pos": "noun",
+    "meaning": "a mark that's hard to remove",
+    "example": "a coffee stain"
+  },
+  "stake": {
+    "pos": "noun",
+    "meaning": "a pointed post; money risked in a bet; an interest in something",
+    "example": "a wooden stake"
+  },
+  "stamp": {
+    "pos": "noun",
+    "meaning": "a small sticker paid for postage; to bring your foot down hard",
+    "example": "a postage stamp"
+  },
+  "stank": {
+    "pos": "verb",
+    "meaning": "past tense of stink: smelt very bad",
+    "example": "the bin stank"
+  },
+  "state": {
+    "pos": "noun",
+    "meaning": "a condition; a region of a country; to say",
+    "example": "a state of shock"
+  },
+  "steam": {
+    "pos": "noun",
+    "meaning": "the vapour from boiling water",
+    "example": "steam from the kettle"
+  },
+  "steer": {
+    "pos": "verb",
+    "meaning": "guide a vehicle's direction; a young bull",
+    "example": "steer the car left"
+  },
+  "stern": {
+    "pos": "adjective",
+    "meaning": "strict and serious; the back of a boat",
+    "example": "a stern look"
+  },
+  "stiff": {
+    "pos": "adjective",
+    "meaning": "not easily bent; formal and awkward",
+    "example": "a stiff neck"
+  },
+  "still": {
+    "pos": "adjective",
+    "meaning": "not moving; even now",
+    "example": "stand still"
+  },
+  "sting": {
+    "pos": "noun",
+    "meaning": "a sharp pain from an insect or plant; to cause it",
+    "example": "a bee sting"
+  },
+  "stink": {
+    "pos": "verb",
+    "meaning": "give off a very bad smell",
+    "example": "the bins stink"
+  },
+  "stock": {
+    "pos": "noun",
+    "meaning": "goods kept for sale; shares; a broth base",
+    "example": "out of stock"
+  },
+  "stole": {
+    "pos": "verb",
+    "meaning": "past tense of steal; a wide scarf",
+    "example": "someone stole my bike"
+  },
+  "stood": {
+    "pos": "verb",
+    "meaning": "past tense of stand: was upright on the feet, or stayed in a position",
+    "example": "we stood in the rain"
+  },
+  "storm": {
+    "pos": "noun",
+    "meaning": "violent weather with strong wind, rain and often thunder",
+    "example": "a storm is coming"
+  },
+  "story": {
+    "pos": "noun",
+    "meaning": "a tale, real or made up",
+    "example": "a bedtime story"
+  },
+  "stout": {
+    "pos": "adjective",
+    "meaning": "rather fat and solid; a dark beer",
+    "example": "a stout little man"
+  },
+  "straw": {
+    "pos": "noun",
+    "meaning": "dried stalks of grain; a tube for drinking",
+    "example": "a drinking straw"
+  },
+  "stray": {
+    "pos": "noun",
+    "meaning": "a lost or homeless pet; to wander off",
+    "example": "a stray dog"
+  },
+  "strut": {
+    "pos": "verb",
+    "meaning": "walk proudly with chest out",
+    "example": "strut down the street"
+  },
+  "study": {
+    "pos": "verb",
+    "meaning": "learn about a subject; a room for working",
+    "example": "study for exams"
+  },
+  "stuff": {
+    "pos": "noun",
+    "meaning": "things in general; to fill tightly",
+    "example": "pack your stuff"
+  },
+  "stunk": {
+    "pos": "verb",
+    "meaning": "past participle of stink: smelt very bad",
+    "example": "the fridge has stunk for days"
+  },
+  "suite": {
+    "pos": "noun",
+    "meaning": "a set of rooms; a set of matching furniture or software",
+    "example": "a hotel suite"
+  },
+  "sulky": {
+    "pos": "adjective",
+    "meaning": "silent and bad-tempered",
+    "example": "a sulky child"
+  },
+  "sumac": {
+    "pos": "noun",
+    "meaning": "a shrub whose tart red berries are ground into a spice",
+    "example": "sumac on hummus"
+  },
+  "swear": {
+    "pos": "verb",
+    "meaning": "promise solemnly; use rude words",
+    "example": "swear to tell the truth"
+  },
+  "sweep": {
+    "pos": "verb",
+    "meaning": "clean a floor with a brush",
+    "example": "sweep the kitchen"
+  },
+  "sweet": {
+    "pos": "adjective",
+    "meaning": "tasting like sugar; kind",
+    "example": "a sweet mango"
+  },
+  "swept": {
+    "pos": "verb",
+    "meaning": "cleaned with a brush; carried along (past of sweep)",
+    "example": "swept the floor"
+  },
+  "swine": {
+    "pos": "noun",
+    "meaning": "pigs",
+    "example": "swine flu"
+  },
+  "swore": {
+    "pos": "verb",
+    "meaning": "past tense of swear: promised solemnly, or used rude words",
+    "example": "he swore to keep the secret"
+  },
+  "swung": {
+    "pos": "verb",
+    "meaning": "past tense of swing: moved back and forth or in a curve",
+    "example": "the gate swung shut"
+  },
+  "table": {
+    "pos": "noun",
+    "meaning": "furniture with a flat top on legs; data in rows and columns",
+    "example": "set the table"
+  },
+  "tacky": {
+    "pos": "adjective",
+    "meaning": "cheap and tasteless; slightly sticky",
+    "example": "tacky souvenirs"
+  },
+  "taken": {
+    "pos": "adjective",
+    "meaning": "past participle of take; already in a relationship",
+    "example": "this seat is taken"
+  },
+  "tally": {
+    "pos": "noun",
+    "meaning": "a running count or total",
+    "example": "keep a tally of the score"
+  },
+  "tapir": {
+    "pos": "noun",
+    "meaning": "a pig-like animal with a short flexible snout",
+    "example": "a tapir in the rainforest"
+  },
+  "taste": {
+    "pos": "noun",
+    "meaning": "the flavour of something; to try food",
+    "example": "taste the soup"
+  },
+  "taunt": {
+    "pos": "verb",
+    "meaning": "mock or jeer at",
+    "example": "taunted by the other team"
+  },
+  "tease": {
+    "pos": "verb",
+    "meaning": "make fun of playfully",
+    "example": "she teased him about his hat"
+  },
+  "teeth": {
+    "pos": "noun",
+    "meaning": "plural of tooth",
+    "example": "brush your teeth"
+  },
+  "their": {
+    "pos": "determiner",
+    "meaning": "belonging to them",
+    "example": "they lost their keys"
+  },
+  "these": {
+    "pos": "determiner",
+    "meaning": "plural of this: the ones here",
+    "example": "these shoes are new"
+  },
+  "thing": {
+    "pos": "noun",
+    "meaning": "an object, or anything at all",
+    "example": "what's that thing?"
+  },
+  "think": {
+    "pos": "verb",
+    "meaning": "use your mind to form ideas or opinions",
+    "example": "think before you speak"
+  },
+  "thong": {
+    "pos": "noun",
+    "meaning": "a flip-flop sandal; a narrow strip of leather",
+    "example": "wearing thongs on the beach"
+  },
+  "thorn": {
+    "pos": "noun",
+    "meaning": "a sharp point on a plant's stem",
+    "example": "a rose has thorns"
+  },
+  "those": {
+    "pos": "determiner",
+    "meaning": "plural of that: the ones there",
+    "example": "those hills are far away"
+  },
+  "threw": {
+    "pos": "verb",
+    "meaning": "past tense of throw: sent through the air with the hand",
+    "example": "she threw the ball"
+  },
+  "thump": {
+    "pos": "verb",
+    "meaning": "hit heavily; a dull heavy sound",
+    "example": "a thump on the door"
+  },
+  "thyme": {
+    "pos": "noun",
+    "meaning": "a small-leaved herb used in cooking",
+    "example": "thyme in the soup"
+  },
+  "tiger": {
+    "pos": "noun",
+    "meaning": "a large striped wild cat, India's national animal",
+    "example": "a Bengal tiger"
+  },
+  "title": {
+    "pos": "noun",
+    "meaning": "the name of a book, film or song; a word like Dr or Ms",
+    "example": "the title of the movie"
+  },
+  "toddy": {
+    "pos": "noun",
+    "meaning": "a hot drink of spirits, water, sugar and spices; palm wine in India",
+    "example": "a hot toddy for a cold"
+  },
+  "token": {
+    "pos": "noun",
+    "meaning": "a small thing that stands for something; a coin-like disc",
+    "example": "a token of thanks"
+  },
+  "tonic": {
+    "pos": "noun",
+    "meaning": "a fizzy bitter drink mixed with gin; something that makes you feel better",
+    "example": "gin and tonic"
+  },
+  "toque": {
+    "pos": "noun",
+    "meaning": "a chef's tall white hat; a knitted winter cap (Canada)",
+    "example": "the chef's toque"
+  },
+  "torch": {
+    "pos": "noun",
+    "meaning": "a handheld light; a burning stick",
+    "example": "shine the torch"
+  },
+  "totem": {
+    "pos": "noun",
+    "meaning": "an animal or object taken as a tribe's emblem, often carved on a pole",
+    "example": "a totem pole"
+  },
+  "tough": {
+    "pos": "adjective",
+    "meaning": "strong and hard to break; difficult",
+    "example": "a tough decision"
+  },
+  "trace": {
+    "pos": "verb",
+    "meaning": "find by following clues; a tiny amount",
+    "example": "trace the call"
+  },
+  "trail": {
+    "pos": "noun",
+    "meaning": "a path; to follow; to lag behind",
+    "example": "a hiking trail"
+  },
+  "trawl": {
+    "pos": "verb",
+    "meaning": "fish by dragging a net; search thoroughly",
+    "example": "trawl through old emails"
+  },
+  "treat": {
+    "pos": "noun",
+    "meaning": "something special that gives pleasure; to behave towards",
+    "example": "a treat for the dog"
+  },
+  "triad": {
+    "pos": "noun",
+    "meaning": "a group of three",
+    "example": "a triad of notes"
+  },
+  "trial": {
+    "pos": "noun",
+    "meaning": "a court hearing; a test of something",
+    "example": "a free trial"
+  },
+  "troll": {
+    "pos": "noun",
+    "meaning": "a mythical ugly creature; someone who posts to provoke online",
+    "example": "a troll under the bridge"
+  },
+  "trout": {
+    "pos": "noun",
+    "meaning": "a freshwater fish related to salmon",
+    "example": "catch a trout"
+  },
+  "trunk": {
+    "pos": "noun",
+    "meaning": "a tree's main stem; an elephant's nose; a large box",
+    "example": "the elephant's trunk"
+  },
+  "tryst": {
+    "pos": "noun",
+    "meaning": "a secret meeting between lovers",
+    "example": "a midnight tryst"
+  },
+  "tulip": {
+    "pos": "noun",
+    "meaning": "a spring flower with a cup-shaped bloom",
+    "example": "tulips in Kashmir"
+  },
+  "tummy": {
+    "pos": "noun",
+    "meaning": "the stomach (informal)",
+    "example": "a tummy ache"
+  },
+  "tunic": {
+    "pos": "noun",
+    "meaning": "a loose knee-length garment",
+    "example": "a cotton tunic"
+  },
+  "turbo": {
+    "pos": "noun",
+    "meaning": "short for turbocharger: a device that gives an engine extra power",
+    "example": "a car with a turbo"
+  },
+  "tweak": {
+    "pos": "verb",
+    "meaning": "make a small adjustment",
+    "example": "tweak the recipe"
+  },
+  "twist": {
+    "pos": "verb",
+    "meaning": "turn or wind around; an unexpected turn in a story",
+    "example": "a plot twist"
+  },
+  "twixt": {
+    "pos": "preposition",
+    "meaning": "old or poetic form of betwixt: between",
+    "example": "twixt the cup and the lip"
+  },
+  "ulcer": {
+    "pos": "noun",
+    "meaning": "an open sore on the skin or inside the body",
+    "example": "a mouth ulcer"
+  },
+  "unfit": {
+    "pos": "adjective",
+    "meaning": "not healthy; not suitable",
+    "example": "unfit to drive"
+  },
+  "union": {
+    "pos": "noun",
+    "meaning": "joining together; a workers' organisation",
+    "example": "a trade union"
+  },
+  "unity": {
+    "pos": "noun",
+    "meaning": "being joined as a whole",
+    "example": "unity in diversity"
+  },
+  "until": {
+    "pos": "preposition",
+    "meaning": "up to the point in time or the event mentioned",
+    "example": "wait until morning"
+  },
+  "upset": {
+    "pos": "adjective",
+    "meaning": "unhappy or worried; to knock over",
+    "example": "she was upset by the news"
+  },
+  "utter": {
+    "pos": "adjective",
+    "meaning": "complete; to say",
+    "example": "utter nonsense"
+  },
+  "valet": {
+    "pos": "noun",
+    "meaning": "a person who parks cars at a hotel or restaurant; a personal servant",
+    "example": "valet parking"
+  },
+  "value": {
+    "pos": "noun",
+    "meaning": "how much something is worth or matters",
+    "example": "good value for money"
+  },
+  "valve": {
+    "pos": "noun",
+    "meaning": "a device that controls flow through a pipe",
+    "example": "a bicycle tyre valve"
+  },
+  "vault": {
+    "pos": "noun",
+    "meaning": "a secure room for valuables; to leap over",
+    "example": "a bank vault"
+  },
+  "verse": {
+    "pos": "noun",
+    "meaning": "a group of lines in a poem or song; poetry",
+    "example": "the first verse"
+  },
+  "vicar": {
+    "pos": "noun",
+    "meaning": "a parish priest in the Church of England",
+    "example": "the village vicar"
+  },
+  "video": {
+    "pos": "noun",
+    "meaning": "a recording of moving images",
+    "example": "watch a video"
+  },
+  "vigil": {
+    "pos": "noun",
+    "meaning": "staying awake to keep watch or pray",
+    "example": "a candlelight vigil"
+  },
+  "villa": {
+    "pos": "noun",
+    "meaning": "a large, often luxurious house, especially a holiday one",
+    "example": "a villa in Goa"
+  },
+  "vinyl": {
+    "pos": "noun",
+    "meaning": "a plastic used for records and flooring; a record",
+    "example": "listen on vinyl"
+  },
+  "viola": {
+    "pos": "noun",
+    "meaning": "a string instrument slightly larger than a violin",
+    "example": "she plays the viola"
+  },
+  "viral": {
+    "pos": "adjective",
+    "meaning": "spread by a virus; spreading quickly online",
+    "example": "the video went viral"
+  },
+  "virus": {
+    "pos": "noun",
+    "meaning": "a tiny germ that causes disease; a harmful computer program",
+    "example": "a flu virus"
+  },
+  "vixen": {
+    "pos": "noun",
+    "meaning": "a female fox",
+    "example": "a vixen with her cubs"
+  },
+  "wafer": {
+    "pos": "noun",
+    "meaning": "a thin crisp biscuit",
+    "example": "an ice-cream wafer"
+  },
+  "waltz": {
+    "pos": "noun",
+    "meaning": "a graceful ballroom dance in three-time",
+    "example": "a Viennese waltz"
+  },
+  "watch": {
+    "pos": "verb",
+    "meaning": "look at attentively; a small clock worn on the wrist",
+    "example": "watch a film"
+  },
+  "water": {
+    "pos": "noun",
+    "meaning": "the clear liquid that falls as rain and fills rivers and seas",
+    "example": "a glass of water"
+  },
+  "wedge": {
+    "pos": "noun",
+    "meaning": "a piece thick at one end and thin at the other",
+    "example": "a wedge of cheese"
+  },
+  "weird": {
+    "pos": "adjective",
+    "meaning": "very strange",
+    "example": "a weird noise"
+  },
+  "whale": {
+    "pos": "noun",
+    "meaning": "a huge sea mammal that breathes through a blowhole",
+    "example": "a blue whale"
+  },
+  "wheat": {
+    "pos": "noun",
+    "meaning": "the grain ground into flour for bread and roti",
+    "example": "fields of wheat"
+  },
+  "where": {
+    "pos": "adverb",
+    "meaning": "in or to what place",
+    "example": "where are you?"
+  },
+  "which": {
+    "pos": "determiner",
+    "meaning": "asking or specifying one out of a set",
+    "example": "which one do you want?"
+  },
+  "whiff": {
+    "pos": "noun",
+    "meaning": "a faint smell",
+    "example": "a whiff of perfume"
+  },
+  "whine": {
+    "pos": "verb",
+    "meaning": "complain in an annoying voice; a high-pitched cry",
+    "example": "stop whining"
+  },
+  "whisk": {
+    "pos": "verb",
+    "meaning": "beat eggs or cream quickly; the tool for it",
+    "example": "whisk the eggs"
+  },
+  "whose": {
+    "pos": "determiner",
+    "meaning": "belonging to whom or which",
+    "example": "whose phone is this?"
+  },
+  "wispy": {
+    "pos": "adjective",
+    "meaning": "thin, fine and feathery",
+    "example": "wispy clouds"
+  },
+  "would": {
+    "pos": "verb",
+    "meaning": "past of will: used for imagined situations, wishes and polite requests",
+    "example": "I would love some tea"
+  },
+  "wrack": {
+    "pos": "noun",
+    "meaning": "destruction, in 'wrack and ruin'; also seaweed",
+    "example": "gone to wrack and ruin"
+  },
+  "wring": {
+    "pos": "verb",
+    "meaning": "twist and squeeze to force out liquid",
+    "example": "wring out the cloth"
+  },
+  "wrote": {
+    "pos": "verb",
+    "meaning": "past tense of write: put words on paper or a screen",
+    "example": "she wrote him a letter"
+  },
+  "yeast": {
+    "pos": "noun",
+    "meaning": "a fungus used to make bread rise and beer ferment",
+    "example": "yeast makes the dough rise"
+  },
+  "yield": {
+    "pos": "verb",
+    "meaning": "produce a result or crop; give way",
+    "example": "the tree yields fruit"
+  },
+  "zebra": {
+    "pos": "noun",
+    "meaning": "an African wild horse with black-and-white stripes",
+    "example": "a zebra crossing is named after it"
+  }
 }
