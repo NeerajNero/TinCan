@@ -15,6 +15,7 @@ import { saveGuesses, wordleRef, type WordleDoc } from "@/lib/db/wordle";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
+import { definitionHeading, fetchDefinition, type WordDefinition } from "@/lib/wordDefinitions";
 import { evaluate, isAllowedGuess, KEY_ROWS, keyboardStates, MAX_GUESSES, WORD_LEN, wordFor, type LetterState } from "@/lib/wordle";
 
 const TILE: Record<LetterState, string> = { correct: "bg-emerald-500 text-white border-emerald-500", present: "bg-amber-400 text-white border-amber-400", absent: "bg-muted/60 text-white border-muted/60" };
@@ -30,6 +31,16 @@ export function WordleScreen() {
   const [shake, setShake] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
   const [burst, setBurst] = useState(0);
+  // Definition lookup, only on request and only once finished; keyed by word so a new day starts blank.
+  const [lookup, setLookup] = useState<{ word: string; state: MeaningState } | null>(null);
+  const meaning: MeaningState = lookup?.word === answer ? lookup.state : "idle";
+
+  function askMeaning() {
+    setLookup({ word: answer, state: "loading" });
+    fetchDefinition(answer)
+      .then((def) => setLookup({ word: answer, state: def ?? "none" }))
+      .catch(() => setLookup({ word: answer, state: "error" }));
+  }
 
   useEffect(() => {
     const a = onSnapshot(wordleRef(today, uid), (snap) => setMine(snap.exists() ? snap.data() : null));
@@ -114,6 +125,7 @@ export function WordleScreen() {
             <Card className="flex flex-col items-center gap-1 text-center">
               <p className="font-heading text-xl font-semibold">{mine?.solved ? `Got it in ${guesses.length}! 🎉` : `It was “${answer.toUpperCase()}”`}</p>
               <p className="text-xs text-muted">{theirs?.done ? "Both done — compare below" : `Waiting for ${friend?.nickname ?? "them"}`}</p>
+              <Meaning word={answer} state={meaning} onAsk={askMeaning} />
             </Card>
           )}
 
@@ -138,6 +150,7 @@ export function WordleScreen() {
                 </div>
               </div>
               <p className="text-center text-xs text-muted">{winner === null ? "Dead heat today" : winner === "me" ? "Fewer guesses — you take it" : "They were quicker today"}</p>
+              {typeof meaning === "object" && <Meaning word={answer} state={meaning} onAsk={askMeaning} />}
             </Card>
           )}
           {done && theirs && !theirs.done && <p className="text-center text-xs text-muted">{friend?.nickname} is still on it — no peeking at their grid until they finish.</p>}
@@ -145,6 +158,31 @@ export function WordleScreen() {
       )}
       <Confetti burst={burst} />
     </div>
+  );
+}
+
+type MeaningState = "idle" | "loading" | "none" | "error" | WordDefinition;
+
+/** "ACORN · noun — meaning" with the example underneath; before that, the "What does it mean?" link. */
+function Meaning({ word, state, onAsk }: { word: string; state: MeaningState; onAsk: () => void }) {
+  if (state === "idle" || state === "error") {
+    return (
+      <button type="button" onClick={onAsk} className="tap mt-1 min-h-11 px-3 text-sm font-bold text-[var(--accent)] underline-offset-4 hover:underline">
+        {state === "error" ? "Couldn't load it — try again?" : "What does it mean?"}
+      </button>
+    );
+  }
+  if (state === "loading") return <p className="mt-1 min-h-11 pt-3 text-sm text-muted">Looking it up…</p>;
+  if (state === "none") return <p className="mt-1 min-h-11 pt-3 text-sm text-muted">No definition for this one — rare word!</p>;
+  return (
+    <m.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-1 flex flex-col gap-0.5 px-2 text-center">
+      <p className="text-sm">
+        <span className="font-heading font-semibold">{definitionHeading(word, state)}</span>
+        <span className="text-muted"> — </span>
+        {state.meaning}
+      </p>
+      {state.example && <p className="text-xs italic text-muted">“{state.example}”</p>}
+    </m.div>
   );
 }
 

@@ -38,6 +38,7 @@
 | `pnpm reset:dry` / `pnpm reset` | wipe all data except the owner's `users` doc (owner = first email in `ALLOWED_EMAILS`); dry run by default |
 | `node scripts/inspect-system-messages.mjs [limit]` | read-only: counts the latest 500 messages per type, kind and field set (never prints text); for diagnosing chat rendering |
 | `pnpm icons` | regenerate PWA icons and badge from the inline SVG |
+| `pnpm words:definitions` | rebuild `public/words/{a..z}.json` from WordNet 3.1 (`wordnet-db`, devDependency) + `src/content/word-definitions-manual.json`; prints coverage (WordNet vs manual), the largest file and any word still missing (exit 2). Run only when `words-answers.json` changes, or to override a bad WordNet sense by adding the word to the manual file; commit the output |
 
 ## Deploying
 

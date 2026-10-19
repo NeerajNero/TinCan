@@ -9,11 +9,15 @@ export interface TriviaQuestion {
   options: string[];
   /** Index into options. */
   answer: number;
+  /** One factual line (≤ 140 chars) shown under the answer once a question is done. */
+  explanation: string;
 }
 
 export const TRIVIA_BANK = bank as TriviaQuestion[];
 export const ROUND_SIZE = 10;
 export const QUESTION_MS = 15_000;
+/** How long the answer + explanation stay on screen before the next question. */
+export const REVEAL_MS = 4_000;
 const POINTS_CORRECT = 10;
 const SPEED_BONUS_MAX = 5;
 

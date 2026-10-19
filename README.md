@@ -88,7 +88,7 @@ Both people sign in with Google and pick a nickname and city; that forms the pai
 | `pnpm build` / `pnpm start` | Production build and server |
 | `pnpm typecheck` | TypeScript (`strict` + `noUncheckedIndexedAccess`) |
 | `pnpm lint` | ESLint (Next, TypeScript, React Compiler rules, import order) |
-| `pnpm test` | Unit tests: game engines, dates and streak, pet, call-time overlap, pings, Recent games, theme script |
+| `pnpm test` | Unit tests: game engines, dates and streak, pet, call-time overlap, pings, Recent games, theme script, trivia bank (every question explained), word definitions (every answer defined) |
 | `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`) |
 | `pnpm test:e2e` | Builds, then Playwright on a phone viewport: no CSP violations (page and worker), the document never scrolls. First run: `npx playwright install chromium` |
 | `pnpm rules:deploy` | Builds `rules/*.tmpl` with your emails and deploys Firestore + Realtime Database rules |
@@ -99,6 +99,7 @@ Both people sign in with Google and pick a nickname and city; that forms the pai
 | `pnpm cloudinary:presets` | Creates/updates the two upload presets (Signed, authenticated) |
 | `pnpm analyze` / `pnpm knip` / `pnpm profile:chat` | Bundle report / dead-code check / chat render profile |
 | `pnpm size` | Initial JS per route (raw + gzip) from a production build; `--save` / `--compare` for before/after |
+| `pnpm words:definitions` | Rebuilds the daily-word definitions in `public/words/` from WordNet (only needed when the word list changes) |
 
 ---
 
@@ -218,3 +219,5 @@ Next.js 16 (App Router, Turbopack), TypeScript, Tailwind v4 and Framer Motion, i
 ## License
 
 Private project. No license granted.
+
+Daily-word definitions in `public/words/` are derived from [WordNet 3.1](https://wordnet.princeton.edu/) (Princeton University, WordNet license) via the `wordnet-db` package; the manual entries are our own.
