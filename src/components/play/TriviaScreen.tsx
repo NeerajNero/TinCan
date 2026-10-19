@@ -16,7 +16,7 @@ import { recordGenericResult } from "@/lib/db/games";
 import { advanceLive, answerLive, createRound, recentRounds, startLive, submitAnswers, subscribeLive, triviaRef, type LiveCursor, type TriviaRoundDoc } from "@/lib/db/trivia";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
-import { pointsFor, QUESTION_MS, ROUND_SIZE, shuffledOptions, totalScore, TRIVIA_BANK, type TriviaAnswer } from "@/lib/trivia";
+import { pointsFor, QUESTION_MS, REVEAL_MS, ROUND_SIZE, shuffledOptions, totalScore, TRIVIA_BANK, type TriviaAnswer } from "@/lib/trivia";
 
 const route = (id: string) => `/play/trivia/${id}`;
 
@@ -129,7 +129,7 @@ export function TriviaRound({ id }: { id: string }) {
 
 function Question({ round, index, onAnswer, deadline }: { round: TriviaRoundDoc; index: number; onAnswer: (choice: number, ms: number) => void; deadline: number }) {
   const q = bankQuestion(round.questionIds[index]);
-  const { options } = useMemo(() => shuffledOptions(q, round.seed), [q, round.seed]);
+  const { options, answer } = useMemo(() => shuffledOptions(q, round.seed), [q, round.seed]);
   const now = useNow(200);
   const [picked, setPicked] = useState<number | null>(null);
   const pickedRef = useRef<number | null>(null);
@@ -153,10 +153,10 @@ function Question({ round, index, onAnswer, deadline }: { round: TriviaRoundDoc;
         <span>
           {index + 1}/{ROUND_SIZE} · {q.category}
         </span>
-        <span className={cn("tabular-nums", left < 4000 && "text-red-500")}>{Math.ceil(left / 1000)}s</span>
+        {picked === null ? <span className={cn("tabular-nums", left < 4000 && "text-red-500")}>{Math.ceil(left / 1000)}s</span> : <span>{picked === answer ? "✓ right" : picked === -1 ? "⏱️ time's up" : "✗ not quite"}</span>}
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
-        <div className="h-full bg-[var(--accent)] transition-[width] duration-200" style={{ width: `${(left / QUESTION_MS) * 100}%` }} />
+        <div className="h-full bg-[var(--accent)] transition-[width] duration-200" style={{ width: `${picked === null ? (left / QUESTION_MS) * 100 : 0}%` }} />
       </div>
       <p className="font-heading text-lg font-semibold leading-snug">{q.q}</p>
       <div className="grid grid-cols-1 gap-2">
@@ -170,12 +170,23 @@ function Question({ round, index, onAnswer, deadline }: { round: TriviaRoundDoc;
               setPicked(i);
               onAnswer(i, Date.now() - started);
             }}
-            className={cn("tap rounded-2xl px-4 py-3 text-left text-[15px] font-semibold", picked === i ? "bg-[var(--accent)] text-white" : "bg-surface-2 disabled:opacity-60")}
+            className={cn(
+              "tap rounded-2xl px-4 py-3 text-left text-[15px] font-semibold",
+              picked === null ? "bg-surface-2" : i === answer ? "bg-emerald-500 text-white" : picked === i ? "bg-red-500 text-white" : "bg-surface-2 opacity-50",
+            )}
           >
             {o}
           </button>
         ))}
       </div>
+      <AnimatePresence>
+        {picked !== null && (
+          <m.div key="reveal" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl bg-surface-2 px-4 py-3">
+            <p className="text-sm font-semibold">✓ {options[answer]}</p>
+            <p className="mt-0.5 text-xs leading-snug text-muted">{q.explanation}</p>
+          </m.div>
+        )}
+      </AnimatePresence>
     </Card>
   );
 }
@@ -213,6 +224,7 @@ function AsyncPlay({ round, uid, friendUid, theirsDone }: { round: TriviaRoundDo
       const q = bankQuestion(round.questionIds[index]);
       const { answer } = shuffledOptions(q, round.seed);
       answers.current[index] = { choice, ms, correct: choice === answer };
+      // The answer and its explanation stay up for REVEAL_MS before the next question.
       setTimeout(() => {
         if (index + 1 >= ROUND_SIZE) {
           setSaving(true);
@@ -222,7 +234,7 @@ function AsyncPlay({ round, uid, friendUid, theirsDone }: { round: TriviaRoundDo
           setIndex(index + 1);
           setDeadline(Date.now() + QUESTION_MS);
         }
-      }, 500);
+      }, REVEAL_MS);
     },
     [index, round, finish],
   );
@@ -268,10 +280,12 @@ function LivePlay({ round, uid, friendUid, theirsDone }: { round: TriviaRoundDoc
   const bothAnswered = Boolean(cursor?.answered && friendUid && cursor.answered[uid] !== undefined && cursor.answered[friendUid] !== undefined);
   const timedOut = cursor ? now.getTime() > deadline + 800 : false;
 
-  // Advance in lockstep: whoever notices first wins the transaction.
+  // Advance in lockstep after the reveal has been on screen: whoever notices first wins the transaction.
   useEffect(() => {
     if (!cursor || qIndex < 0 || qIndex >= ROUND_SIZE) return;
-    if (bothAnswered || timedOut) void advanceLive(round.id, qIndex, ROUND_SIZE);
+    if (!bothAnswered && !timedOut) return;
+    const t = setTimeout(() => void advanceLive(round.id, qIndex, ROUND_SIZE), REVEAL_MS);
+    return () => clearTimeout(t);
   }, [cursor, qIndex, bothAnswered, timedOut, round.id]);
 
   // Round over → submit mine once.
@@ -350,6 +364,7 @@ function Results({ round, uid, friendUid, nameOf }: { round: TriviaRoundDoc; uid
             <div key={qid} className="flex flex-col gap-0.5 border-b border-border pb-2 last:border-0">
               <p className="text-sm font-semibold">{q.q}</p>
               <p className="text-xs text-muted">✓ {options[answer]}</p>
+              <p className="text-[11px] leading-snug text-muted">{q.explanation}</p>
               <div className="flex gap-3 text-xs">
                 <AnimatePresence>
                   <m.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={cn(a?.correct ? "text-emerald-600 dark:text-emerald-300" : "text-red-500")}>

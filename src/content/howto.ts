@@ -78,7 +78,8 @@ export const HOWTO: Record<HowToKey, HowTo> = {
   trivia: {
     title: "Trivia duel",
     label: "10 questions · 15 s each",
-    steps: ["🧠 Ten questions from the same shuffled set for both of you", "⏱️ 15 seconds each — quicker right answers score more", "🤝 Play live together, or each play when you're free", "🏆 Scores compare once you've both finished"],
+    steps: ["🧠 Ten questions from the same shuffled set for both of you", "⏱️ 15 seconds each — quicker right answers score more", "💡 After each one, the answer and a one-line fact stay up for a moment", "🏆 Scores compare once you've both finished"],
+    tip: "Live or async, the facts show the same way — read them together.",
   },
   quiz: {
     title: "Know-me quiz",
@@ -89,7 +90,7 @@ export const HOWTO: Record<HowToKey, HowTo> = {
   word: {
     title: "Daily word",
     label: "Same word for both · 6 tries",
-    steps: ["🔤 One five-letter word a day, the same for both of you", "🟩 Green: right letter, right spot · 🟨 yellow: wrong spot", "6️⃣ Six guesses, played on your own — no peeking", "🏆 When you've both finished, fewer guesses wins the day"],
+    steps: ["🔤 One five-letter word a day, the same for both of you", "🟩 Green: right letter, right spot · 🟨 yellow: wrong spot", "6️⃣ Six guesses, played on your own — no peeking", "🏆 Both finished? Fewer guesses wins · tap “What does it mean?”"],
     tip: "A new word arrives at midnight on your shared calendar.",
   },
   twenty: {

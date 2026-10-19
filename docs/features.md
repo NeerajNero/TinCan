@@ -44,9 +44,9 @@ Pages under `src/app/(app)/**` are thin: they render one screen component. Logic
 | --- | --- | --- | --- |
 | 20 Questions | `/play/twenty` | `TwentyScreen` | RTDB `twenty/main`, `lib/db/twenty` |
 | Hangout wheel | `/play/wheel` | `WheelScreen` | "Let's!" posts a `hangout` system line + message push |
-| Trivia duel | `/play/trivia`, `/play/trivia/[id]` | `TriviaScreen` | Firestore `trivia/{id}` + RTDB cursor; `lib/trivia`, `lib/seeded` |
+| Trivia duel | `/play/trivia`, `/play/trivia/[id]` | `TriviaScreen` | Firestore `trivia/{id}` + RTDB cursor; `lib/trivia`, `lib/seeded`. Each bank question has an `explanation`; `Question` shows the right option (green) and the line after a pick or timeout, async waits `REVEAL_MS` before the next question and live delays `advanceLive` by the same; `Results` repeats it under each answer |
 | Know-me quiz | `/play/quiz`, `/play/quiz/[id]` | `QuizScreen` | `quizzes/{id}` |
-| Daily word | `/play/word` | `WordleScreen` | `wordle/{dateKey}_{uid}`, `lib/wordle` |
+| Daily word | `/play/word` | `WordleScreen` | `wordle/{dateKey}_{uid}`, `lib/wordle`. After finishing, "What does it mean?" (`Meaning`) calls `lib/wordDefinitions.fetchDefinition`, which loads `/words/{letter}.json` once per session (static files from `pnpm words:definitions`, cached by the worker's same-origin JSON route) and shows "WORD · pos — meaning" + example in the reveal card and the comparison |
 | Whiteboard | `/play/whiteboard` | `together/WhiteboardScreen` + `SharedCanvas` | RTDB `whiteboard/*`, `cursors/*`; snapshot → Cloudinary → chat |
 | Pixel art | `/play/pixel` | `together/PixelScreen` | RTDB `pixel/grid` (1024 chars) |
 | Pictionary | `/play/pictionary[/id]` | `together/PictionaryScreen` | RTDB `pictionary/{id}`, `lib/db/pictionary` |

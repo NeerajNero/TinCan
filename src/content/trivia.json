@@ -9,7 +9,8 @@
    "Melbourne",
    "Perth"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Canberra was purpose-built as a compromise capital in 1913 after Sydney and Melbourne both wanted the title."
  },
  {
   "id": 1,
@@ -21,7 +22,8 @@
    "Niger",
    "Zambezi"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Nile runs about 6,650 km from the African Great Lakes region to the Mediterranean, through eleven countries."
  },
  {
   "id": 2,
@@ -33,7 +35,8 @@
    "Finland",
    "Brazil"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Canada has well over 800,000 lakes, more than every other country combined, largely carved by ice-age glaciers."
  },
  {
   "id": 3,
@@ -45,7 +48,8 @@
    "Uganda",
    "Ethiopia"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Kilimanjaro, Africa's highest peak at 5,895 m, is a dormant volcano in north-eastern Tanzania near the Kenyan border."
  },
  {
   "id": 4,
@@ -57,7 +61,8 @@
    "Vancouver",
    "Montreal"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Ottawa, on the Ontario–Quebec border, was chosen by Queen Victoria in 1857 as a neutral pick between rival cities."
  },
  {
   "id": 5,
@@ -69,7 +74,8 @@
    "Kalahari",
    "Arabian"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Sahara covers about 9 million km² of North Africa. Antarctica is bigger but is a cold desert."
  },
  {
   "id": 6,
@@ -81,7 +87,8 @@
    "Bruges",
    "Stockholm"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Venice is built on over 100 small islands in a lagoon, linked by around 150 canals and 400 bridges."
  },
  {
   "id": 7,
@@ -93,7 +100,8 @@
    "Asia",
    "Europe"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Andes stretch about 7,000 km down the west of South America, the longest continental mountain range on Earth."
  },
  {
   "id": 8,
@@ -105,7 +113,8 @@
    "San Marino",
    "Liechtenstein"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Vatican City covers just 0.44 km² inside Rome and has fewer than a thousand residents."
  },
  {
   "id": 9,
@@ -117,7 +126,8 @@
    "Atlantic Ocean",
    "Southern Ocean"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Indian Ocean is the third largest ocean, bounded by Africa to the west and Australia to the east."
  },
  {
   "id": 10,
@@ -129,7 +139,8 @@
    "Bangladesh",
    "Nepal"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Taj Mahal in Agra was built by Mughal emperor Shah Jahan as a tomb for his wife Mumtaz Mahal, finished around 1653."
  },
  {
   "id": 11,
@@ -141,7 +152,8 @@
    "Osaka",
    "Nagoya"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Tokyo became Japan's capital in 1868 when the emperor moved there from Kyoto; it was previously called Edo."
  },
  {
   "id": 12,
@@ -153,7 +165,8 @@
    "Rhine",
    "Danube"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Seine flows 777 km from Burgundy through Paris to the English Channel at Le Havre."
  },
  {
   "id": 13,
@@ -165,7 +178,8 @@
    "USA",
    "Indonesia"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "India overtook China in 2023 and now has more than 1.4 billion people."
  },
  {
   "id": 14,
@@ -177,7 +191,8 @@
    "North America",
    "Europe"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Asia covers about 30% of Earth's land and holds roughly 60% of its people."
  },
  {
   "id": 15,
@@ -189,7 +204,8 @@
    "Giza",
    "Luxor"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Cairo, on the Nile, is Africa's largest metropolitan area; Giza's pyramids lie on its outskirts."
  },
  {
   "id": 16,
@@ -201,7 +217,8 @@
    "Iran",
    "Austria"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Turkey straddles the Bosphorus: about 3% of its land, including part of Istanbul, is in Europe and the rest in Asia."
  },
  {
   "id": 17,
@@ -213,7 +230,8 @@
    "Philippines",
    "New Zealand"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Great Barrier Reef runs over 2,300 km along Queensland and is the largest living structure on Earth."
  },
  {
   "id": 18,
@@ -225,7 +243,8 @@
    "São Paulo",
    "Salvador"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Brasília was built from scratch in the late 1950s and replaced Rio de Janeiro as capital in 1960."
  },
  {
   "id": 19,
@@ -237,7 +256,8 @@
    "Tunisia",
    "Algeria"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Marrakech, founded around 1070, is one of Morocco's four imperial cities, known for its red walls and medina."
  },
  {
   "id": 20,
@@ -249,7 +269,8 @@
    "Java Trench",
    "Puerto Rico Trench"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Mariana Trench in the western Pacific reaches about 11 km at Challenger Deep, deeper than Everest is tall."
  },
  {
   "id": 21,
@@ -261,7 +282,8 @@
    "Incheon",
    "Daegu"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Seoul sits on the Han River and has been Korea's capital since the Joseon dynasty chose it in 1394."
  },
  {
   "id": 22,
@@ -273,7 +295,8 @@
    "Brussels",
    "Geneva"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Eiffel Tower was built for the 1889 World's Fair and was the world's tallest structure until 1930."
  },
  {
   "id": 23,
@@ -285,7 +308,8 @@
    "Bhutan",
    "Tibet region of China"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Everest's south base camp is in Nepal at about 5,364 m; the north base camp is in Tibet."
  },
  {
   "id": 24,
@@ -297,7 +321,8 @@
    "Madagascar",
    "New Guinea"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Greenland covers about 2.17 million km². Australia is larger but counts as a continent."
  },
  {
   "id": 25,
@@ -309,7 +334,8 @@
    "Punjab",
    "Haryana"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Jaipur, the Pink City, was founded in 1727 by Maharaja Jai Singh II and is Rajasthan's capital."
  },
  {
   "id": 26,
@@ -321,7 +347,8 @@
    "Black Sea",
    "Caspian Sea"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Dead Sea is roughly 34% salt, about ten times saltier than the ocean, which is why swimmers float."
  },
  {
   "id": 27,
@@ -333,7 +360,8 @@
    "Kisumu",
    "Nakuru"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Nairobi began as a railway depot in 1899 and became Kenya's capital at independence in 1963."
  },
  {
   "id": 28,
@@ -345,7 +373,8 @@
    "USA",
    "China"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Thanks to territories from French Polynesia to Réunion, France spans 12 or 13 time zones, more than any other country."
  },
  {
   "id": 29,
@@ -357,7 +386,8 @@
    "Colombia",
    "Venezuela"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "About 60% of the Amazon basin lies in Brazil; the river itself begins in the Peruvian Andes."
  },
  {
   "id": 30,
@@ -369,7 +399,8 @@
    "Naples",
    "Florence"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Rome has been Italy's capital since 1871, a decade after unification, following Turin and Florence."
  },
  {
   "id": 31,
@@ -381,7 +412,8 @@
    "Malaysia",
    "Philippines"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Bali is one of Indonesia's 17,000-plus islands and its only Hindu-majority province."
  },
  {
   "id": 32,
@@ -393,7 +425,8 @@
    "Rosario",
    "Mendoza"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Buenos Aires sits on the Río de la Plata estuary and is home to about a third of Argentina's population."
  },
  {
   "id": 33,
@@ -405,7 +438,8 @@
    "Strait of Hormuz",
    "Strait of Malacca"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Strait of Gibraltar is only about 13 km wide at its narrowest and links the Atlantic to the Mediterranean."
  },
  {
   "id": 34,
@@ -417,7 +451,8 @@
    "Thailand",
    "South Korea"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "'Nihon' or 'Nippon' means 'origin of the sun', as Japan lies east of China where the sun appears to rise."
  },
  {
   "id": 35,
@@ -429,7 +464,8 @@
    "Carpathians",
    "Caucasus only"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Urals run about 2,500 km north to south through Russia and mark the conventional Europe–Asia boundary."
  },
  {
   "id": 36,
@@ -441,7 +477,8 @@
    "Phuket",
    "Pattaya"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Bangkok's full ceremonial name is one of the longest place names in the world, with over 160 letters."
  },
  {
   "id": 37,
@@ -453,7 +490,8 @@
    "Somalia",
    "Sudan"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Addis Ababa, meaning 'new flower', sits at about 2,355 m and hosts the African Union headquarters."
  },
  {
   "id": 38,
@@ -465,7 +503,8 @@
    "California",
    "Montana"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Alaska is about 1.7 million km², more than twice the size of Texas, the second-largest state."
  },
  {
   "id": 39,
@@ -477,7 +516,8 @@
    "Madrid",
    "Faro"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Lisbon is one of Europe's oldest capitals, older than Rome, and sits where the Tagus meets the Atlantic."
  },
  {
   "id": 40,
@@ -489,7 +529,8 @@
    "Nitrogen",
    "Hydrogen"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Plants take in carbon dioxide through tiny leaf pores called stomata and turn it into sugars by photosynthesis."
  },
  {
   "id": 41,
@@ -501,7 +542,8 @@
    "Gd",
    "Go"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Au comes from 'aurum', the Latin word for gold; many symbols come from Latin names."
  },
  {
   "id": 42,
@@ -513,7 +555,8 @@
    "212",
    "198"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Babies are born with around 270 bones, many of which fuse together as they grow, leaving 206 in adults."
  },
  {
   "id": 43,
@@ -525,7 +568,8 @@
    "Steel",
    "Granite"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Diamond is pure carbon arranged in a rigid lattice, scoring 10, the top of the Mohs hardness scale."
  },
  {
   "id": 44,
@@ -537,7 +581,8 @@
    "Jupiter",
    "Mercury"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mars looks red because its surface dust is rich in iron oxide, essentially rust."
  },
  {
   "id": 45,
@@ -549,7 +594,8 @@
    "Salt",
    "Ozone"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "H2O means each molecule has two hydrogen atoms bonded to one oxygen atom."
  },
  {
   "id": 46,
@@ -561,7 +607,8 @@
    "Lungs",
    "Kidney"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The heart beats about 100,000 times a day, pumping roughly 7,500 litres of blood."
  },
  {
   "id": 47,
@@ -573,7 +620,8 @@
    "110",
    "120"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "At higher altitudes the air pressure is lower, so water boils below 100 °C, which is why cooking takes longer."
  },
  {
   "id": 48,
@@ -585,7 +633,8 @@
    "Friction",
    "Inertia"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Gravity pulls any two masses together; Earth's huge mass is what keeps us, and the Moon, close."
  },
  {
   "id": 49,
@@ -597,7 +646,8 @@
    "Brain",
    "Intestine"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "An adult's skin weighs around 4 kg and covers about 2 m², protecting against germs and regulating heat."
  },
  {
   "id": 50,
@@ -609,7 +659,8 @@
    "Carbon dioxide",
    "Argon"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Nitrogen makes up about 78% of the atmosphere, oxygen about 21%, and argon most of the rest."
  },
  {
   "id": 51,
@@ -621,7 +672,8 @@
    "Proton cloud",
    "Orbital"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The nucleus holds protons and neutrons and nearly all of the atom's mass, with electrons orbiting far outside."
  },
  {
   "id": 52,
@@ -633,7 +685,8 @@
    "10",
    "12"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Spiders are arachnids, not insects, so they have eight legs and no antennae or wings."
  },
  {
   "id": 53,
@@ -645,7 +698,8 @@
    "Sd",
    "S"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Na comes from 'natrium', the Latin name for sodium, which is why the symbol doesn't match the English word."
  },
  {
   "id": 54,
@@ -657,7 +711,8 @@
    "Dew",
    "Resin"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Bees drink sugary nectar and store it in their honey stomach; back at the hive it is turned into honey."
  },
  {
   "id": 55,
@@ -669,7 +724,8 @@
    "Platelets",
    "Plasma cells"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "White blood cells, or leukocytes, hunt bacteria and viruses; red cells carry oxygen instead."
  },
  {
   "id": 56,
@@ -681,7 +737,8 @@
    "30,000",
    "3,000,000"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Light travels about 299,792 km per second, fast enough to circle Earth seven times in one second."
  },
  {
   "id": 57,
@@ -693,7 +750,8 @@
    "Astronomy",
    "Ecology"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Meteorology comes from the Greek 'meteoron', meaning things high in the air, not from meteors."
  },
  {
   "id": 58,
@@ -705,7 +763,8 @@
    "Stem",
    "Flower"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Leaves hold chlorophyll, the green pigment that captures sunlight to make sugar from water and CO2."
  },
  {
   "id": 59,
@@ -717,7 +776,8 @@
    "Tin",
    "Aluminium"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mercury is the only metal that is liquid at room temperature, melting at about −39 °C."
  },
  {
   "id": 60,
@@ -729,7 +789,8 @@
    "14",
    "5"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "pH 7 is neutral: pure water has equal amounts of acidic H+ and basic OH− ions."
  },
  {
   "id": 61,
@@ -741,7 +802,8 @@
    "Mammal",
    "Fish"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Amphibians like frogs start life in water with gills, then develop lungs and live partly on land."
  },
  {
   "id": 62,
@@ -753,7 +815,8 @@
    "Ribosome",
    "Chloroplast"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mitochondria turn sugar and oxygen into ATP, the energy currency cells use to work."
  },
  {
   "id": 63,
@@ -765,7 +828,8 @@
    "Vitamin A",
    "Vitamin B12"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Skin makes vitamin D when UVB sunlight hits it; the vitamin helps the body absorb calcium for bones."
  },
  {
   "id": 64,
@@ -777,7 +841,8 @@
    "100",
    "212"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Fahrenheit sets freezing at 32 and boiling at 212; Celsius uses 0 and 100 for the same points."
  },
  {
   "id": 65,
@@ -789,7 +854,8 @@
    "In",
    "I"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Fe comes from 'ferrum', the Latin word for iron, as in 'ferrous'."
  },
  {
   "id": 66,
@@ -801,7 +867,8 @@
    "Gases",
    "Vacuum"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Sound moves fastest where particles are packed tightly; in steel it travels about 15 times faster than in air."
  },
  {
   "id": 67,
@@ -813,7 +880,8 @@
    "Omnivores",
    "Insectivores"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Herbivores such as cows and deer have flat teeth and long guts to grind and digest tough plant matter."
  },
  {
   "id": 68,
@@ -825,7 +893,8 @@
    "3",
    "5"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The heart has two atria that receive blood and two ventricles that pump it out to the lungs and body."
  },
  {
   "id": 69,
@@ -837,7 +906,8 @@
    "Hygrometer",
    "Anemometer"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A barometer tracks air pressure; falling pressure often signals stormy weather ahead."
  },
  {
   "id": 70,
@@ -849,7 +919,8 @@
    "Oxygen",
    "Carbon"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Hydrogen makes up about 75% of the universe's ordinary matter; it is the fuel stars burn."
  },
  {
   "id": 71,
@@ -861,7 +932,8 @@
    "Uranus",
    "Neptune"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Saturn's confirmed moon count passed 140 in 2023, pushing it ahead of Jupiter."
  },
  {
   "id": 72,
@@ -873,7 +945,8 @@
    "Nitrogen",
    "Carbon dioxide"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Sun is about 73% hydrogen and 25% helium, fusing hydrogen into helium to shine."
  },
  {
   "id": 73,
@@ -885,7 +958,8 @@
    "Deoxyribose nitrogen acid",
    "Dynamic nucleic acid"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "DNA is the long molecule in every cell that stores genetic instructions as a four-letter code."
  },
  {
   "id": 74,
@@ -897,7 +971,8 @@
    "Ampere",
    "Watt"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The ohm is named after Georg Ohm, who found that current equals voltage divided by resistance."
  },
  {
   "id": 75,
@@ -909,7 +984,8 @@
    "Niels Bohr",
    "Galileo"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Einstein published general relativity in 1915, describing gravity as the bending of space and time by mass."
  },
  {
   "id": 76,
@@ -921,7 +997,8 @@
    "Molecule",
    "Organ"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Every living thing is made of cells; bacteria are single cells, while humans have around 37 trillion."
  },
  {
   "id": 77,
@@ -933,7 +1010,8 @@
    "Basalt",
    "Ash"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Magma is molten rock underground; once it erupts onto the surface it is called lava."
  },
  {
   "id": 78,
@@ -945,7 +1023,8 @@
    "Cornea",
    "Lens"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The iris is the coloured ring of muscle that widens or narrows the pupil to let in more or less light."
  },
  {
   "id": 79,
@@ -957,7 +1036,8 @@
    "7",
    "10"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "There have been 8 planets since 2006, when Pluto was reclassified as a dwarf planet."
  },
  {
   "id": 80,
@@ -969,7 +1049,8 @@
    "Sirius",
    "Alpha Centauri A"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Sun is a star about 150 million km away; the next nearest, Proxima Centauri, is 4.2 light years off."
  },
  {
   "id": 81,
@@ -981,7 +1062,8 @@
    "Buzz Aldrin",
    "John Glenn"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Soviet cosmonaut Yuri Gagarin orbited Earth once on 12 April 1961 aboard Vostok 1."
  },
  {
   "id": 82,
@@ -993,7 +1075,8 @@
    "Mars",
    "Venus"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Saturn's rings are mostly ice and rock, spanning 280,000 km across but only tens of metres thick."
  },
  {
   "id": 83,
@@ -1005,7 +1088,8 @@
    "Brightness",
    "Speed"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A light year is how far light travels in a year, about 9.46 trillion km."
  },
  {
   "id": 84,
@@ -1017,7 +1101,8 @@
    "Neptune",
    "Earth"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Jupiter is so large that more than 1,300 Earths would fit inside it."
  },
  {
   "id": 85,
@@ -1029,7 +1114,8 @@
    "Vostok 1",
    "Apollo 1"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Soviet Union launched Sputnik 1 on 4 October 1957, starting the space race."
  },
  {
   "id": 86,
@@ -1041,7 +1127,8 @@
    "About 24 hours",
    "About 1,000 days"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The extra quarter day each year is why we add a leap day every four years."
  },
  {
   "id": 87,
@@ -1053,7 +1140,8 @@
    "Gaganyaan",
    "Aditya"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mangalyaan reached Mars in 2014, making India the first country to succeed on its first attempt."
  },
  {
   "id": 88,
@@ -1065,7 +1153,8 @@
    "Earth",
    "Mars"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mercury orbits the Sun in just 88 days and has no real atmosphere to hold heat."
  },
  {
   "id": 89,
@@ -1077,7 +1166,8 @@
    "Triangulum",
    "Whirlpool"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Milky Way is a spiral galaxy of 100 to 400 billion stars; its name comes from its milky band in the night sky."
  },
  {
   "id": 90,
@@ -1089,7 +1179,8 @@
    "Saturn",
    "Mars"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Uranus is tilted about 98 degrees, likely from a giant collision, so its poles take turns facing the Sun."
  },
  {
   "id": 91,
@@ -1101,7 +1192,8 @@
    "The Sun dimming",
    "Clouds in space"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Moon is 400 times smaller than the Sun but 400 times closer, so it can cover the Sun exactly."
  },
  {
   "id": 92,
@@ -1113,7 +1205,8 @@
    "Mars",
    "Jupiter"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Venus's thick carbon-dioxide atmosphere traps heat, keeping its surface near 465 °C, hotter than Mercury."
  },
  {
   "id": 93,
@@ -1125,7 +1218,8 @@
    "About one third",
    "The same"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Moon's gravity is about 1.6 m/s², so a 60 kg person would weigh around 10 kg there."
  },
  {
   "id": 94,
@@ -1137,7 +1231,8 @@
    "Strelka",
    "Rex"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Laika flew on Sputnik 2 in November 1957; she did not survive the flight, but proved living things could reach orbit."
  },
  {
   "id": 95,
@@ -1149,7 +1244,8 @@
    "1972",
    "1959"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Neil Armstrong and Buzz Aldrin landed Apollo 11's Eagle on 20 July 1969."
  },
  {
   "id": 96,
@@ -1161,7 +1257,8 @@
    "Sardar Patel",
    "Rajendra Prasad"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Nehru served from independence in 1947 until his death in 1964, India's longest-serving prime minister."
  },
  {
   "id": 97,
@@ -1173,7 +1270,8 @@
    "The Hanging Gardens",
    "The Mausoleum"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Lighthouse of Alexandria on Pharos island stood over 100 m tall and guided ships for centuries until earthquakes toppled it."
  },
  {
   "id": 98,
@@ -1185,7 +1283,8 @@
    "Japan",
    "Korea"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Great Wall was built over many centuries, mostly under the Ming dynasty; all its sections total over 20,000 km."
  },
  {
   "id": 99,
@@ -1197,7 +1296,8 @@
    "Raphael",
    "Donatello"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Leonardo painted the Mona Lisa in the early 1500s; it has hung in the Louvre since the French Revolution."
  },
  {
   "id": 100,
@@ -1209,7 +1309,8 @@
    "1946",
    "1939"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Germany surrendered in May 1945 and Japan in September 1945, ending the war in Europe and the Pacific."
  },
  {
   "id": 101,
@@ -1221,7 +1322,8 @@
    "Maya",
    "Olmec"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Inca built Machu Picchu around 1450 high in the Peruvian Andes; it was never found by the Spanish."
  },
  {
   "id": 102,
@@ -1233,7 +1335,8 @@
    "Jane Addams",
    "Mother Teresa"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Marie Curie won the Physics prize in 1903 and Chemistry in 1911, still the only person to win in two sciences."
  },
  {
   "id": 103,
@@ -1245,7 +1348,8 @@
    "Egypt",
    "Turkey"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The ancient Olympics began at Olympia in 776 BC; the modern games were revived in Athens in 1896."
  },
  {
   "id": 104,
@@ -1257,7 +1361,8 @@
    "Greeks",
    "Babylonians"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Giza pyramids were built around 2560 BC as royal tombs; the Great Pyramid was the tallest structure for 3,800 years."
  },
  {
   "id": 105,
@@ -1269,7 +1374,8 @@
    "Sarojini Naidu",
    "Subhas Bose"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Tagore wrote 'Jana Gana Mana' in 1911; he also wrote Bangladesh's anthem, a unique double."
  },
  {
   "id": 106,
@@ -1281,7 +1387,8 @@
    "1945",
    "1942"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "India became independent from British rule at midnight on 15 August 1947."
  },
  {
   "id": 107,
@@ -1293,7 +1400,8 @@
    "Britannic",
    "Olympic"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Titanic sank on its maiden voyage in April 1912; over 1,500 of about 2,200 aboard died."
  },
  {
   "id": 108,
@@ -1305,7 +1413,8 @@
    "Abraham Lincoln",
    "John Adams"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Washington took office in 1789 and set the two-term tradition by stepping down in 1797."
  },
  {
   "id": 109,
@@ -1317,7 +1426,8 @@
    "Hadrian's Wall",
    "Western Wall"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Berlin Wall divided the city from 1961 until 9 November 1989, when East Germany opened its borders."
  },
  {
   "id": 110,
@@ -1329,7 +1439,8 @@
    "Vasco da Gama",
    "James Cook"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Magellan's expedition left Spain in 1519; he died in the Philippines, and 18 survivors completed the loop in 1522."
  },
  {
   "id": 111,
@@ -1341,7 +1452,8 @@
    "Spain",
    "England"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Renaissance began in 14th-century Florence, funded by wealthy families such as the Medici."
  },
  {
   "id": 112,
@@ -1353,7 +1465,8 @@
    "Nikola Tesla",
    "Guglielmo Marconi"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Bell was granted the first telephone patent in 1876, though inventors like Meucci and Gray made rival claims."
  },
  {
   "id": 113,
@@ -1365,7 +1478,8 @@
    "Mumbai",
    "Chennai"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Delhi had been British India's capital since 1931 and stayed on as the capital of the new nation."
  },
  {
   "id": 114,
@@ -1377,7 +1491,8 @@
    "17th",
    "19th"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Gutenberg's movable-type press appeared around 1440 in Mainz and spread across Europe within decades."
  },
  {
   "id": 115,
@@ -1389,7 +1504,8 @@
    "Bhagat Singh",
    "B. R. Ambedkar"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Gandhi walked 385 km from Sabarmati to Dandi to make salt in defiance of the British salt tax."
  },
  {
   "id": 116,
@@ -1401,7 +1517,8 @@
    "Spain",
    "Italy"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "France gave the statue in 1886 to mark the US centennial; Gustave Eiffel engineered its iron frame."
  },
  {
   "id": 117,
@@ -1413,7 +1530,8 @@
    "Germany",
    "Japan"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Cold War ran from about 1947 to 1991, ending with the collapse of the Soviet Union."
  },
  {
   "id": 118,
@@ -1425,7 +1543,8 @@
    "Carthage",
    "Troy"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Vesuvius erupted in AD 79, burying Pompeii under ash that preserved streets, homes and even bread."
  },
  {
   "id": 119,
@@ -1437,7 +1556,8 @@
    "Golda Meir",
    "Angela Merkel"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Thatcher was UK prime minister from 1979 to 1990; a Soviet newspaper coined the nickname in 1976."
  },
  {
   "id": 120,
@@ -1449,7 +1569,8 @@
    "2009",
    "2010"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Steve Jobs unveiled the first iPhone in January 2007 and it went on sale that June."
  },
  {
   "id": 121,
@@ -1461,7 +1582,8 @@
    "Rajendra Prasad",
    "Sardar Patel"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Ambedkar chaired the drafting committee of the Constitution, which came into force on 26 January 1950."
  },
  {
   "id": 122,
@@ -1473,7 +1595,8 @@
    "Gupta",
    "Chola"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Akbar ruled the Mughal Empire from 1556 to 1605 and expanded it across most of northern India."
  },
  {
   "id": 123,
@@ -1485,7 +1608,8 @@
    "French",
    "Italian"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Spanish grew out of the Vulgar Latin spoken in Roman Hispania, like Portuguese, French and Italian elsewhere."
  },
  {
   "id": 124,
@@ -1497,7 +1621,8 @@
    "Arabian Sea",
    "Caspian Sea"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Opened in 1869, the 193 km Suez Canal saves ships the long route around Africa."
  },
  {
   "id": 125,
@@ -1509,7 +1634,8 @@
    "Korea",
    "Thailand"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Sushi began as a way to preserve fish in fermented rice; the modern hand-pressed style arose in 1800s Edo (Tokyo)."
  },
  {
   "id": 126,
@@ -1521,7 +1647,8 @@
    "Cucumber",
    "Pea"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Guacamole comes from the Aztec 'ahuacamolli', meaning avocado sauce."
  },
  {
   "id": 127,
@@ -1533,7 +1660,8 @@
    "Cardamom",
    "Cinnamon"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Saffron is the dried stigma of a crocus; about 150,000 flowers are hand-picked for one kilogram."
  },
  {
   "id": 128,
@@ -1545,7 +1673,8 @@
    "Wheat",
    "Rice"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Paneer is made by curdling hot milk with lemon juice or vinegar and pressing the curds; it never melts."
  },
  {
   "id": 129,
@@ -1557,7 +1686,8 @@
    "Peanut",
    "Walnut"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Marzipan is ground almonds mixed with sugar, shaped into sweets and cake coverings."
  },
  {
   "id": 130,
@@ -1569,7 +1699,8 @@
    "Beans",
    "Peas"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Hummus is Arabic for chickpea; the dip blends them with tahini, lemon and garlic."
  },
  {
   "id": 131,
@@ -1581,7 +1712,8 @@
    "Jackfruit",
    "Banana"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "India grows about half the world's mangoes; the fruit is also its national fruit."
  },
  {
   "id": 132,
@@ -1593,7 +1725,8 @@
    "Choux",
    "Filo"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Laminated dough is folded with butter many times, creating the thin flaky layers."
  },
  {
   "id": 133,
@@ -1605,7 +1738,8 @@
    "Portugal",
    "Mexico"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Paella comes from Valencia and takes its name from the wide shallow pan it is cooked in."
  },
  {
   "id": 134,
@@ -1617,7 +1751,8 @@
    "Wheat",
    "Potato"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Dal means split pulses; lentils, mung and chickpeas are all simmered into the everyday Indian dish."
  },
  {
   "id": 135,
@@ -1629,7 +1764,8 @@
    "Maize",
    "Barley"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Sourdough rises using wild yeast and bacteria in a starter rather than packaged yeast."
  },
  {
   "id": 136,
@@ -1641,7 +1777,8 @@
    "Milk",
    "Rice"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Tofu is made by curdling soy milk and pressing the curds, much like cheese from dairy milk."
  },
  {
   "id": 137,
@@ -1653,7 +1790,8 @@
    "China",
    "Vietnam"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Kimchi is fermented vegetables, usually napa cabbage, with chilli and garlic; Korea has hundreds of varieties."
  },
  {
   "id": 138,
@@ -1665,7 +1803,8 @@
    "Coriander",
    "Parsley"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Classic pesto from Genoa pounds basil with pine nuts, garlic, parmesan and olive oil."
  },
  {
   "id": 139,
@@ -1677,7 +1816,8 @@
    "Ricotta",
    "Gorgonzola"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Margherita's tomato, mozzarella and basil mirror the red, white and green of the Italian flag."
  },
  {
   "id": 140,
@@ -1689,7 +1829,8 @@
    "Corn",
    "Chickpea flour only"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Dosa batter is rice and urad dal soaked, ground and fermented overnight, then spread thin on a hot pan."
  },
  {
   "id": 141,
@@ -1701,7 +1842,8 @@
    "Cabbage",
    "Pumpkin"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Ratatouille is a Provençal stew of aubergine, courgette, peppers and tomato."
  },
  {
   "id": 142,
@@ -1713,7 +1855,8 @@
    "Lassi",
    "Cider"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Kombucha is sweet tea fermented by a 'SCOBY', a culture of bacteria and yeast, making it fizzy and tangy."
  },
  {
   "id": 143,
@@ -1725,7 +1868,8 @@
    "Vanilla",
    "Soy"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Cacao beans are fermented, roasted and ground into cocoa mass, the base of all chocolate."
  },
  {
   "id": 144,
@@ -1737,7 +1881,8 @@
    "Tempura",
    "Ramen"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Onigiri are rice balls, often wrapped in nori with a filling such as pickled plum or salmon."
  },
  {
   "id": 145,
@@ -1749,7 +1894,8 @@
    "Blueberry",
    "Cherry"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The yellow specks on a strawberry are its fruits; the red flesh is the swollen flower base."
  },
  {
   "id": 146,
@@ -1761,7 +1907,8 @@
    "Rice",
    "Corn"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Falafel are fried balls of ground chickpeas (or fava beans) with herbs and spices."
  },
  {
   "id": 147,
@@ -1773,7 +1920,8 @@
    "Colombia",
    "Ethiopia"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Brazil has grown the most coffee for over 150 years, around a third of the world's supply."
  },
  {
   "id": 148,
@@ -1785,7 +1933,8 @@
    "Treacle",
    "Honey"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Maple sap is boiled down in early spring; about 40 litres of sap make one litre of syrup."
  },
  {
   "id": 149,
@@ -1797,7 +1946,8 @@
    "Puri",
    "Dosa"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Naan is slapped onto the hot clay wall of a tandoor, where it puffs and chars in under a minute."
  },
  {
   "id": 150,
@@ -1809,7 +1959,8 @@
    "Brie",
    "Cheddar"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Feta is a brined cheese made from sheep's milk, or sheep and goat's milk, protected under EU rules."
  },
  {
   "id": 151,
@@ -1821,7 +1972,8 @@
    "A Spanish soup",
    "A type of bread"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Gelato is churned slower with less air and less fat than ice cream, so it tastes denser and more intense."
  },
  {
   "id": 152,
@@ -1833,7 +1985,8 @@
    "Apricots",
    "Dates"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Raisins are grapes dried in the sun or in dryers until most of their water is gone."
  },
  {
   "id": 153,
@@ -1845,7 +1998,8 @@
    "Lemon",
    "Mint only"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Masala means spice mix; chai is typically brewed with cardamom, ginger, cloves and cinnamon in milk."
  },
  {
   "id": 154,
@@ -1857,7 +2011,8 @@
    "Italy",
    "Belgium"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The crescent 'kipferl' came from Austria, but Parisian bakers turned it into the buttery croissant in the 1800s."
  },
  {
   "id": 155,
@@ -1869,7 +2024,8 @@
    "Giraffe",
    "Hippopotamus"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Blue whales reach about 30 m and 150 tonnes, the largest animals ever known to have lived."
  },
  {
   "id": 156,
@@ -1881,7 +2037,8 @@
    "2",
    "4"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Two hearts pump blood through the gills and one pumps it to the rest of the body."
  },
  {
   "id": 157,
@@ -1893,7 +2050,8 @@
    "Pigeon",
    "Sparrow"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Parrots have a flexible voice organ and are social learners, so they copy sounds around them, including speech."
  },
  {
   "id": 158,
@@ -1905,7 +2063,8 @@
    "Horse",
    "Antelope"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Cheetahs can hit around 100 km/h in short bursts, but only for a few hundred metres."
  },
  {
   "id": 159,
@@ -1917,7 +2076,8 @@
    "Elephant",
    "Peacock"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Bengal tiger became India's national animal in 1973, the same year Project Tiger began."
  },
  {
   "id": 160,
@@ -1929,7 +2089,8 @@
    "Fruit",
    "Insects"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Bamboo makes up about 99% of a giant panda's diet, so it eats for up to 14 hours a day."
  },
  {
   "id": 161,
@@ -1941,7 +2102,8 @@
    "Cat",
    "Rabbit"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Horses lock their leg joints so they can doze upright and flee quickly, though they lie down for deep sleep."
  },
  {
   "id": 162,
@@ -1953,7 +2115,8 @@
    "4",
    "10"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "All insects have six legs and three body parts: head, thorax and abdomen."
  },
  {
   "id": 163,
@@ -1965,7 +2128,8 @@
    "Camel",
    "Ostrich"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Giraffes stand up to 5.5 m tall, yet have the same seven neck bones as humans."
  },
  {
   "id": 164,
@@ -1977,7 +2141,8 @@
    "Herd",
    "Flock"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A pride is usually related lionesses, their cubs and a few males; lions are the only truly social cats."
  },
  {
   "id": 165,
@@ -1989,7 +2154,8 @@
    "Eagle",
    "Swan"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Penguins' wings evolved into flippers; they 'fly' underwater at speeds of 10 km/h or more."
  },
  {
   "id": 166,
@@ -2001,7 +2167,8 @@
    "Anaconda",
    "Alligator"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Saltwater crocodiles can exceed 6 m and live across South-east Asia and northern Australia."
  },
  {
   "id": 167,
@@ -2013,7 +2180,8 @@
    "Sugar glider",
    "Colugo"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Bats are the only mammals capable of powered flight; 'flying' squirrels merely glide."
  },
  {
   "id": 168,
@@ -2025,7 +2193,8 @@
    "Kit",
    "Pup"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A joey is born tiny and blind, then grows in its mother's pouch for months."
  },
  {
   "id": 169,
@@ -2037,7 +2206,8 @@
    "Human",
    "Blue whale"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Bowhead whales can live over 200 years; a harpoon tip from the 1800s was found in one caught in 2007."
  },
  {
   "id": 170,
@@ -2049,7 +2219,8 @@
    "Pink",
    "Grey"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Under its clear, hollow fur a polar bear's skin is black, which helps it absorb heat."
  },
  {
   "id": 171,
@@ -2061,7 +2232,8 @@
    "Shark",
    "Tuna"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Horseshoe crab blood uses copper to carry oxygen, making it blue; it is also used to test medicines for toxins."
  },
  {
   "id": 172,
@@ -2073,7 +2245,8 @@
    "2",
    "3"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A cow's stomach has four compartments: rumen, reticulum, omasum and abomasum, for digesting grass."
  },
  {
   "id": 173,
@@ -2085,7 +2258,8 @@
    "Parrot",
    "Crane"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Indian peafowl became the national bird in 1963; only the male, the peacock, has the famous train."
  },
  {
   "id": 174,
@@ -2097,7 +2271,8 @@
    "Donkey",
    "Llama"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Camels can go a week or more without water and carry heavy loads across the desert."
  },
  {
   "id": 175,
@@ -2109,7 +2284,8 @@
    "Ewe",
    "Hen"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A female deer is a doe, a male a buck or stag, and a young one a fawn."
  },
  {
   "id": 176,
@@ -2121,7 +2297,8 @@
    "Tortoise",
    "Snail"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Sloths move about 4 m a minute and sleep up to 15 hours a day to save energy on a leafy diet."
  },
  {
   "id": 177,
@@ -2133,7 +2310,8 @@
    "Ant",
    "Butterfly"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Honey bees turn nectar into honey and store it in wax combs as food for the winter."
  },
  {
   "id": 178,
@@ -2145,7 +2323,8 @@
    "Jaguar",
    "Leopard"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Tigers are the largest cats; Siberian males can weigh over 300 kg."
  },
  {
   "id": 179,
@@ -2157,7 +2336,8 @@
    "Eagle",
    "Swan"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "An ostrich egg weighs around 1.4 kg, about the same as two dozen chicken eggs."
  },
  {
   "id": 180,
@@ -2169,7 +2349,8 @@
    "Pack",
    "Parliament"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Collective nouns like 'a murder of crows' come from 15th-century English hunting lists."
  },
  {
   "id": 181,
@@ -2181,7 +2362,8 @@
    "Lizard",
    "Snake"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Chameleons change colour mainly to signal mood and regulate heat, using special skin cells called iridophores."
  },
  {
   "id": 182,
@@ -2193,7 +2375,8 @@
    "Reptiles",
    "Amphibians"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Dolphins breathe air, are warm-blooded and nurse their young, so they are mammals, not fish."
  },
  {
   "id": 183,
@@ -2205,7 +2388,8 @@
    "Albatross",
    "Condor"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Ostriches stand up to 2.8 m tall and can sprint at 70 km/h, the fastest of any bird on land."
  },
  {
   "id": 184,
@@ -2217,7 +2401,8 @@
    "Rabbit",
    "Hamster"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Dogs have up to 300 million scent receptors, versus about 6 million in humans."
  },
  {
   "id": 185,
@@ -2229,7 +2414,8 @@
    "12",
    "9"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Each football side fields ten outfield players and one goalkeeper."
  },
  {
   "id": 186,
@@ -2241,7 +2427,8 @@
    "Tennis",
    "Badminton"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A slam dunk is scored by jumping and pushing the ball straight down through the hoop."
  },
  {
   "id": 187,
@@ -2253,7 +2440,8 @@
    "10",
    "40"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "T20 cricket limits each side to 20 overs of six balls, so a match lasts around three hours."
  },
  {
   "id": 188,
@@ -2265,7 +2453,8 @@
    "Australia",
    "France"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Wimbledon, played in south-west London since 1877, is the oldest tennis tournament in the world."
  },
  {
   "id": 189,
@@ -2277,7 +2466,8 @@
    "Every 5 years",
    "Every 3 years"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Summer and Winter Olympics each run every four years, staggered so one happens every two years."
  },
  {
   "id": 190,
@@ -2289,7 +2479,8 @@
    "Baseball",
    "Karate"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Sumo dates back over 1,500 years and is tied to Shinto ritual; Japan has no legally designated national sport."
  },
  {
   "id": 191,
@@ -2301,7 +2492,8 @@
    "7",
    "1"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A touchdown scores 6, with an extra point or two-point conversion available afterwards."
  },
  {
   "id": 192,
@@ -2313,7 +2505,8 @@
    "Squash",
    "Table tennis"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A shuttlecock has 16 feathers or a plastic skirt in a cork base, and can fly at over 400 km/h off a smash."
  },
  {
   "id": 193,
@@ -2325,7 +2518,8 @@
    "6",
    "7"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The five rings stand for the five inhabited continents, in colours that appear on every national flag."
  },
  {
   "id": 194,
@@ -2337,7 +2531,8 @@
    "20",
    "50"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A strike scores 10 plus the next two balls; in the tenth frame three strikes make 30."
  },
  {
   "id": 195,
@@ -2349,7 +2544,8 @@
    "Argentina",
    "Italy"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Uruguay hosted and won the first World Cup, beating Argentina 4–2 in the final in Montevideo."
  },
  {
   "id": 196,
@@ -2361,7 +2557,8 @@
    "Knight",
    "King"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Each bishop stays on the colour of square it started on for the whole game."
  },
  {
   "id": 197,
@@ -2373,7 +2570,8 @@
    "45",
    "50"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The odd distance was fixed at the 1908 London Olympics so the race could finish in front of the royal box."
  },
  {
   "id": 198,
@@ -2385,7 +2583,8 @@
    "Football",
    "Rugby"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Lord's, home of Marylebone Cricket Club since 1814, is known as the Home of Cricket."
  },
  {
   "id": 199,
@@ -2397,7 +2596,8 @@
    "7",
    "4"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Basketball sides have five on court, usually two guards, two forwards and a centre, with rolling substitutions."
  },
  {
   "id": 200,
@@ -2409,7 +2609,8 @@
    "Brown",
    "White"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Belt colours mark progress; black is reserved for the dan grades after years of training."
  },
  {
   "id": 201,
@@ -2421,7 +2622,8 @@
    "Brazil",
    "Spain"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Kabaddi grew up in rural India; the Pro Kabaddi League since 2014 made it a televised sport."
  },
  {
   "id": 202,
@@ -2433,7 +2635,8 @@
    "Duck",
    "Blank"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "'Love' may come from the French 'l'oeuf' (egg), the shape of a zero, though the origin is uncertain."
  },
  {
   "id": 203,
@@ -2445,7 +2648,8 @@
    "12",
    "21"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Old Course at St Andrews settled on 18 holes in 1764 and the rest of golf followed."
  },
  {
   "id": 204,
@@ -2457,7 +2661,8 @@
    "Sailing",
    "Motor racing"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Tour de France, first run in 1903, is a three-week cycling race of around 3,500 km."
  },
  {
   "id": 205,
@@ -2469,7 +2674,8 @@
    "Hat-trick",
    "Duck"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A century is 100 runs in one innings; 50 is a half-century and 200 a double century."
  },
  {
   "id": 206,
@@ -2481,7 +2687,8 @@
    "20",
    "24"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The rim is 18 inches (46 cm) across, nearly twice the width of the ball, and sits 10 feet high."
  },
  {
   "id": 207,
@@ -2493,7 +2700,8 @@
    "Snowboarding",
    "BMX"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "An ollie is a jump with the board; a kickflip adds a spin along its length. Both were invented in the 1970s–80s."
  },
  {
   "id": 208,
@@ -2505,7 +2713,8 @@
    "7",
    "8"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Volleyball has six per side in two rows, rotating positions after each service they win."
  },
  {
   "id": 209,
@@ -2517,7 +2726,8 @@
    "Lacrosse",
    "Curling"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Ice hockey uses a flat rubber puck instead of a ball because it slides predictably on ice."
  },
  {
   "id": 210,
@@ -2529,7 +2739,8 @@
    "Central Program Utility",
    "Core Processing Unit"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The CPU is the chip that runs a computer's instructions, often called the brain of the machine."
  },
  {
   "id": 211,
@@ -2541,7 +2752,8 @@
    "Wide World Web",
    "Web World Wide"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Tim Berners-Lee invented the World Wide Web in 1989 at CERN as a way to link documents over the internet."
  },
  {
   "id": 212,
@@ -2553,7 +2765,8 @@
    "Microsoft",
    "Samsung"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Google bought Android in 2005; the first Android phone shipped in 2008 and it now runs most smartphones."
  },
  {
   "id": 213,
@@ -2565,7 +2778,8 @@
    "Universal System Base",
    "Unified Serial Bridge"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "USB was introduced in 1996 to replace the tangle of different ports with one standard connector."
  },
  {
   "id": 214,
@@ -2577,7 +2791,8 @@
    "100",
    "111"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Binary uses only 0 and 1: 101 means one four, no twos and one one, which adds up to 5."
  },
  {
   "id": 215,
@@ -2589,7 +2804,8 @@
    "Steve Wozniak",
    "Larry Page"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Childhood friends Gates and Allen founded Microsoft in 1975 to write software for early personal computers."
  },
  {
   "id": 216,
@@ -2601,7 +2817,8 @@
    "Hyper Transfer Markup Language",
    "Home Tool Markup Language"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "HTML is the markup language that structures web pages; browsers read its tags to display text, links and images."
  },
  {
   "id": 217,
@@ -2613,7 +2830,8 @@
    "Nokia",
    "Google"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Apple launched the iPhone in 2007, combining a phone, iPod and internet browser in one touchscreen device."
  },
  {
   "id": 218,
@@ -2625,7 +2843,8 @@
    "Print documents",
    "Store files"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Wi-Fi sends data over radio waves, so phones and laptops can reach a router without cables."
  },
  {
   "id": 219,
@@ -2637,7 +2856,8 @@
    "Netscape",
    "Firefox"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mosaic (1993) was the first browser to show images alongside text, and it made the web popular."
  },
  {
   "id": 220,
@@ -2649,7 +2869,8 @@
    "16",
    "32"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A byte holds 8 bits, enough for 256 different values, which is how one character of text is stored."
  },
  {
   "id": 221,
@@ -2661,7 +2882,8 @@
    "LinkedIn",
    "Snapchat"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Twitter raised its limit from 140 to 280 characters in 2017 and was renamed X in 2023."
  },
  {
   "id": 222,
@@ -2673,7 +2895,8 @@
    "Global Path System",
    "Geographic Position Signal"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "GPS receivers time signals from at least four satellites to work out where you are to within a few metres."
  },
  {
   "id": 223,
@@ -2685,7 +2908,8 @@
    "Viper",
    "Boa"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Guido van Rossum named Python after the comedy group Monty Python, not the snake."
  },
  {
   "id": 224,
@@ -2697,7 +2921,8 @@
    "Cookie",
    "Patch"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A computer virus copies itself into other programs or files to spread, like its biological namesake."
  },
  {
   "id": 225,
@@ -2709,7 +2934,8 @@
    "Amazon",
    "Microsoft"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Google bought YouTube in 2006 for about $1.65 billion, less than two years after it launched."
  },
  {
   "id": 226,
@@ -2721,7 +2947,8 @@
    "Public Document File",
    "Personal Data Format"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Adobe created PDF in 1993 so documents would look the same on any device or printer."
  },
  {
   "id": 227,
@@ -2733,7 +2960,8 @@
    "Rapid Application Memory",
    "Run And Manage"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "RAM is fast, temporary memory that holds what the computer is working on; it empties when the power goes off."
  },
  {
   "id": 228,
@@ -2745,7 +2973,8 @@
    "Ctrl + X",
    "Ctrl + Z"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Ctrl + C copies and Ctrl + V pastes; on a Mac the Command key does the same job."
  },
  {
   "id": 229,
@@ -2757,7 +2986,8 @@
    "Cortana",
    "Bixby"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Siri arrived on the iPhone 4S in 2011; Apple bought the original Siri app a year earlier."
  },
  {
   "id": 230,
@@ -2769,7 +2999,8 @@
    "25",
    "28"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "English has 26 letters: 5 vowels and 21 consonants."
  },
  {
   "id": 231,
@@ -2781,7 +3012,8 @@
    "Meese",
    "Mousen"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mouse → mice is an old irregular plural from Germanic vowel shifts, like goose → geese."
  },
  {
   "id": 232,
@@ -2793,7 +3025,8 @@
    "Spanish",
    "Hindi"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mandarin has about 940 million native speakers; English has more total speakers once learners are counted."
  },
  {
   "id": 233,
@@ -2805,7 +3038,8 @@
    "Synonym",
    "Homonym"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "'Level', 'racecar' and 'madam' are palindromes; the word comes from Greek for 'running back again'."
  },
  {
   "id": 234,
@@ -2817,7 +3051,8 @@
    "Antique",
    "Historic"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Ancient means very old; modern means of the present or recent times."
  },
  {
   "id": 235,
@@ -2829,7 +3064,8 @@
    "Brazilian",
    "French"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Brazil was a Portuguese colony from 1500 to 1822, making it the largest Portuguese-speaking country."
  },
  {
   "id": 236,
@@ -2841,7 +3077,8 @@
    "Homophones",
    "Acronyms"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Synonyms share a meaning, like big and large; antonyms are opposites."
  },
  {
   "id": 237,
@@ -2853,7 +3090,8 @@
    "2",
    "3"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Switzerland's four official languages are German, French, Italian and Romansh."
  },
  {
   "id": 238,
@@ -2865,7 +3103,8 @@
    "Flock",
    "Pack"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A school of fish swims together; 'shoal' is used too."
  },
  {
   "id": 239,
@@ -2877,7 +3116,8 @@
    "Comma",
    "Colon"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The question mark likely evolved from the Latin 'quaestio', shortened to a 'q' over an 'o'."
  },
  {
   "id": 240,
@@ -2889,7 +3129,8 @@
    "Know yourself",
    "Be strong"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The Roman poet Horace wrote 'carpe diem' around 23 BC, urging readers to make the most of today."
  },
  {
   "id": 241,
@@ -2901,7 +3142,8 @@
    "Spanish",
    "German"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Piano is short for 'pianoforte', Italian for soft-loud, because it could play both unlike a harpsichord."
  },
  {
   "id": 242,
@@ -2913,7 +3155,8 @@
    "T",
    "S"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "E appears in about 11% of English text, which is why it's the first guess in codebreaking and hangman."
  },
  {
   "id": 243,
@@ -2925,7 +3168,8 @@
    "Arabic",
    "Tamil"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Devanagari is also used for Marathi, Nepali and Sanskrit; its name means 'script of the city of the gods'."
  },
  {
   "id": 244,
@@ -2937,7 +3181,8 @@
    "Phonology",
    "Semantics"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Etymology traces words back through languages; 'etymon' is Greek for 'true sense'."
  },
  {
   "id": 245,
@@ -2949,7 +3194,8 @@
    "Urdu",
    "Persian"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "'Namas te' is Sanskrit for 'I bow to you', and the gesture of joined palms goes with it."
  },
  {
   "id": 246,
@@ -2961,7 +3207,8 @@
    "A Korean dance",
    "A Thai dish"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A haiku has 17 syllables in lines of 5, 7 and 5, traditionally with a seasonal reference."
  },
  {
   "id": 247,
@@ -2973,7 +3220,8 @@
    "Agoraphobia",
    "Acrophobia"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Arachne was a weaver in Greek myth turned into a spider; 'phobia' means fear."
  },
  {
   "id": 248,
@@ -2985,7 +3233,8 @@
    "Good luck",
    "Good night"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "It's French for 'good appetite', said before a meal; English never settled on its own phrase."
  },
  {
   "id": 249,
@@ -2997,7 +3246,8 @@
    "4",
    "7"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A, E, I, O and U are the five vowel letters; Y sometimes acts as a vowel too."
  },
  {
   "id": 250,
@@ -3009,7 +3259,8 @@
    "Beethoven",
    "Bach"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Vivaldi wrote the four violin concertos around 1720, each painting a season with birdsong, storms and ice."
  },
  {
   "id": 251,
@@ -3021,7 +3272,8 @@
    "Harpsichord",
    "Accordion"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A piano has 52 white and 36 black keys, spanning just over seven octaves."
  },
  {
   "id": 252,
@@ -3033,7 +3285,8 @@
    "Yellow, green, purple",
    "Blue, orange, green"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Red, yellow and blue can't be mixed from other paints; screens use red, green and blue light instead."
  },
  {
   "id": 253,
@@ -3045,7 +3298,8 @@
    "Pablo Picasso",
    "Salvador Dalí"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Van Gogh painted The Starry Night in 1889 from his asylum window in Saint-Rémy, France."
  },
  {
   "id": 254,
@@ -3057,7 +3311,8 @@
    "Samba",
    "Flamenco"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Tango grew up in the working-class ports of Buenos Aires and Montevideo in the late 1800s."
  },
  {
   "id": 255,
@@ -3069,7 +3324,8 @@
    "5",
    "7"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Standard guitars have six strings tuned E A D G B E; bass guitars usually have four."
  },
  {
   "id": 256,
@@ -3081,7 +3337,8 @@
    "Odissi",
    "Kathakali"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Bharatanatyam is one of India's oldest classical dances, rooted in Tamil Nadu temple traditions."
  },
  {
   "id": 257,
@@ -3093,7 +3350,8 @@
    "Giselle",
    "Coppélia"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Tchaikovsky's Swan Lake (1877) tells of a princess turned into a swan by a sorcerer's curse."
  },
  {
   "id": 258,
@@ -3105,7 +3363,8 @@
    "Jane Austen",
    "Oscar Wilde"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Shakespeare wrote Romeo and Juliet around 1595, drawing on an earlier Italian tale."
  },
  {
   "id": 259,
@@ -3117,7 +3376,8 @@
    "Flute",
    "Sarod"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Ravi Shankar brought the sitar to the West in the 1960s, teaching George Harrison of the Beatles."
  },
  {
   "id": 260,
@@ -3129,7 +3389,8 @@
    "Ink painting",
    "Clay sculpture"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Origami comes from Japanese 'ori' (fold) and 'kami' (paper); the classic crane is its best-known figure."
  },
  {
   "id": 261,
@@ -3141,7 +3402,8 @@
    "Orange",
    "Brown"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Mixing blue and yellow pigment gives green; with light, blue and yellow make white."
  },
  {
   "id": 262,
@@ -3153,7 +3415,8 @@
    "Pantheon ceiling",
    "Vatican dome"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Michelangelo painted the Sistine Chapel ceiling between 1508 and 1512, mostly standing on scaffolding."
  },
  {
   "id": 263,
@@ -3165,7 +3428,8 @@
    "Mary Shelley",
    "George Eliot"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Austen published Pride and Prejudice in 1813, anonymously, 'by the author of Sense and Sensibility'."
  },
  {
   "id": 264,
@@ -3177,7 +3441,8 @@
    "Mi",
    "Ti"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The scale runs do, re, mi, fa, so, la, ti; the syllables come from an 11th-century Latin hymn."
  },
  {
   "id": 265,
@@ -3189,7 +3454,8 @@
    "Fresco",
    "Relief"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Monolith means 'single stone' in Greek; monuments like Egypt's obelisks are monoliths."
  },
  {
   "id": 266,
@@ -3201,7 +3467,8 @@
    "Roy Lichtenstein",
    "Mark Rothko"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Warhol's 32 Campbell's Soup Cans (1962) helped launch Pop Art by treating everyday products as art."
  },
  {
   "id": 267,
@@ -3213,7 +3480,8 @@
    "5",
    "6"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A string quartet is two violins, a viola and a cello."
  },
  {
   "id": 268,
@@ -3225,7 +3493,8 @@
    "Charles Dickens",
    "Edgar Allan Poe"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Doyle introduced Holmes in A Study in Scarlet (1887) and wrote 56 short stories and four novels about him."
  },
  {
   "id": 269,
@@ -3237,7 +3506,8 @@
    "Onam",
    "Pongal"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Holi marks the arrival of spring with coloured powders, bonfires and sweets."
  },
  {
   "id": 270,
@@ -3249,7 +3519,8 @@
    "1,600",
    "2,400"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "24 hours × 60 minutes = 1,440 minutes."
  },
  {
   "id": 271,
@@ -3261,7 +3532,8 @@
    "364",
    "367"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A leap year adds 29 February because Earth's orbit takes about 365.25 days."
  },
  {
   "id": 272,
@@ -3273,7 +3545,8 @@
    "June",
    "September"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Every month has at least 28 days, but February is the only one with exactly 28 in a normal year."
  },
  {
   "id": 273,
@@ -3285,7 +3558,8 @@
    "2000",
    "100"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The ₹2,000 note was withdrawn from circulation in 2023, leaving ₹500 as the largest."
  },
  {
   "id": 274,
@@ -3297,7 +3571,8 @@
    "Cub",
    "Calf"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A kitten is a young cat; a puppy is a young dog."
  },
  {
   "id": 275,
@@ -3309,7 +3584,8 @@
    "7",
    "8"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "'Hex' is Greek for six; honeycomb cells are hexagons because they tile with no wasted space."
  },
  {
   "id": 276,
@@ -3321,7 +3597,8 @@
    "35",
    "20"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "10% of 200 is 20 and 5% is 10, so 15% is 30."
  },
  {
   "id": 277,
@@ -3333,7 +3610,8 @@
    "North",
    "South"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Earth spins west to east, so the Sun appears to rise in the east and set in the west."
  },
  {
   "id": 278,
@@ -3345,7 +3623,8 @@
    "6,000",
    "1,800"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "60 seconds × 60 minutes = 3,600 seconds."
  },
  {
   "id": 279,
@@ -3357,7 +3636,8 @@
    "11",
    "13"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "12 × 12 = 144, so the square root of 144 is 12."
  },
  {
   "id": 280,
@@ -3369,7 +3649,8 @@
    "10",
    "10,000"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "'Milli' means a thousandth, so a litre holds 1,000 millilitres."
  },
  {
   "id": 281,
@@ -3381,7 +3662,8 @@
    "Purple",
    "Brown"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "White lightens red to a tint we call pink; adding black instead would give maroon."
  },
  {
   "id": 282,
@@ -3393,7 +3675,8 @@
    "7",
    "9"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "One million is 1,000,000, a 1 followed by six zeros, or 10 to the power of 6."
  },
  {
   "id": 283,
@@ -3405,7 +3688,8 @@
    "10",
    "13"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Primes divide only by 1 and themselves: 2, 3, 5, 7, 11, 13…"
  },
  {
   "id": 284,
@@ -3417,7 +3701,8 @@
    "120",
    "192"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "7 days × 24 hours = 168 hours."
  },
  {
   "id": 285,
@@ -3429,7 +3714,8 @@
    "64",
    "48"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "7 × 8 = 56, often remembered as '5, 6, 7, 8'."
  },
  {
   "id": 286,
@@ -3441,7 +3727,8 @@
    "Stones",
    "Depends on the bag"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A kilogram is a kilogram; feathers just take up far more space than stones for the same weight."
  },
  {
   "id": 287,
@@ -3453,7 +3740,8 @@
    "180",
    "360"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A right angle is a quarter turn; a full circle is 360°."
  },
  {
   "id": 288,
@@ -3465,7 +3753,8 @@
    "D",
    "X"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Roman numerals: I 1, V 5, X 10, L 50, C 100, D 500, M 1000."
  },
  {
   "id": 289,
@@ -3477,7 +3766,8 @@
    "1,000",
    "50"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "'Centi' means a hundredth, so there are 100 centimetres in a metre."
  },
  {
   "id": 290,
@@ -3489,7 +3779,8 @@
    "Pentagon",
    "Decagon"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "'Octo' is Latin for eight; stop signs are octagons."
  },
  {
   "id": 291,
@@ -3501,7 +3792,8 @@
    "4",
    "5"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Three teaspoons make a tablespoon, about 15 ml."
  },
  {
   "id": 292,
@@ -3513,7 +3805,8 @@
    "Venus",
    "Jupiter"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Earth is the third planet from the Sun and the only one known to hold life."
  },
  {
   "id": 293,
@@ -3525,7 +3818,8 @@
    "1,001",
    "9,999"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "999 + 1 = 1,000, the first four-digit number."
  },
  {
   "id": 294,
@@ -3537,7 +3831,8 @@
    "48",
    "54"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "365 days ÷ 7 = 52 weeks and one day left over (two in a leap year)."
  },
  {
   "id": 295,
@@ -3549,7 +3844,8 @@
    "130",
    "150"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "250 ÷ 2 = 125."
  },
  {
   "id": 296,
@@ -3561,7 +3857,8 @@
    "3",
    "1"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Chess is a two-player game: white moves first, and each side starts with 16 pieces."
  },
  {
   "id": 297,
@@ -3573,7 +3870,8 @@
    "48",
    "50"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "52 cards: four suits of 13, from ace to king."
  },
  {
   "id": 298,
@@ -3585,7 +3883,8 @@
    "30",
    "24"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "100 ÷ 4 = 25, so a quarter of 100 is 25."
  },
  {
   "id": 299,
@@ -3597,7 +3896,8 @@
    "December",
    "February"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "January is named after Janus, the Roman god of doorways and beginnings."
  },
  {
   "id": 300,
@@ -3609,7 +3909,8 @@
    "8",
    "5"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Red, orange, yellow, green, blue, indigo, violet; Newton chose seven to match the musical scale."
  },
  {
   "id": 301,
@@ -3621,7 +3922,8 @@
    "L",
    "H"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "The alphabet runs … H, I, J, K, L …"
  },
  {
   "id": 302,
@@ -3633,7 +3935,8 @@
    "18",
    "20"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "Opposite faces add up to 7, and 1+2+3+4+5+6 = 21."
  },
  {
   "id": 303,
@@ -3645,7 +3948,8 @@
    "Barometer",
    "Protractor"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "A compass needle is a small magnet that lines up with Earth's magnetic field and points north."
  },
  {
   "id": 304,
@@ -3657,6 +3961,7 @@
    "99",
    "18"
   ],
-  "answer": 0
+  "answer": 0,
+  "explanation": "9 squared is 9 × 9 = 81."
  }
 ]
