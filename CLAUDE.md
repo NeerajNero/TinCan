@@ -474,7 +474,9 @@ of a task must say which docs were updated.
   read or listener (get/getDoc/getDocs, onValue/onChildAdded/onSnapshot, even without a caller error
   callback) to the Diagnostics log as `[write] op path → code` / `[read] …`; in development a
   permission-denied also shows as a toast (`WriteFailureToasts`). Never attach a listener that can't fail
-  visibly.
+  visibly. `tests/unit/rules-coverage.test.ts` (part of `pnpm test`) scans those wrappers' call sites and
+  fails if a Firestore collection or RTDB top-level node has no explicit block in `rules/*.tmpl`, so a
+  new path needs its rule in the same commit.
 - Thin pages, logic in `src/lib/**` and hooks in `src/hooks/**`. Static decks in `src/content`.
 - Every API route validates input with zod and verifies the Firebase ID token.
 - TypeScript is `strict` + `noUncheckedIndexedAccess`; ESLint errors on `any`, missing hook deps and import
