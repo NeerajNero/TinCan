@@ -18,6 +18,7 @@ import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
 import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRound, invitePictionary, nextRound, parseGuesses, parseOptions, pictRoute, ROUND_MS, ROUNDS, submitGuess, subscribeOpenPictionary, subscribePictionary, type LivePictionary } from "@/lib/db/pictionary";
+import { clearStrokes } from "@/lib/db/together";
 import { recordTogetherEvent } from "@/lib/garden";
 
 function winnerIdOf(g: LivePictionary): string | null {
@@ -79,6 +80,8 @@ export function PictionaryGame({ id }: { id: string }) {
   const [width, setWidth] = useState<number>(CANVAS_WIDTHS[1]);
   const [guess, setGuess] = useState("");
   const [burst, setBurst] = useState(0);
+  // The pending "Clear all?" is keyed to the round, so a new round or round end drops it without an effect.
+  const [confirmKey, setConfirmKey] = useState<string | null>(null);
   const finished = useRef(false);
   const timedOut = useRef<number | null>(null);
   const nameOf = (who: string) => (who === uid ? me.nickname : (friend?.nickname ?? "Friend"));
@@ -125,6 +128,9 @@ export function PictionaryGame({ id }: { id: string }) {
 
   const guesses = parseGuesses(game);
   const options = parseOptions(game);
+  const roundKey = `${game.round}:${game.roundStartedAt}:${game.roundOver}`;
+  const confirmClear = confirmKey === roundKey;
+  const setConfirmClear = (on: boolean) => setConfirmKey(on ? roundKey : null);
 
   async function sendGuess() {
     if (!game || !guess.trim()) return;
@@ -187,20 +193,39 @@ export function PictionaryGame({ id }: { id: string }) {
           {drawer && <p className="text-center text-sm">Draw: <strong>{game.word}</strong></p>}
           <SharedCanvas base={`pictionary/${game.id}`} canDraw={drawer && !game.roundOver} tool={tool} color={color} width={width} page={pictRoute(game.id)} />
           {drawer && !game.roundOver && (
-            <div className="card flex items-center gap-1 rounded-[20px] p-2">
-              <ToolBtn active={tool === "pen"} onClick={() => setTool("pen")} label="Pen"><Pen size={18} /></ToolBtn>
-              <ToolBtn active={tool === "eraser"} onClick={() => setTool("eraser")} label="Eraser"><Eraser size={18} /></ToolBtn>
-              {CANVAS_WIDTHS.map((w) => (
-                <button key={w} type="button" onClick={() => setWidth(w)} aria-label={`Width ${w}`} aria-pressed={width === w} className={cn("tap grid size-10 place-items-center rounded-full", width === w && "bg-accent-soft")}>
-                  <span className="rounded-full bg-text" style={{ width: w + 4, height: w + 4 }} />
-                </button>
-              ))}
-              <span className="flex-1" />
-              {CANVAS_COLORS.slice(0, 5).map((c) => (
-                <button key={c} type="button" onClick={() => { setColor(c); setTool("pen"); }} aria-label={c} className={cn("tap grid place-items-center rounded-full", color === c && "ring-2 ring-text ring-offset-1")}>
-                  <span className="block size-6 rounded-full" style={{ background: c }} />
-                </button>
-              ))}
+            <div className="card flex flex-col gap-2 rounded-[20px] p-2">
+              <div className="flex items-center gap-1">
+                <ToolBtn active={tool === "pen"} onClick={() => setTool("pen")} label="Pen"><Pen size={18} /></ToolBtn>
+                <ToolBtn active={tool === "eraser"} onClick={() => setTool("eraser")} label="Eraser"><Eraser size={18} /></ToolBtn>
+                <span className="mx-1 h-6 w-px bg-border" />
+                {CANVAS_WIDTHS.map((w) => (
+                  <button key={w} type="button" onClick={() => setWidth(w)} aria-label={`Width ${w}`} aria-pressed={width === w} className={cn("tap grid size-10 place-items-center rounded-full", width === w && "bg-accent-soft")}>
+                    <span className="rounded-full bg-text" style={{ width: w + 4, height: w + 4 }} />
+                  </button>
+                ))}
+                <span className="flex-1" />
+                {!confirmClear ? (
+                  <button type="button" onClick={() => setConfirmClear(true)} className="tap rounded-full px-3 text-sm font-bold text-muted">
+                    Clear
+                  </button>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <button type="button" onClick={() => setConfirmClear(false)} className="tap rounded-full px-2 text-xs font-bold text-muted">
+                      Keep
+                    </button>
+                    <button type="button" onClick={() => { void clearStrokes(`pictionary/${game.id}`); setConfirmClear(false); }} className="tap rounded-full bg-red-500 px-3 text-xs font-bold text-white">
+                      Clear all
+                    </button>
+                  </span>
+                )}
+              </div>
+              <div role="radiogroup" aria-label="Colour" className="flex items-center justify-between gap-1 px-1">
+                {CANVAS_COLORS.map((c) => (
+                  <button key={c} type="button" role="radio" aria-checked={color === c && tool === "pen"} aria-label={c} onClick={() => { setColor(c); setTool("pen"); }} className={cn("tap grid place-items-center rounded-full", color === c && tool === "pen" && "ring-2 ring-text ring-offset-2 ring-offset-surface")}>
+                    <span className="block size-7 rounded-full" style={{ background: c }} />
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           {!drawer && !game.roundOver && (

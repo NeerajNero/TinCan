@@ -10,7 +10,7 @@ It is built for **exactly two Google accounts**, and nobody else can open it. It
 | --- | --- |
 | **Home** | friend's presence, local time, weather and distance · four pings with haptics · lamp · mood check-in · daily question · streak + plant · pet · meetup countdown · next milestone · open games · good night / good morning |
 | **Chat** | ✓ / ✓✓ / blue ticks, typing, swipe to reply, reactions, edit/delete, photos, voice notes, GIFs, stickers, scheduled messages, offline queue, chat backgrounds |
-| **Play** | tic-tac-toe, connect four, chess, checkers · would-you-rather, never-have-I-ever, truth or dare, conversation cards · 20 Questions · hangout wheel · trivia duel · know-me quiz · daily word · whiteboard, pixel art, pictionary, watch together, listen together, radio, focus timer, cook-along |
+| **Play** | tic-tac-toe, connect four, chess, checkers · would-you-rather, never-have-I-ever, truth or dare, conversation cards · 20 Questions · trivia duel · know-me quiz · daily word (scoreboard + history) · whiteboard, pixel art, pictionary, watch together, listen together, radio, focus timer, cook-along |
 | **Memories** | photo timeline · memory map · milestones · journal · jar · time capsules · open-when envelopes · mood history · daily-question history · garden |
 | **Plan** | meetup countdown · call-time finder across time zones · bucket list, wishlist, gift ideas, to-do · trips |
 | **More** | profile, theme, chat background, notifications, sounds, usage meter, sign out |

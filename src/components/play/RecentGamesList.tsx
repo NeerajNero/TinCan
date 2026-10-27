@@ -24,7 +24,8 @@ export function RecentGamesList({ rows, nameOf }: { rows: RecentResultRow[]; nam
     <>
       {rows.map((r) => {
         const g = gameInfo(r.game);
-        const moves = typeof r.moves === "number" ? ` · ${r.moves} ${g.id === "trivia" || g.id === "pictionary" ? "rounds" : "moves"}` : "";
+        const unit = g.id === "trivia" || g.id === "pictionary" ? "rounds" : g.id === "word" ? "guesses" : "moves";
+        const moves = typeof r.moves === "number" ? ` · ${r.moves} ${unit}` : "";
         return (
           <div key={r.id} className="card flex items-center gap-3 rounded-[20px] px-4 py-2.5" data-game={g.id}>
             <span className="text-xl" aria-hidden>

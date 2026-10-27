@@ -70,7 +70,7 @@ app should feel like a small hello, not a dashboard.
 **Play** — two sections
 - Games: Tic-tac-toe, Connect Four, Chess, Checkers, Pictionary, Trivia duel, Daily word,
   Know-me quiz, Would You Rather, Never Have I Ever, Truth or Dare, Conversation cards,
-  20 Questions, Hangout-idea wheel.
+  20 Questions. (The hangout wheel was removed in phase 22.)
 - Together: Whiteboard, Pixel art, Watch together, Listen together, Radio, Focus timer, Cook-along.
 
 **Memories** — Photo timeline, Memory map, Milestones, Journal, Jar, Time capsules,
@@ -150,7 +150,7 @@ Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign
 Static content lives in `src/content/*.json`, not the DB: daily questions (365+), word list
 (5-letter, ~1500 answers + larger allowed list), trivia bank (300+ questions, 4 options each),
 would-you-rather (150+), never-have-I-ever (150+), truth/dare (100+ each), conversation cards
-(150+), hangout ideas (60+), pictionary words (300+), 20-questions secret words (200+),
+(150+), pictionary words (300+), 20-questions secret words (200+),
 pet species (3 SVG sprite sets × 4 moods), plant stages (10 SVGs), garden stickers (24 SVGs),
 radio stations (`src/content/radio.json`: 6 World streams + 6 official All India Radio / Prasar Bharati HLS
 streams, each with id, name, region, language (India), format mp3|aac|hls, URL, extra hosts, attribution).
@@ -198,7 +198,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   shape `systemMessageData` in `systemKinds.ts`). No deliveredAt/readAt: they never count as unread, never get
   receipts or ticks. `SystemPill` shows text, else a line from kind + meta, else ✨ — never an empty row.
   Kinds: sleep, wake, relationship, game-result, game-cancel, twenty-result, pet-adopt, pet-fed, pet-level,
-  pet-hungry, garden-sticker, capsule-unlock, hangout, invite. `invite` lines render as `InvitePill` (see Invites).
+  pet-hungry, garden-sticker, capsule-unlock, hangout (legacy, nothing writes it), invite. `invite` lines render as
+  `InvitePill` (see Invites).
 - Day separators ("Today", "Yesterday", date), unread divider on open, jump-to-bottom FAB,
   unread count badge on the Chat tab, last-message preview on Home.
 - Images: compress in browser (max 1080 px, ~0.3 MB, JPEG/WebP) → signed upload to preset
@@ -304,7 +305,6 @@ Every trivia question also carries an `explanation`. Word definitions are static
   card in RTDB; either flips; answers/votes stored on the card; running tally where it fits.
 - **20 Questions**: one picks a secret (or random from list), the other asks in chat-like box
   with Yes/No/Sort-of buttons; 20-question counter; reveal.
-- **Hangout wheel**: spinning wheel of virtual hangout ideas; result posts to chat with "Let's!"
 - **Trivia duel**: 10 random questions from the bank, 15 s each, can be played live (both
   online, synced via RTDB) or async (each plays when free; results compare when both done).
   Live handshake: opening `/play/trivia/{id}` as either player auto-joins (`openLiveSession` writes
@@ -320,7 +320,12 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - **Know-me quiz**: author writes questions about themselves with the right answer + decoys;
   friend takes it; score + reveal; both directions.
 - **Daily word**: same 5-letter word for both (deterministic by dateKey); independent 6-guess
-  games; after both finish, grids are compared and a 🏆 goes to fewer guesses. Once a player has
+  games; after both finish, grids are compared and a 🏆 goes to fewer guesses. The day is then
+  settled once by the later finisher: `gameResults/word-{dateKey}` (create-once), `pair.records.word`
+  and a "🟩 Sam won the daily word in 3" line (the first settle folds earlier days in). The screen
+  shows an all-time scoreboard (days won / draws, from `pair.records.word`, also in the Play record
+  strip) and a tap-to-load 30-day history (one bounded read: word, guess counts, 🏆, averages,
+  expandable grids; today appears only once both finished). Once a player has
   finished (win or lose) a "What does it mean?" link fetches `public/words/{letter}.json` (nothing
   is loaded before that) and shows "WORD · noun — meaning" with the example smaller, in the reveal
   card and in the side-by-side comparison. Definitions come from WordNet 3.1 (`wordnet-db`,
@@ -328,7 +333,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   for words WordNet lacks or defines badly; the 26 files are committed and rebuilt only when the
   answer list changes.
 - **Pictionary**: drawer sees the word, draws on shared canvas (RTDB strokes), guesser types;
-  60 s; 3 rounds alternating; score.
+  60 s; 3 rounds alternating; score. Drawer tools: pen, eraser, widths, colours and a confirmed
+  "Clear all" that wipes the canvas for both.
 - **Whiteboard**: pen/eraser/colours/clear, shared cursors, "snapshot" button uploads a PNG to
   Cloudinary and posts it to chat.
 - **Pixel art**: 32×32 shared grid, 16-colour palette, shared cursors, snapshot to chat.
@@ -517,7 +523,7 @@ CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–21 shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–22 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -562,6 +568,8 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 21. ✅ **Live trivia fix + invites** — reported Firebase wrappers (Diagnostics + dev toast), the missing
     `trivia/{id}` RTDB rule and a host-free live handshake with an async fallback, emulator tests for the
     stall and every live write, `startInvite` (chat Join card, RTDB toast queue, push) on every activity.
+22. ✅ **Ten-day feedback** — daily word scoreboard + 30-day history (settled into `gameResults` /
+    `pair.records.word`), Pictionary "Clear all", hangout wheel removed.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

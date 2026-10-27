@@ -24,9 +24,9 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 | `lists/{kind}/items/{id}` | auto | shared, **except `gifts`: author-only read/write** | ≤200 per list | text ≤200, note ≤1000, url ≤500, order |
 | `trips/{id}` | auto | either | ≤100 | days[{date, stops[]}] rebuilt from the range; mirrored to `pair.tripsSummary` |
 | `availability/{uid}` | uid | owner | 2 docs | slots{mon..sun: ["09:00",…]}, tz |
-| `gameResults/{id}` | gameId or `{game}-{ts}` | create-only by a player | ≤20 on expand | game, players, winnerId, endReason, moves |
+| `gameResults/{id}` | gameId, `{game}-{ts}`, or `word-{dateKey}` | create-only by a player | ≤20 on expand | game, players, winnerId, endReason, moves (daily word: the winning guess count) |
 | `quizzes/{id}` | auto | author edits; taker writes only `takenBy.{uid}` | ≤5 unread badge; ≤20 list | questions[{q, answer, decoys[3]}], status draft/published |
-| `wordle/{dateKey}_{uid}` | room day + uid | owner | 2 docs | guesses ≤6, solved, done |
+| `wordle/{dateKey}_{uid}` | room day + uid | owner | 2 docs; History: one 60-doc `getDocs` by id desc, on tap; first settle: one ≤200-doc read | guesses ≤6, solved, done, at |
 | `trivia/{id}` | auto | create by either; answers only own key | 1 doc + ≤10 list | seed, questionIds[10], answers{uid}, scores{uid}, mode live/async |
 | `recipes/{id}` | auto | either | ≤50 | title, ingredients[], steps[] |
 | `push/{id}`, `tickLog/{jobKey}`, `quota/{uid}_{day}` | — | **admin only** | — | push log (~200), job idempotency, API daily caps |
@@ -62,4 +62,4 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 
 ## Static content (`src/content/`)
 
-Decks (`would-you-rather`, `never-have-i-ever`, `truths`, `dares`, `conversation-cards`), `hangout-ideas`, `trivia` (305), `twenty-secrets`, `pictionary-words`, `daily-questions` (384), `words-answers` (1,704) + `words-allowed` (8,574), `radio` (12 verified streams: 6 World mp3, 6 All India Radio HLS with `region`, `language`, `format`, optional `hosts` for redirect/segment hosts; read through `lib/radio.ts`), `relationships.ts`, and SVG sets: `stickers/` (16), `pets/` (3 species), `plant/` (10 stages), `garden/` (scene + 24 stickers). Content is imported only by the screens that use it so it doesn't ride in the shared bundle (`deckMeta.ts` exists for that reason).
+Decks (`would-you-rather`, `never-have-i-ever`, `truths`, `dares`, `conversation-cards`), `trivia` (305), `twenty-secrets`, `pictionary-words`, `daily-questions` (384), `words-answers` (1,704) + `words-allowed` (8,574), `radio` (12 verified streams: 6 World mp3, 6 All India Radio HLS with `region`, `language`, `format`, optional `hosts` for redirect/segment hosts; read through `lib/radio.ts`), `relationships.ts`, and SVG sets: `stickers/` (16), `pets/` (3 species), `plant/` (10 stages), `garden/` (scene + 24 stickers). Content is imported only by the screens that use it so it doesn't ride in the shared bundle (`deckMeta.ts` exists for that reason).

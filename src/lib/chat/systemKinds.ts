@@ -17,6 +17,7 @@ export const SYSTEM_KINDS = [
   "pet-hungry",
   "garden-sticker",
   "capsule-unlock",
+  // "hangout" is kept for lines the (removed) hangout wheel posted; nothing writes it any more.
   "hangout",
   "invite",
 ] as const;

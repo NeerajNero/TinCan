@@ -2,23 +2,24 @@
 
 import { AnimatePresence, m } from "framer-motion";
 import { Delete } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
+import { TILE, WordleGrid } from "@/components/play/WordleGrid";
+import { WordleHistory } from "@/components/play/WordleHistory";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
-import { saveGuesses, wordleRef, type WordleDoc } from "@/lib/db/wordle";
+import { saveGuesses, settleWordleDay, wordleRef, type WordleDoc } from "@/lib/db/wordle";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { definitionHeading, fetchDefinition, type WordDefinition } from "@/lib/wordDefinitions";
-import { evaluate, isAllowedGuess, KEY_ROWS, keyboardStates, MAX_GUESSES, WORD_LEN, wordFor, type LetterState } from "@/lib/wordle";
-
-const TILE: Record<LetterState, string> = { correct: "bg-emerald-500 text-white border-emerald-500", present: "bg-amber-400 text-white border-amber-400", absent: "bg-muted/60 text-white border-muted/60" };
+import { isAllowedGuess, KEY_ROWS, keyboardStates, MAX_GUESSES, WORD_LEN, wordFor, type LetterState } from "@/lib/wordle";
+import { bothFinished, guessCount, iRecordWordle, wordleDayWinner, type WordleDay } from "@/lib/wordleResults";
 
 export function WordleScreen() {
   const { uid, me, friend, friendUid, pair } = usePair();
@@ -98,10 +99,23 @@ export function WordleScreen() {
     return () => window.removeEventListener("keydown", handler);
   });
 
-  const bothDone = done && theirs?.done;
-  const myCount = mine?.solved ? guesses.length : null;
-  const theirCount = theirs?.solved ? theirs.guesses.length : null;
-  const winner = bothDone ? (myCount === theirCount ? null : myCount === null ? "them" : theirCount === null ? "me" : myCount < theirCount ? "me" : "them") : null;
+  const bothDone = Boolean(mine && theirs && bothFinished(mine, theirs));
+  const myCount = guessCount(mine ?? undefined);
+  const theirCount = guessCount(theirs ?? undefined);
+  const winnerUid = bothDone && mine && theirs && friendUid ? wordleDayWinner(uid, friendUid, mine, theirs) : null;
+  const winner = winnerUid === null ? null : winnerUid === uid ? "me" : "them";
+  const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
+  const todayDay: WordleDay | null = bothDone && mine && theirs && friendUid ? { dateKey: today, word: answer, docs: { [uid]: mine, [friendUid]: theirs } } : null;
+
+  // Settle the day once both grids are in: the later finisher records it (create-once, so a repeat is harmless).
+  const settled = useRef<string | null>(null);
+  useEffect(() => {
+    if (!todayDay || !mine || !theirs || !friendUid || settled.current === today) return;
+    if (!iRecordWordle(uid, friendUid, mine.at?.toMillis() ?? null, theirs.at?.toMillis() ?? null)) return;
+    settled.current = today;
+    void settleWordleDay(todayDay, uid, friendUid, pair, nameOf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todayDay, today, uid, friendUid]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -118,7 +132,7 @@ export function WordleScreen() {
                 </m.p>
               )}
             </AnimatePresence>
-            <Grid guesses={guesses} draft={done ? "" : draft} answer={answer} shake={shake} reveal />
+            <WordleGrid guesses={guesses} draft={done ? "" : draft} answer={answer} shake={shake} reveal />
           </div>
 
           {done && (
@@ -139,14 +153,14 @@ export function WordleScreen() {
                     {winner === "me" && "🏆 "}
                     {me.nickname} · {myCount ?? "✗"}
                   </p>
-                  <Grid guesses={guesses} draft="" answer={answer} shake={0} compact />
+                  <WordleGrid guesses={guesses} draft="" answer={answer} shake={0} compact />
                 </div>
                 <div className="flex flex-col items-center gap-1">
                   <p className="text-xs font-bold">
                     {winner === "them" && "🏆 "}
                     {friend?.nickname ?? "Friend"} · {theirCount ?? "✗"}
                   </p>
-                  <Grid guesses={theirs.guesses} draft="" answer={answer} shake={0} compact />
+                  <WordleGrid guesses={theirs.guesses} draft="" answer={answer} shake={0} compact />
                 </div>
               </div>
               <p className="text-center text-xs text-muted">{winner === null ? "Dead heat today" : winner === "me" ? "Fewer guesses — you take it" : "They were quicker today"}</p>
@@ -154,6 +168,7 @@ export function WordleScreen() {
             </Card>
           )}
           {done && theirs && !theirs.done && <p className="text-center text-xs text-muted">{friend?.nickname} is still on it — no peeking at their grid until they finish.</p>}
+          {friendUid && <WordleHistory today={today} me={uid} friend={friendUid} pair={pair} nameOf={nameOf} todayDay={todayDay} />}
         </>
       )}
       <Confetti burst={burst} />
@@ -183,42 +198,6 @@ function Meaning({ word, state, onAsk }: { word: string; state: MeaningState; on
       </p>
       {state.example && <p className="text-xs italic text-muted">“{state.example}”</p>}
     </m.div>
-  );
-}
-
-function Grid({ guesses, draft, answer, shake, compact, reveal }: { guesses: string[]; draft: string; answer: string; shake: number; compact?: boolean; reveal?: boolean }) {
-  const rows = Array.from({ length: MAX_GUESSES }, (_, r) => guesses[r] ?? (r === guesses.length ? draft : ""));
-  return (
-    <div className={cn("grid gap-1", compact ? "w-[120px]" : "w-full")} style={{ gridTemplateRows: `repeat(${MAX_GUESSES}, 1fr)` }}>
-      {rows.map((row, r) => {
-        const submitted = r < guesses.length;
-        const states = submitted ? evaluate(row, answer) : null;
-        const isDraftRow = r === guesses.length;
-        return (
-          <m.div key={r} className="grid grid-cols-5 gap-1" animate={isDraftRow && shake ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }} transition={{ duration: 0.35 }}>
-            {Array.from({ length: WORD_LEN }, (_, c) => {
-              const ch = row[c] ?? "";
-              const st = states?.[c];
-              return (
-                <m.span
-                  key={c}
-                  initial={false}
-                  animate={reveal && submitted ? { rotateX: [90, 0] } : { rotateX: 0 }}
-                  transition={{ delay: reveal ? c * 0.12 : 0, duration: 0.25 }}
-                  className={cn(
-                    "grid aspect-square place-items-center rounded-lg border-2 font-heading font-bold uppercase",
-                    compact ? "text-xs" : "text-2xl",
-                    st ? TILE[st] : ch ? "border-muted/60" : "border-border",
-                  )}
-                >
-                  {compact ? "" : ch}
-                </m.span>
-              );
-            })}
-          </m.div>
-        );
-      })}
-    </div>
   );
 }
 

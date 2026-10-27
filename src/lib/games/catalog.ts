@@ -7,7 +7,7 @@
  */
 import type { GameType } from "@/lib/games/types";
 
-export type ResultGame = GameType | "trivia" | "pictionary";
+export type ResultGame = GameType | "trivia" | "pictionary" | "word";
 
 export interface GameInfo {
   id: string;
@@ -27,6 +27,7 @@ export const GAME_CATALOG: Record<ResultGame, GameInfo> = {
   checkers: { id: "checkers", name: "Checkers", emoji: "⚪", blurb: "Jump and crown", route: "/play", resultLabel: "checkers game" },
   trivia: { id: "trivia", name: "Trivia duel", emoji: "🧠", blurb: "Ten questions, 15 s each", route: "/play/trivia", resultLabel: "trivia duel" },
   pictionary: { id: "pictionary", name: "Pictionary", emoji: "🎨", blurb: "Three rounds, 60 s", route: "/play/pictionary", resultLabel: "Pictionary game" },
+  word: { id: "word", name: "Daily word", emoji: "🟩", blurb: "Fewer guesses wins the day", route: "/play/word", resultLabel: "daily word" },
 };
 
 export const UNKNOWN_GAME: GameInfo = { id: "unknown", name: "A game", emoji: "🎲", blurb: "", route: "/play", resultLabel: "game" };
@@ -35,7 +36,7 @@ export const UNKNOWN_GAME: GameInfo = { id: "unknown", name: "A game", emoji: "�
 export const BOARD_GAMES: readonly GameType[] = ["tictactoe", "connectfour", "chess", "checkers"];
 
 /** Games with a head-to-head record on pair/main.records. */
-export const RECORD_GAMES: readonly ResultGame[] = [...BOARD_GAMES, "trivia", "pictionary"];
+export const RECORD_GAMES: readonly ResultGame[] = [...BOARD_GAMES, "trivia", "pictionary", "word"];
 
 const isKnown = (id: string): id is ResultGame => Object.hasOwn(GAME_CATALOG, id);
 

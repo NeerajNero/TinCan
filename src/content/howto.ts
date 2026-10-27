@@ -19,7 +19,6 @@ export type HowToKey =
   | "nhie"
   | "tod"
   | "convo"
-  | "wheel"
   | "whiteboard"
   | "pixel"
   | "watch"
@@ -73,7 +72,7 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     title: "Pictionary",
     label: "Draw & guess · 3 rounds",
     steps: ["✏️ One of you draws, the other guesses", "🎯 The drawer picks one of three secret words", "⏱️ 60 seconds per word, 3 rounds, you swap each round", "💬 Type guesses — spaces and caps don't matter"],
-    tip: "Faster guesses score more. Inviting drops a Join card in chat and a toast.",
+    tip: "Faster guesses score more. Clear wipes the whole canvas; Invite drops a Join card in chat.",
   },
   trivia: {
     title: "Trivia duel",
@@ -91,7 +90,7 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     title: "Daily word",
     label: "Same word for both · 6 tries",
     steps: ["🔤 One five-letter word a day, the same for both of you", "🟩 Green: right letter, right spot · 🟨 yellow: wrong spot", "6️⃣ Six guesses on your own — no peeking (Invite nudges them to play)", "🏆 Both finished? Fewer guesses wins · tap “What does it mean?”"],
-    tip: "A new word arrives at midnight on your shared calendar.",
+    tip: "Scoreboard and 30-day history sit under the grid. A new word lands at midnight.",
   },
   twenty: {
     title: "20 Questions",
@@ -122,11 +121,6 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     label: "Big and small questions",
     steps: ["🃏 One shared card with a question for you both", "🗣️ Answer it on a call, in chat or with a voice note", "➡️ Either of you flips to the next card", "🔄 Reset the deck from the bottom to reshuffle"],
     tip: "Invite in the header drops a Join card in chat and a toast on their phone.",
-  },
-  wheel: {
-    title: "Hangout wheel",
-    label: "Spin for something to do",
-    steps: ["🎡 Spin the wheel of things to do together, apart", "💬 The result is posted to chat with a “Let's!”", "🔁 Not this one? Spin again"],
   },
   whiteboard: {
     title: "Whiteboard",

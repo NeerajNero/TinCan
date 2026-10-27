@@ -110,7 +110,6 @@ export function PlayScreen() {
           <Tile href="/play/trivia" emoji="🧠" title="Trivia duel" badge={HOWTO.trivia.label} />
           <Tile href="/play/quiz" emoji="🪞" title="Know-me quiz" badge={newQuizzes > 0 ? `New quiz${newQuizzes > 1 ? ` ×${newQuizzes}` : ""}` : HOWTO.quiz.label} hot={newQuizzes > 0} />
           <Tile href="/play/twenty" emoji="🔍" title="20 Questions" badge={HOWTO.twenty.label} />
-          <Tile href="/play/wheel" emoji="🎡" title="Hangout wheel" badge={HOWTO.wheel.label} />
           {DECK_KINDS.map((k) => (
             <Tile key={k} href={`/play/deck/${k}`} emoji={DECK_META[k].emoji} title={DECK_META[k].name} badge={HOWTO[k].label} />
           ))}
