@@ -52,7 +52,7 @@ export function ChatScreen() {
   }
   if (loading || !friend) return <Splash label="Finding your friend…" inline />;
 
-  return <Thread uid={uid} tz={me.tz} chatBg={me.chatBg ?? null} friendUid={friendUid} friendName={friend.nickname} friendDoc={friend} needsMessageSticker={!pair.garden?.stickers?.["messages-100"]} />;
+  return <Thread uid={uid} tz={me.tz} chatBg={pair.chatBg ?? null} friendUid={friendUid} friendName={friend.nickname} friendDoc={friend} needsMessageSticker={!pair.garden?.stickers?.["messages-100"]} />;
 }
 
 interface ThreadProps {

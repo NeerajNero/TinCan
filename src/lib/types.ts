@@ -85,7 +85,7 @@ export interface UserDoc {
   notif: NotifPrefs;
   /** Days the daily word was solved (bumped client-side). */
   wordleSolved?: number;
-  /** Chat background: a built-in id, or "photo" with a memory's Cloudinary URL. Absent means plain. */
+  /** Legacy (before phase 22b the wallpaper was per user); read once for the migration, never written. */
   chatBg?: ChatBgPref | null;
   createdAt: Timestamp | null;
 }
@@ -148,6 +148,10 @@ export interface PairDoc {
   counters?: { pings?: number; pingCounts?: Record<string, number> };
   /** Written by the recap tick job: the ping counts as they stood at the last recap, so the next one can diff. */
   recap?: { month: string; pingCounts: Record<string, number> };
+  /** The shared chat wallpaper: a built-in id, or "photo" with a memory's Cloudinary URL. null/absent = plain. */
+  chatBg?: ChatBgPref | null;
+  /** Who last changed it (for the "X changed the wallpaper" toast on the other phone). */
+  chatBgBy?: string;
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }
@@ -158,6 +162,7 @@ export interface MilestoneSummary {
   emoji: string;
   date: DateKey;
   repeatYearly: boolean;
+  effect?: Effect;
 }
 
 /* ── moods/{dateKey}_{uid} ─────────────────────────────────────────────── */
@@ -391,12 +396,19 @@ export interface ScheduledDoc {
 
 /* ── milestones/{id} (phase 7 UI; the tick job reads this shape) ───────── */
 
+/** Festival effects (phase 22b): what plays on Home on the day, and the pet's accessory. */
+export const EFFECTS = ["diyas", "colours", "snow", "fireworks", "kites", "flowers", "confetti"] as const;
+export type Effect = (typeof EFFECTS)[number];
+export const isEffect = (v: unknown): v is Effect => typeof v === "string" && (EFFECTS as readonly string[]).includes(v);
+
 export interface MilestoneDoc {
   title: string;
   /** yyyy-MM-dd */
   date: DateKey;
   repeatYearly: boolean;
   emoji: string;
+  /** Optional festival effect for the day. */
+  effect?: Effect;
   createdAt?: Timestamp | null;
 }
 

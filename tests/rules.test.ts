@@ -8,7 +8,7 @@ import { resolve } from "node:path";
 
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { child, get, push, ref, remove, set, update } from "firebase/database";
-import { doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where, writeBatch } from "firebase/firestore";
+import { deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 
 const root = resolve(__dirname, "..");
@@ -183,6 +183,29 @@ describe("pair/main", () => {
     await assertFails(updateDoc(doc(db, "pair/main"), { uids: [A] }));
     await assertFails(updateDoc(doc(db, "pair/main"), { uids: [A, STRANGER] }));
     await assertSucceeds(updateDoc(doc(db, "pair/main"), { relationship: "best-friends" }));
+  });
+
+  it("holds the shared chat wallpaper (phase 22b): built-in ids and our photos only", async () => {
+    await seed(async (db) => setDoc(doc(db, "pair/main"), { uids: [A, B], roomTz: "UTC" }));
+    const db = asB().firestore();
+    await assertSucceeds(updateDoc(doc(db, "pair/main"), { chatBg: { id: "dots" }, chatBgBy: B }));
+    await assertSucceeds(updateDoc(doc(db, "pair/main"), { chatBg: { id: "photo", photoUrl: `https://res.cloudinary.com/${CLOUD}/image/authenticated/s--abcdefgh--/w_640/tincan/images/x.jpg`, photoPublicId: "tincan/images/x" }, chatBgBy: B }));
+    await assertSucceeds(updateDoc(doc(db, "pair/main"), { chatBg: null, chatBgBy: B }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { chatBg: { id: "photo", photoUrl: "https://evil.example.com/x.jpg" } }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { chatBg: { id: "dots", extra: 1 } }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { chatBg: "dots" }));
+  });
+});
+
+describe("users: legacy chatBg", () => {
+  const user = (chatBg?: unknown) => ({ name: "A", nickname: "A", email: EMAIL_A, photoURL: null, tz: "UTC", city: "X", lat: 0, lng: 0, fcmTokens: [], notif: { enabled: false }, createdAt: new Date(), ...(chatBg === undefined ? {} : { chatBg }) });
+  it("can no longer be written, but the migration may delete it", async () => {
+    await seed(async (db) => setDoc(doc(db, `users/${A}`), user()));
+    const db = asA().firestore();
+    await assertFails(updateDoc(doc(db, `users/${A}`), { chatBg: { id: "dots" } }));
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { nickname: "Aa" }));
+    await seed(async (adb) => setDoc(doc(adb, `users/${A}`), user({ id: "dots" })));
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { chatBg: deleteField() }));
   });
 });
 

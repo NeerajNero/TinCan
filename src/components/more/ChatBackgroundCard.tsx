@@ -12,10 +12,10 @@ import { useTheme } from "@/hooks/useTheme";
 import { chatBgPhotoUrl } from "@/lib/mediaUrl";
 
 export function ChatBackgroundCard() {
-  const { uid, me } = usePair();
+  const { uid, friend, pair } = usePair();
   const { resolved } = useTheme();
   const [open, setOpen] = useState(false);
-  const pref = me.chatBg ?? null;
+  const pref = pair.chatBg ?? null;
   const photo = pref?.id === "photo" ? chatBgPhotoUrl(pref.photoUrl) : null;
   const builtIn = pref?.id !== "photo" ? CHAT_BG_BY_ID[pref?.id ?? "plain"] : null;
 
@@ -28,13 +28,13 @@ export function ChatBackgroundCard() {
         )}
       </span>
       <div className="min-w-0 flex-1">
-        <h2 className="text-lg font-semibold">Chat background</h2>
-        <p className="truncate text-sm text-muted">{photo ? "📷 A photo from Memories" : `${builtIn?.emoji ?? "⬜"} ${builtIn?.name ?? "Plain"}`}</p>
+        <h2 className="text-lg font-semibold">Chat wallpaper</h2>
+        <p className="truncate text-sm text-muted">{photo ? "📷 A photo from Memories" : `${builtIn?.emoji ?? "⬜"} ${builtIn?.name ?? "Plain"}`} · shared with {friend?.nickname ?? "your friend"}</p>
       </div>
       <Button variant="soft" onClick={() => setOpen(true)} className="shrink-0 px-4 py-2 text-sm">
         Change
       </Button>
-      <ChatBackgroundPicker open={open} uid={uid} current={pref} onClose={() => setOpen(false)} />
+      <ChatBackgroundPicker open={open} uid={uid} friendName={friend?.nickname ?? "your friend"} current={pref} onClose={() => setOpen(false)} />
     </Card>
   );
 }

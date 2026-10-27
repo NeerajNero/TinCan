@@ -48,7 +48,7 @@ service cloud.firestore {
     match /users/{userId} {
       function userFields() {
         return ['name', 'nickname', 'email', 'photoURL', 'avatar', 'previousAvatarPublicId', 'bio',
-                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'chatBg', 'createdAt'];
+                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'createdAt'];
       }
       function userShape() {
         return incoming().keys().hasOnly(userFields())
@@ -56,17 +56,9 @@ service cloud.firestore {
           && strMax(incoming(), 'bio', 120) && strMax(incoming(), 'city', 80) && strMax(incoming(), 'name', 120)
           && incoming().tz is string && incoming().tz.size() > 0 && incoming().tz.size() <= 64
           && incoming().fcmTokens is list && incoming().fcmTokens.size() <= 10
-          && (!('avatar' in incoming()) || incoming().avatar == null || (cloudinaryUrl(incoming().avatar.url) && variantsOk(incoming().avatar)))
-          && chatBgOk();
+          && (!('avatar' in incoming()) || incoming().avatar == null || (cloudinaryUrl(incoming().avatar.url) && variantsOk(incoming().avatar)));
       }
-      // Chat background: a short built-in id, or "photo" pointing at one of our Cloudinary assets.
-      function chatBgOk() {
-        return !('chatBg' in incoming()) || incoming().chatBg == null
-          || (incoming().chatBg is map
-              && incoming().chatBg.keys().hasOnly(['id', 'photoUrl', 'photoPublicId'])
-              && incoming().chatBg.id is string && incoming().chatBg.id.size() <= 24
-              && (!('photoUrl' in incoming().chatBg) || incoming().chatBg.photoUrl == null || cloudinaryUrl(incoming().chatBg.photoUrl)));
-      }
+      // The chat wallpaper moved to pair/main.chatBg (phase 22b); a legacy users.chatBg can only be deleted.
       allow read: if allowed();
       allow create: if isMe(userId)
         && incoming().email.lower() == request.auth.token.email.lower()
@@ -95,8 +87,17 @@ service cloud.firestore {
         && incoming().uids.size() <= 2
         && incoming().uids.hasAll(existing().uids)
         && uid() in incoming().uids
-        && incoming().roomTz is string && incoming().roomTz.size() > 0;
+        && incoming().roomTz is string && incoming().roomTz.size() > 0
+        && chatBgOk();
       allow delete: if false;
+      // Shared chat wallpaper: a short built-in id, or "photo" pointing at one of our Cloudinary assets.
+      function chatBgOk() {
+        return !('chatBg' in incoming()) || incoming().chatBg == null
+          || (incoming().chatBg is map
+              && incoming().chatBg.keys().hasOnly(['id', 'photoUrl', 'photoPublicId'])
+              && incoming().chatBg.id is string && incoming().chatBg.id.size() <= 24
+              && (!('photoUrl' in incoming().chatBg) || incoming().chatBg.photoUrl == null || cloudinaryUrl(incoming().chatBg.photoUrl)));
+      }
     }
 
     // ── messages ─────────────────────────────────────────────────────────

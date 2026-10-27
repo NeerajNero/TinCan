@@ -141,6 +141,10 @@ For Telugu, Vividh Bharati Telugu (`257`) is `https://radio.wavespb.com/live/899
 4. On a phone, play the station and check that the other phone follows. Then open More → Diagnostics (owner account) and confirm there's no `[csp]` line for the stream hosts.
 
 
+## Correcting a festival date
+
+`src/content/festivals.json` is only the *import source* for Memories → Milestones → "Add festivals". Once imported, each festival is an ordinary milestone document, so a wrong date is fixed in the app: Memories → Milestones → pencil on the festival → change the date → Save. Both phones see the change (the summary on `pair/main` is re-mirrored). Entries marked `verify` in the seed (lunar-calendar dates for 2027–2028, and Eid 2026) are the ones most likely to need this. Editing the seed file afterwards does nothing to milestones already imported; "Add festivals" skips anything already present by title + date (yearly items by title + month-day), so a corrected seed only matters for a fresh import — delete the wrong milestone first if you want the seed's new date instead of editing.
+
 ## Backups
 
 Spark has **no managed Firestore exports**, so `pnpm export` is the only backup. It writes every collection, plus the `private` and `items` subcollections, with tagged timestamps, and a CSV of every media URL. The signed URLs in the CSV open the originals, so keep the folder somewhere private. Cloudinary keeps the media itself. Run it before risky changes and every few weeks.

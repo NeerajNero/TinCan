@@ -43,7 +43,7 @@ export function PetScreen() {
   const [game, setGame] = useState<{ endsAt: number; taps: number } | null>(null);
   const countTap = useCallback(() => setGame((g) => (g ? { ...g, taps: g.taps + 1 } : g)), []);
   const life = usePetLife({ pet, stats, level, size: SIZE, onTap: countTap });
-  const party = useMilestoneDay().milestones.length > 0;
+  const accessory = useMilestoneDay().accessory;
 
   // Mini-game: 5 seconds of tapping, then the pet is happy.
   useEffect(() => {
@@ -74,7 +74,7 @@ export function PetScreen() {
         <SubHeader help="pet" emoji="🐾" title={pet.name} back="/" />
         <Card className="relative flex flex-col items-center gap-3 py-6">
           <PetDim on={life.dimmed} />
-          <PetStage life={life} pet={pet} level={level} size={SIZE} hat={party} />
+          <PetStage life={life} pet={pet} level={level} size={SIZE} accessory={accessory} />
           <div className="relative">
             <p className="text-center font-heading text-xl font-semibold">
               {pet.name}{" "}

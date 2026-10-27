@@ -1,6 +1,6 @@
 /** Next-occurrence maths for milestones and the friends-since anniversary. */
 import { daysBetween, isDateKey } from "@/lib/dates";
-import type { DateKey, MilestoneSummary } from "@/lib/types";
+import type { DateKey, Effect, MilestoneSummary } from "@/lib/types";
 
 export interface Upcoming {
   id: string;
@@ -14,6 +14,19 @@ export interface Upcoming {
   years: number | null;
   repeatYearly: boolean;
   derived?: boolean;
+  effect?: Effect;
+}
+
+export type PetAccessory = "party" | "diya" | "colours" | "santa";
+
+/** The effect a milestone day plays: the first milestone with one, else confetti. */
+export function effectFor(milestones: Array<{ effect?: Effect }>): Effect {
+  return milestones.find((m) => m.effect)?.effect ?? "confetti";
+}
+
+/** What the pet wears for an effect. */
+export function petAccessoryFor(effect: Effect): PetAccessory {
+  return effect === "diyas" ? "diya" : effect === "colours" ? "colours" : effect === "snow" ? "santa" : "party";
 }
 
 function withYear(key: DateKey, year: number): DateKey {
@@ -35,7 +48,7 @@ function nextOccurrence(date: DateKey, repeatYearly: boolean, today: DateKey): {
 
 export function toUpcoming(m: MilestoneSummary, today: DateKey, derived = false): Upcoming {
   const { nextDate, years } = nextOccurrence(m.date, m.repeatYearly, today);
-  return { id: m.id, title: m.title, emoji: m.emoji, nextDate, daysToGo: daysBetween(today, nextDate), years, repeatYearly: m.repeatYearly, derived };
+  return { id: m.id, title: m.title, emoji: m.emoji, nextDate, daysToGo: daysBetween(today, nextDate), years, repeatYearly: m.repeatYearly, derived, ...(m.effect ? { effect: m.effect } : {}) };
 }
 
 /** The since-date becomes a yearly anniversary item without being stored; wording comes from the relationship preset. */

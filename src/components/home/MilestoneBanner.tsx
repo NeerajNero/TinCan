@@ -3,7 +3,7 @@
 import { m } from "framer-motion";
 import { useEffect, useState } from "react";
 
-import { Confetti } from "@/components/plan/Confetti";
+import { FestivalEffect } from "@/components/home/FestivalEffect";
 import { useMilestoneDay } from "@/hooks/useMilestoneDay";
 import { useRelationship } from "@/hooks/useRelationship";
 import { readPref, writePref } from "@/lib/localPref";
@@ -11,9 +11,9 @@ import { yearsLine } from "@/lib/milestones";
 
 const CONFETTI_KEY = "tincan:milestone-confetti";
 
-/** Milestone mode's banner: today's milestone(s) with confetti on the first open of the day (per device). */
+/** Milestone mode's banner: today's milestone(s); the first open of the day (per device) plays the milestone's effect (confetti by default). */
 export function MilestoneBanner() {
-  const { today, milestones } = useMilestoneDay();
+  const { today, milestones, effect } = useMilestoneDay();
   const preset = useRelationship();
   const [burst, setBurst] = useState(0);
   const any = milestones.length > 0;
@@ -41,7 +41,7 @@ export function MilestoneBanner() {
           ))}
         </span>
       </m.div>
-      <Confetti burst={burst} />
+      <FestivalEffect effect={effect ?? "confetti"} burst={burst} />
     </>
   );
 }

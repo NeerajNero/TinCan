@@ -15,7 +15,7 @@ import type { UserDoc } from "@/lib/types";
 /** Friend's name, presence and typing state, plus the background picker. Presence and typing live in their own subscriptions so the list below never re-renders for them. */
 export function ChatHeader({ friend, friendUid }: { friend: UserDoc; friendUid: string }) {
   const presence = useFriendPresence();
-  const { uid, me } = usePair();
+  const { uid, pair } = usePair();
   const [pickerOpen, setPickerOpen] = useState(false);
   const typing = useFriendTyping(friendUid);
   const online = presence?.online === true;
@@ -46,7 +46,7 @@ export function ChatHeader({ friend, friendUid }: { friend: UserDoc; friendUid: 
       <button type="button" onClick={() => setPickerOpen(true)} aria-label="Chat background" className="tap grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2">
         <Palette size={20} />
       </button>
-      <ChatBackgroundPicker open={pickerOpen} uid={uid} current={me.chatBg} onClose={() => setPickerOpen(false)} />
+      <ChatBackgroundPicker open={pickerOpen} uid={uid} friendName={friend.nickname} current={pair.chatBg} onClose={() => setPickerOpen(false)} />
     </header>
   );
 }

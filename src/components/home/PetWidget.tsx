@@ -19,14 +19,14 @@ const SIZE = 88;
 export function PetWidget() {
   const { pet, stats, level } = usePet();
   const life = usePetLife({ pet, stats, level, size: SIZE, compact: true });
-  const party = useMilestoneDay().milestones.length > 0;
+  const accessory = useMilestoneDay().accessory;
   if (!pet || !stats) return <AdoptCard />;
   const disabled = stats.sleeping || life.busy;
   return (
     <MotionConfig reducedMotion="user">
       <Card className="relative flex items-center gap-3 p-3">
         <PetDim on={life.dimmed} />
-        <PetStage life={life} pet={pet} level={level} size={SIZE} compact hat={party} />
+        <PetStage life={life} pet={pet} level={level} size={SIZE} compact accessory={accessory} />
         <div className="relative flex min-w-0 flex-1 flex-col gap-1.5">
           <Link href="/pet" className="font-heading text-lg font-semibold leading-tight">
             {pet.name}{" "}

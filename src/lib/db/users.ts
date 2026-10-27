@@ -6,13 +6,9 @@ import { userRef } from "@/lib/db/refs";
 import { deleteField, updateDoc } from "@/lib/firebase/fs";
 import { compressImage } from "@/lib/media/compress";
 import { swallow } from "@/lib/swallow";
-import type { ChatBgPref, CityPick, UserDoc } from "@/lib/types";
+import type { CityPick, UserDoc } from "@/lib/types";
 export function setNickname(uid: string, nickname: string): Promise<void> {
   return updateDoc(userRef(uid), { nickname: nickname.trim() });
-}
-
-export function setChatBg(uid: string, chatBg: ChatBgPref | null): Promise<void> {
-  return updateDoc(userRef(uid), { chatBg });
 }
 
 export function setBio(uid: string, bio: string): Promise<void> {

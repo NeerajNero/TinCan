@@ -3,8 +3,9 @@ import type { User } from "firebase/auth";
 
 import { pairRef, userRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
-import { arrayUnion, runTransaction, serverTimestamp, updateDoc } from "@/lib/firebase/fs";
-import { defaultNotifPrefs, type CityPick, type NextMeetup, type PairDoc } from "@/lib/types";
+import { arrayUnion, deleteField, runTransaction, serverTimestamp, updateDoc } from "@/lib/firebase/fs";
+import { defaultNotifPrefs, type ChatBgPref, type CityPick, type NextMeetup, type PairDoc, type UserDoc } from "@/lib/types";
+import { planWallpaperMigration } from "@/lib/wallpaper";
 
 
 /** Thrown when `pair/main` already belongs to two other accounts. */
@@ -75,4 +76,22 @@ export function setNextMeetup(meetup: NextMeetup | null): Promise<void> {
 
 export function setRelationship(id: string): Promise<void> {
   return updateDoc(pairRef(), { relationship: id });
+}
+
+/* ── shared chat wallpaper ─────────────────────────────────────────────── */
+
+/** Set the wallpaper for both (null = plain) and note who did it. */
+export function setPairChatBg(by: string, chatBg: ChatBgPref | null): Promise<void> {
+  return updateDoc(pairRef(), { chatBg, chatBgBy: by });
+}
+
+/**
+ * One-time move of the legacy users/{me}.chatBg onto pair/main: copies it when
+ * the pair has no wallpaper yet, then clears the per-user field (the users
+ * rules no longer accept it). Nothing to do once the field is gone.
+ */
+export async function migrateWallpaper(uid: string, me: Pick<UserDoc, "chatBg">, pair: Pick<PairDoc, "chatBg">): Promise<void> {
+  const plan = planWallpaperMigration(pair.chatBg, me.chatBg);
+  if (plan.copyToPair !== undefined) await updateDoc(pairRef(), { chatBg: plan.copyToPair, chatBgBy: uid });
+  if (plan.clearMine) await updateDoc(userRef(uid), { chatBg: deleteField() });
 }

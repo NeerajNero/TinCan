@@ -29,9 +29,10 @@ interface Props {
   size?: number;
   className?: string;
   parts?: PartControls;
-  /** Milestone mode: a party hat on top of whatever the level gives. */
-  hat?: boolean;
+  /** Milestone mode: the day's accessory replaces whatever the level gives. */
+  accessory?: PetAccessory | null;
 }
+export type PetAccessory = "party" | "diya" | "colours" | "santa";
 
 const INK = "#3b2f3a";
 // SVG parts transform around their own box; breathing pivots on the feet
@@ -98,18 +99,55 @@ function PartyHat({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** Bow at level 2, crown from level 3; an empty group at level 1 so it can still pop in later. A party hat tops anything on milestone days. */
-function Accessory({ level, bow, crown, hat, parts }: { level: number; bow: { x: number; y: number; color: string }; crown: { x: number; y: number }; hat?: boolean; parts?: PartControls }) {
+/** Christmas: a red hat with a white trim and pompom. */
+function SantaHat({ x, y }: { x: number; y: number }) {
+  return (
+    <g>
+      <path d={`M${x - 12} ${y + 7} C${x - 8} ${y - 10} ${x + 2} ${y - 18} ${x + 13} ${y - 12} C${x + 8} ${y - 4} ${x + 4} ${y} ${x + 10} ${y + 7} z`} fill="#e24b5a" stroke={INK} strokeWidth="1.2" strokeLinejoin="round" />
+      <rect x={x - 14} y={y + 5} width="26" height="5" rx="2.5" fill="#fff" stroke={INK} strokeWidth="1" />
+      <circle cx={x + 13} cy={y - 12} r="3.4" fill="#fff" stroke={INK} strokeWidth="1" />
+    </g>
+  );
+}
+
+/** Diwali: a small clay lamp by the feet with a flickering-looking flame. */
+function Diya({ x, y }: { x: number; y: number }) {
+  return (
+    <g>
+      <path d={`M${x - 9} ${y} q9 8 18 0 l-2 4 h-14 z`} fill="#e59a6a" stroke={INK} strokeWidth="1" strokeLinejoin="round" />
+      <path d={`M${x} ${y - 10} c3 3 3 7 0 9 c-3 -2 -3 -6 0 -9 z`} fill="#ffb454" stroke="#e0a800" strokeWidth="1" />
+      <circle cx={x} cy={y - 5} r="1.3" fill="#fff6d6" />
+    </g>
+  );
+}
+
+/** Holi: colour smudges on the body. */
+function ColourSmudges({ x, y }: { x: number; y: number }) {
+  return (
+    <g opacity="0.85">
+      <ellipse cx={x - 14} cy={y + 6} rx="5" ry="3.2" fill="#ff8fab" transform={`rotate(-20 ${x - 14} ${y + 6})`} />
+      <ellipse cx={x + 12} cy={y + 2} rx="4.5" ry="3" fill="#6fb6ff" transform={`rotate(15 ${x + 12} ${y + 2})`} />
+      <ellipse cx={x + 2} cy={y + 16} rx="4" ry="2.6" fill="#ffd166" />
+      <ellipse cx={x - 6} cy={y - 9} rx="3.5" ry="2.4" fill="#5fd3a4" transform={`rotate(30 ${x - 6} ${y - 9})`} />
+    </g>
+  );
+}
+
+/** Bow at level 2, crown from level 3; an empty group at level 1 so it can still pop in later. A festival accessory replaces them for the day. */
+function Accessory({ level, bow, crown, accessory, parts }: { level: number; bow: { x: number; y: number; color: string }; crown: { x: number; y: number }; accessory?: PetAccessory | null; parts?: PartControls }) {
   return (
     <Part name="accessory" parts={parts}>
-      {level === 2 && !hat && <Bow {...bow} />}
-      {level >= 3 && !hat && <Crown {...crown} />}
-      {hat && <PartyHat x={crown.x} y={crown.y} />}
+      {level === 2 && !accessory && <Bow {...bow} />}
+      {level >= 3 && !accessory && <Crown {...crown} />}
+      {accessory === "party" && <PartyHat x={crown.x} y={crown.y} />}
+      {accessory === "santa" && <SantaHat x={crown.x} y={crown.y} />}
+      {accessory === "diya" && <Diya x={crown.x + 34} y={96} />}
+      {accessory === "colours" && <ColourSmudges x={crown.x} y={crown.y + 36} />}
     </Part>
   );
 }
 
-export function PetSprite({ species, mood, level, size = 120, className, parts, hat = false }: Props) {
+export function PetSprite({ species, mood, level, size = 120, className, parts, accessory = null }: Props) {
   const s = PET_SPECIES[species];
   const big = level >= 3;
   const scale = big ? 1.12 : 1;
@@ -125,7 +163,7 @@ export function PetSprite({ species, mood, level, size = 120, className, parts, 
                 <ellipse cx="48" cy="48" rx="7" ry="4" fill="#fff" opacity=".6" />
               </Part>
               <Face mood={mood} x={60} y={62} parts={parts} />
-              <Accessory level={level} hat={hat} bow={{ x: 82, y: 44, color: "#ffd166" }} crown={{ x: 60, y: 26 }} parts={parts} />
+              <Accessory level={level} accessory={accessory} bow={{ x: 82, y: 44, color: "#ffd166" }} crown={{ x: 60, y: 26 }} parts={parts} />
             </>
           )}
           {species === "sprout" && (
@@ -138,7 +176,7 @@ export function PetSprite({ species, mood, level, size = 120, className, parts, 
                 <path d="M36 96 h48 l-4 10 h-40z" fill="#e59a6a" />
               </Part>
               <Face mood={mood} x={60} y={68} gap={8} parts={parts} />
-              <Accessory level={level} hat={hat} bow={{ x: 60, y: 46, color: "#ff8fab" }} crown={{ x: 60, y: 30 }} parts={parts} />
+              <Accessory level={level} accessory={accessory} bow={{ x: 60, y: 46, color: "#ff8fab" }} crown={{ x: 60, y: 30 }} parts={parts} />
             </>
           )}
           {species === "puff" && (
@@ -152,7 +190,7 @@ export function PetSprite({ species, mood, level, size = 120, className, parts, 
                 <path d="M52 76 q2 3 4 0 M64 76 q2 3 4 0" stroke={INK} strokeWidth="1.5" fill="none" strokeLinecap="round" />
               </Part>
               <Face mood={mood} x={60} y={64} parts={parts} />
-              <Accessory level={level} hat={hat} bow={{ x: 82, y: 48, color: "#b48cff" }} crown={{ x: 60, y: 30 }} parts={parts} />
+              <Accessory level={level} accessory={accessory} bow={{ x: 82, y: 48, color: "#b48cff" }} crown={{ x: 60, y: 30 }} parts={parts} />
             </>
           )}
         </Part>

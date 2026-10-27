@@ -1,0 +1,151 @@
+[
+  {
+    "id": "sankranti",
+    "title": "Makar Sankranti / Pongal",
+    "emoji": "🪁",
+    "effect": "kites",
+    "dates": {
+      "2026": "2026-01-14",
+      "2027": "2027-01-15",
+      "2028": "2028-01-15"
+    },
+    "verify": [
+      "2027",
+      "2028"
+    ]
+  },
+  {
+    "id": "ugadi",
+    "title": "Ugadi",
+    "emoji": "🌼",
+    "effect": "flowers",
+    "dates": {
+      "2026": "2026-03-19",
+      "2027": "2027-04-07",
+      "2028": "2028-03-27"
+    },
+    "verify": [
+      "2027",
+      "2028"
+    ]
+  },
+  {
+    "id": "holi",
+    "title": "Holi",
+    "emoji": "🎨",
+    "effect": "colours",
+    "dates": {
+      "2026": "2026-03-04",
+      "2027": "2027-03-22",
+      "2028": "2028-03-11"
+    },
+    "verify": [
+      "2027",
+      "2028"
+    ]
+  },
+  {
+    "id": "eid",
+    "title": "Eid al-Fitr",
+    "emoji": "🌙",
+    "effect": "confetti",
+    "dates": {
+      "2026": "2026-03-20",
+      "2027": "2027-03-09",
+      "2028": "2028-02-26"
+    },
+    "verify": [
+      "2026",
+      "2027",
+      "2028"
+    ]
+  },
+  {
+    "id": "friendship",
+    "title": "Friendship Day",
+    "emoji": "🤝",
+    "effect": "confetti",
+    "rule": "first-sunday-august"
+  },
+  {
+    "id": "rakhi",
+    "title": "Raksha Bandhan",
+    "emoji": "🧵",
+    "effect": "confetti",
+    "dates": {
+      "2026": "2026-08-28",
+      "2027": "2027-08-17",
+      "2028": "2028-08-05"
+    },
+    "verify": [
+      "2027",
+      "2028"
+    ]
+  },
+  {
+    "id": "independence",
+    "title": "Independence Day",
+    "emoji": "🇮🇳",
+    "effect": "confetti",
+    "fixed": "08-15"
+  },
+  {
+    "id": "ganesh",
+    "title": "Ganesh Chaturthi",
+    "emoji": "🐘",
+    "effect": "flowers",
+    "dates": {
+      "2026": "2026-09-14",
+      "2027": "2027-09-04",
+      "2028": "2028-08-23"
+    },
+    "verify": [
+      "2027",
+      "2028"
+    ]
+  },
+  {
+    "id": "dussehra",
+    "title": "Dussehra",
+    "emoji": "🏹",
+    "effect": "confetti",
+    "dates": {
+      "2026": "2026-10-20",
+      "2027": "2027-10-09",
+      "2028": "2028-09-27"
+    },
+    "verify": [
+      "2027",
+      "2028"
+    ]
+  },
+  {
+    "id": "diwali",
+    "title": "Diwali",
+    "emoji": "🪔",
+    "effect": "diyas",
+    "dates": {
+      "2026": "2026-11-08",
+      "2027": "2027-10-29",
+      "2028": "2028-10-17"
+    },
+    "verify": [
+      "2027",
+      "2028"
+    ]
+  },
+  {
+    "id": "christmas",
+    "title": "Christmas",
+    "emoji": "🎄",
+    "effect": "snow",
+    "fixed": "12-25"
+  },
+  {
+    "id": "nye",
+    "title": "New Year's Eve",
+    "emoji": "🎆",
+    "effect": "fireworks",
+    "fixed": "12-31"
+  }
+]

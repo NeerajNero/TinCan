@@ -8,7 +8,7 @@ import { CHAT_BACKGROUNDS } from "@/content/chat-backgrounds";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/cn";
 import { memoriesQuery } from "@/lib/db/memories";
-import { setChatBg } from "@/lib/db/users";
+import { setPairChatBg } from "@/lib/db/pair";
 import { getDocs } from "@/lib/firebase/fs";
 import { chatBgPhotoUrl, variantUrl } from "@/lib/mediaUrl";
 import { swallow } from "@/lib/swallow";
@@ -16,6 +16,8 @@ import type { ChatBgPref } from "@/lib/types";
 interface PickerProps {
   open: boolean;
   uid: string;
+  /** The other person, named in "Shared with …". */
+  friendName: string;
   current: ChatBgPref | null | undefined;
   onClose: () => void;
 }
@@ -39,7 +41,7 @@ function MiniBubbles() {
 }
 
 /** Bottom sheet: the eight built-ins plus a photo from Memories, with live previews. */
-export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProps) {
+export function ChatBackgroundPicker({ open, uid, friendName, current, onClose }: PickerProps) {
   const { resolved } = useTheme();
   const [photos, setPhotos] = useState<MemoryThumb[] | null>(null);
   const [choosingPhoto, setChoosingPhoto] = useState(false);
@@ -69,7 +71,7 @@ export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProp
   }, [choosingPhoto, photos]);
 
   function pick(pref: ChatBgPref) {
-    void setChatBg(uid, pref.id === "plain" ? null : pref).catch(swallow);
+    void setPairChatBg(uid, pref.id === "plain" ? null : pref).catch(swallow);
     if (pref.id === "photo") setChoosingPhoto(false);
   }
   function close() {
@@ -80,7 +82,10 @@ export function ChatBackgroundPicker({ open, uid, current, onClose }: PickerProp
   return (
           <Sheet open={open} onClose={close} label="Chat background" maxHeight="80dvh">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{choosingPhoto ? "Pick a memory" : "Chat background"}</h2>
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold">{choosingPhoto ? "Pick a memory" : "Chat wallpaper"}</h2>
+                <p className="text-xs text-muted">Shared with {friendName} — you both see the same one</p>
+              </div>
               {choosingPhoto && (
                 <button type="button" onClick={() => setChoosingPhoto(false)} className="tap rounded-full px-3 text-sm font-bold text-muted">
                   Back

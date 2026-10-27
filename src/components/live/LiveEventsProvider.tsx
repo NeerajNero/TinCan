@@ -15,12 +15,14 @@ import { roomDateKey } from "@/lib/dates";
 import { backfillDateKey, dailyRef } from "@/lib/db/daily";
 import { gameRoute, resultForRecipient, subscribeOpenGames, type LiveGame } from "@/lib/db/games";
 import { mediaLabel } from "@/lib/db/messages";
+import { migrateWallpaper } from "@/lib/db/pair";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { onValue } from "@/lib/firebase/rt";
 import { lampPath, rtdbRef } from "@/lib/rtdb";
 import { playSound } from "@/lib/sounds";
 import { swallow } from "@/lib/swallow";
 import { PINGS, type DailyQuestionDoc, type LampNode, type PingKind } from "@/lib/types";
+import { sameWallpaper } from "@/lib/wallpaper";
 
 interface LiveEvents {
   /** Latest ping from the friend since this session started; Home shows it full-screen. */
@@ -44,7 +46,7 @@ export const LIVE_PUSH_TYPES = new Set(["message", "scheduled", "ping", "lamp", 
  * elsewhere), a lit lamp (off Home) and the friend's daily answer (off Home).
  */
 export function LiveEventsProvider({ children }: { children: React.ReactNode }) {
-  const { uid, friend, friendUid, pair } = usePair();
+  const { uid, me, friend, friendUid, pair } = usePair();
   const { lastMessage } = useChatMeta();
   const { toast } = useToast();
   const pathname = usePathname();
@@ -178,6 +180,26 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
       setGames([]);
     };
   }, [friendUid, uid, friendName, toast]);
+
+  /* ── shared wallpaper: one-time move off users/{me}, and a toast when the friend changes it ── */
+  const legacyBg = me.chatBg;
+  const pairBg = pair.chatBg;
+  const migrated = useRef(false);
+  useEffect(() => {
+    if (legacyBg === undefined || migrated.current) return;
+    migrated.current = true;
+    migrateWallpaper(uid, { chatBg: legacyBg }, { chatBg: pairBg }).catch(() => {
+      migrated.current = false;
+    });
+  }, [legacyBg, pairBg, uid]);
+  const seenBg = useRef<{ pref: typeof pairBg; first: boolean }>({ pref: undefined, first: true });
+  const bgBy = pair.chatBgBy;
+  useEffect(() => {
+    const prev = seenBg.current;
+    seenBg.current = { pref: pairBg, first: false };
+    if (prev.first || sameWallpaper(prev.pref, pairBg)) return;
+    if (bgBy && bgBy !== uid) toast({ key: "wallpaper", emoji: "🎨", title: `${friendName} changed the wallpaper`, body: "Tap to see the chat", url: "/chat", vibrate: false });
+  }, [pairBg, bgBy, uid, friendName, toast]);
 
   /* ── garden unlocks → toast for both ───────────────────────────────── */
   const seenStickers = useRef<Set<string> | null>(null);

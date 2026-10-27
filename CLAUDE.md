@@ -68,9 +68,11 @@ app should feel like a small hello, not a dashboard.
 - On this day: what you did exactly a year and a month ago (photos ≤ 3, the question, a journal
   entry, both moods), fetched once per room day and cached in localStorage; hidden when empty; taps
   open in place (viewer / sheet).
-- Milestone mode: on a yearly milestone or the friendiversary a themed banner with confetti once a
-  day, the pet wears a party hat (Home and /pet), the daily question card gets a 🎉 prefix. All from
-  the mirrored summary, no reads.
+- Milestone mode / festival effects: on a milestone day or the friendiversary a themed banner, and once
+  a day (localStorage) the milestone's `effect` plays (diyas | colours | snow | fireworks | kites | flowers |
+  confetti, default confetti; ≤ 20 particles, transforms/opacity only, reduced motion → one calm fade);
+  the pet wears the matching accessory (diya, colour smudges, Santa hat, else a party hat) on Home and
+  /pet; the daily question card gets a 🎉 prefix. All from the mirrored summary, no reads.
 - Pet widget: shared pet sprite + hunger/happiness bars + Feed/Play buttons.
 - Countdown: days until next meetup (from `pair/main.nextMeetup`).
 - Sleep/wake toggle: "Good night" / "Good morning" — sets status and posts a system message.
@@ -112,7 +114,9 @@ Diagnostics, Sign out.
   would otherwise become its containing block.
 - Empty states are friendly and suggest an action ("No photos yet — add the first one?").
 - Avoid generic SaaS-dashboard looks: no data tables on Home, no grey card grids.
-- Chat backgrounds are per user (`users/{me}.chatBg`): eight CSS-only built-ins in
+- The chat wallpaper is shared (`pair/main.chatBg`, `chatBgBy` = who set it; the picker says "Shared with
+  <friend>", the other phone gets a small toast, no chat line, no push; the legacy `users/{uid}.chatBg` is
+  copied once by the first opener and then deleted): eight CSS-only built-ins in
   `src/content/chat-backgrounds.ts` (gradient + inline SVG pattern < 2 KB, light and dark variants) or a
   photo from Memories (Cloudinary `w_600,q_auto:low` with a dim overlay). Rendered as one absolutely
   positioned layer behind the message list, never `background-attachment: fixed`. Bubbles use the opaque
@@ -124,10 +128,11 @@ Diagnostics, Sign out.
 
 ## Data model — Firestore
 `users/{uid}`: name, nickname, email, photoURL, tz, city, lat, lng, fcmTokens[], notif{...}, createdAt
+  (`chatBg` is legacy: readable, deletable, never written)
 `pair/main`: uids[2], roomTz, friendsSince, nextMeetup{date,label,place}, relationship (preset id,
   default "friends"; see `src/content/relationships.ts`), theme,
   pet{name,species,hungerAt,happyAt,sleepAt,level,bornAt}, plant{stage,lastGrowthDate},
-  garden{stickers[]}, streak{count,lastDateKey}
+  garden{stickers[]}, streak{count,lastDateKey,best,monthBest,shields,shieldUsedOn}, chatBg, chatBgBy
 `messages/{id}`: senderId, type(text|image|voice|gif|sticker|system), text,
   media{url,publicId,variants{w320,w640,w800,blur,original|audio},w,h,durationMs,bytes},
   replyTo{id,preview,senderId,type},
@@ -143,7 +148,7 @@ Diagnostics, Sign out.
 `jar/{id}`: authorId, forUid, text, drawnAt
 `memories/{id}`: uploaderId, url, publicId, w, h, caption, takenAt, placeId?, createdAt
 `places/{id}`: name, lat, lng, kind(been|want), note, visitedAt, addedBy
-`milestones/{id}`: title, date, repeatYearly, emoji
+`milestones/{id}`: title, date, repeatYearly, emoji, effect? (festival effect id)
 `lists/{kind}/items/{id}` (kind: bucket|wishlist|gifts|todo): text, addedBy, done, doneAt, note, url, order
   — `gifts` items are private to their author (rule-enforced: read/write only by `addedBy`)
 `trips/{id}`: title, startDate, endDate, place, days[{date, stops[{time,name,note}]}]
@@ -161,7 +166,9 @@ Diagnostics, Sign out.
 Static content lives in `src/content/*.json`, not the DB: daily questions (365+), word list
 (5-letter, ~1500 answers + larger allowed list), trivia bank (300+ questions, 4 options each),
 would-you-rather (150+), never-have-I-ever (150+), truth/dare (100+ each), conversation cards
-(150+), pictionary words (300+), 20-questions secret words (200+),
+(150+), pictionary words (300+), 20-questions secret words (200+), festivals (`festivals.json`: 12 yearly
+entries for 2026–2028, fixed `MM-DD` or per-year dates with `verify` flags, the import source for
+Memories → Milestones → "Add festivals"),
 pet species (3 SVG sprite sets × 4 moods), plant stages (10 SVGs), garden stickers (24 SVGs),
 radio stations (`src/content/radio.json`: 6 World streams + 6 official All India Radio / Prasar Bharati HLS
 streams, each with id, name, region, language (India), format mp3|aac|hls, URL, extra hosts, attribution).
@@ -319,7 +326,11 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - **Journal**: alternating entries both can read, mood tag, optional photos.
 - **Photo timeline**: masonry grid grouped by month; captions; optional link to a map place.
 - **Memory map**: Leaflet + OSM tiles; pins "been" (green) and "want" (purple); tap to add; link memories.
-- **Milestones**: list + "next up" on Home; yearly repeat; push on the day.
+- **Milestones**: list + "next up" on Home; yearly repeat; push on the day; optional `effect` (chips in the
+  form) for milestone mode. "Add festivals" imports `content/festivals.json` (fixed-date festivals as one
+  repeat-yearly milestone, moveable ones as one one-off per seeded year, skipping past dates and anything
+  already present by title + date); afterwards they are ordinary milestones. Correct a festival date by
+  editing the milestone; the seed is only the import source.
 - **Call-time finder**: each sets weekly 30-min availability in their tz; overlap shown in both
   tz; "Propose" posts a chat message with the slot.
 - **Lists**: four kinds, shared (gift ideas private to the author), check-off, reorder by drag, who-added avatar.
@@ -424,7 +435,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
 ## Security rules (must be written in Phase 2 and kept current)
 - Firestore and RTDB: deny all by default; allow only if `request.auth.token.email` is in the
   allowlist (hard-code the two emails in the rules files; keep them in sync with `ALLOWED_EMAILS`).
-- `users/{uid}`: write only by that uid. `fcmTokens` only by owner.
+- `users/{uid}`: write only by that uid. `fcmTokens` only by owner. `chatBg` is no longer an allowed field
+  (a legacy value may only be deleted); the shared wallpaper is validated on `pair/main.chatBg`.
 - `messages`: create only with `senderId == request.auth.uid`; `deliveredAt/readAt/status` only
   updatable by the non-sender; `text/editedAt/deletedForEveryone` only by sender; `reactions`
   and `deletedFor` by either, but a user may only set their own key.
@@ -559,7 +571,7 @@ CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–23 shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–24 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -608,6 +620,9 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
     `pair.records.word`), Pictionary "Clear all", hangout wheel removed.
 23. ✅ **Little delights** (commit "phase 22: little delights") — morning digest, On this day, monthly
     recap, milestone mode, share the word grid, streak shields. Two composite indexes.
+24. ✅ **Shared wallpaper + festivals** (commit "phase 22b") — chat wallpaper on `pair/main` (one-time
+    migration, friend toast, rules moved), milestone `effect` + seven festival effects and pet accessories,
+    `festivals.json` seed with "Add festivals".
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

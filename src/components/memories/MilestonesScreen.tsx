@@ -5,6 +5,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
+import { useToast } from "@/components/toast/ToastProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
@@ -14,16 +15,17 @@ import { usePair } from "@/hooks/usePair";
 import { useRelationship } from "@/hooks/useRelationship";
 import { cn } from "@/lib/cn";
 import { dateKeyToLocalDate, isDateKey, roomDateKey } from "@/lib/dates";
-import { addMilestone, deleteMilestone, editMilestone, milestonesQuery, type MilestoneInput } from "@/lib/db/milestones";
+import { addMilestone, deleteMilestone, editMilestone, importFestivals, milestonesQuery, type MilestoneInput } from "@/lib/db/milestones";
 import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { friendsSinceMilestone, sortUpcoming, toUpcoming, yearsLine, type Upcoming } from "@/lib/milestones";
-import type { MilestoneDoc } from "@/lib/types";
+import { EFFECTS, type Effect, type MilestoneDoc } from "@/lib/types";
 
 interface Row extends MilestoneDoc {
   id: string;
 }
 const mapDoc = (d: QueryDocumentSnapshot<MilestoneDoc>): Row => ({ id: d.id, ...d.data() });
 const EMOJI = ["🎉", "🎂", "🧵", "✈️", "💖", "🎓", "🏠", "🌟", "🍰", "🎁"];
+const EFFECT_LABEL: Record<Effect, string> = { diyas: "🪔 Diyas", colours: "🎨 Colours", snow: "❄️ Snow", fireworks: "🎆 Fireworks", kites: "🪁 Kites", flowers: "🌸 Flowers", confetti: "🎊 Confetti" };
 
 export function MilestonesScreen() {
   const { pair } = usePair();
@@ -32,6 +34,21 @@ export function MilestonesScreen() {
   const today = roomDateKey(pair, now);
   const [rows, setRows] = useState<Row[]>([]);
   const [editing, setEditing] = useState<Row | "new" | null>(null);
+  const [importing, setImporting] = useState(false);
+  const { toast } = useToast();
+
+  async function addFestivals() {
+    if (importing) return;
+    setImporting(true);
+    try {
+      const n = await importFestivals(today);
+      toast({ key: "festivals", emoji: "🪔", title: n === 0 ? "All festivals already here" : `Added ${n} ${n === 1 ? "festival" : "festivals"}`, body: n === 0 ? "Nothing new to add" : "Edit or delete any of them like other milestones", vibrate: false });
+    } catch {
+      toast({ key: "festivals", emoji: "😵", title: "Couldn't add festivals", body: "Try again in a moment", vibrate: false });
+    } finally {
+      setImporting(false);
+    }
+  }
 
   useEffect(() => {
     const unsub = onSnapshot(milestonesQuery(), (snap) => setRows(snap.docs.map(mapDoc)));
@@ -39,7 +56,7 @@ export function MilestonesScreen() {
   }, []);
 
   const list = useMemo<Upcoming[]>(() => {
-    const items = rows.map((r) => toUpcoming({ id: r.id, title: r.title, emoji: r.emoji, date: r.date, repeatYearly: r.repeatYearly }, today));
+    const items = rows.map((r) => toUpcoming({ id: r.id, title: r.title, emoji: r.emoji, date: r.date, repeatYearly: r.repeatYearly, ...(r.effect ? { effect: r.effect } : {}) }, today));
     const fs = friendsSinceMilestone(pair.friendsSince, preset);
     if (fs) items.push(toUpcoming(fs, today, true));
     return sortUpcoming(items);
@@ -59,6 +76,20 @@ export function MilestonesScreen() {
         }
       />
       {editing !== null && <MilestoneForm key={editing === "new" ? "new" : editing.id} row={editing === "new" ? null : editing} onDone={() => setEditing(null)} />}
+      {editing === null && (
+        <Card className="flex items-center gap-3 px-4 py-3">
+          <span className="text-2xl" aria-hidden>
+            🪔
+          </span>
+          <span className="min-w-0 flex-1 text-sm">
+            <span className="block font-semibold">Festivals</span>
+            <span className="block text-xs text-muted">Sankranti, Holi, Eid, Diwali, Christmas… with effects on the day. Already-added ones are skipped.</span>
+          </span>
+          <Button variant="soft" onClick={() => void addFestivals()} disabled={importing} className="shrink-0 px-3 py-2 text-sm">
+            {importing ? "Adding…" : "Add festivals"}
+          </Button>
+        </Card>
+      )}
       {list.length === 0 && editing === null && <Card className="py-8 text-center text-muted">No dates yet — add a birthday, an anniversary, or the day you met?</Card>}
       {list.map((u) => (
         <Card key={u.id} className={cn("flex items-center gap-3", u.daysToGo < 0 && "opacity-60")}>
@@ -72,6 +103,7 @@ export function MilestonesScreen() {
             <p className="text-xs text-muted">
               {format(dateKeyToLocalDate(u.nextDate), "EEE, d MMM yyyy")}
               {u.repeatYearly && !u.derived && u.years !== null && u.years > 0 && ` · ${u.years}${ordinal(u.years)} time`}
+              {u.effect && ` · ${EFFECT_LABEL[u.effect]}`}
             </p>
           </div>
           <div className="text-right">
@@ -105,6 +137,7 @@ function MilestoneForm({ row, onDone }: { row: Row | null; onDone: () => void })
   const [date, setDate] = useState(row?.date ?? "");
   const [emoji, setEmoji] = useState(row?.emoji ?? EMOJI[0]!);
   const [repeatYearly, setRepeat] = useState(row?.repeatYearly ?? true);
+  const [effect, setEffect] = useState<Effect | null>(row?.effect ?? null);
   const [busy, setBusy] = useState(false);
   const canSave = title.trim().length > 0 && isDateKey(date) && !busy;
 
@@ -112,7 +145,7 @@ function MilestoneForm({ row, onDone }: { row: Row | null; onDone: () => void })
     if (!canSave) return;
     setBusy(true);
     try {
-      const input: MilestoneInput = { title, date, emoji, repeatYearly };
+      const input: MilestoneInput = { title, date, emoji, repeatYearly, ...(effect ? { effect } : {}) };
       if (row) await editMilestone(row.id, input);
       else await addMilestone(input);
       onDone();
@@ -140,6 +173,19 @@ function MilestoneForm({ row, onDone }: { row: Row | null; onDone: () => void })
           Repeats every year
         </label>
         <Switch id="ms-repeat" checked={repeatYearly} onChange={setRepeat} />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="ms-effect">Effect on the day</Label>
+        <div id="ms-effect" role="radiogroup" aria-label="Effect" className="flex flex-wrap gap-1.5">
+          <button type="button" role="radio" aria-checked={effect === null} onClick={() => setEffect(null)} className={cn("tap min-h-9 rounded-full px-3 text-xs font-bold", effect === null ? "bg-accent text-accent-ink" : "bg-surface-2")}>
+            None
+          </button>
+          {EFFECTS.map((e) => (
+            <button key={e} type="button" role="radio" aria-checked={effect === e} onClick={() => setEffect(e)} className={cn("tap min-h-9 rounded-full px-3 text-xs font-bold", effect === e ? "bg-accent text-accent-ink" : "bg-surface-2")}>
+              {EFFECT_LABEL[e]}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onDone} disabled={busy}>

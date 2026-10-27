@@ -33,7 +33,7 @@
 | `Cannot read properties of undefined (reading 'emoji')` | a lookup indexed a game catalogue with a stored type it doesn't know | use `gameInfo()` from `lib/games/catalog.ts` |
 | CSP violation in console (request blocked) | a new origin (CDN, stream URL) | add it to the matching directive in `csp.ts`; to unblock users meanwhile set `CSP_REPORT_ONLY=1` on Vercel and redeploy |
 | Animations missing or `motion` import warning | a component imported `motion` instead of `m` | use `m.*`; features come from `<LazyMotion>` in Providers |
-| Chat background not showing | `chatBg` rejected by rules (photo not from our cloud or unknown key) | check `rules/firestore.rules.tmpl` → `chatBgOk()`; deploy rules |
+| Chat wallpaper not showing / not changing | `pair/main.chatBg` rejected by rules (photo not from our cloud or unknown key), or the rules weren't redeployed after phase 22b (the field moved from `users/{uid}`) | check `rules/firestore.rules.tmpl` → pair `chatBgOk()`; `pnpm rules:deploy`; Diagnostics shows the `[write] updateDoc pair/main → permission-denied` line |
 | A sheet or overlay opens in the wrong place (above the header, off-screen) | it's `position: fixed` inside an ancestor with a transform, filter or backdrop-filter | use `Sheet` / `Portal` (renders into `<body>`) |
 | The whole UI, tab bar included, scrolls up | something made the document scrollable or focused without `preventScroll` | keep screens in the shell or `screen-fixed`; use `focusNoScroll`; run `pnpm test:e2e` |
 | `pnpm profile:chat` fails to start a worker | jsdom needs Node 22 | the config uses happy-dom; keep it |
