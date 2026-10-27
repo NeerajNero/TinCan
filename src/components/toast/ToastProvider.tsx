@@ -32,6 +32,8 @@ export interface ToastInput {
   accent?: string;
   bounce?: boolean;
   durationMs?: number;
+  /** Stays until tapped, actioned or swiped away (the update offer). Never pushed out by newer toasts. */
+  persistent?: boolean;
   vibrate?: boolean;
 }
 
@@ -65,12 +67,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       const id = Date.now() + Math.random();
       setToasts((list) => {
         const kept = input.key ? list.filter((x) => x.key !== input.key) : list;
-        return [...kept, { ...input, id }].slice(-MAX_STACK);
+        const next = [...kept, { ...input, id }];
+        // Over the cap, drop the oldest non-persistent toasts first.
+        while (next.length > MAX_STACK) {
+          const i = next.findIndex((x) => !x.persistent);
+          if (i === -1) break;
+          next.splice(i, 1);
+        }
+        return next;
       });
-      timers.current.set(
-        id,
-        setTimeout(() => remove(id), input.durationMs ?? DEFAULT_MS),
-      );
+      if (!input.persistent) {
+        timers.current.set(
+          id,
+          setTimeout(() => remove(id), input.durationMs ?? DEFAULT_MS),
+        );
+      }
       if (input.vibrate !== false) {
         try {
           navigator.vibrate?.(40);

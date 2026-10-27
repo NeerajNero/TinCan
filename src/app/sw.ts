@@ -51,7 +51,9 @@ const runtimeCaching: RuntimeCaching[] = [
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
-  skipWaiting: true,
+  // A new worker waits until the user taps Reload (UpdateWatcher posts SKIP_WAITING; Serwist
+  // listens for it when skipWaiting is false). clientsClaim then hands it the open page.
+  skipWaiting: false,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching,
@@ -109,9 +111,9 @@ if (firebaseConfig.apiKey && firebaseConfig.appId) {
 // The build this worker came from (inlined by the route handler), for More → Diagnostics.
 const WORKER_BUILD = process.env.NEXT_PUBLIC_BUILD_ID || "dev";
 
+// SKIP_WAITING is handled by Serwist itself (skipWaiting: false registers that listener).
 self.addEventListener("message", (event) => {
   const data = event.data as { type?: string } | undefined;
-  if (data?.type === "SKIP_WAITING") void self.skipWaiting();
   if (data?.type === "VERSION") event.ports[0]?.postMessage({ build: WORKER_BUILD });
 });
 

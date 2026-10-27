@@ -45,7 +45,7 @@
 1. `pnpm typecheck && pnpm lint` (and `pnpm build` for anything touching config, the worker or dependencies).
 2. Commit, `git push` → Vercel builds `main` automatically.
 3. If `rules/*.tmpl` or `firestore.indexes.json` changed: `pnpm rules:deploy`. The app and rules are deployed separately. A rules change without a deploy shows up as `permission-denied` in the console; a missing composite index as `failed-precondition` ("The query requires an index"). `pnpm test` fails first: `tests/unit/rules-coverage.test.ts` prints the entry to add to `firestore.indexes.json` for any query that needs one, and refuses `orderBy(documentId(), "desc")` outright (order ascending over an id range instead).
-4. If `src/app/sw.ts` or precached assets changed, the worker updates on next load; a hard refresh or reinstall is never required.
+4. If `src/app/sw.ts` or precached assets changed, the new worker installs on the next launch or hourly check and *waits*: each phone shows the persistent "Update available · Reload" toast (or More → Check for updates says so) and the tap hands over and reloads once. Nothing updates silently mid-session; a closed-and-reopened app activates the waiting worker on its own. A hard refresh or reinstall is never required.
 5. Check `/api/health` and the console for CSP reports after a config change.
 
 ## Routine checks
@@ -125,7 +125,7 @@ For Telugu, Vividh Bharati Telugu (`257`) is `https://radio.wavespb.com/live/899
 
 1. `pnpm vitest run tests/unit/csp.test.ts tests/unit/radio.test.ts` (the CSP unit test checks the radio hosts in media-src and connect-src, and that no wildcard appears), then `pnpm typecheck && pnpm lint && pnpm test`.
 2. Add a CHANGELOG line. If a new organisation or host now receives listeners' IPs, update the README's privacy table.
-3. Commit and push. Vercel redeploys; on each phone reopen the app and accept "Update available, tap to reload".
+3. Commit and push. Vercel redeploys; on each phone reopen the app (or More → Check for updates) and tap Reload on "Update available".
 4. On a phone, play the station and check that the other phone follows. Then open More → Diagnostics (owner account) and confirm there's no `[csp]` line for the stream hosts.
 
 

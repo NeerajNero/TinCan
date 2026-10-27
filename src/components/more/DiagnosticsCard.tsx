@@ -14,6 +14,7 @@ import { diagEntries, type DiagEntry } from "@/lib/diagLog";
 import { rtdbPrefersLongPolling } from "@/lib/firebase/client";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { getFirestoreHealth, subscribeFirestoreHealth, type FirestoreHealth } from "@/lib/firestoreHealth";
+import { APP_BUILD, workerBuild } from "@/lib/swUpdate";
 
 /** Owner-only troubleshooting panel. Listeners exist only while it's open. */
 export function DiagnosticsCard() {
@@ -36,10 +37,10 @@ export function DiagnosticsCard() {
 
 interface WorkerInfo {
   controller: boolean;
+  /** "state · build" for each slot, or "none". */
   active: string;
-  waiting: boolean;
-  installing: boolean;
-  build: string;
+  waiting: string;
+  installing: string;
 }
 
 interface Connection {
@@ -62,21 +63,11 @@ function fmtHealth(h: FirestoreHealth, now: number): string {
 }
 
 async function workerInfo(): Promise<WorkerInfo> {
-  if (!("serviceWorker" in navigator)) return { controller: false, active: "unsupported", waiting: false, installing: false, build: "—" };
+  if (!("serviceWorker" in navigator)) return { controller: false, active: "unsupported", waiting: "none", installing: "none" };
   const reg = await navigator.serviceWorker.getRegistration("/").catch(() => undefined);
-  const target = navigator.serviceWorker.controller ?? reg?.active ?? null;
-  const build = target
-    ? await new Promise<string>((resolve) => {
-        const ch = new MessageChannel();
-        const t = setTimeout(() => resolve("no answer (older worker?)"), 1500);
-        ch.port1.onmessage = (e) => {
-          clearTimeout(t);
-          resolve(String((e.data as { build?: string }).build ?? "?"));
-        };
-        target.postMessage({ type: "VERSION" }, [ch.port2]);
-      })
-    : "—";
-  return { controller: Boolean(navigator.serviceWorker.controller), active: reg?.active?.state ?? "none", waiting: Boolean(reg?.waiting), installing: Boolean(reg?.installing), build };
+  const slot = async (w: ServiceWorker | null | undefined) => (w ? `${w.state} · ${await workerBuild(w)}` : "none");
+  const [active, waiting, installing] = await Promise.all([slot(reg?.active), slot(reg?.waiting), slot(reg?.installing)]);
+  return { controller: Boolean(navigator.serviceWorker.controller), active, waiting, installing };
 }
 
 async function cspMode(): Promise<string> {
@@ -129,9 +120,10 @@ function DiagnosticsPanel() {
   const conn = (navigator as Navigator & { connection?: Connection }).connection;
   const firestoreLast = log.filter((e) => /firestore/i.test(e.text)).at(-1);
   const rows: Array<[string, string]> = [
-    ["App build", process.env.NEXT_PUBLIC_BUILD_ID ?? "dev"],
-    ["Worker", worker ? `${worker.active}${worker.controller ? ", controlling" : ", not controlling"}${worker.waiting ? ", update waiting" : ""}${worker.installing ? ", installing" : ""}` : "checking…"],
-    ["Worker build", worker?.build ?? "checking…"],
+    ["App build", APP_BUILD],
+    ["Worker active", worker ? `${worker.active}${worker.controller ? " (controlling)" : worker.active === "none" ? "" : " (not controlling)"}` : "checking…"],
+    ["Worker waiting", worker ? `${worker.waiting}${worker.waiting === "none" ? "" : " (update available)"}` : "checking…"],
+    ["Worker installing", worker?.installing ?? "checking…"],
     ["Auth uid", user?.uid ?? "signed out"],
     ["ID token age", token ? `${fmtAge(now.getTime() - token.issuedAt)} (expires in ${fmtAge(Math.max(0, token.expiresAt - now.getTime()))})` : "—"],
     ["RTDB connected", rtdbLoaded ? String(connected === true) : "waiting for first value"],

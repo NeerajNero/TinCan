@@ -3,9 +3,9 @@
 import words from "@/content/pictionary-words.json";
 import { getRtdb } from "@/lib/firebase/client";
 import { equalTo, onValue, orderByChild, push, query, ref, runTransaction, serverTimestamp, set, update } from "@/lib/firebase/rt";
+import { advanceRound, DEFAULT_ROUNDS, pointsFor, ROUND_MS, type RoundCount } from "@/lib/pictionary";
 
-export const ROUNDS = 3;
-export const ROUND_MS = 60_000;
+export { ROUND_MS, ROUND_OPTIONS, roundsOf } from "@/lib/pictionary";
 
 export interface Guess {
   uid: string;
@@ -20,6 +20,8 @@ export interface PictionaryNode {
   createdBy: string;
   createdAt: number;
   round: number;
+  /** 3 or 5; absent on games from before it was selectable (= 3). */
+  rounds?: number;
   drawerUid: string;
   /** JSON string[] of the 3 offered words. */
   wordOptions: string;
@@ -79,7 +81,7 @@ export function subscribePictionary(id: string, cb: (n: LivePictionary | null) =
   });
 }
 
-export async function invitePictionary(me: string, friend: string): Promise<string> {
+export async function invitePictionary(me: string, friend: string, rounds: RoundCount = DEFAULT_ROUNDS): Promise<string> {
   const node = push(r("pictionary"));
   const data: Omit<PictionaryNode, "createdAt"> = {
     players: { first: me, second: friend },
@@ -87,6 +89,7 @@ export async function invitePictionary(me: string, friend: string): Promise<stri
     open: true,
     createdBy: me,
     round: 1,
+    rounds,
     drawerUid: me,
     wordOptions: offer(),
     word: null,
@@ -105,43 +108,43 @@ export async function invitePictionary(me: string, friend: string): Promise<stri
 export const acceptPictionary = (id: string) => update(r(`pictionary/${id}`), { status: "active" });
 export const declinePictionary = (id: string) => update(r(`pictionary/${id}`), { status: "declined", open: false });
 
+/** The round clock is server time, so neither phone's clock can end a round early or late. */
 export function chooseWord(id: string, word: string): Promise<void> {
-  return update(r(`pictionary/${id}`), { word, roundStartedAt: Date.now(), guesses: "[]", solvedAt: null, solvedBy: null, roundOver: false });
+  return update(r(`pictionary/${id}`), { word, roundStartedAt: serverTimestamp(), guesses: "[]", solvedAt: null, solvedBy: null, roundOver: false });
 }
 
-/** Points scale with time left: 1–10 for the guesser, half (rounded up) for the drawer. */
-function pointsFor(msLeft: number): number {
-  return Math.max(1, Math.ceil((msLeft / ROUND_MS) * 10));
-}
-
-/** Append a guess; on a match award points inside the same transaction. */
-export async function submitGuess(game: LivePictionary, uid: string, text: string): Promise<boolean> {
+/** Append a guess; on a match award points inside the same transaction. `nowMs` is server time (RTDB offset applied). */
+export async function submitGuess(game: LivePictionary, uid: string, text: string, nowMs: number): Promise<boolean> {
   let solved = false;
   await runTransaction(r(`pictionary/${game.id}`), (cur: PictionaryNode | null) => {
     if (!cur || cur.status !== "active" || !cur.word || cur.roundOver) return cur;
     const list = parseGuesses(cur);
-    list.push({ uid, text: text.trim().slice(0, 60), at: Date.now() });
+    list.push({ uid, text: text.trim().slice(0, 60), at: nowMs });
     const hit = normalise(text) === normalise(cur.word);
     if (!hit) return { ...cur, guesses: JSON.stringify(list) };
-    const left = Math.max(0, cur.roundStartedAt + ROUND_MS - Date.now());
+    const left = Math.max(0, cur.roundStartedAt + ROUND_MS - nowMs);
     const pts = pointsFor(left);
     const scores = { ...cur.scores };
     scores[uid] = (scores[uid] ?? 0) + pts;
     scores[cur.drawerUid] = (scores[cur.drawerUid] ?? 0) + Math.ceil(pts / 2);
     solved = true;
-    return { ...cur, guesses: JSON.stringify(list), solvedAt: Date.now(), solvedBy: uid, scores, roundOver: true };
+    return { ...cur, guesses: JSON.stringify(list), solvedAt: nowMs, solvedBy: uid, scores, roundOver: true };
   });
   return solved;
 }
 
 export const endRound = (id: string) => update(r(`pictionary/${id}`), { roundOver: true });
 
-/** Next round (or finish after the third): clears the canvas, swaps the drawer, offers new words. */
-export function nextRound(game: LivePictionary): Promise<void> {
-  const base = r(`pictionary/${game.id}`);
-  if (game.round >= ROUNDS) return update(base, { status: "finished", open: false, strokes: null, live: null });
-  const drawerUid = game.drawerUid === game.players.first ? game.players.second : game.players.first;
-  return update(base, { round: game.round + 1, drawerUid, wordOptions: offer(), word: null, roundStartedAt: 0, guesses: "[]", solvedAt: null, solvedBy: null, roundOver: false, strokes: null, live: null });
+/**
+ * Next round (or finish after the last): clears the canvas, swaps the drawer,
+ * offers new words. A transaction from the round the tapper saw, so a stale
+ * or double tap (both phones press "Next round") is a no-op, never a skip.
+ */
+export async function nextRound(game: LivePictionary): Promise<void> {
+  await runTransaction(r(`pictionary/${game.id}`), (cur: PictionaryNode | null) => {
+    const patch = advanceRound(cur, game.round, offer);
+    return patch ? { ...cur, ...patch } : undefined;
+  });
 }
 
 export const closePictionary = (id: string) => update(r(`pictionary/${id}`), { open: false });

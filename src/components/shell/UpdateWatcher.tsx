@@ -3,55 +3,43 @@
 import { useEffect } from "react";
 
 import { useToast } from "@/components/toast/ToastProvider";
-
-const RECHECK_MIN_MS = 60_000;
+import { getUpdateController } from "@/lib/swUpdate";
 
 /**
- * Gets new deploys onto installed PWAs promptly. The worker already calls
- * skipWaiting + clientsClaim, so a new one takes over as soon as it installs;
- * this asks the browser to look for one on launch and on every resume (Android
- * keeps PWAs alive for days), and once a new worker controls the page it offers
- * a reload so the running JS matches the new build. A worker stuck in
- * "waiting" (an older one without skipWaiting) is told to skip.
+ * Mounted on every signed-in screen (AuthGate). Checks for a new deploy on
+ * launch and on each resume (once an hour at most), and whenever a worker is
+ * waiting shows the persistent "Update available · Reload" toast. Reload hands
+ * over to the new worker and reloads once; nothing updates silently.
  */
 export function UpdateWatcher() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || process.env.NODE_ENV === "development") return;
-    const sw = navigator.serviceWorker;
-    const hadController = Boolean(sw.controller);
-    let lastCheck = 0;
-
-    const offerReload = () =>
-      toast({ key: "update", emoji: "✨", title: "Update available", body: "Tap to reload", durationMs: 30_000, vibrate: false, onTap: () => window.location.reload() });
-
-    const check = async () => {
-      if (Date.now() - lastCheck < RECHECK_MIN_MS) return;
-      lastCheck = Date.now();
-      const reg = await sw.getRegistration("/").catch(() => undefined);
-      if (!reg) return;
-      if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
-      await reg.update().catch(() => undefined);
-    };
-
-    // A new worker took control: only an *update* if there was one before (not the first install).
-    const onControllerChange = () => {
-      if (hadController) offerReload();
-    };
+    const ctl = getUpdateController();
+    const offer = () =>
+      toast({
+        key: "update",
+        emoji: "✨",
+        title: "Update available",
+        body: "A newer build is ready",
+        persistent: true,
+        vibrate: false,
+        actions: [{ label: "Reload", primary: true, onPress: () => void ctl.apply() }],
+      });
+    const unsubscribe = ctl.subscribe((s) => {
+      if (s.waiting && !s.checking) offer();
+    });
     const onVisible = () => {
-      if (document.visibilityState === "visible") void check();
+      if (document.visibilityState === "visible") void ctl.check();
     };
     const onPageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) void check();
+      if (e.persisted) void ctl.check();
     };
-
-    sw.addEventListener("controllerchange", onControllerChange);
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("pageshow", onPageShow);
-    void check();
+    void ctl.check();
     return () => {
-      sw.removeEventListener("controllerchange", onControllerChange);
+      unsubscribe();
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("pageshow", onPageShow);
     };

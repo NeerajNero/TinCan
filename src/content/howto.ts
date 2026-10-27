@@ -70,8 +70,8 @@ export const HOWTO: Record<HowToKey, HowTo> = {
   },
   pictionary: {
     title: "Pictionary",
-    label: "Draw & guess · 3 rounds",
-    steps: ["✏️ One of you draws, the other guesses", "🎯 The drawer picks one of three secret words", "⏱️ 60 seconds per word, 3 rounds, you swap each round", "💬 Type guesses — spaces and caps don't matter"],
+    label: "Draw & guess · 3 or 5 rounds",
+    steps: ["✏️ One of you draws, the other guesses", "🎯 The drawer picks one of three secret words", "⏱️ 60 seconds a round, 3 or 5 rounds, the drawer swaps each round", "💬 Type guesses — spaces and caps don't matter"],
     tip: "Faster guesses score more. Clear wipes the whole canvas; Invite drops a Join card in chat.",
   },
   trivia: {

@@ -19,7 +19,10 @@ app should feel like a small hello, not a dashboard.
   `src/app/sw.ts`, served at `/serwist/sw.js` with scope `/` by a route handler, precaching the
   build output plus `/offline`, disabled in dev. The FCM background handler lives in this same
   worker (no separate `firebase-messaging-sw.js`), and `getToken` must be passed this worker's
-  registration explicitly. Both users are on Android; iOS quirks can be ignored.
+  registration explicitly. Updates: the worker never skips waiting on its own; `lib/swUpdate.ts`
+  checks on launch / resume (hourly) and on More → "Check for updates", offers a persistent
+  "Update available · Reload" toast whenever a worker is waiting (including one already waiting at
+  launch), and Reload posts SKIP_WAITING + reloads once on `controllerchange`. Both users are on Android; iOS quirks can be ignored.
 - Firebase, Spark (free) plan only:
   - Auth — Google provider. Only emails in `ALLOWED_EMAILS` may use the app; enforce in
     security rules AND in the client gate.
@@ -79,7 +82,8 @@ Open-when envelopes, Mood history (calendar for both).
 **Plan** — Meetup countdown, Call-time finder, Lists (bucket, wishlist, gift ideas, to-do), Trips.
 
 **More** — Profile (nickname, city, avatar), Theme, Notification toggles, Friends-since date,
-Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), Sign out.
+Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), App build + "Check for updates",
+Diagnostics, Sign out.
 
 ## Design
 - Cute & playful: rounded 20px cards, soft pastel palette with one accent per tab, large emoji
@@ -333,8 +337,10 @@ Every trivia question also carries an `explanation`. Word definitions are static
   for words WordNet lacks or defines badly; the 26 files are committed and rebuilt only when the
   answer list changes.
 - **Pictionary**: drawer sees the word, draws on shared canvas (RTDB strokes), guesser types;
-  60 s; 3 rounds alternating; score. Drawer tools: pen, eraser, widths, colours and a confirmed
-  "Clear all" that wipes the canvas for both.
+  60 s; 3 or 5 rounds (chosen in the lobby, default 3), drawer alternating; score. Round advance is a
+  transaction keyed to the round the tapper saw (a double tap never skips a round); the round clock is
+  server time. Drawer tools: pen, eraser, widths, colours and a confirmed "Clear all" that wipes the
+  canvas for both.
 - **Whiteboard**: pen/eraser/colours/clear, shared cursors, "snapshot" button uploads a PNG to
   Cloudinary and posts it to chat.
 - **Pixel art**: 32×32 shared grid, 16-colour palette, shared cursors, snapshot to chat.

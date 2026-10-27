@@ -51,7 +51,7 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 | `pixel/grid`, `pixel/cursor/{uid}` | both / owner | grid exactly 1024 chars | pixel art |
 | `games/{id}` | both | type, string state, turn, status, open bool, endReason enum, players{first,second}, reaction (own or unchanged) | board games |
 | `cards/{deck}` | both | — | deck games |
-| `pictionary/{id}` (+ strokes, live) | both | stroke/live limits as whiteboard | pictionary |
+| `pictionary/{id}` (+ strokes, live) | both | stroke/live limits as whiteboard; `rounds` 3 or 5 (absent = 3), `roundStartedAt` is a server timestamp | pictionary |
 | `twenty/main` | both | — | 20 Questions (one round at a time) |
 | `trivia/{id}` | both | qIndex, qStartedAt numbers; startedBy string; `joined/{uid}` and `answered/{uid}` numbers, own key or unchanged (transactions rewrite the node); nothing else | live trivia session: `joined/{uid}` on open, start transaction once both joined, `answered` per question, cleared on advance; removed by `switchToAsync` |
 | `watch/main`, `listen/main`, `listen/queue` | both | — | watch/listen together |

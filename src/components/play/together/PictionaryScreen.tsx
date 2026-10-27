@@ -17,9 +17,10 @@ import { useRtdbValue } from "@/hooks/useRtdbValue";
 import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
-import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRound, invitePictionary, nextRound, parseGuesses, parseOptions, pictRoute, ROUND_MS, ROUNDS, submitGuess, subscribeOpenPictionary, subscribePictionary, type LivePictionary } from "@/lib/db/pictionary";
+import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRound, invitePictionary, nextRound, parseGuesses, parseOptions, pictRoute, ROUND_MS, ROUND_OPTIONS, roundsOf, submitGuess, subscribeOpenPictionary, subscribePictionary, type LivePictionary } from "@/lib/db/pictionary";
 import { clearStrokes } from "@/lib/db/together";
 import { recordTogetherEvent } from "@/lib/garden";
+import { DEFAULT_ROUNDS, type RoundCount } from "@/lib/pictionary";
 
 function winnerIdOf(g: LivePictionary): string | null {
   const a = g.players.first;
@@ -35,6 +36,7 @@ export function PictionaryLobby() {
   const startInvite = useStartInvite();
   const [open, setOpen] = useState<LivePictionary[]>([]);
   const [busy, setBusy] = useState(false);
+  const [rounds, setRounds] = useState<RoundCount>(DEFAULT_ROUNDS);
   const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
   useEffect(() => subscribeOpenPictionary(setOpen), []);
   const live = open.find((g) => g.status === "invited" || g.status === "active");
@@ -43,7 +45,7 @@ export function PictionaryLobby() {
     if (!friendUid || busy) return;
     setBusy(true);
     try {
-      const id = await invitePictionary(uid, friendUid);
+      const id = await invitePictionary(uid, friendUid, rounds);
       void startInvite("pictionary", pictRoute(id), "Pictionary", { roundId: id });
       router.push(pictRoute(id));
     } finally {
@@ -55,12 +57,22 @@ export function PictionaryLobby() {
     <div className="flex flex-col gap-4">
       <SubHeader help="pictionary" emoji="🎨" title="Pictionary" back="/play" screenName="Pictionary" />
       <Card className="flex flex-col gap-3">
-        <p className="text-sm text-muted">Three rounds, 60 seconds each, drawer alternates. The guesser types; the drawer draws.</p>
+        <p className="text-sm text-muted">60 seconds a round, the drawer alternates. The guesser types; the drawer draws.</p>
+        {!live && (
+          <div role="radiogroup" aria-label="Rounds" className="flex items-center gap-2">
+            <span className="text-sm font-bold">Rounds</span>
+            {ROUND_OPTIONS.map((n) => (
+              <button key={n} type="button" role="radio" aria-checked={rounds === n} onClick={() => setRounds(n)} className={cn("tap min-h-11 rounded-full px-4 text-sm font-bold", rounds === n ? "bg-accent text-accent-ink" : "bg-surface-2")}>
+                {n}
+              </button>
+            ))}
+          </div>
+        )}
         {live ? (
           <Button onClick={() => router.push(pictRoute(live.id))}>{live.status === "invited" ? (live.createdBy === uid ? "Waiting for them — open" : `${nameOf(live.createdBy)} invited you — open`) : "Rejoin the game"}</Button>
         ) : (
           <Button onClick={() => void invite()} disabled={!friendUid || busy}>
-            {busy ? "Inviting…" : `Invite ${friend?.nickname ?? "friend"}`}
+            {busy ? "Inviting…" : `Invite ${friend?.nickname ?? "friend"} · ${rounds} rounds`}
           </Button>
         )}
       </Card>
@@ -119,7 +131,7 @@ export function PictionaryGame({ id }: { id: string }) {
     const sb = game.scores[b] ?? 0;
     const winnerId = sa === sb ? null : sa > sb ? a : b;
     if (winnerId === uid) setTimeout(() => setBurst(1), 0);
-    if (uid === a) void recordGenericResult("pictionary", [a, b], winnerId, game.createdAt || Date.now(), ROUNDS, nameOf).then(() => closePictionary(game.id));
+    if (uid === a) void recordGenericResult("pictionary", [a, b], winnerId, game.createdAt || Date.now(), roundsOf(game), nameOf).then(() => closePictionary(game.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game?.status]);
 
@@ -128,6 +140,7 @@ export function PictionaryGame({ id }: { id: string }) {
 
   const guesses = parseGuesses(game);
   const options = parseOptions(game);
+  const rounds = roundsOf(game);
   const roundKey = `${game.round}:${game.roundStartedAt}:${game.roundOver}`;
   const confirmClear = confirmKey === roundKey;
   const setConfirmClear = (on: boolean) => setConfirmKey(on ? roundKey : null);
@@ -136,13 +149,13 @@ export function PictionaryGame({ id }: { id: string }) {
     if (!game || !guess.trim()) return;
     const text = guess;
     setGuess("");
-    const hit = await submitGuess(game, uid, text);
+    const hit = await submitGuess(game, uid, text, serverNow);
     if (hit) setBurst((b) => b + 1);
   }
 
   return (
     <div className="-mb-6 flex min-h-0 flex-1 flex-col gap-3">
-      <SubHeader help="pictionary" emoji="🎨" title={`Pictionary · round ${Math.min(game.round, ROUNDS)}/${ROUNDS}`} back="/play/pictionary" screenName="Pictionary" invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: "pictionary", route: pictRoute(game.id), label: "Pictionary", roundId: game.id }} />
+      <SubHeader help="pictionary" emoji="🎨" title={`Pictionary · round ${Math.min(game.round, rounds)}/${rounds}`} back="/play/pictionary" screenName="Pictionary" invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: "pictionary", route: pictRoute(game.id), label: "Pictionary", roundId: game.id }} />
 
       <div className="card flex items-center gap-3 rounded-[20px] px-3 py-2">
         <span className="min-w-0 flex-1 text-sm">
@@ -257,7 +270,7 @@ export function PictionaryGame({ id }: { id: string }) {
                 {game.solvedBy ? `${nameOf(game.solvedBy)} got it — “${game.word}”!` : `Time's up. It was “${game.word}”.`}
               </p>
               <Button onClick={() => void nextRound(game)} className="px-4 py-2 text-sm">
-                {game.round >= ROUNDS ? "See results" : "Next round"}
+                {game.round >= rounds ? "See results" : "Next round"}
               </Button>
             </Card>
           )}

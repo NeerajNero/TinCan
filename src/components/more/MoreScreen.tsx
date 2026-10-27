@@ -12,6 +12,7 @@ import { ProfileCard } from "@/components/more/ProfileCard";
 import { SoundsCard } from "@/components/more/SoundsCard";
 import { ThemeSwitch } from "@/components/more/ThemeSwitch";
 import { TipsCard } from "@/components/more/TipsCard";
+import { UpdateCard } from "@/components/more/UpdateCard";
 import { UsageCard } from "@/components/more/UsageCard";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -54,6 +55,7 @@ export function MoreScreen() {
       <SoundsCard />
       <TipsCard />
       <UsageCard />
+      <UpdateCard />
       <DiagnosticsCard />
 
       <Card className="flex flex-col gap-3">
