@@ -5,8 +5,10 @@ import { DailyQuestionCard } from "@/components/home/DailyQuestionCard";
 import { GameInvitesCard } from "@/components/home/GameInvitesCard";
 import { Lamps } from "@/components/home/Lamps";
 import { LastMessageCard } from "@/components/home/LastMessageCard";
+import { MilestoneBanner } from "@/components/home/MilestoneBanner";
 import { MoodCheckin } from "@/components/home/MoodCheckin";
 import { NextUpCard } from "@/components/home/NextUpCard";
+import { OnThisDayCard } from "@/components/home/OnThisDayCard";
 import { PetWidget } from "@/components/home/PetWidget";
 import { PingOverlay } from "@/components/home/PingOverlay";
 import { PingRow } from "@/components/home/PingRow";
@@ -18,6 +20,7 @@ import { WaitingCard } from "@/components/home/WaitingCard";
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { Splash } from "@/components/ui/Splash";
 import { useHomeData } from "@/hooks/useHomeData";
+import { useMilestoneDay } from "@/hooks/useMilestoneDay";
 import { usePair } from "@/hooks/usePair";
 
 function Header({ nickname }: { nickname: string }) {
@@ -37,6 +40,7 @@ export function HomeScreen() {
   const { me, friend, friendUid, pair, loading } = usePair();
   const data = useHomeData();
   const { ping: activePing, dismissPing } = useLiveEvents();
+  const party = useMilestoneDay().milestones.length > 0;
 
   if (pair.uids.length < 2 || !friendUid) {
     return (
@@ -56,14 +60,16 @@ export function HomeScreen() {
   return (
     <div className="flex flex-col gap-4">
       <Header nickname={me.nickname} />
+      <MilestoneBanner />
       <PresenceCard friend={friend} />
       <LastMessageCard friendName={friend.nickname} />
       <GameInvitesCard friendName={friend.nickname} />
       <PushNudgeCard />
       <PingRow friendUid={friendUid} friendName={friend.nickname} />
       <Lamps friendUid={friendUid} friendName={friend.nickname} />
-      <DailyQuestionCard today={data.today} friendUid={friendUid} friendName={friend.nickname} />
+      <DailyQuestionCard today={data.today} friendUid={friendUid} friendName={friend.nickname} party={party} />
       <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={data.friendMood} friendName={friend.nickname} />
+      <OnThisDayCard today={data.today} />
       <StreakPlant today={data.today} checkins={data.checkins} friendUid={friendUid} friendName={friend.nickname} />
       <PetWidget />
       <CountdownCard pair={pair} today={data.today} />

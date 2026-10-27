@@ -17,6 +17,7 @@ const DEAD_TOKEN_CODES = new Set([
 
 export interface UserDocLite {
   nickname?: string;
+  tz?: string;
   fcmTokens?: string[];
   notif?: Partial<NotifPrefs>;
 }
@@ -62,6 +63,7 @@ export async function sendPushTo(toUid: string, type: PushType, opts: SendOption
   if (recipient.notif?.enabled !== true || tokens.length === 0) return { ...base, reason: "push_off" };
   const toggle = TOGGLE_FOR[type];
   if (toggle && recipient.notif?.[toggle] === false) return { ...base, reason: "type_off" };
+  if (type === "digest" && recipient.notif?.digest?.enabled !== true) return { ...base, reason: "type_off" };
 
   if (opts.skipWhenOnPage) {
     const presence = (await adminRtdb().ref(`presence/${toUid}`).get()).val() as { online?: boolean; page?: string } | null;

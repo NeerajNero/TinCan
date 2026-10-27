@@ -41,7 +41,7 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
         data: { kind },
       });
       const total = (pair.counters?.pings ?? 0) + 1;
-      void updateDoc(pairRef(), { "counters.pings": increment(1) }).catch(swallow);
+      void updateDoc(pairRef(), { "counters.pings": increment(1), [`counters.pingCounts.${kind}`]: increment(1) }).catch(swallow);
       if (total >= 100 && !pair.garden?.stickers?.["pings-100"]) void recordTogetherEvent("pings-100", uid);
     } catch {
       setSent(null);

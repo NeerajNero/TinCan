@@ -8,17 +8,20 @@ import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
 import { TILE, WordleGrid } from "@/components/play/WordleGrid";
 import { WordleHistory } from "@/components/play/WordleHistory";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
+import { sendText } from "@/lib/db/messages";
 import { saveGuesses, settleWordleDay, wordleRef, type WordleDoc } from "@/lib/db/wordle";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
+import { readPref, writePref } from "@/lib/localPref";
 import { notify } from "@/lib/notify";
 import { definitionHeading, fetchDefinition, type WordDefinition } from "@/lib/wordDefinitions";
-import { isAllowedGuess, KEY_ROWS, keyboardStates, MAX_GUESSES, WORD_LEN, wordFor, type LetterState } from "@/lib/wordle";
+import { isAllowedGuess, KEY_ROWS, keyboardStates, MAX_GUESSES, shareText, WORD_LEN, wordFor, type LetterState } from "@/lib/wordle";
 import { bothFinished, guessCount, iRecordWordle, wordleDayWinner, type WordleDay } from "@/lib/wordleResults";
 
 export function WordleScreen() {
@@ -35,6 +38,26 @@ export function WordleScreen() {
   // Definition lookup, only on request and only once finished; keyed by word so a new day starts blank.
   const [lookup, setLookup] = useState<{ word: string; state: MeaningState } | null>(null);
   const meaning: MeaningState = lookup?.word === answer ? lookup.state : "idle";
+
+  // Share the grid to chat once per day (per device).
+  const SHARED_KEY = "tincan:word-shared";
+  const [shared, setShared] = useState<string | null>(() => readPref(SHARED_KEY));
+  const [sharing, setSharing] = useState(false);
+  async function share() {
+    if (!mine || sharing || shared === today) return;
+    setSharing(true);
+    try {
+      const text = shareText(today, mine.guesses, answer);
+      const id = await sendText(uid, text, null);
+      writePref(SHARED_KEY, today);
+      setShared(today);
+      if (friendUid) void notify("message", { toUid: friendUid, body: text.split("\n")[0] ?? "Daily word", data: { messageId: id } });
+    } catch {
+      flash("Couldn't share — try again");
+    } finally {
+      setSharing(false);
+    }
+  }
 
   function askMeaning() {
     setLookup({ word: answer, state: "loading" });
@@ -140,6 +163,9 @@ export function WordleScreen() {
               <p className="font-heading text-xl font-semibold">{mine?.solved ? `Got it in ${guesses.length}! 🎉` : `It was “${answer.toUpperCase()}”`}</p>
               <p className="text-xs text-muted">{theirs?.done ? "Both done — compare below" : `Waiting for ${friend?.nickname ?? "them"}`}</p>
               <Meaning word={answer} state={meaning} onAsk={askMeaning} />
+              <Button variant="soft" onClick={() => void share()} disabled={sharing || shared === today} className="px-4 py-2 text-sm">
+                {shared === today ? "Shared to chat ✓" : sharing ? "Sharing…" : "Share my grid to chat"}
+              </Button>
             </Card>
           )}
 

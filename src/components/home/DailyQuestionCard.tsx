@@ -13,7 +13,7 @@ import { answerDaily } from "@/lib/db/daily";
 import { notify } from "@/lib/notify";
 
 /** Today's prompt (ROOM_TZ). My answer is editable all day; theirs is blurred until I've answered. */
-export function DailyQuestionCard({ today, friendUid, friendName }: { today: string; friendUid: string | null; friendName: string | null }) {
+export function DailyQuestionCard({ today, friendUid, friendName, party = false }: { today: string; friendUid: string | null; friendName: string | null; party?: boolean }) {
   const { uid } = usePair();
   const { daily: docData } = useLiveEvents();
   const [draft, setDraft] = useState("");
@@ -47,7 +47,7 @@ export function DailyQuestionCard({ today, friendUid, friendName }: { today: str
           💭
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">Today&apos;s question</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">{party && "🎉 "}Today&apos;s question</p>
           <p className="font-heading text-lg font-semibold leading-snug">{question}</p>
         </div>
       </div>

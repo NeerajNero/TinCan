@@ -1,8 +1,9 @@
 "use client";
 
 import { m } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { useToast } from "@/components/toast/ToastProvider";
 import { Card } from "@/components/ui/Card";
 import { HowToButton } from "@/components/ui/HowTo";
 import { Sheet } from "@/components/ui/Sheet";
@@ -10,6 +11,10 @@ import { PLANT_STAGE_NAMES, PLANT_STAGES, PlantSvg } from "@/content/plant";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
 import { isPlantWilted, MAX_PLANT_STAGE, plantStageFor } from "@/lib/db/home";
+import { readPref, writePref } from "@/lib/localPref";
+import { MAX_SHIELDS, shieldSavedToday } from "@/lib/streak";
+
+const SHIELD_TOAST_KEY = "tincan:shield-toast";
 
 interface StreakPlantProps {
   today: string;
@@ -30,6 +35,14 @@ export function StreakPlant({ today, checkins, friendUid, friendName }: StreakPl
   const meIn = Boolean(checkins[uid]);
   const friendIn = Boolean(checkins[friendUid]);
   const [open, setOpen] = useState(false);
+  const shields = Math.min(MAX_SHIELDS, Math.max(0, streak?.shields ?? 0));
+  const { toast } = useToast();
+  const saved = shieldSavedToday(streak, today);
+  useEffect(() => {
+    if (!saved || readPref(SHIELD_TOAST_KEY) === today) return;
+    writePref(SHIELD_TOAST_KEY, today);
+    toast({ key: "shield", emoji: "🛡️", title: "A shield saved your streak", body: "Yesterday slipped by — the streak carries on", vibrate: false });
+  }, [saved, today, toast]);
   const daysToNext = stage >= MAX_PLANT_STAGE ? 0 : Math.max(0, stage * 3 - count);
 
   return (
@@ -49,6 +62,11 @@ export function StreakPlant({ today, checkins, friendUid, friendName }: StreakPl
       <div className="min-w-0 flex-1">
         <p className="font-heading text-3xl font-semibold">
           🔥 {count} <span className="text-base font-bold text-muted">{count === 1 ? "day" : "days"}</span>
+          {shields > 0 && (
+            <span className="ml-2 align-middle text-base" aria-label={`${shields} ${shields === 1 ? "shield" : "shields"}`} title="A shield covers one missed day">
+              {"🛡️".repeat(shields)}
+            </span>
+          )}
         </p>
         <p className="text-sm font-semibold">
           {PLANT_STAGE_NAMES[stage - 1]}
@@ -75,6 +93,7 @@ export function StreakPlant({ today, checkins, friendUid, friendName }: StreakPl
                 Stage {stage} of {PLANT_STAGES.length} · {count}-day streak
               </p>
               <p className="text-sm">{stage >= MAX_PLANT_STAGE ? "Fully grown — keep it watered 🌸" : `${daysToNext} ${daysToNext === 1 ? "day" : "days"} of streak to the next stage`}</p>
+              <p className="text-xs text-muted">🛡️ {shields} of {MAX_SHIELDS} shields · one is earned every 7 days and covers a single missed day</p>
               {wilted && <p className="rounded-2xl bg-amber-400/20 px-3 py-2 text-xs">A day was missed, so it&apos;s drooping. It perks back up the next day you both open the app, and the stage never goes down.</p>}
             </Sheet>
     </Card>

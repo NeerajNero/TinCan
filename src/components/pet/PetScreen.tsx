@@ -11,6 +11,7 @@ import { Confetti } from "@/components/plan/Confetti";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PET_SPECIES } from "@/content/pets";
+import { useMilestoneDay } from "@/hooks/useMilestoneDay";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { usePetLife } from "@/hooks/usePetLife";
@@ -42,6 +43,7 @@ export function PetScreen() {
   const [game, setGame] = useState<{ endsAt: number; taps: number } | null>(null);
   const countTap = useCallback(() => setGame((g) => (g ? { ...g, taps: g.taps + 1 } : g)), []);
   const life = usePetLife({ pet, stats, level, size: SIZE, onTap: countTap });
+  const party = useMilestoneDay().milestones.length > 0;
 
   // Mini-game: 5 seconds of tapping, then the pet is happy.
   useEffect(() => {
@@ -72,7 +74,7 @@ export function PetScreen() {
         <SubHeader help="pet" emoji="🐾" title={pet.name} back="/" />
         <Card className="relative flex flex-col items-center gap-3 py-6">
           <PetDim on={life.dimmed} />
-          <PetStage life={life} pet={pet} level={level} size={SIZE} />
+          <PetStage life={life} pet={pet} level={level} size={SIZE} hat={party} />
           <div className="relative">
             <p className="text-center font-heading text-xl font-semibold">
               {pet.name}{" "}

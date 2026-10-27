@@ -31,7 +31,7 @@ Errors go back as `{ error: "<code>" }` with 400/401/403/413/429/500; details ar
 - Logs to `push/{id}` (pruned to ~200) for de-duplication of event-keyed pushes.
 - `postSystemMessageAdmin(senderId, text)` writes a `system` chat message with the admin SDK (used by the tick).
 
-Push types: `message, ping, lamp, test, daily-answer, daily-nudge, streak-risk, capsule-unlocked, envelope-opened, jar, scheduled, milestone, meetup, yourTurn, invite, petHungry`. Adding one is described in adding-a-feature.md.
+Push types: `message, ping, lamp, test, daily-answer, daily-nudge, streak-risk, capsule-unlocked, envelope-opened, jar, scheduled, milestone, meetup, yourTurn, invite, petHungry, digest` (`digest` is governed by `notif.digest.enabled` rather than a boolean toggle; checked in `sendPushTo`). Adding one is described in adding-a-feature.md.
 
 ## `/api/tick` jobs
 
@@ -41,10 +41,12 @@ Each job runs inside `once(ctx, job, key, body)` which checks and writes `tickLo
 | --- | --- | --- | --- |
 | deliverScheduled | every tick | `scheduled-{id}` | creates the message, sets `sentAt/messageId`, pushes `scheduled` |
 | dailyNudge | 20:00 | `nudge-{dateKey}` | pushes `daily-nudge` to whoever hasn't answered |
-| streakRisk | 21:00 | `streak-{dateKey}` | if exactly one checked in → `streak-risk` to the other |
+| streakRisk | 21:00 | `streak-{dateKey}` | if exactly one checked in → `streak-risk` to the other ("…a shield will cover tonight, but say hi anyway?" when `streak.shields > 0`) |
 | capsulesUnlocked | every tick (48 h lookback) | `capsule-{id}` | pushes `capsule-unlocked` to both |
 | reminders | 09:00 | `remind-{dateKey}` | milestones today, meetup/trip in 7 or 1 days → `milestone` / `meetup` |
 | abandonStaleGames | every tick | — | games idle 7 days → `abandoned`; finished > 6 h → `open: false` |
 | petHunger | every tick, once a day | `pet-hungry-{dateKey}` | hunger hits 0 within 2 h → `petHungry` + system message |
+| morningDigest | per user, at `notif.digest.hour` in their tz | `digest-{uid}-{localDateKey}` | your-turn games / invites (RTDB `games` open index), undrawn jar notes (≤ 10), unanswered daily question, pet food/joy < 30, capsules unlocking today, milestones today, unread count → one `digest` push (`lib/digest.digestPush`), or nothing |
+| monthlyRecap | 1st of the month, 09:00 | `recap-{yyyy-MM}` | 2 `count()` on messages (senderId + createdAt range), 3 on gameResults (winnerId + endedAt range), stickers from `pair.garden`, `streak.monthBest`, favourite ping from `counters.pingCounts` − `pair.recap.pingCounts` → `recap` system line (`lib/recap.recapLine`); then resets `streak.monthBest` and snapshots the ping counts on `pair.recap`. No push |
 
 `pnpm tick:dry` calls `?dry=1` (set `TICK_URL` to target a deployment) and prints the actions without writing or sending.

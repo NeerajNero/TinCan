@@ -63,7 +63,14 @@ app should feel like a small hello, not a dashboard.
 - Lamp: tap my lamp → friend's lamp glows the same colour for 10 min (RTDB). Long-press picks colour.
 - Mood check-in: pick today's emoji + optional one-liner; shows friend's today mood.
 - Daily question card: today's prompt; answer box; friend's answer revealed only after I answer.
-- Streak + plant: consecutive days both opened the app; plant SVG stage grows with it.
+- Streak + plant: consecutive days both opened the app; plant SVG stage grows with it. 🛡️ shields
+  (0–3) by the flame: one earned every 7 days, one covers a single missed day (toast when used).
+- On this day: what you did exactly a year and a month ago (photos ≤ 3, the question, a journal
+  entry, both moods), fetched once per room day and cached in localStorage; hidden when empty; taps
+  open in place (viewer / sheet).
+- Milestone mode: on a yearly milestone or the friendiversary a themed banner with confetti once a
+  day, the pet wears a party hat (Home and /pet), the daily question card gets a 🎉 prefix. All from
+  the mirrored summary, no reads.
 - Pet widget: shared pet sprite + hunger/happiness bars + Feed/Play buttons.
 - Countdown: days until next meetup (from `pair/main.nextMeetup`).
 - Sleep/wake toggle: "Good night" / "Good morning" — sets status and posts a system message.
@@ -202,8 +209,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   shape `systemMessageData` in `systemKinds.ts`). No deliveredAt/readAt: they never count as unread, never get
   receipts or ticks. `SystemPill` shows text, else a line from kind + meta, else ✨ — never an empty row.
   Kinds: sleep, wake, relationship, game-result, game-cancel, twenty-result, pet-adopt, pet-fed, pet-level,
-  pet-hungry, garden-sticker, capsule-unlock, hangout (legacy, nothing writes it), invite. `invite` lines render as
-  `InvitePill` (see Invites).
+  pet-hungry, garden-sticker, capsule-unlock, hangout (legacy, nothing writes it), invite, recap (the monthly
+  numbers line, server-written). `invite` lines render as `InvitePill` (see Invites).
 - Day separators ("Today", "Yesterday", date), unread divider on open, jump-to-bottom FAB,
   unread count badge on the Chat tab, last-message preview on Home.
 - Images: compress in browser (max 1080 px, ~0.3 MB, JPEG/WebP) → signed upload to preset
@@ -235,7 +242,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   Types and defaults (all toggleable in More → Notifications):
   message ✓, ping ✓, lamp ✓, your-turn ✓, friend answered daily question ✓, jar note ✓,
   capsule unlocked ✓, scheduled message ✓, pet hungry ✓, streak at risk ✓, milestone ✓,
-  meetup countdown (7/1 day) ✓, pictionary/trivia invite ✓.
+  meetup countdown (7/1 day) ✓, pictionary/trivia invite ✓, morning digest (its own switch + hour picker,
+  `notif.digest = { enabled, hour }`, default off / 08:00 in the user's tz) ✓.
 - De-duplicate with `push/{id}` keyed by event (e.g. `pet-hungry-2026-10-12`).
 
 ## Scheduler — `GET /api/tick`
@@ -247,6 +255,16 @@ Every trivia question also carries an `explanation`. Word definitions are static
   4. Pet: if hunger would hit 0 within 2 h → "pet is hungry" push (once per day).
   5. Capsules whose `unlockAt` just passed → push both.
   6. Milestones today / meetup in 7 days / 1 day → push both at 09:00 ROOM_TZ.
+  7. Morning digest: per user at `notif.digest.hour` in their own tz (15-min window, `tickLog`
+     per user per local day): your-turn games and waiting invites (RTDB open-games index), undrawn
+     jar notes (≤ 10), today's question if unanswered, the pet when food or joy < 30, capsules
+     unlocking today, milestones today, unread count. Nothing → no push. "☀️ Good morning, {nickname}",
+     "·"-separated body, opens Home.
+  8. Monthly recap on the 1st at 09:00 ROOM_TZ: last month's messages per person (2 `count()`
+     queries on messages by senderId + createdAt), games won / drawn (3 on gameResults by winnerId +
+     endedAt), stickers earned, longest streak (`streak.monthBest`, then reset to the current count),
+     favourite ping (`counters.pingCounts` minus the snapshot on `pair.recap`) → one `recap` system
+     line, no push. Both query shapes need the composite indexes in `firestore.indexes.json`.
 - Dry run: `pnpm tick:dry` prints what would be sent without sending.
 
 ## Media — Cloudinary
@@ -269,7 +287,12 @@ Every trivia question also carries an `explanation`. Word definitions are static
 ## Feature specs (brief)
 - **Daily question**: index = days since epoch in ROOM_TZ mod list length. Reveal friend's answer
   after mine; push when friend answers. History in Memories.
-- **Streak/plant**: client writes `checkins/{dateKey}.{uid}=true` on app open. Streak counts
+- **Streak/plant**: client writes `checkins/{dateKey}.{uid}=true` on app open. `pair.streak` =
+  { count, lastDateKey, best, monthBest, shields (0–3), shieldUsedOn }: reaching a multiple of 7 earns a
+  shield; a one-day gap with a shield consumes it and keeps counting (`shieldUsedOn` = the missed day,
+  Home toasts "🛡️ A shield saved your streak"); any other gap restarts at 1 (shields kept). The plant's
+  wilt rule treats a shielded day as not missed; the 21:00 streak-risk push mentions a shield when one
+  is held. `counters.pingCounts[kind]` is bumped with every ping for the recap. Streak counts
   consecutive dateKeys with both uids. Plant stage = min(10, streak/3 + 1); a missed day wilts
   the SVG (droopy variant) but never resets the stage below 1.
 - **Pet**: shared. Hunger and happiness are not stored as numbers; each is derived as
@@ -324,7 +347,9 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - **Know-me quiz**: author writes questions about themselves with the right answer + decoys;
   friend takes it; score + reveal; both directions.
 - **Daily word**: same 5-letter word for both (deterministic by dateKey); independent 6-guess
-  games; after both finish, grids are compared and a 🏆 goes to fewer guesses. The day is then
+  games. After finishing, "Share my grid to chat" posts a normal text message "Tincan word #N k/6"
+  plus the 🟩🟨⬛ grid (one row per guess, X/6 unsolved; `#N` counts from 2026-10-17) and sends the
+  message push; once per day per device. After both finish, grids are compared and a 🏆 goes to fewer guesses. The day is then
   settled once by the later finisher: `gameResults/word-{dateKey}` (create-once), `pair.records.word`
   and a "🟩 Sam won the daily word in 3" line (the first settle folds earlier days in). The screen
   shows an all-time scoreboard (days won / draws, from `pair.records.word`, also in the Play record
@@ -534,7 +559,7 @@ CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–22 shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–23 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -581,6 +606,8 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
     stall and every live write, `startInvite` (chat Join card, RTDB toast queue, push) on every activity.
 22. ✅ **Ten-day feedback** — daily word scoreboard + 30-day history (settled into `gameResults` /
     `pair.records.word`), Pictionary "Clear all", hangout wheel removed.
+23. ✅ **Little delights** (commit "phase 22: little delights") — morning digest, On this day, monthly
+    recap, milestone mode, share the word grid, streak shields. Two composite indexes.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

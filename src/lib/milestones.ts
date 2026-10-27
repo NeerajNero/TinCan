@@ -60,6 +60,14 @@ export function sortUpcoming(list: Upcoming[]): Upcoming[] {
   });
 }
 
+/** Every yearly milestone (and the friendiversary) that falls on `today`, for milestone mode. */
+export function todaysMilestones(summary: MilestoneSummary[] | undefined, friendsSince: DateKey | null | undefined, today: DateKey, preset: { anniversaryLabel: string; emoji: string }): Upcoming[] {
+  const all = (summary ?? []).map((m) => toUpcoming(m, today));
+  const fs = friendsSinceMilestone(friendsSince, preset);
+  if (fs) all.push(toUpcoming(fs, today, true));
+  return all.filter((u) => u.daysToGo === 0);
+}
+
 export function nextUp(summary: MilestoneSummary[] | undefined, friendsSince: DateKey | null | undefined, today: DateKey, preset: { anniversaryLabel: string; emoji: string }): Upcoming | null {
   const all = [...(summary ?? []).map((m) => toUpcoming(m, today))];
   const fs = friendsSinceMilestone(friendsSince, preset);

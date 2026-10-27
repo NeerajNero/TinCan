@@ -14,7 +14,10 @@ import { updateDoc } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
 import { disablePush, enablePush, permissionState, type EnableResult } from "@/lib/push";
 import { swallow } from "@/lib/swallow";
-import { NOTIF_KEYS, NOTIF_LABELS } from "@/lib/types";
+import { DEFAULT_DIGEST_HOUR, NOTIF_KEYS, NOTIF_LABELS } from "@/lib/types";
+
+const HOURS = Array.from({ length: 24 }, (_, h) => h);
+const hourLabel = (h: number) => `${String(h).padStart(2, "0")}:00`;
 
 const noop = () => () => undefined;
 const serverPerm = () => "default" as const;
@@ -55,6 +58,10 @@ export function NotificationsCard() {
   function toggleType(key: (typeof NOTIF_KEYS)[number], value: boolean) {
     void updateDoc(userRef(uid), { [`notif.${key}`]: value }).catch(swallow);
   }
+  const digest = me.notif?.digest ?? { enabled: false, hour: DEFAULT_DIGEST_HOUR };
+  function setDigest(next: { enabled: boolean; hour: number }) {
+    void updateDoc(userRef(uid), { "notif.digest": next }).catch(swallow);
+  }
 
   async function sendTest() {
     setTestState("sent");
@@ -79,6 +86,26 @@ export function NotificationsCard() {
           {hint}
         </p>
       )}
+
+      <div className={cn("flex items-center gap-3 rounded-2xl bg-surface-2 px-3 py-2", !enabled && "opacity-50")}>
+        <span className="text-xl" aria-hidden>
+          ☀️
+        </span>
+        <div className="min-w-0 flex-1">
+          <label htmlFor="notif-digest" className="block text-sm font-semibold">
+            Morning digest
+          </label>
+          <p className="text-xs text-muted">One summary at {hourLabel(digest.hour)} your time ({me.tz}): your turn, unread, jar notes, the pet…</p>
+        </div>
+        <select aria-label="Digest hour" value={digest.hour} onChange={(e) => setDigest({ ...digest, hour: Number(e.target.value) })} disabled={!enabled || !digest.enabled} className="h-9 rounded-xl bg-surface px-2 text-sm font-bold">
+          {HOURS.map((h) => (
+            <option key={h} value={h}>
+              {hourLabel(h)}
+            </option>
+          ))}
+        </select>
+        <Switch id="notif-digest" checked={digest.enabled} onChange={(v) => setDigest({ ...digest, enabled: v })} disabled={!enabled} />
+      </div>
 
       <button
         type="button"

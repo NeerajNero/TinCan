@@ -2,11 +2,11 @@
  * Firestore writes made from Home: check-ins, the streak/plant transaction,
  * mood check-ins and the sleep/wake line (written by `createSystemMessage`).
  */
-import { dayUserId, daysBetween } from "@/lib/dates";
+import { dayUserId } from "@/lib/dates";
 import { pairRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
 import { doc, runTransaction, serverTimestamp, setDoc, type DocumentReference } from "@/lib/firebase/fs";
-import { nextStreak } from "@/lib/streak";
+import { isStreakWilted, nextStreak } from "@/lib/streak";
 import type { DateKey, MoodDoc, PairDoc, Plant, PresenceStatus, Streak } from "@/lib/types";
 
 export const MAX_PLANT_STAGE = 10;
@@ -16,11 +16,8 @@ export function plantStageFor(streakCount: number): number {
   return Math.min(MAX_PLANT_STAGE, Math.floor(streakCount / 3) + 1);
 }
 
-/** Wilted when the last counted day is older than yesterday. */
-export function isPlantWilted(streak: Streak | undefined, today: DateKey): boolean {
-  if (!streak) return false;
-  return daysBetween(streak.lastDateKey, today) > 1;
-}
+/** Wilted when a day was missed and no shield covers it (see `lib/streak.isStreakWilted`). */
+export const isPlantWilted = (streak: Streak | undefined, today: DateKey): boolean => isStreakWilted(streak, today);
 
 /* ── check-ins ─────────────────────────────────────────────────────────── */
 

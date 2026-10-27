@@ -43,10 +43,10 @@ const fsFiles = files.filter((f) => imports(f.text, "@/lib/firebase/fs"));
 const rtFiles = files.filter((f) => imports(f.text, "@/lib/firebase/rt") || imports(f.text, "@/lib/rtdb"));
 const adminFiles = files.filter((f) => /firebase-admin|@\/lib\/firebase\/admin/.test(f.text)).map((f) => f.path);
 
-/** The argument text of every `name(` call, balanced over nested parens. */
-function callArgs(text: string, name: string): string[] {
+/** The argument text of every `name(` call, balanced over nested parens (`.name(` chained calls only when `chained`). */
+function callArgs(text: string, name: string, chained = false): string[] {
   const out: string[] = [];
-  const re = new RegExp(`(?<![\\w.])${name}\\(`, "g");
+  const re = new RegExp(chained ? `\\.${name}\\(` : `(?<![\\w.])${name}\\(`, "g");
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
     let depth = 1;
@@ -239,10 +239,10 @@ const EQUALITY_OPS = new Set(["==", "in", ...ARRAY_OPS]);
 const RTDB_ONLY = /\b(orderByKey|orderByChild|orderByValue|limitToLast|limitToFirst|equalTo)\(/;
 const fieldKey = (f: IndexField) => `${f.fieldPath}:${f.arrayConfig ?? f.order ?? "ASCENDING"}`;
 
-/** The filters and orders inside one `query(...)` argument list. */
-function parseQueryArgs(args: string): QuerySpec {
+/** The filters and orders inside one `query(...)` argument list, or (`chained`) an admin `.where().orderBy()` chain. */
+function parseQueryArgs(args: string, chained = false): QuerySpec {
   const spec: QuerySpec = { equality: [], range: [], orderBy: [], unresolved: [] };
-  for (const w of callArgs(args, "where")) {
+  for (const w of callArgs(args, "where", chained)) {
     const [field, op] = splitArgs(w).map((a) => literal(a));
     if (field === null || field === undefined || op === null || op === undefined) {
       spec.unresolved.push(`where(${w})`);
@@ -252,7 +252,7 @@ function parseQueryArgs(args: string): QuerySpec {
     else if (EQUALITY_OPS.has(op)) spec.equality.push({ fieldPath: field, order: "ASCENDING" });
     else spec.range.push(field);
   }
-  for (const o of callArgs(args, "orderBy")) {
+  for (const o of callArgs(args, "orderBy", chained)) {
     const [field, dir] = splitArgs(o);
     const path = field === "documentId()" ? "__name__" : literal(field ?? "");
     if (path === null) {
@@ -310,7 +310,7 @@ function groupOfCollectionCall(args: string): string | null {
 function resolveGroup(first: string): string | null {
   const inline = callArgs(first, "collection")[0];
   if (inline !== undefined) return groupOfCollectionCall(inline);
-  const name = first.match(/^(\w+)\(/)?.[1];
+  const name = first.match(/^(\w+)(?:\(|$)/)?.[1]; // `xCol()` / `xCol(kind)` / a `const xCol = collection(...)` variable
   if (!name) return null;
   const def = new RegExp(`\\b${name}\\s*=\\s*(?:\\([^)]*\\)\\s*=>\\s*)?collection\\(`);
   for (const f of fsFiles) {
@@ -331,6 +331,51 @@ function firestoreQueries(): QueryUse[] {
       const [first] = splitArgs(args);
       if (first === undefined) continue;
       uses.push({ ...parseQueryArgs(args), where: f.path, group: resolveGroup(first), text: args.replace(/\s+/g, " ") });
+    }
+  }
+  return [...uses, ...adminQueries()];
+}
+
+/** The `.name(args).name(args)…` chain that follows a call, stopping at anything else. */
+function chainAfter(rest: string): string {
+  let i = 0;
+  for (;;) {
+    const m = /^\s*\.\w+\(/.exec(rest.slice(i));
+    if (!m) break;
+    let j = i + m[0].length;
+    let depth = 1;
+    let quote: string | null = null;
+    for (; j < rest.length && depth > 0; j++) {
+      const c = rest[j];
+      if (quote) {
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === "`") quote = c;
+      else if (c === "(") depth++;
+      else if (c === ")") depth--;
+    }
+    i = j;
+  }
+  return rest.slice(0, i);
+}
+
+/**
+ * Server code (firebase-admin) chains `db.collection("x").where(...).orderBy(...)…`;
+ * each chain from `collection("x")` to the end of its statement is read the same way.
+ * Field names given as variables (the tick's `count()` helper) resolve from literal call sites.
+ */
+function adminQueries(): QueryUse[] {
+  const uses: QueryUse[] = [];
+  for (const f of files.filter((x) => adminFiles.includes(x.path))) {
+    const re = /collection\(\s*"([A-Za-z]\w*)"\s*\)/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(f.text))) {
+      const group = m[1]!;
+      const chain = chainAfter(f.text.slice(m.index + m[0].length));
+      if (!/\.(where|orderBy)\(/.test(chain)) continue;
+      const spec = parseQueryArgs(chain, true);
+      uses.push({ ...spec, where: f.path, group, text: `${group}${chain.replace(/\s+/g, " ")}` });
     }
   }
   return uses;
@@ -424,6 +469,7 @@ describe("firestore composite indexes", () => {
     expect(uses.some((u) => u.group === "wordle" && u.orderBy[0]?.fieldPath === "__name__")).toBe(true);
     expect(uses.some((u) => u.group === "items")).toBe(true); // lists/{kind}/items through a helper
     expect(uses.some((u) => u.group === "trivia")).toBe(true); // helper taking the db as an argument
+    expect(uses.some((u) => u.where === "src/app/api/tick/route.ts")).toBe(true); // admin chains are scanned too
     const unresolved = uses.filter((u) => u.group === null || u.unresolved.length).map((u) => `${u.where}: ${u.group === null ? "collection?" : u.unresolved.join(", ")}  query(${u.text})`);
     expect(unresolved, `Firestore queries this scan can't judge:\n  ${unresolved.join("\n  ")}`).toEqual([]);
   });

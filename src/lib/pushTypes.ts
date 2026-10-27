@@ -22,6 +22,7 @@ export const PUSH_TYPES = [
   "yourTurn",
   "invite",
   "petHungry",
+  "digest",
 ] as const;
 export type PushType = (typeof PUSH_TYPES)[number];
 
@@ -43,6 +44,8 @@ export const TOGGLE_FOR: Record<PushType, NotifKey | null> = {
   yourTurn: "yourTurn",
   invite: "invite",
   petHungry: "petHungry",
+  // Governed by notif.digest.enabled (checked in sendPushTo), not a boolean toggle.
+  digest: null,
 };
 
 export interface PushPayload {
@@ -103,5 +106,7 @@ export function composePush(type: PushType, senderName: string, payload: PushPay
       return { title: senderName, body: body || "wants to play 🎮", url: d.url ?? "/play", tag: "game" };
     case "petHungry":
       return { title: payload.title ?? "Your pet is hungry 🍽️", body: body || "Feed it before it sulks", url: "/", tag: "pet" };
+    case "digest":
+      return { title: payload.title ?? "☀️ Good morning", body: body || "Here's your day", url: "/", tag: "digest" };
   }
 }

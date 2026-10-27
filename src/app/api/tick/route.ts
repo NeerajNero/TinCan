@@ -1,13 +1,21 @@
+import { format } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 
+
+import { relationshipFor } from "@/content/relationships";
 import { questionFor } from "@/lib/daily";
-import { daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
+import { addDays, dateKeyIn, daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
+import { digestPush, type DigestInput } from "@/lib/digest";
 import { adminDb, adminRtdb } from "@/lib/firebase/admin";
 import { resolveCountdown } from "@/lib/meetup";
+import { todaysMilestones, yearsLine } from "@/lib/milestones";
+import { statFrom } from "@/lib/pet";
+import { favouritePing, recapLine } from "@/lib/recap";
 import { secretMatches } from "@/lib/server/guard";
-import { loadUser, pairUids, postSystemMessageAdmin, sendPushTo, type SendResult } from "@/lib/server/push";
-import type { MilestoneDoc, PairDoc } from "@/lib/types";
+import { loadUser, pairUids, postSystemMessageAdmin, sendPushTo, type SendResult, type UserDocLite } from "@/lib/server/push";
+import { DEFAULT_DIGEST_HOUR, type MilestoneDoc, type PairDoc } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +40,12 @@ interface Ctx {
   roomTz: string;
   uids: string[];
   names: Record<string, string>;
+  users: Record<string, UserDocLite>;
   actions: Action[];
 }
+
+/** Midnight at the start of `dateKey` in `tz`, as a Firestore timestamp. */
+const dayStart = (dateKey: string, tz: string) => Timestamp.fromDate(fromZonedTime(`${dateKey}T00:00:00`, tz));
 
 function inWindow(minutes: number, target: number) {
   return minutes >= target && minutes < target + WINDOW_MIN;
@@ -118,7 +130,9 @@ async function streakRisk(ctx: Ctx, minutes: number, pair: PairDoc) {
     if (present.length !== 1 || who === undefined) return `checked in: ${present.length}, nothing to do`;
     const other = friendOf(ctx, who);
     const count = pair.streak?.count ?? 0;
-    await push(ctx, other, "streak-risk", { body: count > 0 ? `Open Tincan today to keep your ${count}-day streak 🔥` : `Open Tincan today — ${ctx.names[who] ?? "they"} already did` });
+    const shielded = (pair.streak?.shields ?? 0) > 0;
+    const keep = shielded ? `Your ${count}-day streak 🔥 — a shield will cover tonight, but say hi anyway?` : `Open Tincan today to keep your ${count}-day streak 🔥`;
+    await push(ctx, other, "streak-risk", { body: count > 0 ? keep : `Open Tincan today — ${ctx.names[who] ?? "they"} already did` });
     return `warned ${ctx.names[other] ?? other}`;
   });
 }
@@ -207,6 +221,109 @@ async function petHunger(ctx: Ctx, pair: PairDoc) {
   });
 }
 
+type OpenGame = { status?: string; createdBy?: string; turn?: "first" | "second"; players?: { first: string; second: string } };
+
+/** The RTDB open-games index, once per tick (shared by the digest and the stale-game sweep). */
+async function openGames(): Promise<Record<string, OpenGame>> {
+  const snap = await adminRtdb().ref("games").orderByChild("open").equalTo(true).get();
+  return (snap.val() ?? {}) as Record<string, OpenGame>;
+}
+
+/**
+ * Morning digest: at each person's chosen hour in their own tz (15-min window,
+ * once per person per local day), one push listing only what exists.
+ */
+async function morningDigest(ctx: Ctx, pair: PairDoc) {
+  const db = adminDb();
+  let games: Record<string, OpenGame> | null = null;
+  for (const uid of ctx.uids) {
+    const user = ctx.users[uid];
+    const digest = user?.notif?.digest;
+    if (!user || digest?.enabled !== true || user.notif?.enabled !== true) continue;
+    const tz = user.tz || ctx.roomTz;
+    const minutes = minutesIntoDayIn(tz, ctx.now);
+    if (!inWindow(minutes, (digest.hour ?? DEFAULT_DIGEST_HOUR) * 60)) continue;
+    const localDay = dateKeyIn(tz, ctx.now);
+    await once(ctx, "digest", `digest-${uid}-${localDay}`, async () => {
+      const friend = friendOf(ctx, uid);
+      games ??= await openGames();
+      let yourTurn = 0;
+      let invites = 0;
+      for (const g of Object.values(games)) {
+        if (g.status === "invited" && g.createdBy !== uid) invites += 1;
+        if (g.status === "active" && g.players && g.turn && g.players[g.turn] === uid) yourTurn += 1;
+      }
+      const [jar, daily, capsules, unread] = await Promise.all([
+        db.collection("jar").where("forUid", "==", uid).where("drawnAt", "==", null).limit(10).get(),
+        db.doc(`dailyQuestions/${ctx.today}`).get(),
+        db.collection("capsules").where("unlockAt", ">=", dayStart(ctx.today, ctx.roomTz)).where("unlockAt", "<", dayStart(addDays(ctx.today, 1), ctx.roomTz)).limit(10).get(),
+        db.collection("messages").where("senderId", "==", friend).where("readAt", "==", null).count().get(),
+      ]);
+      const preset = relationshipFor(pair.relationship);
+      const input: DigestInput = {
+        yourTurn,
+        invites,
+        jarNotes: jar.size,
+        dailyUnanswered: !(daily.data()?.answers as Record<string, unknown> | undefined)?.[uid],
+        pet: pair.pet ? { name: pair.pet.name, food: statFrom(pair.pet.hungerAt, ctx.now.getTime()), joy: statFrom(pair.pet.happyAt, ctx.now.getTime()) } : null,
+        capsulesToday: capsules.size,
+        milestonesToday: todaysMilestones(pair.milestonesSummary, pair.friendsSince, ctx.today, preset).map((m) => (m.derived && m.years !== null ? yearsLine(m.years, preset.pairNoun) : m.title)),
+        unread: unread.data().count,
+      };
+      const note = digestPush(ctx.names[uid] ?? "you", input);
+      if (!note) return "nothing to say";
+      await push(ctx, uid, "digest", note);
+      return `digest → ${ctx.names[uid] ?? uid}: ${note.body}`;
+    });
+  }
+}
+
+/**
+ * Monthly recap on the 1st at 09:00 ROOM_TZ: last month's messages per person
+ * (two count() queries), games won / drawn (three), stickers earned, the
+ * month's longest streak and the favourite ping, as one "recap" chat line.
+ * Then `streak.monthBest` restarts from the current count and the ping
+ * counts are snapshotted on `pair.recap` so next month can diff them.
+ */
+async function monthlyRecap(ctx: Ctx, minutes: number, pair: PairDoc) {
+  if (ctx.today.slice(8) !== "01" || !inWindow(minutes, REMINDERS_AT)) return;
+  const prevMonthKey = addDays(ctx.today, -1).slice(0, 7); // yyyy-MM of the month that just ended
+  await once(ctx, "recap", `recap-${prevMonthKey}`, async () => {
+    const db = adminDb();
+    const start = dayStart(`${prevMonthKey}-01`, ctx.roomTz);
+    const end = dayStart(ctx.today, ctx.roomTz);
+    const [a, b] = ctx.uids;
+    if (a === undefined || b === undefined) return "pair incomplete";
+    // Both shapes need the composite indexes in firestore.indexes.json (messages: senderId + createdAt; gameResults: winnerId + endedAt).
+    const messagesBy = async (uid: string) => (await db.collection("messages").where("senderId", "==", uid).where("createdAt", ">=", start).where("createdAt", "<", end).count().get()).data().count;
+    const resultsWonBy = async (winnerId: string | null) => (await db.collection("gameResults").where("winnerId", "==", winnerId).where("endedAt", ">=", start).where("endedAt", "<", end).count().get()).data().count;
+    const [msgA, msgB, winA, winB, draws] = await Promise.all([messagesBy(a), messagesBy(b), resultsWonBy(a), resultsWonBy(b), resultsWonBy(null)]);
+    const stickers = Object.values(pair.garden?.stickers ?? {}).filter((s) => {
+      const ms = s?.at?.toMillis?.() ?? 0;
+      return ms >= start.toMillis() && ms < end.toMillis();
+    }).length;
+    const [y, m] = prevMonthKey.split("-").map(Number) as [number, number];
+    const line = recapLine({
+      monthLabel: format(new Date(y, m - 1, 1), "MMMM"),
+      uids: [a, b],
+      names: ctx.names,
+      messages: { [a]: msgA, [b]: msgB },
+      wins: { [a]: winA, [b]: winB },
+      draws,
+      stickers,
+      longestStreak: pair.streak?.monthBest ?? pair.streak?.count ?? 0,
+      favouritePing: favouritePing(pair.counters?.pingCounts, pair.recap?.pingCounts),
+    });
+    if (!ctx.dry) {
+      await postSystemMessageAdmin(a, "recap", line, { month: format(new Date(y, m - 1, 1), "MMMM yyyy") });
+      const patch: Record<string, unknown> = { recap: { month: prevMonthKey, pingCounts: pair.counters?.pingCounts ?? {} } };
+      if (pair.streak) patch["streak.monthBest"] = pair.streak.count;
+      await db.doc("pair/main").update(patch);
+    }
+    return line;
+  });
+}
+
 /* ── handler ───────────────────────────────────────────────────────────── */
 
 /**
@@ -228,9 +345,13 @@ export async function GET(req: Request) {
     if (uids.length === 0) return NextResponse.json({ dry, now: now.toISOString(), actions: [], note: "no pair yet" });
     const roomTz = pair.roomTz || "UTC";
     const names: Record<string, string> = {};
-    for (const uid of uids) names[uid] = (await loadUser(uid)).nickname ?? uid;
+    const users: Record<string, UserDocLite> = {};
+    for (const uid of uids) {
+      users[uid] = await loadUser(uid);
+      names[uid] = users[uid].nickname ?? uid;
+    }
 
-    const ctx: Ctx = { now, dry, today: roomDateKey({ roomTz }, now), roomTz, uids, names, actions: [] };
+    const ctx: Ctx = { now, dry, today: roomDateKey({ roomTz }, now), roomTz, uids, names, users, actions: [] };
     const minutes = minutesIntoDayIn(roomTz, now);
 
     await deliverScheduled(ctx);
@@ -240,6 +361,8 @@ export async function GET(req: Request) {
     await reminders(ctx, minutes, pair);
     await abandonStaleGames(ctx);
     await petHunger(ctx, pair);
+    await morningDigest(ctx, pair);
+    await monthlyRecap(ctx, minutes, pair);
 
     // A live run answers with counts only: cron-job.org keeps response bodies in its history, and the
     // action details carry nicknames, scheduled-message text and capsule titles. Details: ?dry=1 (pnpm tick:dry).

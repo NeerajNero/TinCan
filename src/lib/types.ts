@@ -22,8 +22,15 @@ export const NOTIF_KEYS = [
 
 export type NotifKey = (typeof NOTIF_KEYS)[number];
 
+/** Morning digest: one summary push at `hour` (0–23) in the user's own tz. */
+interface DigestPref {
+  enabled: boolean;
+  hour: number;
+}
+export const DEFAULT_DIGEST_HOUR = 8;
+
 /** Per-type toggles plus the master switch. `enabled` stays false until the user opts in. */
-export type NotifPrefs = Record<NotifKey, boolean> & { enabled: boolean };
+export type NotifPrefs = Record<NotifKey, boolean> & { enabled: boolean; digest?: DigestPref };
 
 /** Every type on, master off. */
 export function defaultNotifPrefs(): NotifPrefs {
@@ -99,6 +106,14 @@ export interface Streak {
   count: number;
   /** The last room-day counted. */
   lastDateKey: DateKey;
+  /** Longest ever. */
+  best?: number;
+  /** Longest this calendar month; the monthly recap snapshots and resets it. */
+  monthBest?: number;
+  /** 0–3; one is earned every 7 days and one covers a single missed day. */
+  shields?: number;
+  /** The missed day the last shield covered, or null. */
+  shieldUsedOn?: DateKey | null;
 }
 
 export interface Plant {
@@ -129,8 +144,10 @@ export interface PairDoc {
   pet?: PetDoc;
   /** Unlocked garden stickers: id → when/why. */
   garden?: { stickers?: Record<string, GardenUnlock> };
-  /** Small shared counters for threshold unlocks. */
-  counters?: { pings?: number };
+  /** Small shared counters for threshold unlocks and the monthly recap. */
+  counters?: { pings?: number; pingCounts?: Record<string, number> };
+  /** Written by the recap tick job: the ping counts as they stood at the last recap, so the next one can diff. */
+  recap?: { month: string; pingCounts: Record<string, number> };
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }

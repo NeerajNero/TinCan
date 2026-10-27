@@ -90,7 +90,7 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     title: "Daily word",
     label: "Same word for both · 6 tries",
     steps: ["🔤 One five-letter word a day, the same for both of you", "🟩 Green: right letter, right spot · 🟨 yellow: wrong spot", "6️⃣ Six guesses on your own — no peeking (Invite nudges them to play)", "🏆 Both finished? Fewer guesses wins · tap “What does it mean?”"],
-    tip: "Scoreboard and 30-day history sit under the grid. A new word lands at midnight.",
+    tip: "Share my grid posts your emoji grid to chat. Scoreboard and history sit below.",
   },
   twenty: {
     title: "20 Questions",
@@ -172,7 +172,7 @@ export const HOWTO: Record<HowToKey, HowTo> = {
   plant: {
     title: "Your plant",
     label: "Grows with your streak",
-    steps: ["🔥 Your streak counts days you both opened Tincan", "🌱 Every 3 days of streak, the plant grows a stage (10 in all)", "🥀 Miss a day and it droops — it never shrinks, and perks up next time"],
+    steps: ["🔥 Your streak counts days you both opened Tincan", "🌱 Every 3 days of streak, the plant grows a stage (10 in all)", "🛡️ Every 7 days earns a shield (max 3); one covers a single missed day", "🥀 Miss a day with no shield and it droops — it never shrinks"],
   },
   garden: {
     title: "Garden",

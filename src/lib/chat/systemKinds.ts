@@ -20,6 +20,7 @@ export const SYSTEM_KINDS = [
   // "hangout" is kept for lines the (removed) hangout wheel posted; nothing writes it any more.
   "hangout",
   "invite",
+  "recap",
 ] as const;
 export type SystemKind = (typeof SYSTEM_KINDS)[number];
 
@@ -84,6 +85,8 @@ function systemText(kind: unknown, meta?: SystemMeta | null): string {
       return "🎡 Let's hang out!";
     case "invite":
       return `🎯 An invite to ${str(m, "label") ?? "play"}`;
+    case "recap":
+      return `📊 ${str(m, "month") ?? "Last month"} in numbers`;
     default:
       return FALLBACK;
   }

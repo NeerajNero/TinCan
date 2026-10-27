@@ -13,6 +13,8 @@ interface Props {
   size: number;
   /** Home widget: no particles. */
   compact?: boolean;
+  /** Milestone mode: party hat. */
+  hat?: boolean;
 }
 
 /**
@@ -20,7 +22,7 @@ interface Props {
  * part-animated SVG, the food prop, the sleeping zzz, the sad cloud and (full
  * size only) the particle layer. Tap reacts, hold pets.
  */
-export function PetStage({ life, pet, level, size, compact = false }: Props) {
+export function PetStage({ life, pet, level, size, compact = false, hat = false }: Props) {
   const k = size / 180;
   return (
     <button
@@ -31,7 +33,7 @@ export function PetStage({ life, pet, level, size, compact = false }: Props) {
       style={{ width: size, height: size }}
     >
       <m.div animate={life.actor} style={{ originX: 0.5, originY: 1 }} className="pointer-events-none">
-        <PetSprite species={pet.species} mood={life.mood} level={level} size={size} parts={life.parts} />
+        <PetSprite species={pet.species} mood={life.mood} level={level} size={size} parts={life.parts} hat={hat} />
       </m.div>
 
       <m.span aria-hidden animate={life.food} initial={{ opacity: 0 }} className="pointer-events-none absolute top-[56%] left-1/2 -mt-[0.5em] -ml-[0.5em] leading-none" style={{ fontSize: 34 * k }}>

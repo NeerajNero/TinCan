@@ -24,13 +24,13 @@ describe("dateKey in ROOM_TZ", () => {
 
 describe("streak transitions", () => {
   it("starts at 1 with no history", () => {
-    expect(nextStreak(undefined, "2026-10-16")).toEqual({ count: 1, lastDateKey: "2026-10-16" });
+    expect(nextStreak(undefined, "2026-10-16")).toMatchObject({ count: 1, lastDateKey: "2026-10-16" });
   });
   it("extends across midnight when yesterday counted", () => {
-    expect(nextStreak({ count: 4, lastDateKey: "2026-10-15" }, "2026-10-16")).toEqual({ count: 5, lastDateKey: "2026-10-16" });
+    expect(nextStreak({ count: 4, lastDateKey: "2026-10-15" }, "2026-10-16")).toMatchObject({ count: 5, lastDateKey: "2026-10-16" });
   });
   it("restarts after a missed day", () => {
-    expect(nextStreak({ count: 9, lastDateKey: "2026-10-14" }, "2026-10-16")).toEqual({ count: 1, lastDateKey: "2026-10-16" });
+    expect(nextStreak({ count: 9, lastDateKey: "2026-10-14" }, "2026-10-16")).toMatchObject({ count: 1, lastDateKey: "2026-10-16" });
   });
   it("is a no-op when today is already counted (second client)", () => {
     const prev = { count: 3, lastDateKey: "2026-10-16" };

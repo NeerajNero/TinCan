@@ -1,6 +1,7 @@
 /** Daily word: same answer for both by ROOM_TZ date; guesses checked against the allowed list. */
 import allowed from "@/content/words-allowed.json";
 import answers from "@/content/words-answers.json";
+import { daysBetween } from "@/lib/dates";
 import { hashSeed } from "@/lib/seeded";
 
 export const WORD_LEN = 5;
@@ -58,3 +59,18 @@ export function keyboardStates(guesses: string[], answer: string): Record<string
 }
 
 export const KEY_ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+
+/** Puzzle numbers count from the day the daily word shipped. */
+const WORD_EPOCH = "2026-10-17";
+export function wordNumber(dateKey: string): number {
+  return daysBetween(WORD_EPOCH, dateKey) + 1;
+}
+
+const SHARE_TILE: Record<LetterState, string> = { correct: "🟩", present: "🟨", absent: "⬛" };
+
+/** "Tincan word #11 3/6" plus one emoji row per guess (X/6 when unsolved). */
+export function shareText(dateKey: string, guesses: string[], answer: string): string {
+  const solved = guesses[guesses.length - 1]?.toLowerCase() === answer.toLowerCase();
+  const rows = guesses.map((g) => evaluate(g, answer).map((s) => SHARE_TILE[s]).join(""));
+  return [`Tincan word #${wordNumber(dateKey)} ${solved ? guesses.length : "X"}/${MAX_GUESSES}`, ...rows].join("\n");
+}
