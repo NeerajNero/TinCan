@@ -24,7 +24,8 @@ function parseEnv(path: string): Record<string, string> {
       }),
   );
 }
-const env = { ...parseEnv(resolve(root, ".env")), ...parseEnv(resolve(root, ".env.local")) };
+// Local: .env / .env.local. CI: the workflow env (placeholders in .github/workflows/ci.yml) wins.
+const env = { ...parseEnv(resolve(root, ".env")), ...parseEnv(resolve(root, ".env.local")), ...process.env };
 const [EMAIL_A, EMAIL_B] = (env.ALLOWED_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase());
 const CLOUD = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "demo";
 const A = "uid-a";

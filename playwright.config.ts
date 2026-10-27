@@ -9,7 +9,8 @@ const PORT = 3100;
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
-  reporter: process.env.CI ? "github" : "list",
+  // CI: annotations in the run + an HTML report uploaded as an artifact on failure.
+  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: { baseURL: `http://127.0.0.1:${PORT}`, trace: "retain-on-failure" },
   projects: [{ name: "android", use: { ...devices["Pixel 7"] } }],
   webServer: {

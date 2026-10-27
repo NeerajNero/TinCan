@@ -497,6 +497,8 @@ of a task must say which docs were updated.
   order; `pnpm knip` must report nothing. Fire-and-forget promises use `.catch(swallow)` and user-facing
   errors go through `errorMessage()` (`src/lib/swallow.ts`). Pure logic lives in `src/lib` so `pnpm test`
   (vitest unit tests in `tests/unit`) can cover it; `pnpm profile:chat` measures the chat list.
+- GitHub Actions (`.github/workflows/ci.yml`) runs typecheck, lint, knip, unit tests and the rules tests on
+  every push and PR, and the build + Playwright on pushes to main; it needs no secrets (placeholder env).
 - `pnpm typecheck` and `pnpm lint` must pass before each commit. One commit per phase, and
   `git push` after every commit — the remote is the backup. The full finish list (knip, tests, e2e when relevant,
   `pnpm size` for bundle budgets, docs) is in `docs/adding-a-feature.md` → Finish; `/ship` runs it.

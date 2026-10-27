@@ -48,6 +48,18 @@
 4. If `src/app/sw.ts` or precached assets changed, the new worker installs on the next launch or hourly check and *waits*: each phone shows the persistent "Update available · Reload" toast (or More → Check for updates says so) and the tap hands over and reloads once. Nothing updates silently mid-session; a closed-and-reopened app activates the waiting worker on its own. A hard refresh or reinstall is never required.
 5. Check `/api/health` and the console for CSP reports after a config change.
 
+## CI
+
+`.github/workflows/ci.yml` runs the existing checks on GitHub Actions; nothing in it needs `.env.local` or a secret (the workflow `env` holds obviously fake `NEXT_PUBLIC_*` values, `tincan-ci-fake`, and two `example.com` emails, which `scripts/build-rules.mjs`, `tests/rules.test.ts` and `tests/trivia-live.test.ts` read from `process.env` when no env file exists).
+
+| Job | When | What |
+| --- | --- | --- |
+| `checks` | every push and pull request | `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm lint`, `pnpm knip`, `pnpm test` (Node from `engines.node`, pnpm from `packageManager`, the pnpm store cached by the lockfile) |
+| `rules` | every push and pull request | the same, plus Temurin Java 21 and `firebase-tools`, then `pnpm test:rules` on the emulators; the emulator jars are cached under `~/.cache/firebase/emulators` |
+| `e2e` | pushes to `main`, or by hand | `pnpm exec playwright install --with-deps chromium`, then `pnpm test:e2e` (production build with the placeholder env + Playwright); on failure the HTML report and traces are uploaded as the `playwright-report` artifact |
+
+A new push cancels the run still going on the same branch or PR (`concurrency`). To run the e2e job by hand: GitHub → Actions → CI → "Run workflow" → pick the branch (that is `workflow_dispatch`; it runs all three jobs). The README badge shows the latest `main` result.
+
 ## Routine checks
 
 - **Quota**: More → Usage meter on a phone after a normal day. Spark gives 50k reads / 20k writes a day; the app is designed to sit far under that.

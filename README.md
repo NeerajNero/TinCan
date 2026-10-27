@@ -1,5 +1,7 @@
 # Tincan 🥫
 
+[![CI](https://github.com/NeerajNero/TinCan/actions/workflows/ci.yml/badge.svg)](https://github.com/NeerajNero/TinCan/actions/workflows/ci.yml)
+
 A private little app for two people who live apart. It's a tin-can telephone you install on your phones: a WhatsApp-style chat, a "who's awake" presence card, hugs and waves that buzz the other phone, a lamp you can light on their shelf, games you play across cities, things to do together in real time (draw, watch YouTube, listen to the radio), shared memories, plans for the next meetup, and a pet and a garden you look after between you.
 
 It is built for **exactly two Google accounts**, and nobody else can open it. It runs on free tiers only.
@@ -91,6 +93,8 @@ Both people sign in with Google and pick a nickname and city; that forms the pai
 | `pnpm test` | Unit tests: game engines, dates and streak, pet, call-time overlap, pings, Recent games, theme script, trivia bank (every question explained), word definitions (every answer defined), daily word results, and the rules/index scan (every collection has a rule, every query needing a composite index is in `firestore.indexes.json`) |
 | `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`) |
 | `pnpm test:e2e` | Builds, then Playwright on a phone viewport: no CSP violations (page and worker), the document never scrolls. First run: `npx playwright install chromium` |
+
+GitHub Actions (`.github/workflows/ci.yml`) runs the same checks on every push and pull request: typecheck, lint, knip and unit tests; the rules tests on the emulators; and, on pushes to `main` or by hand, the production build + Playwright with placeholder env values. See [`docs/operations.md`](docs/operations.md) → CI.
 | `pnpm rules:deploy` | Builds `rules/*.tmpl` with your emails and deploys Firestore rules, Firestore indexes (`firestore.indexes.json`) and Realtime Database rules |
 | `pnpm tick:dry` | Shows what the scheduler would do right now, without sending anything |
 | `pnpm reset:dry` / `pnpm reset` | Wipes everything except the owner's account (dry run by default) |

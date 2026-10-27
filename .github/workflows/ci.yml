@@ -1,0 +1,103 @@
+# The checks that already exist, run on every push and pull request. No new tooling:
+# `checks` is what `pnpm typecheck && pnpm lint && pnpm knip && pnpm test` does locally,
+# `rules` is `pnpm test:rules` on the Firebase emulators, `e2e` is `pnpm test:e2e`
+# (production build + Playwright) on pushes to main or by hand (Actions → CI → Run workflow).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A new push cancels the run still going on the same branch / PR.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Placeholders so scripts that read env never need .env.local. Obviously fake: nothing here can reach a real project.
+  NEXT_PUBLIC_APP_URL: http://127.0.0.1:3100
+  NEXT_PUBLIC_FIREBASE_API_KEY: ci-fake-api-key
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: tincan-ci-fake.firebaseapp.com
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: tincan-ci-fake
+  NEXT_PUBLIC_FIREBASE_DATABASE_URL: https://tincan-ci-fake-default-rtdb.firebaseio.com
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+  NEXT_PUBLIC_FIREBASE_APP_ID: 1:000000000000:web:0000000000000000
+  NEXT_PUBLIC_FIREBASE_VAPID_KEY: ci-fake-vapid-key
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: tincan-ci-fake
+  NEXT_PUBLIC_CLOUDINARY_PRESET_IMAGE: tincan_image
+  NEXT_PUBLIC_CLOUDINARY_PRESET_AUDIO: tincan_audio
+  ALLOWED_EMAILS: ci-a@example.com,ci-b@example.com
+
+jobs:
+  checks:
+    name: typecheck · lint · knip · unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json # "engines.node"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm knip
+      - run: pnpm test
+
+  rules:
+    name: security rules (emulators)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Cache the emulator jars
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}-${{ hashFiles('firebase.json') }}
+          restore-keys: firebase-emulators-${{ runner.os }}-
+      - run: pnpm install --frozen-lockfile
+      - run: npm install -g firebase-tools
+      - run: pnpm test:rules
+
+  e2e:
+    name: build · playwright
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
