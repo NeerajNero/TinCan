@@ -23,7 +23,7 @@
 | `pnpm typecheck` | `next typegen && tsc --noEmit` |
 | `pnpm lint` | ESLint with Next core-web-vitals + TypeScript + React Compiler rules |
 | `pnpm rules:build` | `rules/*.tmpl` → `firestore.rules`, `database.rules.json`, `.firebaserc` |
-| `pnpm rules:deploy` | build, then `firebase deploy --only firestore:rules,database` (needs `npm i -g firebase-tools` and `firebase login`) |
+| `pnpm rules:deploy` | build, then `firebase deploy --only firestore:rules,firestore:indexes,database` — rules plus `firestore.indexes.json` (needs `npm i -g firebase-tools` and `firebase login`). Index builds take a few minutes; the Firebase console → Firestore → Indexes shows progress |
 | `pnpm test` | vitest unit tests in `tests/unit` (engines, dates/streak, pet, availability, ping cooldown) |
 | `pnpm test:rules` | build rules, start the emulators (Firestore 8181, RTDB 9191; needs Java), run `tests/rules.test.ts` |
 | `pnpm test:e2e` | production build + Playwright layout smoke test (mobile viewport; first run `npx playwright install chromium`) |
@@ -44,7 +44,7 @@
 
 1. `pnpm typecheck && pnpm lint` (and `pnpm build` for anything touching config, the worker or dependencies).
 2. Commit, `git push` → Vercel builds `main` automatically.
-3. If `rules/*.tmpl` changed: `pnpm rules:deploy`. The app and rules are deployed separately. A rules change without a deploy shows up as `permission-denied` in the console.
+3. If `rules/*.tmpl` or `firestore.indexes.json` changed: `pnpm rules:deploy`. The app and rules are deployed separately. A rules change without a deploy shows up as `permission-denied` in the console; a missing composite index as `failed-precondition` ("The query requires an index"). `pnpm test` fails first: `tests/unit/rules-coverage.test.ts` prints the entry to add to `firestore.indexes.json` for any query that needs one, and refuses `orderBy(documentId(), "desc")` outright (order ascending over an id range instead).
 4. If `src/app/sw.ts` or precached assets changed, the worker updates on next load; a hard refresh or reinstall is never required.
 5. Check `/api/health` and the console for CSP reports after a config change.
 

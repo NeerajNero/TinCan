@@ -10,7 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "icons": "node scripts/icons.mjs",
     "words:definitions": "node scripts/build-word-definitions.mjs",
-    "rules:deploy": "pnpm rules:build && firebase deploy --only firestore:rules,database",
+    "rules:deploy": "pnpm rules:build && firebase deploy --only firestore:rules,firestore:indexes,database",
     "rules:build": "node scripts/build-rules.mjs",
     "cloudinary:presets": "node scripts/cloudinary-presets.mjs",
     "tick:dry": "node scripts/tick-dry.mjs",

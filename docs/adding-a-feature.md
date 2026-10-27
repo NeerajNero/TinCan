@@ -23,6 +23,7 @@ The checklist below is the order that has worked for every phase so far. Skip st
 - Edit `rules/firestore.rules.tmpl` or `rules/database.rules.json.tmpl`: who may create/update/delete, which fields, size limits, `createdAt == request.time` on create, own-key constraints for maps keyed by uid.
 - Add a test in `tests/rules.test.ts` for the allow and the deny case.
 - `pnpm rules:build` to check the template compiles; the owner runs `pnpm rules:deploy` (say so in the summary).
+- A query that combines a filter with an order on another field, two orders or two range fields needs a composite index: prefer rewriting it (equality-only filters, one order, client-side sort, an ascending document-id range) and otherwise add the entry `pnpm test` prints to `firestore.indexes.json` — it deploys with the rules. Never `orderBy(documentId(), "desc")`.
 
 ## 4. UI
 
@@ -58,7 +59,7 @@ In Claude Code, `/ship [commit title]` runs this whole list (`.claude/skills/shi
 
 1. **Checks, always:** `pnpm typecheck`, `pnpm lint`, `pnpm knip` (nothing but the `.css` hint) and `pnpm test`.
 2. **Checks, when the change touches:**
-   - `rules/*.tmpl` → `pnpm test:rules` (Java + `.env`), and the owner runs `pnpm rules:deploy`.
+   - `rules/*.tmpl` or `firestore.indexes.json` → `pnpm test:rules` for rules (Java + `.env`), and the owner runs `pnpm rules:deploy`.
    - `csp.ts`, `next.config.ts`, `src/proxy.ts`, `src/app/sw.ts`, layout, `Sheet`/`Portal`, the YouTube player or dependencies → `pnpm test:e2e` (it builds first). Only the two known third-party messages in `tests/e2e/violations.ts` are ignored.
    - A bundle budget, a new dependency or a heavy import → before/after with `pnpm size`: save a baseline from the pre-change build (`pnpm build && pnpm size --save before.json`), then `pnpm build && pnpm size --compare before.json`. Heavy code that isn't needed on first paint loads through `next/dynamic` or `import()`.
 3. **Docs in the same commit:** the relevant `docs/*.md` page(s) (features, data-model, api, security, operations, testing, troubleshooting as applicable) and a `CHANGELOG.md` line under today's date. Conventions → `docs/conventions.md`; product or rules → `CLAUDE.md`; setup steps, scripts or the privacy table → `README.md`; games and slow features → `src/content/howto.ts`.

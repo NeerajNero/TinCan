@@ -12,6 +12,14 @@
  * starts with `${x}` is resolved from x's string-union type, a `const x =`,
  * or JSX `x="…"` / `x={`…`}` props anywhere in src; one that can't be
  * resolved fails too, so a new indirection can't slip past.
+ *
+ * The same scan reads every Firestore `query(...)` and works out whether its
+ * `where` / `orderBy` combination needs a composite index (Firestore answers
+ * such a query with failed-precondition until the index exists). Any that
+ * does must be listed in `firestore.indexes.json`, which `pnpm rules:deploy`
+ * deploys; the failure prints the exact entry to add. Ordering by document
+ * id descending is flagged too: it needs a `__name__ DESC` index the file
+ * can't express, so order ascending over an id range instead.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -203,6 +211,136 @@ function rtdbCovered(): Set<string> {
   return new Set(Object.keys(tmpl.rules).filter((k) => !k.startsWith(".") && !k.startsWith("$")));
 }
 
+
+/* ── Firestore composite indexes ───────────────────────────────────────── */
+
+interface IndexField {
+  fieldPath: string;
+  order?: "ASCENDING" | "DESCENDING";
+  arrayConfig?: "CONTAINS";
+}
+interface QuerySpec {
+  /** Equality-style filters (==, in, array-contains, array-contains-any) as index fields. */
+  equality: IndexField[];
+  /** Fields with a range / inequality filter (<, <=, >, >=, !=, not-in). */
+  range: string[];
+  orderBy: IndexField[];
+  /** Filter or order fields given as variables, which this scan can't judge. */
+  unresolved: string[];
+}
+interface QueryUse extends QuerySpec {
+  where: string;
+  group: string | null;
+  text: string;
+}
+
+const ARRAY_OPS = new Set(["array-contains", "array-contains-any"]);
+const EQUALITY_OPS = new Set(["==", "in", ...ARRAY_OPS]);
+const RTDB_ONLY = /\b(orderByKey|orderByChild|orderByValue|limitToLast|limitToFirst|equalTo)\(/;
+const fieldKey = (f: IndexField) => `${f.fieldPath}:${f.arrayConfig ?? f.order ?? "ASCENDING"}`;
+
+/** The filters and orders inside one `query(...)` argument list. */
+function parseQueryArgs(args: string): QuerySpec {
+  const spec: QuerySpec = { equality: [], range: [], orderBy: [], unresolved: [] };
+  for (const w of callArgs(args, "where")) {
+    const [field, op] = splitArgs(w).map((a) => literal(a));
+    if (field === null || field === undefined || op === null || op === undefined) {
+      spec.unresolved.push(`where(${w})`);
+      continue;
+    }
+    if (ARRAY_OPS.has(op)) spec.equality.push({ fieldPath: field, arrayConfig: "CONTAINS" });
+    else if (EQUALITY_OPS.has(op)) spec.equality.push({ fieldPath: field, order: "ASCENDING" });
+    else spec.range.push(field);
+  }
+  for (const o of callArgs(args, "orderBy")) {
+    const [field, dir] = splitArgs(o);
+    const path = field === "documentId()" ? "__name__" : literal(field ?? "");
+    if (path === null) {
+      spec.unresolved.push(`orderBy(${o})`);
+      continue;
+    }
+    spec.orderBy.push({ fieldPath: path, order: literal(dir ?? "") === "desc" ? "DESCENDING" : "ASCENDING" });
+  }
+  return spec;
+}
+
+/**
+ * The composite index a query needs, or null when the built-in single-field
+ * indexes serve it: equality-only filters (Firestore merges their indexes),
+ * one order, or one range field ordered by itself. Equality + order/range on
+ * another field, two orders, two range fields, or a range ordered by another
+ * field need `[equalities…, orders…, remaining range]`. `__name__` descending
+ * is reported as a need on purpose (see the header).
+ */
+function requiredIndex(q: QuerySpec): { fields: IndexField[]; equalityCount: number } | null {
+  const ranges = [...new Set(q.range)];
+  const orders = q.orderBy.map((f) => f.fieldPath);
+  const needs =
+    orders.length > 1 ||
+    (q.equality.length > 0 && (orders.length > 0 || ranges.length > 0)) ||
+    ranges.length > 1 ||
+    (ranges.length === 1 && orders.some((f) => f !== ranges[0])) ||
+    q.orderBy.some((f) => f.fieldPath === "__name__" && f.order === "DESCENDING");
+  if (!needs) return null;
+  const tail = [...q.orderBy];
+  for (const r of ranges) if (!tail.some((t) => t.fieldPath === r)) tail.push({ fieldPath: r, order: "ASCENDING" });
+  const equality = [...new Map(q.equality.map((f) => [fieldKey(f), f])).values()].sort((a, b) => a.fieldPath.localeCompare(b.fieldPath));
+  return { fields: [...equality, ...tail], equalityCount: equality.length };
+}
+
+/** Does a `firestore.indexes.json` entry serve this need? Equality fields may come in any order; the rest must match in order. */
+function indexServes(entry: IndexField[], need: IndexField[], equalityCount: number): boolean {
+  if (entry.length !== need.length) return false;
+  const sortedKeys = (fs: IndexField[]) => fs.map(fieldKey).sort().join(",");
+  return sortedKeys(entry.slice(0, equalityCount)) === sortedKeys(need.slice(0, equalityCount)) && entry.slice(equalityCount).map(fieldKey).join(",") === need.slice(equalityCount).map(fieldKey).join(",");
+}
+
+/** The last collection name of `collection(db, "lists", kind, "items")`, or null. */
+function groupOfCollectionCall(args: string): string | null {
+  const segs = splitArgs(args).slice(1).flatMap((a) => {
+    const lit = literal(a);
+    return lit === null ? ["*"] : lit.split("/");
+  });
+  const collections = segs.filter((_, i) => i % 2 === 0);
+  const last = collections[collections.length - 1];
+  return last && last !== "*" ? last : null;
+}
+
+/** Collection group of a query's first argument: an inline `collection(...)` or a `const xCol = (…) => collection(...)` helper anywhere in src. */
+function resolveGroup(first: string): string | null {
+  const inline = callArgs(first, "collection")[0];
+  if (inline !== undefined) return groupOfCollectionCall(inline);
+  const name = first.match(/^(\w+)\(/)?.[1];
+  if (!name) return null;
+  const def = new RegExp(`\\b${name}\\s*=\\s*(?:\\([^)]*\\)\\s*=>\\s*)?collection\\(`);
+  for (const f of fsFiles) {
+    const m = def.exec(f.text);
+    if (!m) continue;
+    const args = callArgs(f.text.slice(m.index), "collection")[0];
+    return args === undefined ? null : groupOfCollectionCall(args);
+  }
+  return null;
+}
+
+function firestoreQueries(): QueryUse[] {
+  const uses: QueryUse[] = [];
+  for (const f of fsFiles) {
+    if (adminFiles.includes(f.path)) continue;
+    for (const args of callArgs(f.text, "query")) {
+      if (RTDB_ONLY.test(args)) continue;
+      const [first] = splitArgs(args);
+      if (first === undefined) continue;
+      uses.push({ ...parseQueryArgs(args), where: f.path, group: resolveGroup(first), text: args.replace(/\s+/g, " ") });
+    }
+  }
+  return uses;
+}
+
+function declaredIndexes(): Array<{ collectionGroup: string; queryScope?: string; fields: IndexField[] }> {
+  const file = JSON.parse(readFileSync(join(root, "firestore.indexes.json"), "utf8")) as { indexes?: Array<{ collectionGroup: string; queryScope?: string; fields: IndexField[] }> };
+  return file.indexes ?? [];
+}
+
 /* ── the checks ────────────────────────────────────────────────────────── */
 
 const group = (uses: Use[]) => {
@@ -241,5 +379,68 @@ describe("rules coverage", () => {
     const covered = rtdbCovered();
     const missing = new Map([...group(uses)].filter(([p]) => !covered.has(p)));
     expect(missing.size, report("RTDB nodes", missing)).toBe(0);
+  });
+});
+
+describe("firestore composite indexes", () => {
+  const spec = (args: string) => requiredIndex(parseQueryArgs(args))?.fields ?? null;
+  const asc = (fieldPath: string): IndexField => ({ fieldPath, order: "ASCENDING" });
+  const desc = (fieldPath: string): IndexField => ({ fieldPath, order: "DESCENDING" });
+
+  it("knows which shapes the built-in indexes serve", () => {
+    expect(spec('col(), orderBy("createdAt", "desc"), limit(50)')).toBeNull();
+    expect(spec('col(), where("a", "==", 1), where("b", "==", null), limit(9)')).toBeNull();
+    expect(spec('col(), where("dateKey", ">=", "x"), where("dateKey", "<=", "y"), limit(70)')).toBeNull();
+    expect(spec('col(), where("d", ">", 1), orderBy("d"), limit(5)')).toBeNull();
+    expect(spec('col(), orderBy(documentId()), startAt(a), endBefore(b), limit(60)')).toBeNull();
+    expect(spec('col(), limit(100)')).toBeNull();
+  });
+
+  it("knows which shapes need a composite index, and spells it out", () => {
+    expect(spec('col(), where("a", "==", 1), orderBy("createdAt", "desc")')).toEqual([asc("a"), desc("createdAt")]);
+    expect(spec('col(), where("b", "==", 1), where("a", "==", 2), where("d", ">", 3)')).toEqual([asc("a"), asc("b"), asc("d")]);
+    expect(spec('col(), where("d", ">", 3), orderBy("other")')).toEqual([asc("other"), asc("d")]);
+    expect(spec('col(), orderBy("a"), orderBy("b", "desc")')).toEqual([asc("a"), desc("b")]);
+    expect(spec('col(), where("x", ">", 1), where("y", "<", 2)')).toEqual([asc("x"), asc("y")]);
+    expect(spec('col(), where("tags", "array-contains", "t"), orderBy("at", "desc")')).toEqual([{ fieldPath: "tags", arrayConfig: "CONTAINS" }, desc("at")]);
+    expect(spec('col(), orderBy(documentId(), "desc"), limit(60)')).toEqual([desc("__name__")]);
+  });
+
+  it("reports filters it can't read instead of guessing", () => {
+    expect(parseQueryArgs('col(), where(field, "==", 1), orderBy(sortKey)').unresolved).toEqual(['where(field, "==", 1)', "orderBy(sortKey)"]);
+  });
+
+  it("matches a declared index with equality fields in any order", () => {
+    const need = [asc("a"), asc("b"), desc("createdAt")];
+    expect(indexServes([asc("b"), asc("a"), desc("createdAt")], need, 2)).toBe(true);
+    expect(indexServes([asc("a"), desc("createdAt"), asc("b")], need, 2)).toBe(false);
+    expect(indexServes([asc("a"), asc("b"), asc("createdAt")], need, 2)).toBe(false);
+  });
+
+  it("scans the client's Firestore queries and resolves every collection and field", () => {
+    const uses = firestoreQueries();
+    if (process.env.RULES_COVERAGE_PRINT) console.log(uses.map((u) => `${u.group ?? "?"}  ${u.text}  ← ${u.where}`).join("\n"));
+    expect(uses.length).toBeGreaterThanOrEqual(25);
+    expect(uses.some((u) => u.group === "wordle" && u.orderBy[0]?.fieldPath === "__name__")).toBe(true);
+    expect(uses.some((u) => u.group === "items")).toBe(true); // lists/{kind}/items through a helper
+    expect(uses.some((u) => u.group === "trivia")).toBe(true); // helper taking the db as an argument
+    const unresolved = uses.filter((u) => u.group === null || u.unresolved.length).map((u) => `${u.where}: ${u.group === null ? "collection?" : u.unresolved.join(", ")}  query(${u.text})`);
+    expect(unresolved, `Firestore queries this scan can't judge:\n  ${unresolved.join("\n  ")}`).toEqual([]);
+  });
+
+  it("every query that needs a composite index has it in firestore.indexes.json", () => {
+    const declared = declaredIndexes();
+    const missing: string[] = [];
+    for (const u of firestoreQueries()) {
+      const need = requiredIndex(u);
+      if (!need || !u.group) continue;
+      if (need.fields.some((f) => f.fieldPath === "__name__" && f.order === "DESCENDING")) {
+        missing.push(`${u.where}: query(${u.text})\n    orders by document id descending, which needs a __name__ DESC index — order ascending over an id range instead`);
+        continue;
+      }
+      const served = declared.some((d) => d.collectionGroup === u.group && (d.queryScope ?? "COLLECTION") === "COLLECTION" && indexServes(d.fields, need.fields, need.equalityCount));
+      if (!served) missing.push(`${u.where}: query(${u.text})\n    add to firestore.indexes.json: ${JSON.stringify({ collectionGroup: u.group, queryScope: "COLLECTION", fields: need.fields })}`);
+    }
+    expect(missing, `Firestore queries without a composite index:\n  ${missing.join("\n  ")}`).toEqual([]);
   });
 });

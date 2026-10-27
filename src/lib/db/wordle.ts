@@ -1,9 +1,9 @@
 /** Daily word docs at wordle/{dateKey}_{uid}: own-write, both-read. Results settle into gameResults + pair.records.word. */
 import { createSystemMessage } from "@/lib/chat/system";
-import { dayUserId } from "@/lib/dates";
+import { addDays, dayUserId } from "@/lib/dates";
 import { pairRef, userRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
-import { collection, doc, documentId, getDocs, increment, limit, orderBy, query, runTransaction, serverTimestamp, setDoc, startAfter, Timestamp, updateDoc, type CollectionReference, type DocumentReference } from "@/lib/firebase/fs";
+import { collection, doc, documentId, endBefore, getDocs, increment, limit, orderBy, query, runTransaction, serverTimestamp, setDoc, startAt, Timestamp, updateDoc, type CollectionReference, type DocumentReference } from "@/lib/firebase/fs";
 import { swallow } from "@/lib/swallow";
 import type { PairDoc } from "@/lib/types";
 import { bothFinished, groupWordleDays, settledDays, wordleDayWinner, wordleMoves, wordleResultLine, type WordleDay } from "@/lib/wordleResults";
@@ -29,11 +29,16 @@ export const HISTORY_DAYS = 30;
 const BACKFILL_DOCS = 200;
 
 /**
- * Past days only (ids sort as `{dateKey}_{uid}`, so everything below `before`
- * is an earlier day), newest first, one bounded read.
+ * Past days only, newest first, one bounded read. Ids sort as `{dateKey}_{uid}`,
+ * so the window is an ascending document-id range from `since` (inclusive)
+ * up to `before` (exclusive): `orderBy(documentId())` ascending is the
+ * built-in index; descending `__name__` needs a composite index Firestore
+ * refuses with failed-precondition, so never order by id descending.
+ * Without `since` (the first-settle catch-up) the oldest `maxDocs` are read.
  */
-export async function loadWordleHistory(before: string, maxDocs = HISTORY_DAYS * 2): Promise<WordleDay[]> {
-  const snap = await getDocs(query(wordleCol(), orderBy(documentId(), "desc"), startAfter(before), limit(maxDocs)));
+export async function loadWordleHistory(before: string, since: string | null = addDays(before, -HISTORY_DAYS), maxDocs = HISTORY_DAYS * 2): Promise<WordleDay[]> {
+  const bounds = since ? [startAt(since), endBefore(before)] : [endBefore(before)];
+  const snap = await getDocs(query(wordleCol(), orderBy(documentId()), ...bounds, limit(maxDocs)));
   return groupWordleDays(snap.docs.map((d) => ({ id: d.id, data: d.data() })));
 }
 
@@ -67,7 +72,7 @@ export async function settleWordleDay(day: WordleDay, me: string, friend: string
   if (!mine || !theirs || !bothFinished(mine, theirs)) return false;
   const results = collection(getDb(), "gameResults");
   const todayRef = doc(results, `word-${day.dateKey}`);
-  const backfill = pair.records?.word === undefined ? settledDays(await loadWordleHistory(day.dateKey, BACKFILL_DOCS), me, friend) : [];
+  const backfill = pair.records?.word === undefined ? settledDays(await loadWordleHistory(day.dateKey, null, BACKFILL_DOCS), me, friend) : [];
 
   const created = await runTransaction(getDb(), async (tx) => {
     if ((await tx.get(todayRef)).exists()) return false;

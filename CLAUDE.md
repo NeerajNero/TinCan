@@ -324,7 +324,7 @@ Every trivia question also carries an `explanation`. Word definitions are static
   settled once by the later finisher: `gameResults/word-{dateKey}` (create-once), `pair.records.word`
   and a "🟩 Sam won the daily word in 3" line (the first settle folds earlier days in). The screen
   shows an all-time scoreboard (days won / draws, from `pair.records.word`, also in the Play record
-  strip) and a tap-to-load 30-day history (one bounded read: word, guess counts, 🏆, averages,
+  strip) and a tap-to-load 30-day history (one bounded read, an ascending document-id range: word, guess counts, 🏆, averages,
   expandable grids; today appears only once both finished). Once a player has
   finished (win or lose) a "What does it mean?" link fetches `public/words/{letter}.json` (nothing
   is loaded before that) and shows "WORD · noun — meaning" with the example smaller, in the reveal
@@ -482,7 +482,9 @@ of a task must say which docs were updated.
   permission-denied also shows as a toast (`WriteFailureToasts`). Never attach a listener that can't fail
   visibly. `tests/unit/rules-coverage.test.ts` (part of `pnpm test`) scans those wrappers' call sites and
   fails if a Firestore collection or RTDB top-level node has no explicit block in `rules/*.tmpl`, so a
-  new path needs its rule in the same commit.
+  new path needs its rule in the same commit. It also classifies every Firestore `query(...)` and fails when
+  one needs a composite index that `firestore.indexes.json` lacks (printing the entry) or orders by document id
+  descending (needs `__name__ DESC`; use an ascending id range). Prefer query shapes the built-in indexes serve.
 - Thin pages, logic in `src/lib/**` and hooks in `src/hooks/**`. Static decks in `src/content`.
 - Every API route validates input with zod and verifies the Firebase ID token.
 - TypeScript is `strict` + `noUncheckedIndexedAccess`; ESLint errors on `any`, missing hook deps and import
@@ -492,7 +494,8 @@ of a task must say which docs were updated.
 - `pnpm typecheck` and `pnpm lint` must pass before each commit. One commit per phase, and
   `git push` after every commit — the remote is the backup. The full finish list (knip, tests, e2e when relevant,
   `pnpm size` for bundle budgets, docs) is in `docs/adding-a-feature.md` → Finish; `/ship` runs it.
-- Rules deploy via Firebase CLI: `pnpm rules:deploy` → `firebase deploy --only firestore:rules,database`.
+- Rules deploy via Firebase CLI: `pnpm rules:deploy` → `firebase deploy --only firestore:rules,firestore:indexes,database`
+  (`firestore.indexes.json`, referenced from `firebase.json`, travels with the rules).
 - Accessibility basics: buttons have labels, tap targets ≥ 44 px, colour is never the only signal.
 - Anything read back from storage that names a game goes through `gameInfo()` in
   `src/lib/games/catalog.ts` (never index a catalogue directly; stored rows may hold types this build

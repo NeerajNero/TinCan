@@ -55,7 +55,7 @@ The Firebase web API key is public by design, but you can stop anyone else's sit
 pnpm install
 cp .env.example .env.local      # fill in every value; ALLOWED_EMAILS = the two Google emails, comma-separated
 npm i -g firebase-tools && firebase login
-pnpm rules:deploy               # builds the security rules with your two emails and deploys them
+pnpm rules:deploy               # builds the security rules with your two emails and deploys them + firestore.indexes.json
 pnpm dev
 ```
 
@@ -88,10 +88,10 @@ Both people sign in with Google and pick a nickname and city; that forms the pai
 | `pnpm build` / `pnpm start` | Production build and server |
 | `pnpm typecheck` | TypeScript (`strict` + `noUncheckedIndexedAccess`) |
 | `pnpm lint` | ESLint (Next, TypeScript, React Compiler rules, import order) |
-| `pnpm test` | Unit tests: game engines, dates and streak, pet, call-time overlap, pings, Recent games, theme script, trivia bank (every question explained), word definitions (every answer defined) |
+| `pnpm test` | Unit tests: game engines, dates and streak, pet, call-time overlap, pings, Recent games, theme script, trivia bank (every question explained), word definitions (every answer defined), daily word results, and the rules/index scan (every collection has a rule, every query needing a composite index is in `firestore.indexes.json`) |
 | `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`) |
 | `pnpm test:e2e` | Builds, then Playwright on a phone viewport: no CSP violations (page and worker), the document never scrolls. First run: `npx playwright install chromium` |
-| `pnpm rules:deploy` | Builds `rules/*.tmpl` with your emails and deploys Firestore + Realtime Database rules |
+| `pnpm rules:deploy` | Builds `rules/*.tmpl` with your emails and deploys Firestore rules, Firestore indexes (`firestore.indexes.json`) and Realtime Database rules |
 | `pnpm tick:dry` | Shows what the scheduler would do right now, without sending anything |
 | `pnpm reset:dry` / `pnpm reset` | Wipes everything except the owner's account (dry run by default) |
 | `pnpm export` | Backup: dated JSON of all Firestore data plus a CSV of media URLs in `./exports/` |
@@ -202,6 +202,7 @@ Everything runs on free tiers. Limits below were correct when written; check eac
 | **Old photos show 🚫** | They're still on public delivery or lack signed variants. Run `pnpm migrate-media`, then `--yes`. |
 | **Sign-in loops** | The email isn't in `ALLOWED_EMAILS` on Vercel, or `FIREBASE_SERVICE_ACCOUNT` is wrong. `/api/health` tells you which. |
 | **`permission-denied` in the console** | Rules changed but weren't deployed: `pnpm rules:deploy`. |
+| **`failed-precondition` / "The query requires an index"** | A query needs a composite index that isn't deployed: add it to `firestore.indexes.json` (the unit tests print the exact entry) and run `pnpm rules:deploy`. |
 | **A radio station stopped playing** | Check More → Diagnostics for a `[csp]` line (blocked host) versus a dead URL, then get the current official URL from the All India Radio player. Step by step: [docs/troubleshooting.md → A radio station stopped playing](docs/troubleshooting.md#a-radio-station-stopped-playing) and [docs/operations.md → Updating radio stations](docs/operations.md#updating-radio-stations). |
 
 More in [`docs/troubleshooting.md`](docs/troubleshooting.md).

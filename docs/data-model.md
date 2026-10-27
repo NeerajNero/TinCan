@@ -31,7 +31,7 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 | `recipes/{id}` | auto | either | ≤50 | title, ingredients[], steps[] |
 | `push/{id}`, `tickLog/{jobKey}`, `quota/{uid}_{day}` | — | **admin only** | — | push log (~200), job idempotency, API daily caps |
 
-Composite indexes: none. Every query is a single-field order or equality-only filters; sorting by a second field happens client-side. If you ever add one, create `firestore.indexes.json`, reference it in `firebase.json`, and include it in `rules:deploy`.
+Composite indexes: none today — `firestore.indexes.json` (referenced from `firebase.json`, deployed by `pnpm rules:deploy`) is empty. Every query is a single-field order, equality-only filters (Firestore merges their single-field indexes), a range on one field, or an ascending document-id range (`wordle` history: `orderBy(documentId())` + `startAt`/`endBefore`); sorting by a second field happens client-side. `tests/unit/rules-coverage.test.ts` classifies every `query(...)` in `src/` and fails with the exact entry to add when one needs a composite index, and fails on `orderBy(documentId(), "desc")`, which needs a `__name__ DESC` index the file cannot express (the phase 22 history query did this and got `failed-precondition` in production).
 
 ## Media references
 
