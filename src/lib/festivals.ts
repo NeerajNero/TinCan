@@ -34,7 +34,7 @@ export function firstSundayOfAugust(year: number): DateKey {
   return `${year}-08-${pad(1 + ((7 - day) % 7))}`;
 }
 
-export type FestivalMilestone = Pick<MilestoneDoc, "title" | "date" | "repeatYearly" | "emoji" | "effect">;
+export type FestivalMilestone = Pick<MilestoneDoc, "title" | "date" | "repeatYearly" | "emoji" | "effect" | "verify">;
 
 /** Every milestone the seed describes (before dedupe): one yearly item per fixed festival, one one-off per year otherwise. */
 export function festivalMilestones(festivals: FestivalSeed[] = FESTIVALS, years: readonly string[] = SEED_YEARS): FestivalMilestone[] {
@@ -47,7 +47,7 @@ export function festivalMilestones(festivals: FestivalSeed[] = FESTIVALS, years:
     }
     for (const y of years) {
       const date = f.rule === "first-sunday-august" ? firstSundayOfAugust(Number(y)) : f.dates?.[y];
-      if (date) out.push({ ...base, date, repeatYearly: false });
+      if (date) out.push({ ...base, date, repeatYearly: false, ...(f.verify?.includes(y) ? { verify: true } : {}) });
     }
   }
   return out;

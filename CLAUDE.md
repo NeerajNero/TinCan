@@ -272,6 +272,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
      endedAt), stickers earned, longest streak (`streak.monthBest`, then reset to the current count),
      favourite ping (`counters.pingCounts` minus the snapshot on `pair.recap`) → one `recap` system
      line, no push. Both query shapes need the composite indexes in `firestore.indexes.json`.
+  9. 09:00 ROOM_TZ: any milestone still marked `verify` whose next occurrence is exactly 7 days away →
+     "Is this date right?" push to both (milestone toggle) deep-linking to `/memories/milestones?edit={id}`.
 - Dry run: `pnpm tick:dry` prints what would be sent without sending.
 
 ## Media — Cloudinary
@@ -330,7 +332,9 @@ Every trivia question also carries an `explanation`. Word definitions are static
   form) for milestone mode. "Add festivals" imports `content/festivals.json` (fixed-date festivals as one
   repeat-yearly milestone, moveable ones as one one-off per seeded year, skipping past dates and anything
   already present by title + date); afterwards they are ordinary milestones. Correct a festival date by
-  editing the milestone; the seed is only the import source.
+  editing the milestone; the seed is only the import source. Milestones carry `verify?: boolean` (the
+  seed's lunar dates import with it; a "Date needs checking" switch in the editor sets it): the list shows
+  "⚠️ check the date" + "Looks right ✓", editing the date clears it, and the tick reminds 7 days before.
 - **Call-time finder**: each sets weekly 30-min availability in their tz; overlap shown in both
   tz; "Propose" posts a chat message with the slot.
 - **Lists**: four kinds, shared (gift ideas private to the author), check-off, reorder by drag, who-added avatar.

@@ -20,7 +20,7 @@ Source of truth for shapes is `src/lib/types.ts`; for access rules it's `rules/f
 | `scheduled/{id}` | auto | sender; delivered by the tick (admin) | ≤50 pending | sendAt, sentAt, messageId |
 | `memories/{id}` | auto | uploader (edit/delete); create requires our Cloudinary URL | 40/page by takenAt; ≤30 per place | caption ≤500, takenAt, placeId, sharedAsset, `variants` (signed URLs). Either user may null `placeId` when its place is deleted in the same batch |
 | `places/{id}` | auto | either | ≤200 | name ≤80, note ≤1000, kind been/want, visitedAt |
-| `milestones/{id}` | auto | either | ≤100 | title, date, repeatYearly, emoji, effect? (diyas | colours | snow | fireworks | kites | flowers | confetti); mirrored to `pair.milestonesSummary`; "Add festivals" batch-writes `content/festivals.json` |
+| `milestones/{id}` | auto | either | ≤100 | title, date, repeatYearly, emoji, effect? (diyas | colours | snow | fireworks | kites | flowers | confetti), verify? (date to double-check; cleared by editing the date or "Looks right"); mirrored to `pair.milestonesSummary`; "Add festivals" batch-writes `content/festivals.json` |
 | `lists/{kind}/items/{id}` | auto | shared, **except `gifts`: author-only read/write** | ≤200 per list | text ≤200, note ≤1000, url ≤500, order |
 | `trips/{id}` | auto | either | ≤100 | days[{date, stops[]}] rebuilt from the range; mirrored to `pair.tripsSummary` |
 | `availability/{uid}` | uid | owner | 2 docs | slots{mon..sun: ["09:00",…]}, tz |

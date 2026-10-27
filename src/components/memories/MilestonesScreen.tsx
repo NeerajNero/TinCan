@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
@@ -15,7 +16,7 @@ import { usePair } from "@/hooks/usePair";
 import { useRelationship } from "@/hooks/useRelationship";
 import { cn } from "@/lib/cn";
 import { dateKeyToLocalDate, isDateKey, roomDateKey } from "@/lib/dates";
-import { addMilestone, deleteMilestone, editMilestone, importFestivals, milestonesQuery, type MilestoneInput } from "@/lib/db/milestones";
+import { addMilestone, clearVerify, deleteMilestone, editMilestone, importFestivals, milestonesQuery, type MilestoneInput } from "@/lib/db/milestones";
 import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { friendsSinceMilestone, sortUpcoming, toUpcoming, yearsLine, type Upcoming } from "@/lib/milestones";
 import { EFFECTS, type Effect, type MilestoneDoc } from "@/lib/types";
@@ -35,6 +36,16 @@ export function MilestonesScreen() {
   const [rows, setRows] = useState<Row[]>([]);
   const [editing, setEditing] = useState<Row | "new" | null>(null);
   const [importing, setImporting] = useState(false);
+  // A push's deep link (?edit=<id>) opens that milestone's editor once the rows are in (derived during render, once per id).
+  const editParam = useSearchParams().get("edit");
+  const [openedParam, setOpenedParam] = useState<string | null>(null);
+  if (editParam && openedParam !== editParam) {
+    const row = rows.find((r) => r.id === editParam);
+    if (row) {
+      setOpenedParam(editParam);
+      setEditing(row);
+    }
+  }
   const { toast } = useToast();
 
   async function addFestivals() {
@@ -104,7 +115,13 @@ export function MilestonesScreen() {
               {format(dateKeyToLocalDate(u.nextDate), "EEE, d MMM yyyy")}
               {u.repeatYearly && !u.derived && u.years !== null && u.years > 0 && ` · ${u.years}${ordinal(u.years)} time`}
               {u.effect && ` · ${EFFECT_LABEL[u.effect]}`}
+              {rows.find((r) => r.id === u.id)?.verify && <span className="ml-1 rounded-full bg-amber-400/25 px-1.5 py-0.5 text-[10px] font-bold">⚠️ check the date</span>}
             </p>
+            {rows.find((r) => r.id === u.id)?.verify && (
+              <button type="button" onClick={() => void clearVerify(u.id)} className="tap mt-1 min-h-9 rounded-full bg-surface-2 px-3 text-xs font-bold">
+                Looks right ✓
+              </button>
+            )}
           </div>
           <div className="text-right">
             <p className="font-heading text-xl font-semibold">{u.daysToGo === 0 ? "Today!" : u.daysToGo > 0 ? `${u.daysToGo}d` : `${-u.daysToGo}d ago`}</p>
@@ -138,6 +155,7 @@ function MilestoneForm({ row, onDone }: { row: Row | null; onDone: () => void })
   const [emoji, setEmoji] = useState(row?.emoji ?? EMOJI[0]!);
   const [repeatYearly, setRepeat] = useState(row?.repeatYearly ?? true);
   const [effect, setEffect] = useState<Effect | null>(row?.effect ?? null);
+  const [verify, setVerify] = useState(row?.verify === true);
   const [busy, setBusy] = useState(false);
   const canSave = title.trim().length > 0 && isDateKey(date) && !busy;
 
@@ -145,7 +163,7 @@ function MilestoneForm({ row, onDone }: { row: Row | null; onDone: () => void })
     if (!canSave) return;
     setBusy(true);
     try {
-      const input: MilestoneInput = { title, date, emoji, repeatYearly, ...(effect ? { effect } : {}) };
+      const input: MilestoneInput = { title, date, emoji, repeatYearly, ...(effect ? { effect } : {}), ...(verify ? { verify: true } : {}) };
       if (row) await editMilestone(row.id, input);
       else await addMilestone(input);
       onDone();
@@ -166,13 +184,30 @@ function MilestoneForm({ row, onDone }: { row: Row | null; onDone: () => void })
       <Input value={title} onChange={(e) => setTitle(e.target.value.slice(0, 60))} placeholder="What's the occasion?" aria-label="Title" autoFocus />
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="ms-date">Date</Label>
-        <Input id="ms-date" type="date" value={date} max="9999-12-31" onChange={(e) => setDate(e.target.value)} />
+        <Input
+          id="ms-date"
+          type="date"
+          value={date}
+          max="9999-12-31"
+          onChange={(e) => {
+            setDate(e.target.value);
+            // Changing the date counts as checking it.
+            if (row && e.target.value !== row.date) setVerify(false);
+          }}
+        />
       </div>
       <div className="flex items-center justify-between">
         <label htmlFor="ms-repeat" className="text-sm font-semibold">
           Repeats every year
         </label>
         <Switch id="ms-repeat" checked={repeatYearly} onChange={setRepeat} />
+      </div>
+      <div className="flex items-center justify-between">
+        <label htmlFor="ms-verify" className="text-sm font-semibold">
+          ⚠️ Date needs checking
+          <span className="block text-xs font-normal text-muted">A reminder to both of you 7 days before</span>
+        </label>
+        <Switch id="ms-verify" checked={verify} onChange={setVerify} />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="ms-effect">Effect on the day</Label>

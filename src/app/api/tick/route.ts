@@ -6,11 +6,11 @@ import { NextResponse } from "next/server";
 
 import { relationshipFor } from "@/content/relationships";
 import { questionFor } from "@/lib/daily";
-import { addDays, dateKeyIn, daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
+import { addDays, dateKeyIn, dateKeyToLocalDate, daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
 import { digestPush, type DigestInput } from "@/lib/digest";
 import { adminDb, adminRtdb } from "@/lib/firebase/admin";
 import { resolveCountdown } from "@/lib/meetup";
-import { todaysMilestones, yearsLine } from "@/lib/milestones";
+import { todaysMilestones, verifyDueIn, yearsLine } from "@/lib/milestones";
 import { statFrom } from "@/lib/pet";
 import { favouritePing, recapLine } from "@/lib/recap";
 import { secretMatches } from "@/lib/server/guard";
@@ -176,6 +176,23 @@ async function reminders(ctx: Ctx, minutes: number, pair: PairDoc) {
       }
     }
     return notes.length ? notes.join("; ") : "nothing today";
+  });
+}
+
+const VERIFY_AHEAD_DAYS = 7;
+
+/** 09:00 ROOM_TZ: a milestone still marked `verify` exactly 7 days out → both get "is this date right?" linking to its editor. */
+async function verifyDates(ctx: Ctx, minutes: number) {
+  if (!inWindow(minutes, REMINDERS_AT)) return;
+  await once(ctx, "verify-date", `verify-date-${ctx.today}`, async () => {
+    const snap = await adminDb().collection("milestones").limit(100).get();
+    const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Partial<MilestoneDoc>) })).filter((m): m is typeof m & { date: string } => typeof m.date === "string");
+    const due = verifyDueIn(rows.map((m) => ({ ...m, repeatYearly: Boolean(m.repeatYearly) })), ctx.today, VERIFY_AHEAD_DAYS);
+    for (const m of due) {
+      const when = format(dateKeyToLocalDate(m.nextDate), "d MMM");
+      for (const uid of ctx.uids) await push(ctx, uid, "milestone", { title: "Is this date right?", body: `${m.emoji ?? "🎉"} ${m.title ?? "Milestone"} is in ${VERIFY_AHEAD_DAYS} days — is ${when} right? Tap to check`, data: { url: `/memories/milestones?edit=${m.id}` } });
+    }
+    return due.length ? `asked about ${due.map((m) => m.title).join(", ")}` : "nothing to verify";
   });
 }
 
@@ -359,6 +376,7 @@ export async function GET(req: Request) {
     await streakRisk(ctx, minutes, pair);
     await capsulesUnlocked(ctx);
     await reminders(ctx, minutes, pair);
+    await verifyDates(ctx, minutes);
     await abandonStaleGames(ctx);
     await petHunger(ctx, pair);
     await morningDigest(ctx, pair);

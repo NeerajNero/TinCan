@@ -46,6 +46,7 @@ Each job runs inside `once(ctx, job, key, body)` which checks and writes `tickLo
 | reminders | 09:00 | `remind-{dateKey}` | milestones today, meetup/trip in 7 or 1 days → `milestone` / `meetup` |
 | abandonStaleGames | every tick | — | games idle 7 days → `abandoned`; finished > 6 h → `open: false` |
 | petHunger | every tick, once a day | `pet-hungry-{dateKey}` | hunger hits 0 within 2 h → `petHungry` + system message |
+| verifyDates | 09:00 | `verify-date-{dateKey}` | milestones with `verify: true` whose next occurrence is exactly 7 days away (`lib/milestones.verifyDueIn`) → `milestone` push to both, "Is this date right?", url `/memories/milestones?edit={id}` |
 | morningDigest | per user, at `notif.digest.hour` in their tz | `digest-{uid}-{localDateKey}` | your-turn games / invites (RTDB `games` open index), undrawn jar notes (≤ 10), unanswered daily question, pet food/joy < 30, capsules unlocking today, milestones today, unread count → one `digest` push (`lib/digest.digestPush`), or nothing |
 | monthlyRecap | 1st of the month, 09:00 | `recap-{yyyy-MM}` | 2 `count()` on messages (senderId + createdAt range), 3 on gameResults (winnerId + endedAt range), stickers from `pair.garden`, `streak.monthBest`, favourite ping from `counters.pingCounts` − `pair.recap.pingCounts` → `recap` system line (`lib/recap.recapLine`); then resets `streak.monthBest` and snapshots the ping counts on `pair.recap`. No push |
 

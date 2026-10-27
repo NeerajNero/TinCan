@@ -73,6 +73,15 @@ export function sortUpcoming(list: Upcoming[]): Upcoming[] {
   });
 }
 
+/** Milestones still marked `verify` whose next occurrence is exactly `days` away — the tick reminds both to check the date. */
+export function verifyDueIn<T extends { date: DateKey; repeatYearly: boolean; verify?: boolean }>(milestones: T[], today: DateKey, days = 7): Array<T & { nextDate: DateKey }> {
+  return milestones.flatMap((m) => {
+    if (m.verify !== true) return [];
+    const { nextDate } = nextOccurrence(m.date, m.repeatYearly, today);
+    return daysBetween(today, nextDate) === days ? [{ ...m, nextDate }] : [];
+  });
+}
+
 /** Every yearly milestone (and the friendiversary) that falls on `today`, for milestone mode. */
 export function todaysMilestones(summary: MilestoneSummary[] | undefined, friendsSince: DateKey | null | undefined, today: DateKey, preset: { anniversaryLabel: string; emoji: string }): Upcoming[] {
   const all = (summary ?? []).map((m) => toUpcoming(m, today));

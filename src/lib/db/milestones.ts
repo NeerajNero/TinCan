@@ -2,7 +2,7 @@
 import { pairRef } from "@/lib/db/refs";
 import { planFestivalImport } from "@/lib/festivals";
 import { getDb } from "@/lib/firebase/client";
-import { addDoc, collection, deleteDoc, doc, getDocs, limit, query, serverTimestamp, updateDoc, writeBatch, type CollectionReference, type Query } from "@/lib/firebase/fs";
+import { addDoc, collection, deleteDoc, deleteField, doc, getDocs, limit, query, serverTimestamp, updateDoc, writeBatch, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import { isEffect, type MilestoneDoc, type MilestoneSummary } from "@/lib/types";
 
 const milestonesCol = () => collection(getDb(), "milestones") as CollectionReference<MilestoneDoc>;
@@ -11,7 +11,7 @@ export const milestonesQuery = (): Query<MilestoneDoc> => query(milestonesCol(),
 export type MilestoneInput = MilestoneDoc;
 
 function clean(input: MilestoneInput): MilestoneDoc {
-  return { title: input.title.trim().slice(0, 60), date: input.date, repeatYearly: Boolean(input.repeatYearly), emoji: input.emoji || "🎉", ...(isEffect(input.effect) ? { effect: input.effect } : {}) };
+  return { title: input.title.trim().slice(0, 60), date: input.date, repeatYearly: Boolean(input.repeatYearly), emoji: input.emoji || "🎉", ...(isEffect(input.effect) ? { effect: input.effect } : {}), ...(input.verify === true ? { verify: true } : {}) };
 }
 
 /**
@@ -33,8 +33,13 @@ export async function addMilestone(input: MilestoneInput): Promise<string> {
 }
 
 export async function editMilestone(id: string, input: MilestoneInput): Promise<void> {
-  await updateDoc(doc(getDb(), "milestones", id), clean(input));
+  await updateDoc(doc(getDb(), "milestones", id), { ...clean(input), ...(input.verify === true ? {} : { verify: deleteField() }) });
   await syncSummary();
+}
+
+/** "Looks right": the date was checked; the summary doesn't carry the flag, so no re-mirror. */
+export function clearVerify(id: string): Promise<void> {
+  return updateDoc(doc(getDb(), "milestones", id), { verify: deleteField() });
 }
 
 /** "Add festivals": import the seed as milestones, skipping ones already present; returns how many were added. */

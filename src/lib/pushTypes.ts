@@ -97,7 +97,7 @@ export function composePush(type: PushType, senderName: string, payload: PushPay
     case "scheduled":
       return { title: senderName, body: (body || "New message").slice(0, 140), url: "/chat", tag: "message" };
     case "milestone":
-      return { title: payload.title ?? "Milestone", body: body || "It's today 🎉", url: "/memories", tag: "milestone" };
+      return { title: payload.title ?? "Milestone", body: body || "It's today 🎉", url: d.url ?? "/memories", tag: "milestone" };
     case "meetup":
       return { title: payload.title ?? "Meetup soon ✈️", body: body || "", url: "/plan", tag: "meetup" };
     case "yourTurn":

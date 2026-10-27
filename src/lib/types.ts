@@ -409,6 +409,8 @@ export interface MilestoneDoc {
   emoji: string;
   /** Optional festival effect for the day. */
   effect?: Effect;
+  /** The date should be double-checked (lunar-calendar festivals from the seed); cleared by editing the date or "Looks right". */
+  verify?: boolean;
   createdAt?: Timestamp | null;
 }
 
