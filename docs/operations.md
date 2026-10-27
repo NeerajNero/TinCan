@@ -56,7 +56,7 @@
 | --- | --- | --- |
 | `checks` | every push and pull request | `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm lint`, `pnpm knip`, `pnpm test` (Node from `engines.node`, pnpm from `packageManager`, the pnpm store cached by the lockfile) |
 | `rules` | every push and pull request | the same, plus Temurin Java 21 and `firebase-tools`, then `pnpm test:rules` on the emulators; the emulator jars are cached under `~/.cache/firebase/emulators` |
-| `e2e` | pushes to `main`, or by hand | `pnpm exec playwright install --with-deps chromium`, then `pnpm test:e2e` (production build with the placeholder env + Playwright); on failure the HTML report and traces are uploaded as the `playwright-report` artifact |
+| `e2e` | pushes to `main`, or by hand | `pnpm exec playwright install --with-deps chromium`, then `pnpm test:e2e` (production build with the placeholder env + Playwright); on failure the HTML report and traces are uploaded as the `playwright-report` artifact. Two YouTube *playback* tests are skipped there (YouTube refuses to play from GitHub's datacenter addresses); loading, cueing, embed URL and player size still run. "Failed to load resource" console errors from Google / Firebase hosts are ignored only when the build's project id ends in `-ci-fake` (`tests/e2e/violations.ts`) |
 
 A new push cancels the run still going on the same branch or PR (`concurrency`). To run the e2e job by hand: GitHub → Actions → CI → "Run workflow" → pick the branch (that is `workflow_dispatch`; it runs all three jobs). The README badge shows the latest `main` result.
 

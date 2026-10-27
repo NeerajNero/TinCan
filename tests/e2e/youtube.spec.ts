@@ -3,6 +3,9 @@
  * and Permissions-Policy, via the test-only /e2e/youtube harness (served only
  * with E2E_HARNESS=1). Needs network access to YouTube.
  * M7lc1UVf-VE is YouTube's own IFrame API sample video (embeddable).
+ * Actual playback is skipped on CI: YouTube refuses to play from GitHub's
+ * datacenter addresses (the player stays unstarted), so only loading, cueing,
+ * the embed URL and the player's size are checked there.
  */
 import { expect, test, type Page } from "@playwright/test";
 
@@ -36,7 +39,10 @@ for (const late of [0, 1500]) {
   });
 }
 
+const NO_PLAYBACK_ON_CI = Boolean(process.env.CI);
+
 test("play, seek and pause from a tap work", async ({ page }) => {
+  test.skip(NO_PLAYBACK_ON_CI, "YouTube refuses playback from GitHub's datacenter IPs");
   const errors = await open(page, "late=800");
   await page.getByRole("button", { name: "Play" }).click();
   await expect.poll(() => page.evaluate(() => window.__ytPlayer?.getPlayerState()), { timeout: 20_000 }).toBe(PLAYING);
@@ -49,7 +55,7 @@ test("play, seek and pause from a tap work", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("listen's player is a real size under the cover and still plays", async ({ page }) => {
+test("listen's player is a real size under the cover", async ({ page }) => {
   await open(page, "late=300&variant=audio");
   const box = await page.locator(PLAYER).boundingBox();
   expect(box?.width ?? 0).toBeGreaterThanOrEqual(200);
@@ -57,6 +63,11 @@ test("listen's player is a real size under the cover and still plays", async ({ 
   const cover = await page.getByTestId("cover").boundingBox();
   expect(cover).toEqual(box);
   expect(await page.locator(PLAYER).evaluate((el) => getComputedStyle(el).display)).not.toBe("none");
+});
+
+test("listen's player still plays under the cover", async ({ page }) => {
+  test.skip(NO_PLAYBACK_ON_CI, "YouTube refuses playback from GitHub's datacenter IPs");
+  await open(page, "late=300&variant=audio");
   await page.getByRole("button", { name: "Play" }).click();
   await expect.poll(() => page.evaluate(() => window.__ytPlayer?.getPlayerState()), { timeout: 20_000 }).toBe(PLAYING);
 });

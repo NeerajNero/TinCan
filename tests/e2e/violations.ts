@@ -10,6 +10,11 @@
  *   Permissions-Policy doesn't delegate to it. Ignored only when the message
  *   comes from a YouTube origin.
  *
+ * On CI the build runs against the placeholder Firebase project from
+ * `.github/workflows/ci.yml` (a project id ending in `-ci-fake`), so Google's
+ * APIs answer the fake key with 400s; those "Failed to load resource" lines
+ * are ignored (and logged) there only, and only for Google / Firebase hosts.
+ *
  * Everything else still fails the test.
  */
 import type { Page } from "@playwright/test";
@@ -18,11 +23,16 @@ const GEN_204 = /https:\/\/apis\.google\.com\/js\/gen_204(?=[?#'"\s.]|$)/;
 const CSP = /Content Security Policy/i;
 const COMPUTE_PRESSURE = /^Permissions policy violation: compute-pressure is not allowed in this document\.?$/;
 const YOUTUBE_ORIGIN = /^https:\/\/www\.youtube(?:-nocookie)?\.com\//;
+const LOAD_FAILED = /^Failed to load resource/;
+const GOOGLE_API_ORIGIN = /^https:\/\/[\w.-]+\.(?:googleapis\.com|firebaseio\.com|firebaseapp\.com|google\.com)\//;
+/** True when the app was built for the CI placeholder project, never for a real one. */
+export const PLACEHOLDER_FIREBASE = /-ci-fake$/.test(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "");
 
 /** Why a console error is known third-party noise, or null when it counts. */
 export function noiseReason(text: string, sourceUrl: string): string | null {
   if (GEN_204.test(text) && CSP.test(text)) return "Google gen_204 beacon";
   if (COMPUTE_PRESSURE.test(text) && YOUTUBE_ORIGIN.test(sourceUrl)) return "YouTube compute-pressure";
+  if (PLACEHOLDER_FIREBASE && LOAD_FAILED.test(text) && GOOGLE_API_ORIGIN.test(sourceUrl)) return "placeholder Firebase project on CI";
   return null;
 }
 
@@ -38,7 +48,7 @@ export function collectErrors(page: Page, counts: (text: string) => boolean = ()
     const text = m.text();
     const reason = noiseReason(text, m.location().url);
     if (reason) {
-      console.log(`[e2e] ignored third-party noise (${reason}): ${text.slice(0, 160)}`);
+      console.log(`[e2e] ignored third-party noise (${reason}): ${text.slice(0, 160)} ← ${m.location().url.slice(0, 120)}`);
       return;
     }
     if (counts(text)) errors.push(text);
