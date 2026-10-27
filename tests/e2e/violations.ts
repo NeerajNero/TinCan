@@ -26,7 +26,7 @@ const YOUTUBE_ORIGIN = /^https:\/\/www\.youtube(?:-nocookie)?\.com\//;
 const LOAD_FAILED = /^Failed to load resource/;
 const GOOGLE_API_ORIGIN = /^https:\/\/[\w.-]+\.(?:googleapis\.com|firebaseio\.com|firebaseapp\.com|google\.com)\//;
 /** True when the app was built for the CI placeholder project, never for a real one. */
-export const PLACEHOLDER_FIREBASE = /-ci-fake$/.test(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "");
+const PLACEHOLDER_FIREBASE = /-ci-fake$/.test(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "");
 
 /** Why a console error is known third-party noise, or null when it counts. */
 export function noiseReason(text: string, sourceUrl: string): string | null {
