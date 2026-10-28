@@ -7,6 +7,8 @@
  */
 import { expect, test, type BrowserContext, type Page, type Worker } from "@playwright/test";
 
+import { cspNoiseReason } from "./violations";
+
 declare global {
   interface Window {
     __csp: string[];
@@ -83,7 +85,11 @@ test("no CSP violations on /signin, in the page or the service worker", async ({
     );
   }, IMAGES);
 
-  const pageViolations = await page.evaluate(() => window.__csp);
+  const pageViolations = (await page.evaluate(() => window.__csp)).filter((entry) => {
+    const reason = cspNoiseReason(entry);
+    if (reason) console.log(`[e2e] ignored third-party noise (${reason}): ${entry}`);
+    return !reason;
+  });
   const workerViolations = await worker.evaluate(() => globalThis.__cspWorker ?? []);
   expect(pageViolations, "page violations").toEqual([]);
   expect(workerViolations, "service worker violations").toEqual([]);

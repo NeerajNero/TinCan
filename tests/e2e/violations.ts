@@ -28,6 +28,16 @@ const GOOGLE_API_ORIGIN = /^https:\/\/[\w.-]+\.(?:googleapis\.com|firebaseio\.co
 /** True when the app was built for the CI placeholder project, never for a real one. */
 const PLACEHOLDER_FIREBASE = /-ci-fake$/.test(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "");
 
+/**
+ * The same gen_204 beacon as a raw `securitypolicyviolation` entry
+ * ("connect-src https://apis.google.com/js/gen_204?c=…"), which the CSP spec
+ * collects straight from the event instead of the console. Only that URL under
+ * connect-src; any other directive or path still counts.
+ */
+export function cspNoiseReason(entry: string): string | null {
+  return /^connect-src /.test(entry) && GEN_204.test(entry) ? "Google gen_204 beacon" : null;
+}
+
 /** Why a console error is known third-party noise, or null when it counts. */
 export function noiseReason(text: string, sourceUrl: string): string | null {
   if (GEN_204.test(text) && CSP.test(text)) return "Google gen_204 beacon";

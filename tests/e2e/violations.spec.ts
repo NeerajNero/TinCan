@@ -6,7 +6,7 @@
  */
 import { expect, test } from "@playwright/test";
 
-import { collectErrors, noiseReason } from "./violations";
+import { collectErrors, cspNoiseReason, noiseReason } from "./violations";
 
 const PRESSURE_PROBE = `<script>new PressureObserver(() => {}).observe("cpu").catch(() => {});</script>`;
 
@@ -46,4 +46,9 @@ test("look-alikes still count", async ({ page }) => {
   expect(noiseReason("Permissions policy violation: camera is not allowed in this document.", "https://www.youtube-nocookie.com/embed/x")).toBeNull();
   expect(noiseReason("Fetch API cannot load https://apis.google.com/js/gen_2040. Refused to connect because it violates the document's Content Security Policy.", "")).toBeNull();
   expect(noiseReason("Connecting to 'https://evil.example/apis.google.com/js/gen_204' violates the following Content Security Policy directive", "")).toBeNull();
+  // The raw CSP event form used by csp.spec.ts: only connect-src + that exact path.
+  expect(cspNoiseReason("connect-src https://apis.google.com/js/gen_204?c=50%3A1")).toBe("Google gen_204 beacon");
+  expect(cspNoiseReason("img-src https://apis.google.com/js/gen_204")).toBeNull();
+  expect(cspNoiseReason("connect-src https://apis.google.com/js/api.js")).toBeNull();
+  expect(cspNoiseReason("connect-src https://example.com/")).toBeNull();
 });
