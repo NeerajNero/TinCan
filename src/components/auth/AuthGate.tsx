@@ -10,6 +10,7 @@ import { WriteFailureToasts } from "@/components/dev/WriteFailureToasts";
 import { LiveEventsProvider } from "@/components/live/LiveEventsProvider";
 import { PresenceProvider } from "@/components/live/PresenceProvider";
 import { PushController } from "@/components/push/PushController";
+import { TabPrefetcher } from "@/components/shell/TabPrefetcher";
 import { UpdateWatcher } from "@/components/shell/UpdateWatcher";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 import { Splash } from "@/components/ui/Splash";
@@ -41,6 +42,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                   <LiveEventsProvider>
                     <PushController />
                     <UpdateWatcher />
+                    <TabPrefetcher />
                     {process.env.NODE_ENV === "development" && <WriteFailureToasts />}
                     {children}
                   </LiveEventsProvider>

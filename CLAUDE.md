@@ -34,7 +34,8 @@ app should feel like a small hello, not a dashboard.
 - Cloudinary (free): all photos and voice notes, **private**: signed uploads with delivery type
   `authenticated`, so only signed URLs (minted server-side, stored on the doc) can load an asset.
   API secret only in server routes. No Firebase Storage.
-- Vercel Hobby. Next API routes host the server bits. NEVER add `crons` to vercel.json
+- Vercel Hobby. Next API routes host the server bits. `vercel.json` pins the one Hobby function region to
+  Singapore (`"regions": ["sin1"]`). NEVER add `crons` to vercel.json
   (Hobby cron is daily-only); scheduling is `GET /api/tick` pinged every 15 min by cron-job.org.
 - Free third-party data with no keys: Open-Meteo (weather + geocoding), OpenStreetMap tiles via
   Leaflet (memory map), YouTube IFrame Player (watch/listen together), public radio stream URLs.
@@ -92,7 +93,7 @@ Open-when envelopes, Mood history (calendar for both).
 
 **More** — Profile (nickname, city, avatar), Theme, Notification toggles, Friends-since date,
 Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), App build + "Check for updates",
-Diagnostics, Sign out.
+Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, last ten in the copy dump), Sign out.
 
 ## Design
 - Cute & playful: rounded 20px cards, soft pastel palette with one accent per tab, large emoji
@@ -532,6 +533,12 @@ of a task must say which docs were updated.
   new path needs its rule in the same commit. It also classifies every Firestore `query(...)` and fails when
   one needs a composite index that `firestore.indexes.json` lacks (printing the entry) or orders by document id
   descending (needs `__name__ DESC`; use an ascending id range). Prefer query shapes the built-in indexes serve.
+  Every RTDB `orderByChild("field")` must have that field in its node's `.indexOn` in the RTDB template
+  (`games` and `pictionary` index `open`); the same test fails otherwise.
+- Tab navigation: the `(app)` layout mounts the providers once (no per-tab layouts, nothing refetches
+  `pair/main` or user docs on navigation); `experimental.staleTimes.dynamic = 300` keeps visited tabs in the
+  router cache; `TabPrefetcher` fully prefetches the six tabs on idle after sign-in; every tab has a
+  `loading.tsx` skeleton (`TabLoading`); `TabBar` + `TabPaint` time each switch (`lib/tabTiming.ts`).
 - Thin pages, logic in `src/lib/**` and hooks in `src/hooks/**`. Static decks in `src/content`.
 - Every API route validates input with zod and verifies the Firebase ID token.
 - TypeScript is `strict` + `noUncheckedIndexedAccess`; ESLint errors on `any`, missing hook deps and import

@@ -103,6 +103,7 @@
     "pictionary": {
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
       ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".indexOn": ["open"],
       "$gameId": {
         "strokes": {
           "$strokeId": {

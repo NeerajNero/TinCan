@@ -20,6 +20,11 @@
  * deploys; the failure prints the exact entry to add. Ordering by document
  * id descending is flagged too: it needs a `__name__ DESC` index the file
  * can't express, so order ascending over an id range instead.
+ *
+ * RTDB queries are checked the same way: every `orderByChild("field")` (a
+ * client `query(ref…)` or an admin `.ref("node").orderByChild(…)` chain) must
+ * have that field in the node's `.indexOn` in the RTDB template, or the SDK
+ * downloads and sorts the whole node on the client (and logs a warning).
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -206,9 +211,81 @@ function rtdbUses(unresolved: string[]): Use[] {
   return uses;
 }
 
+const rtdbTemplate = () => JSON.parse(readFileSync(join(root, "rules/database.rules.json.tmpl"), "utf8")) as { rules: Record<string, unknown> };
+
 function rtdbCovered(): Set<string> {
-  const tmpl = JSON.parse(readFileSync(join(root, "rules/database.rules.json.tmpl"), "utf8")) as { rules: Record<string, unknown> };
-  return new Set(Object.keys(tmpl.rules).filter((k) => !k.startsWith(".") && !k.startsWith("$")));
+  return new Set(Object.keys(rtdbTemplate().rules).filter((k) => !k.startsWith(".") && !k.startsWith("$")));
+}
+
+/* ── RTDB indexes ──────────────────────────────────────────────────────── */
+
+interface RtdbOrderedQuery {
+  /** Node path the query runs on (`games`, `pictionary`), or null when the scan can't tell. */
+  node: string | null;
+  field: string;
+  where: string;
+  text: string;
+}
+
+/** The path literal a `ref(...)` / `rtdbRef(...)` / `r(...)` call (or a helper `const xRef = () => ref(db, "games")`) denotes, or null. */
+function rtdbPathOf(expr: string, file: string): string | null {
+  const direct = callArgs(expr, "ref")[0] ?? callArgs(expr, "rtdbRef")[0] ?? callArgs(expr, "r")[0];
+  if (direct !== undefined) {
+    const lit = splitArgs(direct).map((a) => (/^["'`]/.test(a) ? a.slice(1, -1) : null)).find((v) => v !== null);
+    return lit === undefined || lit === null ? null : lit;
+  }
+  const name = expr.match(/^(\w+)\(\)$/)?.[1]; // `gamesRef()`
+  if (!name) return null;
+  const def = new RegExp(`\\b${name}\\s*=\\s*(?:\\([^)]*\\)\\s*=>\\s*)?(?:ref|rtdbRef|r)\\(`);
+  for (const f of [...files.filter((x) => x.path === file), ...files]) {
+    const m = def.exec(f.text);
+    if (m) return rtdbPathOf(`ref${f.text.slice(m.index + m[0].length - 1)}`, f.path); // from the "(" of that ref(...) call
+  }
+  return null;
+}
+
+/**
+ * Every RTDB `orderByChild("field")` in src with the node it runs on: the first
+ * argument of the enclosing client `query(...)` / `rtdbQuery(...)`, or the
+ * `.ref("node")` an admin chain starts from. Every occurrence must be claimed
+ * by one of the two forms, so an unexpected shape fails instead of hiding.
+ */
+function rtdbOrderedQueries(): { queries: RtdbOrderedQuery[]; unclaimed: string[] } {
+  const queries: RtdbOrderedQuery[] = [];
+  const unclaimed: string[] = [];
+  for (const f of files) {
+    const total = (f.text.match(/\borderByChild\(/g) ?? []).length;
+    if (total === 0) continue;
+    let claimed = 0;
+    for (const fn of ["query", "rtdbQuery"]) {
+      for (const args of callArgs(f.text, fn)) {
+        const fields = [...args.matchAll(/orderByChild\(\s*"([^"]+)"\s*\)/g)].map((m) => m[1]!);
+        if (!fields.length) continue;
+        claimed += fields.length;
+        const [first] = splitArgs(args);
+        const node = first === undefined ? null : rtdbPathOf(first, f.path);
+        for (const field of fields) queries.push({ node, field, where: f.path, text: `${fn}(${args.replace(/\s+/g, " ")})` });
+      }
+    }
+    for (const m of f.text.matchAll(/\.ref\(\s*"([^"]+)"\s*\)((?:\s*\.\w+\([^()]*\))*?)\s*\.orderByChild\(\s*"([^"]+)"\s*\)/g)) {
+      claimed += 1;
+      queries.push({ node: m[1]!, field: m[3]!, where: f.path, text: m[0].replace(/\s+/g, " ") });
+    }
+    if (claimed !== total) unclaimed.push(`${f.path}: ${total} orderByChild call(s), ${claimed} understood`);
+  }
+  return { queries, unclaimed };
+}
+
+/** The `.indexOn` fields declared for a node path in the RTDB template (`$wildcard` keys match any segment). */
+function rtdbIndexOn(nodePath: string): string[] {
+  let level: Record<string, unknown> | undefined = rtdbTemplate().rules;
+  for (const seg of nodePath.split("/").filter(Boolean)) {
+    if (!level) return [];
+    const next: unknown = level[seg] ?? level[Object.keys(level).find((k) => k.startsWith("$")) ?? ""];
+    level = next && typeof next === "object" ? (next as Record<string, unknown>) : undefined;
+  }
+  const idx = level?.[".indexOn"];
+  return typeof idx === "string" ? [idx] : Array.isArray(idx) ? (idx as string[]) : [];
 }
 
 
@@ -424,6 +501,34 @@ describe("rules coverage", () => {
     const covered = rtdbCovered();
     const missing = new Map([...group(uses)].filter(([p]) => !covered.has(p)));
     expect(missing.size, report("RTDB nodes", missing)).toBe(0);
+  });
+});
+
+describe("rtdb indexes", () => {
+  it("finds every orderByChild query and the node it runs on", () => {
+    const { queries, unclaimed } = rtdbOrderedQueries();
+    if (process.env.RULES_COVERAGE_PRINT) console.log(queries.map((q) => `${q.node ?? "?"} by ${q.field}  ${q.text}  ← ${q.where}`).join("\n"));
+    expect(unclaimed, `orderByChild calls this scan can't attribute to a node:\n  ${unclaimed.join("\n  ")}`).toEqual([]);
+    expect(queries.length).toBeGreaterThanOrEqual(3);
+    expect(queries.some((q) => q.node === "games" && q.where === "src/lib/db/games.ts")).toBe(true); // through the `gamesRef()` helper
+    expect(queries.some((q) => q.node === "pictionary")).toBe(true); // inline r("pictionary")
+    expect(queries.some((q) => q.node === "games" && q.where === "src/app/api/tick/route.ts")).toBe(true); // admin chain
+    const unresolved = queries.filter((q) => q.node === null).map((q) => `${q.where}: ${q.text}`);
+    expect(unresolved, `RTDB queries whose node this scan can't resolve:\n  ${unresolved.join("\n  ")}`).toEqual([]);
+  });
+
+  it("every orderByChild field is in that node's .indexOn", () => {
+    const missing = rtdbOrderedQueries()
+      .queries.filter((q) => q.node !== null && !rtdbIndexOn(q.node).includes(q.field))
+      .map((q) => `${q.where}: ${q.text}\n    add ".indexOn": ["${q.field}"] to the "${q.node}" node in rules/database.rules.json.tmpl`);
+    expect(missing, `RTDB queries without an index (the SDK would sort the whole node on the phone):\n  ${missing.join("\n  ")}`).toEqual([]);
+  });
+
+  it("reads .indexOn through wildcard levels", () => {
+    expect(rtdbIndexOn("games")).toEqual(["open"]);
+    expect(rtdbIndexOn("pictionary")).toEqual(["open"]);
+    expect(rtdbIndexOn("presence/abc")).toEqual([]);
+    expect(rtdbIndexOn("nope")).toEqual([]);
   });
 });
 

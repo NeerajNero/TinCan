@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { useChatMeta } from "@/hooks/useChatMeta";
 import { cn } from "@/lib/cn";
 import { activeTab, TABS, type TabKey } from "@/lib/tabs";
+import { tabTimer } from "@/lib/tabTiming";
 
 const ICONS: Record<TabKey, LucideIcon> = {
   home: House,
@@ -39,6 +40,7 @@ export function TabBar() {
               href={tab.href}
               aria-label={tab.key === "chat" && unreadCount > 0 ? `${tab.label}, ${unreadCount} unread` : tab.label}
               aria-current={active ? "page" : undefined}
+              onClick={() => tabTimer.tap(tab.href, pathname)}
               style={{ "--accent": `var(${tab.accentVar})` } as React.CSSProperties}
               className={cn(
                 "tap relative flex flex-col items-center justify-center gap-0.5 rounded-[20px] py-1.5",

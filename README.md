@@ -67,9 +67,9 @@ pnpm dev
 
 - [ ] Import the repo (framework: Next.js; Node 22 is pinned in `package.json`).
 - [ ] Settings → Environment Variables: add every variable from `.env.example`. `NEXT_PUBLIC_APP_URL` is the deployment URL. `GIPHY_API_KEY` is optional and server-only.
-- [ ] Settings → Functions → **Function Region: Singapore (`sin1`)**. Every page and API call runs as a function, so put them next to the Realtime Database and the two of you.
+- [ ] Function region: `vercel.json` sets `"regions": ["sin1"]` (Singapore), so every page and API call runs next to the Realtime Database and the two of you. Nothing to click; Settings → Functions shows it after the first deploy.
 - [ ] Deploy, then open `/api/health`. It reports the Node version, which env keys are set, and whether the admin SDK loads.
-- [ ] Don't add `crons` to `vercel.json`; Hobby crons are daily-only.
+- [ ] Don't add `crons` to `vercel.json` (Hobby crons are daily-only) or a second region (Hobby allows one).
 
 ### 6. cron-job.org (the scheduler)
 

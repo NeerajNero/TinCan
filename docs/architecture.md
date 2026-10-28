@@ -42,6 +42,16 @@ Every screen reads shared data through these hooks: `usePair()`, `useChatMeta()`
 
 Every page is **dynamically rendered**: `src/proxy.ts` puts a fresh CSP nonce on each page request and the root layout reads it (`headers()`), which opts all routes out of static prerendering. That is the price of a `script-src` without `'unsafe-inline'`. Each navigation is a Vercel function invocation, well inside Hobby's free allowance for two users. The service worker still precaches `/offline` and the static assets. The policy itself lives in `csp.ts`.
 
+## Navigation
+
+The six tab routes live under the `(app)` route group, whose single layout mounts `AuthGate` → `PairProvider` and the other providers once. Layouts persist across navigations, so switching tabs never re-subscribes `pair/main` or the user docs; a screen reads them from `usePair()`. There are no per-tab layouts. Three things make a tap feel instant on a phone (all in `next.config.ts`, `components/shell/`):
+
+- **Router cache** — `experimental.staleTimes.dynamic = 300`. Every page is dynamic (nonce), so without this the client would refetch a tab's payload on every return; now a visited tab is served from memory for five minutes. The payload is only the client-component tree, never data, so nothing shown can be stale.
+- **Idle prefetch** — `TabPrefetcher` (mounted in `AuthGate` once signed in) calls `router.prefetch(href, { kind: "full" })` for the six tabs in `requestIdleCallback`, so the first tap on each tab is also served from memory. (The tab bar's `<Link>`s prefetch on their own too, but only up to the loading boundary.)
+- **Skeletons** — each tab has a `loading.tsx` (`TabLoading`): a skeleton shaped like that tab (chat bubbles, Play tiles, Plan rows…), or a generic sub-screen one below the tab root. Next streams it before the page payload, and prefetches it with the route, so the shell paints on the tap.
+
+`TabBar` marks each tap (`lib/tabTiming.ts`) and every tab page renders `<TabPaint />`, which closes the mark two animation frames after the real content mounts (never from `loading.tsx`). More → Diagnostics shows the last switch as "420 ms (cold: no)" and the copy dump the last ten; cold = that path's first paint since the app opened.
+
 ## Layout
 
 The document never scrolls. `html`/`body` are clamped in `globals.css`; `AppShell` is `fixed inset-0` (centred 480 px column) whose `<main>` is the only scroller, with the tab bar as the last flex row. Pages outside the shell use the `screen-fixed` utility. `useDocumentScrollLock` (mounted in `Providers`) snaps the layout viewport back to 0,0 on any `visualViewport` scroll/resize, and focus goes through `focusNoScroll` so Android's scroll-into-view can't move the page. Sheets and overlays are portalled to `<body>` (`ui/Sheet`, `ui/Portal`) with one z-index scale (`Z`). `tests/e2e/layout.spec.ts` guards the lock.

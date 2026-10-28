@@ -58,7 +58,7 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 | `roomchat/{room}/{pushId}` (`room` = `watch` / `listen`) | owner creates (`uid == auth.uid`), either deletes, no edits; either may remove the whole room | uid, text 1–500 chars, at number ≤ now; no other children | Watch / Listen side chat (`hooks/useRoomChat`): one `orderByKey().limitToLast(60)` query while the screen is open, newest 50 shown; the sender trims anything beyond 50 after each send |
 | `radio/main`, `timer/main`, `cook/{recipeId}` | both | — | radio, focus timer, cook-along |
 
-`.indexOn: ["open"]` on `games` serves the one landing query. All other RTDB reads are single nodes.
+`.indexOn: ["open"]` on `games` and on `pictionary` serves the two landing queries (`orderByChild("open").equalTo(true)`, also used by the tick's stale-game sweep). All other RTDB reads are single nodes or `orderByKey()` windows, which need no index. `tests/unit/rules-coverage.test.ts` fails on any `orderByChild` field without an `.indexOn` on its node.
 
 ## Static content (`src/content/`)
 

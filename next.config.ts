@@ -14,6 +14,13 @@ const BUILD_ID = (process.env.VERCEL_GIT_COMMIT_SHA || spawnSync("git", ["rev-pa
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
+  experimental: {
+    // Every page is dynamic (CSP nonce), so the router cache would otherwise
+    // drop a tab's payload the moment you leave it. Five minutes makes a return
+    // to a visited tab instant; the screens subscribe to Firebase themselves,
+    // so a cached payload is never stale data.
+    staleTimes: { dynamic: 300 },
+  },
   // Cache Components is intentionally left off. Tincan renders everything on the
   // client against Firebase, and @serwist/turbopack's route handler exports the
   // classic segment configs (`dynamic`, `revalidate`) that Next 16 rejects when

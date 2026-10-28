@@ -1,10 +1,6 @@
-import { Spinner } from "@/components/ui/Spinner";
+import { TabLoading } from "@/components/shell/TabLoading";
 
-/** Shown by Next while a tab's code and data are on their way. */
+/** Home (and any route without its own loading.tsx): the tab-shaped skeleton. */
 export default function Loading() {
-  return (
-    <div className="flex flex-1 items-center justify-center py-20 text-[var(--accent)]">
-      <Spinner size={28} />
-    </div>
-  );
+  return <TabLoading />;
 }

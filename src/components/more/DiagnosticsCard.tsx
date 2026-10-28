@@ -15,6 +15,7 @@ import { rtdbPrefersLongPolling } from "@/lib/firebase/client";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { getFirestoreHealth, subscribeFirestoreHealth, type FirestoreHealth } from "@/lib/firestoreHealth";
 import { APP_BUILD, workerBuild } from "@/lib/swUpdate";
+import { formatTabSwitch, tabSwitchLine, tabTimer } from "@/lib/tabTiming";
 
 /** Owner-only troubleshooting panel. Listeners exist only while it's open. */
 export function DiagnosticsCard() {
@@ -119,6 +120,8 @@ function DiagnosticsPanel() {
 
   const conn = (navigator as Navigator & { connection?: Connection }).connection;
   const firestoreLast = log.filter((e) => /firestore/i.test(e.text)).at(-1);
+  const switches = tabTimer.list(); // refreshed by the 2 s clock above
+  const lastSwitch = switches[switches.length - 1];
   const rows: Array<[string, string]> = [
     ["App build", APP_BUILD],
     ["Worker active", worker ? `${worker.active}${worker.controller ? " (controlling)" : worker.active === "none" ? "" : " (not controlling)"}` : "checking…"],
@@ -133,6 +136,7 @@ function DiagnosticsPanel() {
     ["Firestore reconnects", fmtHealth(health, now.getTime())],
     ["Firestore last error", fsError ?? firestoreLast?.text ?? "none"],
     ["CSP", csp],
+    ["Last tab switch", lastSwitch ? `${formatTabSwitch(lastSwitch)} → ${lastSwitch.href}` : "none yet (tap another tab)"],
     ["Network", `${navigator.onLine ? "online" : "offline"}${conn ? ` · ${conn.type ?? "?"} / ${conn.effectiveType ?? "?"}${conn.downlink ? ` · ${conn.downlink} Mb/s` : ""}${conn.saveData ? " · data saver" : ""}` : ""}`],
     ["Display", `${window.matchMedia("(display-mode: standalone)").matches ? "installed app" : "browser tab"} · ${window.innerWidth}×${window.innerHeight}`],
     ["User agent", navigator.userAgent],
@@ -141,6 +145,8 @@ function DiagnosticsPanel() {
   function asText() {
     const lines = [`Tincan diagnostics · ${new Date().toISOString()}`, ...rows.map(([k, v]) => `${k}: ${v}`), "", `Last ${log.length} errors:`];
     for (const e of log) lines.push(`${new Date(e.at).toISOString()} [${e.kind}] ${e.text}`);
+    lines.push("", `Tab switches (last ${switches.length}, tap → content paint):`);
+    for (const s of switches) lines.push(tabSwitchLine(s));
     return lines.join("\n");
   }
 
