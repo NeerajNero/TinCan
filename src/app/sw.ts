@@ -6,6 +6,7 @@ import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw";
 import { CacheableResponsePlugin, CacheFirst, ExpirationPlugin, NetworkOnly, Serwist, type PrecacheEntry, type RuntimeCaching, type SerwistGlobalConfig } from "serwist";
 
 import { RADIO_HOSTNAMES } from "../lib/radio";
+import { SHARE_CACHE, SHARE_MAX_FILES, shareFileKey, shareMetaKey, type ShareMeta } from "../lib/share";
 
 // `self.__SW_MANIFEST` is replaced with the precache manifest at build time.
 declare global {
@@ -74,6 +75,38 @@ const serwist = new Serwist({
 self.addEventListener("fetch", (event) => {
   if (RADIO_HOSTNAMES.has(new URL(event.request.url).hostname)) event.stopImmediatePropagation();
 });
+
+/* ── Web Share Target ────────────────────────────────────────────────────
+ * Android posts the shared title / text / url / images to /share (manifest
+ * `share_target`). The page can't read a POST body, so the worker stashes the
+ * form data in the Cache API under a nonce and redirects to /share?id=<nonce>,
+ * which the (signed-in) page reads and then clears. Nothing leaves the device.
+ */
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== "POST" || url.origin !== self.location.origin || url.pathname !== "/share") return;
+  event.stopImmediatePropagation();
+  event.respondWith(stashShare(event.request));
+});
+
+async function stashShare(request: Request): Promise<Response> {
+  const id = crypto.randomUUID();
+  try {
+    const form = await request.formData();
+    const text = (key: string) => {
+      const v = form.get(key);
+      return typeof v === "string" ? v.slice(0, 4000) : "";
+    };
+    const files = form.getAll("files").filter((f): f is File => f instanceof File && f.type.startsWith("image/")).slice(0, SHARE_MAX_FILES);
+    const meta: ShareMeta = { title: text("title"), text: text("text"), url: text("url"), files: files.map((f) => ({ name: f.name, type: f.type, size: f.size })), at: Date.now() };
+    const cache = await caches.open(SHARE_CACHE);
+    await cache.put(shareMetaKey(id), new Response(JSON.stringify(meta), { headers: { "content-type": "application/json" } }));
+    await Promise.all(files.map((f, i) => cache.put(shareFileKey(id, i), new Response(f, { headers: { "content-type": f.type } }))));
+  } catch {
+    // A malformed share still lands on the page, which explains what to do.
+  }
+  return Response.redirect(new URL(`/share?id=${id}`, self.location.origin).href, 303);
+}
 
 serwist.addEventListeners();
 

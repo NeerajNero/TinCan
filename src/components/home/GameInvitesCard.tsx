@@ -7,7 +7,7 @@ import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { Button } from "@/components/ui/Button";
 import { usePair } from "@/hooks/usePair";
-import { acceptGame, declineGame, gameRoute, uidOf } from "@/lib/db/games";
+import { acceptGame, declineGame, gameRoute, isMyMove } from "@/lib/db/games";
 import { gameInfo } from "@/lib/games/catalog";
 /** Invites waiting on me, and games where it's my move. */
 export function GameInvitesCard({ friendName }: { friendName: string }) {
@@ -15,7 +15,7 @@ export function GameInvitesCard({ friendName }: { friendName: string }) {
   const { games } = useLiveEvents();
   const router = useRouter();
   const invites = games.filter((g) => g.status === "invited" && g.createdBy !== uid);
-  const myTurn = games.filter((g) => g.status === "active" && uidOf(g, g.turn) === uid);
+  const myTurn = games.filter((g) => isMyMove(g, uid));
   if (invites.length === 0 && myTurn.length === 0) return null;
 
   return (

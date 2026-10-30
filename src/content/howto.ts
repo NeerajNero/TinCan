@@ -10,6 +10,9 @@ export type HowToKey =
   | "connectfour"
   | "chess"
   | "checkers"
+  | "dots"
+  | "hangman"
+  | "battleship"
   | "pictionary"
   | "trivia"
   | "quiz"
@@ -67,6 +70,24 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     label: "Jump and crown",
     steps: ["📨 Invite from the tile — the inviter moves first", "↗️ Pieces move diagonally forward one square", "🦘 If you can jump, you must — chains of jumps are one move", "👑 Reach the far row to crown a king that moves both ways"],
     tip: "80 moves without a capture or crowning ends in a draw.",
+  },
+  dots: {
+    title: "Dots and Boxes",
+    label: "Close boxes · keep the turn",
+    steps: ["📨 Invite from the tile and pick 5×5 or 6×6 dots", "✏️ Tap the gap between two dots to draw a line", "📦 Finish the fourth side of a box to claim it — and go again", "🏁 When every box is taken, the most boxes wins"],
+    tip: "Avoid drawing the third side of a box: it hands your friend the fourth.",
+  },
+  hangman: {
+    title: "Hangman",
+    label: "Best of three words",
+    steps: ["📨 Invite from the tile — the inviter sets the first word", "✍️ Type a word or short phrase, or tap Random for a daily-word pick", "🔤 The guesser taps letters; six misses and the figure is complete", "🔁 Roles swap each round; first to two rounds wins"],
+    tip: "Your word stays private until the round ends, then both see it with its meaning.",
+  },
+  battleship: {
+    title: "Battleship",
+    label: "Sink all five ships",
+    steps: ["🚢 Place five ships: tap a cell, Rotate, drag to move, or Random", "✅ Tap Ready — your fleet stays secret on your phone", "🎯 Take turns firing at their grid; hits stay red, misses grey", "💥 Sink all five of theirs before they sink yours"],
+    tip: "Shots are checked by the server, so neither phone ever sees the other's fleet.",
   },
   pictionary: {
     title: "Pictionary",

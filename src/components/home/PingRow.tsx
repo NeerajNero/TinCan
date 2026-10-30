@@ -1,10 +1,12 @@
 "use client";
 
 import { m } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { usePair } from "@/hooks/usePair";
 import { useRelationship } from "@/hooks/useRelationship";
+import { cn } from "@/lib/cn";
 import { pairRef } from "@/lib/db/refs";
 import { increment, updateDoc } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
@@ -14,14 +16,38 @@ import { sendPing } from "@/lib/rtdb";
 import { swallow } from "@/lib/swallow";
 import { BASE_PING_KINDS, PINGS, type PingKind } from "@/lib/types";
 
-/** Bouncy ping buttons. A tap sends, flashes "Sent!" with a shrinking ring, and rests the row for 5 s. */
-export function PingRow({ friendUid, friendName }: { friendUid: string; friendName: string }) {
+const HIGHLIGHT_MS = 2600;
+
+/**
+ * Bouncy ping buttons. A tap sends, flashes "Sent!" with a shrinking ring, and rests the row for 5 s.
+ * `highlight` (the Ping shortcut, `/?ping=1`) scrolls the row into view, glows it briefly and cleans the URL.
+ */
+export function PingRow({ friendUid, friendName, highlight = false }: { friendUid: string; friendName: string; highlight?: boolean }) {
   const { uid, me, pair } = usePair();
   const preset = useRelationship();
+  const router = useRouter();
   const kinds: PingKind[] = preset.extraPing ? [...BASE_PING_KINDS, preset.extraPing] : [...BASE_PING_KINDS];
   const [sent, setSent] = useState<PingKind | null>(null);
   const [cooling, setCooling] = useState(false);
+  const [glow, setGlow] = useState(false);
+  const [armed, setArmed] = useState(false);
   const lastSentAt = useRef<number | null>(null);
+  const rowRef = useRef<HTMLElement>(null);
+
+  // The glow outlives the `?ping=1` flag (the URL is cleaned at once), so it is armed during render and timed out in the effect.
+  if (highlight && !armed) {
+    setArmed(true);
+    setGlow(true);
+  } else if (!highlight && armed && !glow) {
+    setArmed(false);
+  }
+  useEffect(() => {
+    if (!glow) return;
+    rowRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    router.replace("/", { scroll: false });
+    const t = setTimeout(() => setGlow(false), HIGHLIGHT_MS);
+    return () => clearTimeout(t);
+  }, [glow, router]);
 
   async function ping(kind: PingKind) {
     if (cooling || !pingAllowed(lastSentAt.current)) return;
@@ -49,7 +75,7 @@ export function PingRow({ friendUid, friendName }: { friendUid: string; friendNa
   }
 
   return (
-    <section aria-label={`Send ${friendName} a ping`} className={kinds.length === 5 ? "grid grid-cols-5 gap-1.5" : "grid grid-cols-4 gap-2"}>
+    <section ref={rowRef} aria-label={`Send ${friendName} a ping`} className={cn(kinds.length === 5 ? "grid grid-cols-5 gap-1.5" : "grid grid-cols-4 gap-2", "rounded-[28px] transition-shadow duration-700", glow && "shadow-[0_0_0_6px_var(--accent-soft),0_0_32px_var(--accent)]")}>
       {kinds.map((kind) => {
         const isSent = sent === kind;
         return (

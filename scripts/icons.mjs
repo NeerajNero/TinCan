@@ -51,6 +51,22 @@ function badgeSvg() {
 </svg>`;
 }
 
+/**
+ * Home-screen shortcut icons (manifest `shortcuts`): a full-bleed tab colour
+ * with a plain white glyph inside the maskable safe zone. Vector only, so the
+ * output never depends on the build machine's emoji fonts.
+ */
+const SHORTCUTS = {
+  chat: { bg: "#6fb6ff", glyph: `<path d="M26 30 h48 a10 10 0 0 1 10 10 v22 a10 10 0 0 1 -10 10 h-30 l-14 11 v-11 h-4 a10 10 0 0 1 -10 -10 v-22 a10 10 0 0 1 10 -10 z" fill="#fff"/><circle cx="40" cy="51" r="3.5" fill="#6fb6ff"/><circle cx="50" cy="51" r="3.5" fill="#6fb6ff"/><circle cx="60" cy="51" r="3.5" fill="#6fb6ff"/>` },
+  ping: { bg: "#ff8fab", glyph: `<circle cx="50" cy="52" r="8" fill="#fff"/><path d="M34 38 a22 22 0 0 0 0 28 M66 38 a22 22 0 0 1 0 28" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M24 29 a36 36 0 0 0 0 46 M76 29 a36 36 0 0 1 0 46" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity="0.7"/>` },
+  word: { bg: "#ffb454", glyph: ["#6aaa64", "#c9b458", "#fff", "#fff", "#6aaa64", "#c9b458", "#c9b458", "#fff", "#6aaa64"].map((c, i) => `<rect x="${27 + (i % 3) * 16}" y="${29 + Math.floor(i / 3) * 16}" width="13" height="13" rx="3" fill="${c}"/>`).join("") },
+  pet: { bg: "#b48cff", glyph: `<ellipse cx="50" cy="62" rx="15" ry="12" fill="#fff"/><ellipse cx="32" cy="46" rx="6" ry="8" fill="#fff" transform="rotate(-20 32 46)"/><ellipse cx="44" cy="36" rx="6" ry="8" fill="#fff"/><ellipse cx="56" cy="36" rx="6" ry="8" fill="#fff"/><ellipse cx="68" cy="46" rx="6" ry="8" fill="#fff" transform="rotate(20 68 46)"/>` },
+};
+
+function shortcutSvg({ bg, glyph }) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="96" height="96"><rect width="100" height="100" fill="${bg}"/><g>${glyph}</g></svg>`;
+}
+
 const jobs = [
   // Transparent-background "any" icons with a soft rounded tile behind the art.
   { file: "public/icons/icon-192.png", size: 192, bg: true, pad: 0.06 },
@@ -72,6 +88,12 @@ for (const job of jobs) {
 
 await sharp(Buffer.from(badgeSvg())).resize(96, 96).png().toFile(path.join(root, "public/icons/badge-96.png"));
 console.log("✓ public/icons/badge-96.png");
+
+for (const [name, spec] of Object.entries(SHORTCUTS)) {
+  const file = `public/icons/shortcut-${name}-96.png`;
+  await sharp(Buffer.from(shortcutSvg(spec))).resize(96, 96).png().toFile(path.join(root, file));
+  console.log("✓", file);
+}
 
 // Favicon: Next picks up src/app/icon.svg.
 await writeFile(path.join(root, "src/app/icon.svg"), tinCanSvg({ bg: true, pad: 0.04 }).trim() + "\n");

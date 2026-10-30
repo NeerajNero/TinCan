@@ -23,6 +23,14 @@ app should feel like a small hello, not a dashboard.
   checks on launch / resume (hourly) and on More → "Check for updates", offers a persistent
   "Update available · Reload" toast whenever a worker is waiting (including one already waiting at
   launch), and Reload posts SKIP_WAITING + reloads once on `controllerchange`. Both users are on Android; iOS quirks can be ignored.
+  Share target: the manifest's `share_target` posts title/text/url/images (`image/*`) to `/share`; the worker
+  stashes the form data in the Cache API under a nonce (`lib/share.ts` keys) and 303-redirects to `/share?id=…`,
+  which (behind the auth gate; a signed-out share returns via `/signin?next=`) previews it and offers destinations:
+  a YouTube link → Play in Watch / Listen, Save to Watch / Listen playlist, Send to chat; any other link or text →
+  Send to chat with an editable message; images → Send to chat (compress + signed upload, one message each, caption
+  on the first) or Save to Memories. A direct visit shows a short explainer. Shortcuts: Chat (`/chat`), Ping
+  (`/?ping=1`: Home scrolls the ping row in and glows it), Daily word (`/play/word`), Pet (`/pet`), with 96 px
+  maskable icons from `pnpm icons`. Android picks up new shortcuts and the share target on (re)install.
 - Firebase, Spark (free) plan only:
   - Auth — Google provider. Only emails in `ALLOWED_EMAILS` may use the app; enforce in
     security rules AND in the client gate.
@@ -81,9 +89,9 @@ app should feel like a small hello, not a dashboard.
 **Chat** — WhatsApp-like, single conversation (spec in its own section below).
 
 **Play** — two sections
-- Games: Tic-tac-toe, Connect Four, Chess, Checkers, Pictionary, Trivia duel, Daily word,
-  Know-me quiz, Would You Rather, Never Have I Ever, Truth or Dare, Conversation cards,
-  20 Questions. (The hangout wheel was removed in phase 22.)
+- Games: Tic-tac-toe, Connect Four, Chess, Checkers, Dots and Boxes, Hangman, Battleship, Pictionary,
+  Trivia duel, Daily word, Know-me quiz, Would You Rather, Never Have I Ever, Truth or Dare,
+  Conversation cards, 20 Questions. (The hangout wheel was removed in phase 22.)
 - Together: Whiteboard, Pixel art, Watch together, Listen together, Radio, Focus timer, Cook-along.
 
 **Memories** — Photo timeline, Memory map, Milestones, Journal, Jar, Time capsules,
@@ -187,6 +195,9 @@ Every trivia question also carries an `explanation`. Word definitions are static
 `whiteboard/strokes/{id}`: {uid, color, width, points[[x,y]...]} — cap 500 strokes, Clear deletes all
 `pixel/grid`: 32×32 as array of 1024 palette indices; `pixel/cursor/{uid}`
 `games/{gameId}`: {type, state, turn, players, status, lastMoveAt, endReason(win|draw|resign|abandoned|cancelled)} — live boards
+`gamePrivate/{gameId}/{uid}`: {word, round} (Hangman setter) or {fleet: JSON of Ship[]} (Battleship) — readable and
+  writable by that uid only (a separate top-level node: RTDB read rules cascade, so nothing private can live under the
+  readable `games`); the tick removes it when it unlists or abandons the game
 `cards/{deck}`: {index, flippedBy, at} — shared current card for deck games
 `pictionary/{gameId}`: {drawerUid, word, startedAt, strokes…, guesses[], solvedAt}
 `watch/main`: {videoId, playing, positionSec, updatedAt, by, title}
@@ -341,9 +352,21 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - **Lists**: four kinds, shared (gift ideas private to the author), check-off, reorder by drag, who-added avatar.
 - **Trips**: simple day/stop planner; countdown on Home uses the nearest upcoming trip if
   `nextMeetup` is empty.
-- **Turn-based games** (tic-tac-toe, connect four, chess via chess.js, checkers): lobby creates a
-  game in RTDB, friend gets "your turn" pushes, results saved to `gameResults`, head-to-head
-  record shown in Play. Rematch button.
+- **Turn-based games** (tic-tac-toe, connect four, chess via chess.js, checkers, dots and boxes, hangman,
+  battleship): lobby creates a game in RTDB, friend gets "your turn" pushes, results saved to `gameResults`,
+  head-to-head record shown in Play. Rematch button (keeps the board options). Each board is its own chunk.
+  **Dots and Boxes**: 5×5 dots (default) or 6×6 chosen in a lobby sheet; tap the gap between two dots;
+  completing a box scores it and keeps the turn; most boxes wins (equal = draw). **Hangman**: best of three,
+  roles alternate (inviter sets round 1); the setter types a word or short phrase (letters and spaces, ≤ 20) or
+  takes a random daily-word answer; the word is written to `gamePrivate/{id}/{setterUid}` and never to the shared
+  state; the guesser's letters go to `POST /api/games/hangman/guess`, which resolves them with the admin SDK
+  (mask, misses, six wrong = round lost) and reveals the word in the round when it ends; the reveal shows the
+  WordNet meaning when one exists; first to two rounds wins. **Battleship**: 10×10, ships 5/4/3/3/2; placement
+  (tap, Rotate, drag, Random, Ready) keeps the fleet on the phone until Ready writes it to `gamePrivate`; the
+  shared state holds only readiness, shots, sunk ships (with their cells) and the turn; `POST
+  /api/games/battleship/shot` checks the turn, reads the opponent's fleet with admin, writes hit/miss/sunk and the
+  win; "Waiting for X to place ships" with an Invite button until both are ready; a sunk shot shows a banner.
+  Server-resolved moves do the result bookkeeping (gameResults, `pair.records`, chat line, pushes) with admin.
 - **Deck games** (Would You Rather, NHIE, Truth or Dare, Conversation cards): shared current
   card in RTDB; either flips; answers/votes stored on the card; running tally where it fits.
 - **20 Questions**: one picks a secret (or random from list), the other asks in chat-like box
@@ -456,6 +479,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   string, `joined/{uid}` and `answered/{uid}` numbers that are the caller's own or unchanged (transactions
   rewrite the node), nothing else.
   `roomchat/{watch|listen}/{id}`: create only as yourself, delete by either, no edits, text 1–500, at ≤ now.
+  `gamePrivate/{gameId}/{uid}`: read and write by `$uid` only; `word` lower-case letters and spaces 1–20, `round`
+  number, `fleet` string ≤ 600, nothing else. `games.type` enumerates the seven board games.
 - `messages`: `kind`/`meta` only on system lines; `kind == "invite"` requires meta keys route (same-origin path),
   activity (≤ 32), label (1–80), expiresAt (number) and optionally roundId (≤ 64), nothing else.
   `playlists/{watch|listen}`: keys items/updatedAt/updatedBy only, ≤ 50 items, updatedBy == caller.
@@ -464,8 +489,10 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - API routes share one guard (`src/lib/server/guard.ts`): ID token verified with revocation
   checking, `email_verified` + allowlist required, bodies ≤ 16 KB and zod `.strict()`, an in-memory
   token bucket per uid per route, and a Firestore daily cap per uid (`quota/{uid}_{day}`, admin-only:
-  push 1000, media/sign 300). `/api/tick` compares its secret with `timingSafeEqual`. Error bodies
-  are minimal; details only in server logs.
+  push 1000, media/sign 300, games 1500). `/api/tick` compares its secret with `timingSafeEqual`. Error bodies
+  are minimal; details only in server logs. `POST /api/games/hangman/guess` and `POST /api/games/battleship/shot`
+  (guard key `games`) are the only routes that move a game: they verify the caller is the player to move, read
+  the opponent's `gamePrivate` subtree with admin and rewrite `games/{id}` in a transaction.
 - Cloudinary uploads are **signed**: `POST /api/media/sign` returns a signature for a fixed param set
   (timestamp, folder, preset, incoming transformation for images; 5 MB image / 3 MB audio cap
   checked before signing). Both presets must be in Signed mode in the console. The app only renders
@@ -634,6 +661,9 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 24. ✅ **Shared wallpaper + festivals** (commit "phase 22b") — chat wallpaper on `pair/main` (one-time
     migration, friend toast, rules moved), milestone `effect` + seven festival effects and pet accessories,
     `festivals.json` seed with "Add festivals".
+25. ✅ **Share target, shortcuts, three games** (commit "phase 23") — Android share target (`/share` via the
+    worker's Cache API stash), four home-screen shortcuts, Dots and Boxes, Hangman and Battleship on the turn-based
+    engine with owner-only `gamePrivate` subtrees and two server routes for the hidden-information moves.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

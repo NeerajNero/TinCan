@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 import { CountdownCard } from "@/components/home/CountdownCard";
 import { DailyQuestionCard } from "@/components/home/DailyQuestionCard";
 import { GameInvitesCard } from "@/components/home/GameInvitesCard";
@@ -41,6 +43,8 @@ export function HomeScreen() {
   const data = useHomeData();
   const { ping: activePing, dismissPing } = useLiveEvents();
   const party = useMilestoneDay().milestones.length > 0;
+  // The "Ping" home-screen shortcut opens /?ping=1: scroll the ping row in and glow it.
+  const pingShortcut = useSearchParams().get("ping") === "1";
 
   if (pair.uids.length < 2 || !friendUid) {
     return (
@@ -65,7 +69,7 @@ export function HomeScreen() {
       <LastMessageCard friendName={friend.nickname} />
       <GameInvitesCard friendName={friend.nickname} />
       <PushNudgeCard />
-      <PingRow friendUid={friendUid} friendName={friend.nickname} />
+      <PingRow friendUid={friendUid} friendName={friend.nickname} highlight={pingShortcut} />
       <Lamps friendUid={friendUid} friendName={friend.nickname} />
       <DailyQuestionCard today={data.today} friendUid={friendUid} friendName={friend.nickname} party={party} />
       <MoodCheckin myToday={data.myToday} myMood={data.myMood} friendMood={data.friendMood} friendName={friend.nickname} />

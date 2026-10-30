@@ -13,18 +13,20 @@ import { RecentGamesList } from "@/components/play/RecentGamesList";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { Sheet } from "@/components/ui/Sheet";
 import { HOWTO } from "@/content/howto";
 import { usePair } from "@/hooks/usePair";
 import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
-import { acceptGame, declineGame, gameRoute, inviteGame, isLive, loadRecentResults, recordFor, rematch, uidOf, type GameResultDoc } from "@/lib/db/games";
+import { acceptGame, declineGame, gameRoute, inviteGame, isLive, isMyMove, loadRecentResults, recordFor, rematch, type GameResultDoc } from "@/lib/db/games";
 import { quizzesFrom } from "@/lib/db/quizzes";
 import { wordleRef } from "@/lib/db/wordle";
 import { DECK_KINDS, DECK_META } from "@/lib/deckMeta";
 import { onSnapshot } from "@/lib/firebase/fs";
-import type { GameType } from "@/lib/games";
+import type { GameOptions, GameType } from "@/lib/games";
 import { BOARD_GAMES, gameInfo, RECORD_GAMES } from "@/lib/games/catalog";
+import { DOTS_SIZES } from "@/lib/games/dots";
 export function PlayScreen() {
   const { uid, me, friend, friendUid, pair } = usePair();
   const { games } = useLiveEvents();
@@ -32,6 +34,7 @@ export function PlayScreen() {
   const router = useRouter();
   const startInvite = useStartInvite();
   const [busy, setBusy] = useState<GameType | null>(null);
+  const [pickSize, setPickSize] = useState(false);
   const today = roomDateKey(pair);
   const [wordMine, setWordMine] = useState<{ done: boolean; solved: boolean } | null>(null);
   const [wordTheirs, setWordTheirs] = useState<{ done: boolean } | null>(null);
@@ -60,9 +63,18 @@ export function PlayScreen() {
       return;
     }
     if (!friendUid || busy) return;
+    if (type === "dots") {
+      setPickSize(true);
+      return;
+    }
+    await startGame(type);
+  }
+
+  async function startGame(type: GameType, options: GameOptions = {}) {
+    if (!friendUid || busy) return;
     setBusy(type);
     try {
-      const id = await inviteGame(type, uid, friendUid);
+      const id = await inviteGame(type, uid, friendUid, options);
       void startInvite(type, gameRoute(id), `a game of ${gameInfo(type).name}`, { roundId: id });
       router.push(gameRoute(id));
     } finally {
@@ -87,7 +99,7 @@ export function PlayScreen() {
         {BOARD_GAMES.map((type) => {
           const open = openByType(type);
           const meta = gameInfo(type);
-          const mine = open && open.status === "active" && uidOf(open, open.turn) === uid;
+          const mine = open ? isMyMove(open, uid) : false;
           return (
             <button key={type} type="button" onClick={() => void tapGame(type)} disabled={!friendUid || busy !== null} className="card tap flex flex-col items-start gap-1.5 rounded-[24px] p-4 text-left disabled:opacity-60">
               <span className="text-3xl" aria-hidden>
@@ -102,6 +114,29 @@ export function PlayScreen() {
         })}
       </div>
       {!friendUid && <p className="px-2 text-center text-xs text-muted">Games unlock once your friend joins.</p>}
+      <Sheet open={pickSize} onClose={() => setPickSize(false)} label="Board size" className="flex flex-col gap-3 px-5">
+        <p className="font-heading text-lg font-semibold">How big a board?</p>
+        <div className="flex gap-2">
+          {DOTS_SIZES.map((size) => (
+            <Button
+              key={size}
+              variant={size === 5 ? "primary" : "soft"}
+              onClick={() => {
+                setPickSize(false);
+                void startGame("dots", { size });
+              }}
+              className="flex-1 flex-col gap-0 py-3"
+            >
+              <span>
+                {size}×{size} dots
+              </span>
+              <span className="text-xs font-normal opacity-80">
+                {size - 1}×{size - 1} boxes{size === 5 ? " · quick" : " · longer"}
+              </span>
+            </Button>
+          ))}
+        </div>
+      </Sheet>
 
       <section className="flex flex-col gap-2">
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Quick play</h2>
@@ -137,7 +172,7 @@ export function PlayScreen() {
             </Card>
           ))}
           {active.map((g) => {
-            const mine = g.status === "active" && uidOf(g, g.turn) === uid;
+            const mine = isMyMove(g, uid);
             return (
               <div key={g.id} className="card flex items-center gap-2 rounded-[20px] px-3 py-3">
                 <Link href={gameRoute(g.id)} className="flex min-w-0 flex-1 items-center gap-3">
@@ -199,7 +234,7 @@ export function PlayScreen() {
 
       <section className="flex flex-col gap-2">
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Record</h2>
-        <Card className="grid grid-cols-3 gap-2 p-3">
+        <Card className="grid grid-cols-5 gap-2 p-3">
           {RECORD_GAMES.map((type) => {
             const r = recordFor(pair, type, uid, friendUid);
             return (

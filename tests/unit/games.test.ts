@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { allSunk, applyShot, battleshipInitial, battleshipMyMove, battleshipStatus, cellIndex, cellsOf, fleetValid, markReady, randomFleet, resolveShot, shipsFit, type Ship } from "@/lib/games/battleship";
 import { checkers, type CheckersState } from "@/lib/games/checkers";
 import { chess, type ChessState } from "@/lib/games/chess";
 import { connectfour, type C4State } from "@/lib/games/connectfour";
+import { dots, dotsInitial, dotsScores } from "@/lib/games/dots";
+import { applyHangmanGuess, currentRound, hangman, HANGMAN_MAX_WRONG, hangmanInitial, hangmanMover, hangmanSetterFor, hangmanStatus, hangmanWordError, maskWord, normalizeHangmanWord, startHangmanRound, type HangmanState } from "@/lib/games/hangman";
 import { tictactoe } from "@/lib/games/tictactoe";
 
 /** 8×8 board from eight rows of text (row 0 at the top). */
@@ -107,5 +110,212 @@ describe("tic-tac-toe", () => {
     let state = tictactoe.initialState();
     for (const i of [0, 3, 1, 4, 2]) state = tictactoe.applyMove(state, i);
     expect(tictactoe.status(state)).toEqual({ status: "win", winner: "first", line: [0, 1, 2] });
+  });
+});
+
+describe("dots and boxes", () => {
+  const edge = (kind: "h" | "v", i: number) => ({ kind, i });
+
+  it("starts with every edge free and no boxes claimed", () => {
+    const s = dotsInitial(5);
+    expect(s.h).toHaveLength(5 * 4);
+    expect(s.v).toHaveLength(4 * 5);
+    expect(s.boxes).toHaveLength(16);
+    expect(dots.legalMoves(s)).toHaveLength(40);
+    expect(dotsInitial(9).size).toBe(5); // unknown sizes fall back
+    expect(dotsInitial(6).boxes).toHaveLength(25);
+  });
+
+  it("hands the turn over after a plain line, keeps it after closing a box, and scores it", () => {
+    let s = dotsInitial(5);
+    // Box (0,0): top h0, bottom h4, left v0, right v1.
+    s = dots.applyMove(s, edge("h", 0));
+    expect(s.turn).toBe("second");
+    s = dots.applyMove(s, edge("h", 4));
+    expect(s.turn).toBe("first");
+    s = dots.applyMove(s, edge("v", 0));
+    expect(s.turn).toBe("second");
+    expect(s.boxes[0]).toBe(".");
+    s = dots.applyMove(s, edge("v", 1)); // second closes it
+    expect(s.boxes[0]).toBe("B");
+    expect(s.turn).toBe("second"); // extra turn
+    expect(dotsScores(s)).toEqual({ first: 0, second: 1 });
+    expect(s.last).toEqual(edge("v", 1));
+    expect(dots.legalMoves(s).some((m) => m.kind === "v" && m.i === 1)).toBe(false);
+  });
+
+  it("can claim two boxes with one shared edge", () => {
+    let s = dotsInitial(5);
+    // Boxes (0,0) and (0,1) share v1. Fill everything else around both.
+    for (const m of [edge("h", 0), edge("h", 4), edge("v", 0), edge("h", 1), edge("h", 5), edge("v", 2)]) s = dots.applyMove(s, m);
+    const mover = s.turn;
+    s = dots.applyMove(s, edge("v", 1));
+    expect(s.boxes.slice(0, 2)).toBe(mover === "first" ? "AA" : "BB");
+    expect(s.turn).toBe(mover);
+  });
+
+  it("ends when every box is taken, most boxes wins, equal is a draw", () => {
+    const full = { ...dotsInitial(5), h: "#".repeat(20), v: "#".repeat(20) };
+    expect(dots.status({ ...full, boxes: "A".repeat(9) + "B".repeat(7) })).toEqual({ status: "win", winner: "first" });
+    expect(dots.status({ ...full, boxes: "A".repeat(8) + "B".repeat(8) })).toEqual({ status: "draw" });
+    expect(dots.status({ ...full, boxes: "A".repeat(15) + "." })).toEqual({ status: "ongoing" });
+    expect(dots.legalMoves({ ...full, boxes: "A".repeat(16) })).toEqual([]);
+  });
+});
+
+describe("hangman", () => {
+  it("masks letters but keeps spaces, revealing guessed letters", () => {
+    expect(maskWord("ice cream", "")).toBe("___ _____");
+    expect(maskWord("ice cream", "ce")).toBe("_ce c_e__");
+    expect(maskWord("apple", "aple")).toBe("apple");
+  });
+
+  it("validates custom words: letters and spaces, 1–20 chars", () => {
+    expect(hangmanWordError(normalizeHangmanWord("  Ice   Cream "))).toBeNull();
+    expect(normalizeHangmanWord("  Ice   Cream ")).toBe("ice cream");
+    expect(hangmanWordError("")).toMatch(/type/i);
+    expect(hangmanWordError("a".repeat(21))).toMatch(/20/);
+    expect(hangmanWordError("don't")).toMatch(/letters/i);
+    expect(hangmanWordError(" ab")).toMatch(/letters/i);
+  });
+
+  it("alternates the setter and does not accept guesses before the word is set", () => {
+    expect(hangmanSetterFor(0)).toBe("first");
+    expect(hangmanSetterFor(1)).toBe("second");
+    expect(hangmanSetterFor(2)).toBe("first");
+    const s0 = hangmanInitial();
+    expect(hangmanMover(s0)).toBe("first");
+    expect(applyHangmanGuess(s0, "a", "apple")).toBe(s0);
+    const s1 = startHangmanRound(s0, "apple");
+    expect(s1.phase).toBe("guessing");
+    expect(currentRound(s1).mask).toBe("_____");
+    expect(hangmanMover(s1)).toBe("second");
+    expect(hangman.legalMoves(s1)).toEqual([]);
+  });
+
+  it("guesser wins a round by completing the word and gets the point", () => {
+    let s = startHangmanRound(hangmanInitial(), "apple");
+    for (const l of "zaple") s = applyHangmanGuess(s, l, "apple");
+    expect(s.scores).toEqual({ first: 0, second: 1 });
+    expect(s.rounds[0]).toMatchObject({ result: "won", word: "apple", wrong: 1, mask: "apple" });
+    expect(s.round).toBe(1);
+    expect(s.phase).toBe("setting");
+    expect(currentRound(s).setter).toBe("second");
+    expect(hangmanMover(s)).toBe("second");
+    expect(hangmanStatus(s).status).toBe("ongoing");
+  });
+
+  it("six misses lose the round to the setter; a repeated letter is ignored", () => {
+    let s = startHangmanRound(hangmanInitial(), "apple");
+    s = applyHangmanGuess(s, "z", "apple");
+    expect(applyHangmanGuess(s, "z", "apple")).toBe(s);
+    for (const l of "qwrty") s = applyHangmanGuess(s, l, "apple");
+    expect(s.rounds[0]).toMatchObject({ result: "lost", wrong: HANGMAN_MAX_WRONG, word: "apple" });
+    expect(s.scores).toEqual({ first: 1, second: 0 });
+  });
+
+  it("finishes at two points, or after three rounds", () => {
+    const winRound = (s: HangmanState, word: string) => {
+      let n = startHangmanRound(s, word);
+      for (const l of new Set(word.replace(" ", ""))) n = applyHangmanGuess(n, l, word);
+      return n;
+    };
+    // Round 1: second guesses first's word → second 1. Round 2: first guesses second's word → 1–1. Round 3: second guesses → 1–2.
+    let s = winRound(hangmanInitial(), "apple");
+    s = winRound(s, "mango");
+    expect(s.scores).toEqual({ first: 1, second: 1 });
+    expect(s.phase).toBe("setting");
+    s = winRound(s, "ice cream");
+    expect(s.phase).toBe("done");
+    expect(hangmanStatus(s)).toEqual({ status: "win", winner: "second" });
+    // Straight 2–0 for the guesser-then-setter: second wins round 1, then holds the word in round 2.
+    let t = winRound(hangmanInitial(), "apple");
+    t = startHangmanRound(t, "zebra");
+    for (const l of "qwxyjk") t = applyHangmanGuess(t, l, "zebra");
+    expect(t.phase).toBe("done");
+    expect(t.scores).toEqual({ first: 0, second: 2 });
+    expect(hangmanStatus(t)).toEqual({ status: "win", winner: "second" });
+  });
+});
+
+describe("battleship", () => {
+  const fleet: Ship[] = [
+    { r: 0, c: 0, len: 5, dir: "h" },
+    { r: 2, c: 0, len: 4, dir: "v" },
+    { r: 2, c: 2, len: 3, dir: "h" },
+    { r: 4, c: 4, len: 3, dir: "v" },
+    { r: 9, c: 8, len: 2, dir: "h" },
+  ];
+
+  it("accepts a legal fleet and rejects overlaps, out-of-bounds ships and wrong lengths", () => {
+    expect(fleetValid(fleet)).toBe(true);
+    expect(fleetValid([...fleet.slice(0, 4), { r: 2, c: 3, len: 2, dir: "v" }])).toBe(false); // overlaps the cruiser
+    expect(fleetValid([...fleet.slice(0, 4), { r: 9, c: 9, len: 2, dir: "h" }])).toBe(false); // off the right edge
+    expect(fleetValid([...fleet.slice(0, 4), { r: 9, c: 9, len: 2, dir: "v" }])).toBe(false); // off the bottom
+    expect(fleetValid(fleet.slice(0, 4))).toBe(false);
+    expect(fleetValid([...fleet.slice(0, 4), { r: 9, c: 0, len: 3, dir: "h" }])).toBe(false);
+    expect(shipsFit([fleet[0]!, { r: 1, c: 1, len: 2, dir: "h" }])).toBe(true);
+  });
+
+  it("random fleets are always legal", () => {
+    let seed = 7;
+    const rand = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+    for (let i = 0; i < 25; i++) expect(fleetValid(randomFleet(rand))).toBe(true);
+    expect(fleetValid(randomFleet())).toBe(true);
+  });
+
+  it("resolves miss, hit and sunk", () => {
+    expect(resolveShot(fleet, {}, cellIndex(5, 5)).result).toBe("miss");
+    expect(resolveShot(fleet, {}, cellIndex(9, 8)).result).toBe("hit");
+    expect(resolveShot(fleet, { [cellIndex(9, 8)]: "hit" }, cellIndex(9, 9))).toMatchObject({ result: "sunk", ship: fleet[4] });
+    expect(allSunk(fleet, {})).toBe(false);
+  });
+
+  it("readiness flips the turn, both ready starts firing with the inviter", () => {
+    const s0 = battleshipInitial();
+    expect(battleshipMyMove(s0, "first")).toBe(true);
+    expect(battleshipMyMove(s0, "second")).toBe(true);
+    const s1 = markReady(s0, "second");
+    expect(s1).toMatchObject({ phase: "placing", turn: "first", ready: { first: false, second: true } });
+    expect(battleshipMyMove(s1, "second")).toBe(false);
+    expect(markReady(s1, "second")).toBe(s1);
+    const s2 = markReady(s1, "first");
+    expect(s2).toMatchObject({ phase: "firing", turn: "first" });
+    expect(battleshipMyMove(s2, "first")).toBe(true);
+    expect(battleshipMyMove(s2, "second")).toBe(false);
+  });
+
+  it("shots alternate, record hits and misses, announce sunk ships and end the game", () => {
+    let s = markReady(markReady(battleshipInitial(), "first"), "second");
+    expect(applyShot(s, "second", 0, fleet).result).toBeNull(); // not their turn
+    expect(applyShot(s, "first", -1, fleet).result).toBeNull();
+    let r = applyShot(s, "first", cellIndex(5, 5), fleet); // first fires at second's fleet
+    expect(r.result).toBe("miss");
+    s = r.state;
+    expect(s.turn).toBe("second");
+    expect(s.shots.first[cellIndex(5, 5)]).toBe("miss");
+    expect(applyShot(s, "first", 1, fleet).result).toBeNull();
+    s = applyShot(s, "second", 50, fleet).state; // any cell, back to first
+    r = applyShot(s, "first", cellIndex(9, 8), fleet);
+    expect(r.result).toBe("hit");
+    s = applyShot(r.state, "second", 51, fleet).state;
+    expect(applyShot(s, "first", cellIndex(9, 8), fleet).result).toBeNull(); // already shot
+    r = applyShot(s, "first", cellIndex(9, 9), fleet);
+    expect(r.result).toBe("sunk");
+    expect(r.state.sunk.second).toEqual([{ len: 2, cells: [cellIndex(9, 8), cellIndex(9, 9)] }]);
+    expect(r.state.last).toEqual({ by: "first", cell: cellIndex(9, 9), result: "sunk", len: 2 });
+    // Sink everything else: first keeps shooting with second passing on empty cells.
+    s = r.state;
+    let filler = 60;
+    for (const ship of fleet.slice(0, 4)) {
+      for (const cell of cellsOf(ship)) {
+        if (s.turn === "second") s = applyShot(s, "second", filler++, fleet).state;
+        s = applyShot(s, "first", cell, fleet).state;
+      }
+    }
+    expect(s.phase).toBe("done");
+    expect(s.turn).toBe("first");
+    expect(battleshipStatus(s)).toEqual({ status: "win", winner: "first" });
+    expect(allSunk(fleet, s.shots.first)).toBe(true);
   });
 });

@@ -208,14 +208,20 @@ async function abandonStaleGames(ctx: Ctx) {
     if (g.status === "finished") {
       if (ctx.now.getTime() - (g.finishedAt ?? g.lastMoveAt ?? 0) < FINISHED_LISTED_MS) continue;
       ctx.actions.push({ job: "close-game", key: id, detail: `${g.type ?? "game"} finished, unlisting` });
-      if (!ctx.dry) await adminRtdb().ref(`games/${id}`).update({ open: false });
+      if (!ctx.dry) await closeGame(id, { open: false });
       continue;
     }
     const last = g.lastMoveAt ?? 0;
     if (ctx.now.getTime() - last < ABANDON_MS) continue;
     ctx.actions.push({ job: "abandon-game", key: id, detail: `${g.type ?? "game"} (${g.status ?? "?"}) idle since ${new Date(last).toISOString()}` });
-    if (!ctx.dry) await adminRtdb().ref(`games/${id}`).update({ status: "finished", open: false, endReason: "abandoned", winnerId: null });
+    if (!ctx.dry) await closeGame(id, { status: "finished", open: false, endReason: "abandoned", winnerId: null });
   }
+}
+
+/** Unlist or abandon a game and drop its owner-only subtree (Hangman words, Battleship fleets), which nothing needs afterwards. */
+async function closeGame(id: string, patch: Record<string, unknown>) {
+  await adminRtdb().ref(`games/${id}`).update(patch);
+  await adminRtdb().ref(`gamePrivate/${id}`).remove();
 }
 
 const PET_MIN_PER_POINT = 14.4;

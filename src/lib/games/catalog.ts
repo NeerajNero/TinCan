@@ -25,6 +25,9 @@ export const GAME_CATALOG: Record<ResultGame, GameInfo> = {
   connectfour: { id: "connectfour", name: "Connect Four", emoji: "🔴", blurb: "Drop and connect", route: "/play", resultLabel: "Connect Four game" },
   chess: { id: "chess", name: "Chess", emoji: "♟️", blurb: "The long game", route: "/play", resultLabel: "chess game" },
   checkers: { id: "checkers", name: "Checkers", emoji: "⚪", blurb: "Jump and crown", route: "/play", resultLabel: "checkers game" },
+  dots: { id: "dots", name: "Dots and Boxes", emoji: "🔲", blurb: "Close boxes, keep the turn", route: "/play", resultLabel: "Dots and Boxes game" },
+  hangman: { id: "hangman", name: "Hangman", emoji: "🪢", blurb: "Best of three words", route: "/play", resultLabel: "Hangman match" },
+  battleship: { id: "battleship", name: "Battleship", emoji: "🚢", blurb: "Sink all five ships", route: "/play", resultLabel: "Battleship game" },
   trivia: { id: "trivia", name: "Trivia duel", emoji: "🧠", blurb: "Ten questions, 15 s each", route: "/play/trivia", resultLabel: "trivia duel" },
   pictionary: { id: "pictionary", name: "Pictionary", emoji: "🎨", blurb: "Three rounds, 60 s", route: "/play/pictionary", resultLabel: "Pictionary game" },
   word: { id: "word", name: "Daily word", emoji: "🟩", blurb: "Fewer guesses wins the day", route: "/play/word", resultLabel: "daily word" },
@@ -33,7 +36,7 @@ export const GAME_CATALOG: Record<ResultGame, GameInfo> = {
 export const UNKNOWN_GAME: GameInfo = { id: "unknown", name: "A game", emoji: "🎲", blurb: "", route: "/play", resultLabel: "game" };
 
 /** Board games, in the order the Play tab lists them. */
-export const BOARD_GAMES: readonly GameType[] = ["tictactoe", "connectfour", "chess", "checkers"];
+export const BOARD_GAMES: readonly GameType[] = ["tictactoe", "connectfour", "chess", "checkers", "dots", "hangman", "battleship"];
 
 /** Games with a head-to-head record on pair/main.records. */
 export const RECORD_GAMES: readonly ResultGame[] = [...BOARD_GAMES, "trivia", "pictionary", "word"];

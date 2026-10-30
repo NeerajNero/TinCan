@@ -67,7 +67,10 @@ async function lookup(activity: InviteActivity, roundId: string): Promise<RoundS
     case "tictactoe":
     case "connectfour":
     case "chess":
-    case "checkers": {
+    case "checkers":
+    case "dots":
+    case "hangman":
+    case "battleship": {
       const snap = await get(ref(getRtdb(), `games/${roundId}`));
       const status = (snap.val() as { status?: string } | null)?.status;
       return !status || status === "finished" || status === "declined" ? "ended" : "open";

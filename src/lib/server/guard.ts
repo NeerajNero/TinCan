@@ -17,9 +17,9 @@ import { adminAuth, adminDb } from "@/lib/firebase/admin";
  * details go to the server log only.
  */
 
-export type RouteKey = "push" | "media" | "sign" | "urls" | "gate" | "gif";
+export type RouteKey = "push" | "media" | "sign" | "urls" | "gate" | "gif" | "games";
 
-const DAILY_CAPS: Partial<Record<RouteKey, number>> = { push: 1000, media: 300, sign: 300, urls: 300, gif: 1000 };
+const DAILY_CAPS: Partial<Record<RouteKey, number>> = { push: 1000, media: 300, sign: 300, urls: 300, gif: 1000, games: 1500 };
 const BUCKET: Record<RouteKey, { capacity: number; refillPerSec: number }> = {
   push: { capacity: 30, refillPerSec: 0.5 },
   media: { capacity: 15, refillPerSec: 0.25 },
@@ -27,6 +27,7 @@ const BUCKET: Record<RouteKey, { capacity: number; refillPerSec: number }> = {
   urls: { capacity: 20, refillPerSec: 0.3 },
   gif: { capacity: 20, refillPerSec: 1 },
   gate: { capacity: 10, refillPerSec: 0.2 },
+  games: { capacity: 40, refillPerSec: 1 },
 };
 const MAX_BODY_BYTES = 16 * 1024;
 

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Splash } from "@/components/ui/Splash";
 import { useAuth } from "@/hooks/useAuth";
 import { signInWithGoogle } from "@/lib/auth";
+import { sameOriginPath } from "@/lib/share";
 
 function GoogleMark() {
   return (
@@ -29,7 +30,8 @@ export function SignInScreen() {
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === "allowed") router.replace("/");
+    if (status !== "allowed") return;
+    router.replace(sameOriginPath(new URLSearchParams(window.location.search).get("next")) ?? "/");
   }, [status, router]);
 
   async function handleSignIn() {

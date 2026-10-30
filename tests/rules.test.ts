@@ -356,3 +356,42 @@ describe("invite system lines", () => {
     await assertSucceeds(setDoc(doc(db, "messages/v9"), sys({ who: "Sam" }, "pet-fed")));
   });
 });
+
+describe("rtdb games: new types and the owner-only private subtree", () => {
+  const node = (players = { first: A, second: B }) => ({ type: "battleship", state: "{}", turn: "first", players, status: "active", open: true, createdBy: A, createdAt: 1, lastMoveAt: 1, moves: 0, winnerId: null, endReason: null });
+
+  it("accepts the three new game types and still rejects unknown ones", async () => {
+    const db = asA().database();
+    await assertSucceeds(set(ref(db, "games/g1"), node()));
+    await assertSucceeds(set(ref(db, "games/g2"), { ...node(), type: "hangman" }));
+    await assertSucceeds(set(ref(db, "games/g3"), { ...node(), type: "dots" }));
+    await assertFails(set(ref(db, "games/g4"), { ...node(), type: "poker" }));
+  });
+
+  it("gamePrivate/{id}/{uid} is readable and writable by that uid only", async () => {
+    const dbA = asA().database();
+    const dbB = asB().database();
+    await assertSucceeds(set(ref(dbA, `gamePrivate/g1/${A}`), { word: "ice cream", round: 0 }));
+    await assertSucceeds(set(ref(dbB, `gamePrivate/g1/${B}`), { fleet: JSON.stringify([{ r: 0, c: 0, len: 5, dir: "h" }]) }));
+    await assertSucceeds(get(ref(dbA, `gamePrivate/g1/${A}`)));
+    await assertFails(get(ref(dbB, `gamePrivate/g1/${A}`)));
+    await assertFails(get(ref(dbB, "gamePrivate/g1")));
+    await assertFails(get(ref(dbB, "gamePrivate")));
+    await assertFails(set(ref(dbB, `gamePrivate/g1/${A}`), { word: "peek", round: 0 }));
+    await assertFails(update(ref(dbB, `gamePrivate/g1/${A}`), { word: null }));
+    await assertFails(get(ref(asStranger().database(), `gamePrivate/g1/${A}`)));
+  });
+
+  it("validates the private shape: lower-case letters and spaces ≤ 20 for the word, a short fleet string, nothing else", async () => {
+    const db = asA().database();
+    const mine = ref(db, `gamePrivate/g1/${A}`);
+    await assertFails(set(mine, { word: "Apple", round: 0 }));
+    await assertFails(set(mine, { word: "a".repeat(21), round: 0 }));
+    await assertFails(set(mine, { word: " apple", round: 0 }));
+    await assertFails(set(mine, { word: "apple", round: "one" }));
+    await assertFails(set(mine, { fleet: "x".repeat(601) }));
+    await assertFails(set(mine, { word: "apple", round: 0, secret: true }));
+    await assertSucceeds(set(mine, { word: "apple", round: 0 }));
+    await assertSucceeds(remove(mine));
+  });
+});

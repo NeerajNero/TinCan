@@ -87,8 +87,8 @@ Data-only FCM messages (no `notification` key) so the worker alone decides what 
 
 ## Service worker caching
 
-`src/app/sw.ts`: precache of the build + `/offline`; runtime CacheFirst for `res.cloudinary.com` (30 days, 500 entries), OSM tiles (7 d, 300), GIPHY (7 d, 150) and ytimg (7 d, 150) with opaque responses allowed so cached photos display offline; NetworkOnly for `/api/*`, Firebase and Google hosts.
+`src/app/sw.ts`: precache of the build + `/offline`; runtime CacheFirst for `res.cloudinary.com` (30 days, 500 entries), OSM tiles (7 d, 300), GIPHY (7 d, 150) and ytimg (7 d, 150) with opaque responses allowed so cached photos display offline; NetworkOnly for `/api/*`, Firebase and Google hosts. It also answers the share target: `POST /share` (Android's share sheet, manifest `share_target`) is stashed in the `tincan-share` cache under a nonce and redirected to `/share?id=…`, which the page reads and clears (`lib/share.ts`, `lib/shareStash.ts`); nothing shared leaves the phone until the person picks a destination.
 
 ## Scheduler
 
-`GET /api/tick` (header `x-tick-secret`) runs idempotent jobs keyed in `tickLog/{jobKey}`: scheduled messages, 20:00 daily-question nudge, 21:00 streak warning, capsule unlocks, 09:00 milestone/meetup reminders, abandoned/finished-game housekeeping, pet hunger. Time-of-day jobs fire inside a 15-minute window. `?dry=1` reports without writing.
+`GET /api/tick` (header `x-tick-secret`) runs idempotent jobs keyed in `tickLog/{jobKey}`: scheduled messages, 20:00 daily-question nudge, 21:00 streak warning, capsule unlocks, 09:00 milestone/meetup reminders, abandoned/finished-game housekeeping (which also drops `gamePrivate/{id}`), pet hunger. Time-of-day jobs fire inside a 15-minute window. `?dry=1` reports without writing.

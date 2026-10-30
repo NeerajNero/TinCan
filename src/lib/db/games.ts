@@ -4,49 +4,27 @@
  */
 
 
+import { authedFetch } from "@/lib/api";
 import { createSystemMessage } from "@/lib/chat/system";
 import { pairRef } from "@/lib/db/refs";
 import { getDb, getRtdb } from "@/lib/firebase/client";
 import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "@/lib/firebase/fs";
-import { onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, update } from "@/lib/firebase/rt";
-import { initialStateFor, loadEngine, other, type GameType, type Player } from "@/lib/games";
+import { onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, set, update } from "@/lib/firebase/rt";
+import { initialStateFor, loadEngine, optionsOf, other, type GameOptions, type GameType } from "@/lib/games";
+import { battleshipMyMove, fleetValid, markReady, type BattleshipState, type Ship, type ShotResult } from "@/lib/games/battleship";
 import { gameInfo, resultLine, type ResultGame } from "@/lib/games/catalog";
+import { currentRound, hangmanMover, hangmanWordError, normalizeHangmanWord, startHangmanRound, type HangmanState } from "@/lib/games/hangman";
+import { describeResult, opponentOf, playerOf, resultForRecipient, uidOf, type EndReason, type GameNode, type LiveGame } from "@/lib/games/node";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
 import { swallow } from "@/lib/swallow";
 import type { PairDoc } from "@/lib/types";
-type GameStatusKey = "invited" | "active" | "finished" | "declined";
-type EndReason = "win" | "draw" | "resign" | "abandoned" | "cancelled";
 
-export interface GameNode {
-  type: GameType;
-  /** JSON of the engine state. */
-  state: string;
-  turn: Player;
-  players: { first: string; second: string };
-  status: GameStatusKey;
-  /** True while not finished/declined; indexed for the landing query. */
-  open: boolean;
-  createdBy: string;
-  createdAt: number;
-  lastMoveAt: number;
-  moves: number;
-  winnerId: string | null;
-  endReason: EndReason | null;
-  rematchOf?: string;
-  /** Set when finished; the game stays listed (open) for a few hours, then the tick closes it. */
-  finishedAt?: number;
-  /** Latest quick reaction from either player; clients animate on `at` change. */
-  reaction?: { by: string; emoji: string; at: number };
-}
+export { describeResult, playerOf, resultForRecipient, uidOf, type GameNode, type LiveGame };
 
 export const GAME_REACTIONS = ["👏", "😱", "🤔", "😂"] as const;
 
 export const isLive = (g: GameNode) => g.status === "invited" || g.status === "active";
-
-export interface LiveGame extends GameNode {
-  id: string;
-}
 
 export interface GameResultDoc {
   /** A ResultGame id when written by this build; read it through gameInfo(), it's stored data. */
@@ -60,6 +38,8 @@ export interface GameResultDoc {
 }
 
 const gamePath = (id: string) => `games/${id}`;
+/** Owner-only subtree: a Hangman setter's word, a Battleship player's fleet. */
+export const privateGamePath = (id: string, uid: string) => `gamePrivate/${id}/${uid}`;
 export const gameRoute = (id: string) => `/play/${id}`;
 const gamesRef = () => ref(getRtdb(), "games");
 
@@ -79,17 +59,32 @@ export function subscribeGame(id: string, cb: (game: LiveGame | null) => void): 
   return onValue(ref(getRtdb(), gamePath(id)), (snap) => cb(snap.exists() ? { id, ...(snap.val() as GameNode) } : null));
 }
 
-export const uidOf = (g: GameNode, p: Player) => (p === "first" ? g.players.first : g.players.second);
-export const playerOf = (g: GameNode, uid: string): Player | null => (g.players.first === uid ? "first" : g.players.second === uid ? "second" : null);
+/**
+ * Is it `uid`'s move? `turn` answers for every game except Battleship's
+ * placement phase, where each player is "on" until their own fleet is in.
+ */
+export function isMyMove(g: GameNode, uid: string): boolean {
+  if (g.status !== "active") return false;
+  const p = playerOf(g, uid);
+  if (!p) return false;
+  if (g.type === "battleship") {
+    try {
+      return battleshipMyMove(JSON.parse(g.state) as BattleshipState, p);
+    } catch {
+      return uidOf(g, g.turn) === uid;
+    }
+  }
+  return uidOf(g, g.turn) === uid;
+}
 
 /* ── lobby ─────────────────────────────────────────────────────────────── */
 
-export async function inviteGame(type: GameType, me: string, friend: string): Promise<string> {
+export async function inviteGame(type: GameType, me: string, friend: string, options: GameOptions = {}): Promise<string> {
   const node = rtdbPush(gamesRef());
   const now = Date.now();
   const g: GameNode = {
     type,
-    state: JSON.stringify(initialStateFor(type)),
+    state: JSON.stringify(initialStateFor(type, options)),
     turn: "first",
     players: { first: me, second: friend },
     status: "invited",
@@ -114,12 +109,12 @@ export function declineGame(id: string): Promise<void> {
   return update(ref(getRtdb(), gamePath(id)), { status: "declined", open: false, endReason: null });
 }
 
-/** Rematch: same two players, colours swapped, straight to active. */
+/** Rematch: same two players (and board options), colours swapped, straight to active. */
 export async function rematch(from: LiveGame): Promise<string> {
   const node = rtdbPush(gamesRef());
   const g: Omit<GameNode, "createdAt" | "lastMoveAt"> = {
     type: from.type,
-    state: JSON.stringify(initialStateFor(from.type)),
+    state: JSON.stringify(initialStateFor(from.type, optionsOf(from.type, from.state))),
     turn: "first",
     players: { first: from.players.second, second: from.players.first },
     status: "active",
@@ -209,6 +204,73 @@ export async function resign(game: LiveGame, me: string, nameOf: (uid: string) =
   if (res.committed) await recordResult({ id: game.id, ...(res.snapshot.val() as GameNode) }, me, nameOf);
 }
 
+/* ── server-resolved games: Hangman and Battleship ─────────────────────── */
+
+/**
+ * The setter's word goes to the owner-only private subtree first, then the
+ * shared node moves to the guessing phase. Returns a reason when the word
+ * can't be used; throws when the writes are refused.
+ */
+export async function setHangmanWord(game: LiveGame, me: string, input: string): Promise<string | null> {
+  const word = normalizeHangmanWord(input);
+  const err = hangmanWordError(word);
+  if (err) return err;
+  const mine = playerOf(game, me);
+  if (!mine) return "Not your game";
+  const before = JSON.parse(game.state) as HangmanState;
+  if (before.phase !== "setting" || currentRound(before).setter !== mine) return "It isn't your turn to set a word";
+  await set(ref(getRtdb(), privateGamePath(game.id, me)), { word, round: before.round });
+  const res = await runTransaction(ref(getRtdb(), gamePath(game.id)), (current: GameNode | null) => {
+    if (!current || current.status !== "active") return;
+    const state = JSON.parse(current.state) as HangmanState;
+    if (state.phase !== "setting" || uidOf(current, currentRound(state).setter) !== me) return;
+    const next = startHangmanRound(state, word);
+    return { ...current, state: JSON.stringify(next), turn: hangmanMover(next), moves: (current.moves ?? 0) + 1, lastMoveAt: Date.now() } satisfies GameNode;
+  });
+  if (!res.committed) throw new Error("move_rejected");
+  void notify("yourTurn", { toUid: opponentOf(game, me), body: `${gameInfo("hangman").emoji} Round ${before.round + 1}: guess my word in Hangman`, data: { url: gameRoute(game.id) } });
+  return null;
+}
+
+/** Fleet placed: private subtree first, then the shared readiness flag (and the turn) in a transaction. */
+export async function readyBattleship(game: LiveGame, me: string, fleet: Ship[]): Promise<void> {
+  const mine = playerOf(game, me);
+  if (!mine || !fleetValid(fleet)) throw new Error("invalid_fleet");
+  await set(ref(getRtdb(), privateGamePath(game.id, me)), { fleet: JSON.stringify(fleet) });
+  const res = await runTransaction(ref(getRtdb(), gamePath(game.id)), (current: GameNode | null) => {
+    if (!current || current.status !== "active") return;
+    const state = JSON.parse(current.state) as BattleshipState;
+    if (state.phase !== "placing" || state.ready[mine]) return;
+    const next = markReady(state, mine);
+    return { ...current, state: JSON.stringify(next), turn: next.turn, lastMoveAt: Date.now() } satisfies GameNode;
+  });
+  if (!res.committed) throw new Error("move_rejected");
+  const after = JSON.parse((res.snapshot.val() as GameNode).state) as BattleshipState;
+  const friend = opponentOf(game, me);
+  const emoji = gameInfo("battleship").emoji;
+  void notify("yourTurn", { toUid: friend, body: after.phase === "firing" ? `${emoji} Fleets are in — ${uidOf(game, after.turn) === friend ? "you fire first" : "I fire first"}!` : `${emoji} My ships are placed — your turn to set up`, data: { url: gameRoute(game.id) } });
+}
+
+export interface ServerMove {
+  finished: boolean;
+  winnerId: string | null;
+}
+
+async function postMove<T extends ServerMove>(path: string, body: Record<string, unknown>): Promise<T> {
+  const res = await authedFetch(path, { method: "POST", body: JSON.stringify(body) });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(err.error ?? `http_${res.status}`);
+  }
+  return (await res.json()) as T;
+}
+
+/** One letter, resolved by the server against the setter's private word. */
+export const guessHangmanLetter = (gameId: string, letter: string) => postMove<ServerMove & { hit: boolean; roundOver: boolean }>("/api/games/hangman/guess", { gameId, letter });
+
+/** One shot, resolved by the server against the opponent's private fleet. */
+export const fireBattleshipShot = (gameId: string, cell: number) => postMove<ServerMove & { result: ShotResult }>("/api/games/battleship/shot", { gameId, cell });
+
 /* ── results & records ─────────────────────────────────────────────────── */
 
 const resultsCol = () => collection(getDb(), "gameResults") as CollectionReference<GameResultDoc>;
@@ -255,26 +317,6 @@ async function recordResult(game: LiveGame, by: string, nameOf: (uid: string) =>
   if (game.winnerId && game.type === "connectfour") void recordTogetherEvent("c4-win", by);
   const opponent = game.players.first === by ? game.players.second : game.players.first;
   void notify("yourTurn", { toUid: opponent, body: resultForRecipient(game, opponent, nameOf), data: { url: gameRoute(game.id) } });
-}
-
-/** "Priya resigned at Chess — you win 🎉" / "Checkmate — Priya wins at Chess" / "Draw at Chess". */
-export function resultForRecipient(game: LiveGame, recipient: string, nameOf: (uid: string) => string): string {
-  const meta = gameInfo(game.type);
-  const otherUid = game.players.first === recipient ? game.players.second : game.players.first;
-  if (!game.winnerId) return `${meta.emoji} Draw at ${meta.name}`;
-  const won = game.winnerId === recipient;
-  if (game.endReason === "resign") return won ? `${meta.emoji} ${nameOf(otherUid)} resigned at ${meta.name} — you win 🎉` : `${meta.emoji} You resigned at ${meta.name}`;
-  return won ? `${meta.emoji} You won at ${meta.name} 🎉` : `${meta.emoji} ${nameOf(otherUid)} won at ${meta.name}`;
-}
-
-/** Nickname-aware line, posted from the UI where names are known. */
-export function describeResult(game: LiveGame, nameOf: (uid: string) => string): string {
-  const meta = gameInfo(game.type);
-  if (game.endReason === "cancelled") return `✕ The ${meta.name} game was cancelled`;
-  if (!game.winnerId) return `${meta.emoji} ${nameOf(game.players.first)} and ${nameOf(game.players.second)} drew at ${meta.name}`;
-  const loser = game.winnerId === game.players.first ? game.players.second : game.players.first;
-  if (game.endReason === "resign") return `${meta.emoji} ${nameOf(loser)} conceded at ${meta.name} — ${nameOf(game.winnerId)} takes it`;
-  return `${meta.emoji} ${nameOf(game.winnerId)} beat ${nameOf(loser)} at ${meta.name}`;
 }
 
 /** The record strip: wins per uid and draws, from pair/main. */

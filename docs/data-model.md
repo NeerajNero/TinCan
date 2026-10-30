@@ -49,7 +49,8 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 | `cursors/{uid}` | owner | x,y numbers in 0–1 | whiteboard |
 | `whiteboard/strokes/{id}`, `whiteboard/live/{uid}` | both / owner | points string ≤24k, hex colour, width number | SharedCanvas |
 | `pixel/grid`, `pixel/cursor/{uid}` | both / owner | grid exactly 1024 chars | pixel art |
-| `games/{id}` | both | type, string state, turn, status, open bool, endReason enum, players{first,second}, reaction (own or unchanged) | board games |
+| `games/{id}` | both | type (tictactoe, connectfour, chess, checkers, dots, hangman, battleship), string state, turn, status, open bool, endReason enum, players{first,second}, reaction (own or unchanged) | board games; Hangman and Battleship nodes are rewritten by the server routes for guesses and shots |
+| `gamePrivate/{gameId}/{uid}` | **owner only** (read and write) | `word` lower-case letters and spaces 1–20 + `round` number (Hangman setter), or `fleet` string ≤ 600 (Battleship, JSON `Ship[]`); no other children | hidden information the other player must never read; the server routes read it with admin; the tick removes `gamePrivate/{id}` when it unlists or abandons the game. A separate top-level node because RTDB read rules cascade from the readable `games` |
 | `cards/{deck}` | both | — | deck games |
 | `pictionary/{id}` (+ strokes, live) | both | stroke/live limits as whiteboard; `rounds` 3 or 5 (absent = 3), `roundStartedAt` is a server timestamp | pictionary |
 | `twenty/main` | both | — | 20 Questions (one round at a time) |

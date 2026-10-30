@@ -27,7 +27,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "signed-out") router.replace("/signin");
+    if (status !== "signed-out") return;
+    // A share that arrived signed out comes back to /share?id=… after Google (same-origin paths only).
+    const { pathname, search } = window.location;
+    router.replace(pathname.startsWith("/share") ? `/signin?next=${encodeURIComponent(pathname + search)}` : "/signin");
   }, [status, router]);
 
   switch (status) {

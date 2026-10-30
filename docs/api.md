@@ -16,10 +16,16 @@ Errors go back as `{ error: "<code>" }` with 400/401/403/413/429/500; details ar
 | `POST /api/media/sign` | sign | 20 / 0.3 | 300 | `{ kind: "image" \| "audio", bytes }` (≤5 MB image, ≤3 MB audio) | `{ signature, apiKey, cloudName, params, resourceType }`; params include `type: "authenticated"` |
 | `POST /api/media/urls` | urls | 20 / 0.3 | 300 | `{ publicId: "tincan/images/…" \| "tincan/audio/…", purpose: "image" \| "avatar" \| "audio", format? }` | `{ variants }`: signed URLs for the fixed variant set (`src/lib/media-variants.json`) |
 | `GET /api/gif` | gif | 20 / 1 | 1000 | query `q?` (≤ 80 chars), or `mode=status` | `{ enabled, gifs[] }` (GIPHY search/trending, rating pg; trending cached 10 min per instance) |
+| `POST /api/games/hangman/guess` | games | 40 / 1 | 1500 | `{ gameId, letter: a–z }` | `{ hit, roundOver, finished, winnerId }`; 404 unknown game, 409 `not_playable` / `not_your_turn` / `already_guessed` / `no_word` (setter's private word missing or for another round) / `move_rejected` |
+| `POST /api/games/battleship/shot` | games | 40 / 1 | 1500 | `{ gameId, cell: 0–99 }` | `{ result: hit \| miss \| sunk, finished, winnerId }`; 409 `not_playable` / `not_your_turn` / `already_shot` / `no_fleet` / `move_rejected` |
 | `DELETE /api/media` | media | 15 / 0.25 | 300 | `{ kind: "message" \| "memory" \| "journal" \| "capsule", id }` · `{ kind: "avatar" }` · legacy `{ messageId }` | `{ ok: true }` after Cloudinary destroy + Firestore update |
 | `GET /api/tick` | secret header | — | — | header `x-tick-secret`; `?dry=1` | live: `{ ok, now, actions: <count>, jobs: {job: count} }` (no names or text: cron-job.org keeps bodies); dry: full `actions[]` |
 | `GET /api/health` | none (deliberate) | — | — | — | booleans only: Node version, which env keys are set, whether the admin SDK loads (error *name* only) |
 | `GET /serwist/sw.js` | none | — | — | — | the built service worker (Firebase public config inlined via esbuild `define`) |
+
+## `/api/games/*` semantics
+
+`src/lib/server/games.ts`. Both routes load `games/{id}`, check type, `status == "active"` and that the caller is the player to move (`hangmanMover` / `turn`), read the opponent's `gamePrivate/{id}/{uid}` with the admin SDK (the Hangman word must pass `hangmanWordError` and carry the current `round`; the fleet must be `fleetValid`), then rewrite the node in an RTDB transaction (`transactGame`: the pure `applyHangmanGuess` / `applyShot`, `turn`, `moves`, `lastMoveAt`, and `finishedFields` when the game is won). `afterServerMove` sends the `yourTurn` push when the move handed the turn over (skipped while the recipient is on that game's page), or on a finish does what the client does for engine games: `gameResults/{id}` (create-only), `pair.records[type]` in a transaction, the `game-result` system line and the result push to the opponent.
 
 ## `/api/push` semantics
 
@@ -44,7 +50,7 @@ Each job runs inside `once(ctx, job, key, body)` which checks and writes `tickLo
 | streakRisk | 21:00 | `streak-{dateKey}` | if exactly one checked in → `streak-risk` to the other ("…a shield will cover tonight, but say hi anyway?" when `streak.shields > 0`) |
 | capsulesUnlocked | every tick (48 h lookback) | `capsule-{id}` | pushes `capsule-unlocked` to both |
 | reminders | 09:00 | `remind-{dateKey}` | milestones today, meetup/trip in 7 or 1 days → `milestone` / `meetup` |
-| abandonStaleGames | every tick | — | games idle 7 days → `abandoned`; finished > 6 h → `open: false` |
+| abandonStaleGames | every tick | — | games idle 7 days → `abandoned`; finished > 6 h → `open: false`; both also remove `gamePrivate/{id}` |
 | petHunger | every tick, once a day | `pet-hungry-{dateKey}` | hunger hits 0 within 2 h → `petHungry` + system message |
 | verifyDates | 09:00 | `verify-date-{dateKey}` | milestones with `verify: true` whose next occurrence is exactly 7 days away (`lib/milestones.verifyDueIn`) → `milestone` push to both, "Is this date right?", url `/memories/milestones?edit={id}` |
 | morningDigest | per user, at `notif.digest.hour` in their tz | `digest-{uid}-{localDateKey}` | your-turn games / invites (RTDB `games` open index), undrawn jar notes (≤ 10), unanswered daily question, pet food/joy < 30, capsules unlocking today, milestones today, unread count → one `digest` push (`lib/digest.digestPush`), or nothing |

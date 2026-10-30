@@ -86,7 +86,7 @@
       ".indexOn": ["open"],
       "$gameId": {
         ".validate": "newData.hasChildren(['type', 'state', 'turn', 'players', 'status', 'open'])",
-        "type": { ".validate": "newData.val() === 'tictactoe' || newData.val() === 'connectfour' || newData.val() === 'chess' || newData.val() === 'checkers'" },
+        "type": { ".validate": "newData.val() === 'tictactoe' || newData.val() === 'connectfour' || newData.val() === 'chess' || newData.val() === 'checkers' || newData.val() === 'dots' || newData.val() === 'hangman' || newData.val() === 'battleship'" },
         "state": { ".validate": "newData.isString() && newData.val().length < 20000" },
         "turn": { ".validate": "newData.val() === 'first' || newData.val() === 'second'" },
         "status": { ".validate": "newData.val() === 'invited' || newData.val() === 'active' || newData.val() === 'finished' || newData.val() === 'declined'" },
@@ -94,6 +94,18 @@
         "endReason": { ".validate": "!newData.exists() || newData.val() === 'win' || newData.val() === 'draw' || newData.val() === 'resign' || newData.val() === 'abandoned' || newData.val() === 'cancelled'" },
         "players": { ".validate": "newData.hasChildren(['first', 'second'])" },
         "reaction": { ".validate": "newData.hasChildren(['by', 'emoji', 'at']) && newData.child('emoji').isString() && (newData.child('by').val() === auth.uid || (data.exists() && newData.child('at').val() === data.child('at').val() && newData.child('by').val() === data.child('by').val()))" }
+      }
+    },
+    "gamePrivate": {
+      "$gameId": {
+        "$uid": {
+          ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid",
+          ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && $uid === auth.uid",
+          "word": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 20 && newData.val().matches(/^[a-z]([a-z ]*[a-z])?$/)" },
+          "round": { ".validate": "newData.isNumber()" },
+          "fleet": { ".validate": "newData.isString() && newData.val().length <= 600" },
+          "$other": { ".validate": false }
+        }
       }
     },
     "cards": {

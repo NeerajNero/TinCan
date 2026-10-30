@@ -43,6 +43,10 @@
 | Home countdown shows a trip not the meetup | `pair.nextMeetup` empty → nearest trip is the fallback | set the next meetup in More |
 | Radio station silent, "Tap to start audio" does nothing, or "only plays in the mobile app" | the stream URL died, moved to a new host (CSP block), or lacks CORS on desktop | see [A radio station stopped playing](#a-radio-station-stopped-playing) below |
 
+## Tincan is missing from the share sheet, or the long-press shortcuts don't show
+
+Android reads `share_target` and `shortcuts` from the manifest when the app is installed and refreshes them only on its own schedule (Chrome checks the manifest roughly daily when the app is opened). After a deploy that changes them, uninstall the app and install it again from the browser; that always picks them up. A share that lands on "This share was already used or has expired" means the stash was consumed (the page ran twice) or was older than 30 minutes; share again. In `next dev` the worker is disabled, so a POST to `/share` is not intercepted: test the share sheet against a production build or the deployment.
+
 ## A radio station stopped playing
 
 Stream URLs live only in `src/content/radio.json`. The CSP and the service worker take their host lists from it through `src/lib/radio.ts`, so fixing a station never means editing `csp.ts` or `sw.ts`. The full procedure is in [operations.md → Updating radio stations](operations.md#updating-radio-stations).

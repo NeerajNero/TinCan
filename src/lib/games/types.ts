@@ -1,6 +1,6 @@
 /** Shared shape for every turn-based game. State must survive JSON round-trips. */
 export type Player = "first" | "second";
-export type GameType = "tictactoe" | "connectfour" | "checkers" | "chess";
+export type GameType = "tictactoe" | "connectfour" | "checkers" | "chess" | "dots" | "hangman" | "battleship";
 
 export interface GameStatus {
   status: "ongoing" | "win" | "draw";

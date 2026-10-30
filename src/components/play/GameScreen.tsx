@@ -20,16 +20,33 @@ import { Splash } from "@/components/ui/Splash";
 import type { HowToKey } from "@/content/howto";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
-import { acceptGame, declineGame, describeResult, GAME_REACTIONS, gameRoute, playerOf, playMove, rematch, resign, sendReaction, subscribeGame, uidOf, type LiveGame } from "@/lib/db/games";
+import { acceptGame, declineGame, describeResult, GAME_REACTIONS, gameRoute, isMyMove, playerOf, playMove, rematch, resign, sendReaction, subscribeGame, uidOf, type LiveGame } from "@/lib/db/games";
 import type { GameType } from "@/lib/games";
 import { engineFor } from "@/lib/games/all";
+import type { BattleshipState } from "@/lib/games/battleship";
 import { gameInfo } from "@/lib/games/catalog";
+import { currentRound, type HangmanState } from "@/lib/games/hangman";
 import { playSound } from "@/lib/sounds";
 
 /** Board games share their how-to keys with the engine types. */
-const HOWTO_FOR_GAME: Record<GameType, HowToKey> = { tictactoe: "tictactoe", connectfour: "connectfour", chess: "chess", checkers: "checkers" };
+const HOWTO_FOR_GAME: Record<GameType, HowToKey> = { tictactoe: "tictactoe", connectfour: "connectfour", chess: "chess", checkers: "checkers", dots: "dots", hangman: "hangman", battleship: "battleship" };
 
-const ChessBoard = dynamic(() => import("@/components/play/boards/ChessBoard").then((m) => m.ChessBoard), { ssr: false, loading: () => <ListSkeleton rows={1} tall /> });
+// Each heavier board is its own chunk, loaded only when that game is open.
+const boardSkeleton = () => <ListSkeleton rows={1} tall />;
+const ChessBoard = dynamic(() => import("@/components/play/boards/ChessBoard").then((m) => m.ChessBoard), { ssr: false, loading: boardSkeleton });
+const DotsBoard = dynamic(() => import("@/components/play/boards/DotsBoard").then((m) => m.DotsBoard), { ssr: false, loading: boardSkeleton });
+const HangmanBoard = dynamic(() => import("@/components/play/boards/HangmanBoard").then((m) => m.HangmanBoard), { ssr: false, loading: boardSkeleton });
+const BattleshipBoard = dynamic(() => import("@/components/play/boards/BattleshipBoard").then((m) => m.BattleshipBoard), { ssr: false, loading: boardSkeleton });
+
+/** Seat labels per game: chess has colours, Hangman swaps roles each round. */
+function seatLabels(type: GameType, state: unknown): [string, string] {
+  if (type === "chess") return ["White", "Black"];
+  if (type === "hangman" && state) {
+    const setter = currentRound(state as HangmanState).setter;
+    return setter === "first" ? ["Setter", "Guesser"] : ["Guesser", "Setter"];
+  }
+  return ["First", "Second"];
+}
 export function GameScreen({ gameId }: { gameId: string }) {
   const { uid, me, friend } = usePair();
   const router = useRouter();
@@ -102,8 +119,11 @@ export function GameScreen({ gameId }: { gameId: string }) {
 
   const meta = gameInfo(game.type);
   const mine = playerOf(game, uid);
-  const myTurn = game.status === "active" && uidOf(game, game.turn) === uid;
+  const myTurn = isMyMove(game, uid);
   const canMove = myTurn && !busy;
+  const [firstLabel, secondLabel] = seatLabels(game.type, state);
+  const placing = game.type === "battleship" && game.status === "active" && (state as BattleshipState | null)?.phase === "placing";
+  const names = { first: nameOf(game.players.first), second: nameOf(game.players.second) };
 
   async function move(m: unknown) {
     if (!game || !canMove) return;
@@ -125,13 +145,14 @@ export function GameScreen({ gameId }: { gameId: string }) {
       <div className="sticky top-0 z-10 -mx-4 bg-bg/90 px-4 py-2 backdrop-blur-md">
         <div className="card flex items-center gap-3 rounded-[20px] px-3 py-2">
           <CloseGameMenu game={game} onDone={() => router.push("/play")} className="tap grid size-9 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2" />
-          <Seat uid={game.players.first} label={game.type === "chess" ? "White" : "First"} active={game.status === "active" && game.turn === "first"} me={uid} meDoc={me} friendDoc={friend} nameOf={nameOf} />
+          <Seat uid={game.players.first} label={firstLabel} active={game.status === "active" && (placing ? isMyMove(game, game.players.first) : game.turn === "first")} me={uid} meDoc={me} friendDoc={friend} nameOf={nameOf} />
           <span className="text-xs font-bold text-muted">vs</span>
-          <Seat uid={game.players.second} label={game.type === "chess" ? "Black" : "Second"} active={game.status === "active" && game.turn === "second"} me={uid} meDoc={me} friendDoc={friend} nameOf={nameOf} right />
+          <Seat uid={game.players.second} label={secondLabel} active={game.status === "active" && (placing ? isMyMove(game, game.players.second) : game.turn === "second")} me={uid} meDoc={me} friendDoc={friend} nameOf={nameOf} right />
         </div>
         <p className="pt-1 text-center text-sm font-bold" aria-live="polite">
           {game.status === "invited" && (game.createdBy === uid ? `Waiting for ${nameOf(game.players.second)} to accept…` : `${nameOf(game.createdBy)} invited you`)}
-          {game.status === "active" && (myTurn ? "Your turn" : `${nameOf(uidOf(game, game.turn))}'s turn`)}
+          {game.status === "active" && placing && (myTurn ? "Place your ships" : `Waiting for ${nameOf(uidOf(game, game.turn))} to place ships`)}
+          {game.status === "active" && !placing && (myTurn ? "Your turn" : `${nameOf(uidOf(game, game.turn))}'s turn`)}
           {game.status === "finished" && (game.winnerId ? (game.winnerId === uid ? "You won! 🎉" : `${nameOf(game.winnerId)} won`) : game.endReason === "abandoned" ? "Abandoned" : game.endReason === "cancelled" ? "Cancelled" : "Draw")}
           {game.status === "declined" && "Declined"}
         </p>
@@ -171,6 +192,9 @@ export function GameScreen({ gameId }: { gameId: string }) {
         {game.type === "connectfour" && <ConnectFourBoard state={state} canMove={canMove} legal={legal} line={result?.line} onMove={move} />}
         {game.type === "checkers" && <CheckersBoard state={state} me={mine} canMove={canMove} legal={legal} onMove={move} />}
         {game.type === "chess" && <ChessBoard state={state} me={mine} canMove={canMove} legal={legal} onMove={move} />}
+        {game.type === "dots" && <DotsBoard state={state} me={mine} canMove={canMove} legal={legal} names={names} onMove={move} />}
+        {game.type === "hangman" && <HangmanBoard game={game} state={state} me={mine} uid={uid} nameOf={nameOf} />}
+        {game.type === "battleship" && <BattleshipBoard game={game} state={state} me={mine} uid={uid} nameOf={nameOf} />}
       </div>
 
       {game.status === "active" && mine && (
