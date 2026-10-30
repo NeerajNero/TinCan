@@ -1,18 +1,17 @@
 "use client";
 
 import { AnimatePresence, m } from "framer-motion";
-import { Delete } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { LetterKeyboard } from "@/components/games/LetterKeyboard";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
-import { TILE, WordleGrid } from "@/components/play/WordleGrid";
+import { WordleGrid } from "@/components/play/WordleGrid";
 import { WordleHistory } from "@/components/play/WordleHistory";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
-import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
 import { sendText } from "@/lib/db/messages";
 import { saveGuesses, settleWordleDay, wordleRef, type WordleDoc } from "@/lib/db/wordle";
@@ -21,7 +20,7 @@ import { recordTogetherEvent } from "@/lib/garden";
 import { readPref, writePref } from "@/lib/localPref";
 import { notify } from "@/lib/notify";
 import { definitionHeading, fetchDefinition, type WordDefinition } from "@/lib/wordDefinitions";
-import { isAllowedGuess, KEY_ROWS, keyboardStates, MAX_GUESSES, shareText, WORD_LEN, wordFor, type LetterState } from "@/lib/wordle";
+import { isAllowedGuess, keyboardStates, MAX_GUESSES, shareText, WORD_LEN, wordFor } from "@/lib/wordle";
 import { bothFinished, guessCount, iRecordWordle, wordleDayWinner, type WordleDay } from "@/lib/wordleResults";
 
 export function WordleScreen() {
@@ -169,7 +168,7 @@ export function WordleScreen() {
             </Card>
           )}
 
-          {!done && <Keyboard states={keyStates} onKey={onKey} />}
+          {!done && <LetterKeyboard withActions label="Keyboard" states={keyStates} onKey={onKey} />}
 
           {bothDone && theirs && (
             <Card className="flex flex-col gap-3">
@@ -227,34 +226,3 @@ function Meaning({ word, state, onAsk }: { word: string; state: MeaningState; on
   );
 }
 
-function Keyboard({ states, onKey }: { states: Record<string, LetterState>; onKey: (k: string) => void }) {
-  return (
-    <div className="flex flex-col items-center gap-1.5">
-      {KEY_ROWS.map((row, i) => (
-        <div key={row} className="flex gap-1">
-          {i === 2 && (
-            <button type="button" onClick={() => onKey("enter")} className="tap h-12 rounded-lg bg-surface-2 px-3 text-xs font-bold">
-              ENTER
-            </button>
-          )}
-          {row.split("").map((k) => (
-            <button
-              key={k}
-              type="button"
-              onClick={() => onKey(k)}
-              aria-label={k}
-              className={cn("h-12 w-8 rounded-lg text-sm font-bold uppercase", states[k] ? TILE[states[k]] : "bg-surface-2")}
-            >
-              {k}
-            </button>
-          ))}
-          {i === 2 && (
-            <button type="button" onClick={() => onKey("back")} aria-label="Backspace" className="tap grid h-12 place-items-center rounded-lg bg-surface-2 px-3">
-              <Delete size={18} />
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}

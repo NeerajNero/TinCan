@@ -3,6 +3,7 @@
 import { AnimatePresence, m } from "framer-motion";
 import { useEffect, useState } from "react";
 
+import { LetterKeyboard } from "@/components/games/LetterKeyboard";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -14,7 +15,6 @@ import { currentRound, HANGMAN_MAX_LEN, HANGMAN_MAX_WRONG, HANGMAN_ROUNDS, type 
 import { other, type Player } from "@/lib/games/types";
 import { errorMessage } from "@/lib/swallow";
 import { fetchDefinition, type WordDefinition } from "@/lib/wordDefinitions";
-import { KEY_ROWS } from "@/lib/wordle";
 
 const WORDS = answers as string[];
 const randomWord = () => WORDS[Math.floor(Math.random() * WORDS.length)] ?? "apple";
@@ -140,21 +140,14 @@ function Guessing({ game, state, round, iAmSetter, myWord, canGuess, setterName 
       {iAmSetter && <p className="text-center text-xs text-muted">Only you can see the letters. {state.phase === "guessing" ? "Sit tight while they guess." : ""}</p>}
       {!iAmSetter && !canGuess && <p className="text-center text-xs text-muted">{setterName}&apos;s word — the round is theirs to watch.</p>}
       {canGuess && (
-        <div className="flex w-full flex-col items-center gap-1.5" role="group" aria-label="Letters">
-          {KEY_ROWS.map((row) => (
-            <div key={row} className="flex gap-1">
-              {row.split("").map((letter) => {
-                const used = round.guessed.includes(letter);
-                const inWord = used && round.mask.includes(letter);
-                return (
-                  <button key={letter} type="button" disabled={used || busy !== null} onClick={() => void guess(letter)} aria-label={`Guess ${letter.toUpperCase()}`} className={cn("tap grid h-11 w-8 place-items-center rounded-lg text-sm font-bold uppercase", used ? (inWord ? "bg-emerald-500 text-white" : "bg-surface-2 text-muted opacity-50") : "bg-surface-2", busy === letter && "animate-pulse")}>
-                    {letter}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+        <LetterKeyboard
+          states={Object.fromEntries(round.guessed.split("").map((k) => [k, round.mask.includes(k) ? "correct" : "absent"]))}
+          isDisabled={(k) => round.guessed.includes(k)}
+          disabled={busy !== null}
+          pending={busy}
+          onKey={(k) => void guess(k)}
+          keyLabel={(k) => `Guess ${k.toUpperCase()}`}
+        />
       )}
       {error && <p className="text-xs font-bold text-red-500">{error}</p>}
     </Card>
