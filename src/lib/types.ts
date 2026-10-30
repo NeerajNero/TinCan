@@ -1,4 +1,5 @@
 import type { Timestamp } from "@/lib/firebase/fs";
+import type { PlayUsage } from "@/lib/play/usage";
 
 /* ── Notifications ─────────────────────────────────────────────────────── */
 
@@ -152,6 +153,8 @@ export interface PairDoc {
   chatBg?: ChatBgPref | null;
   /** Who last changed it (for the "X changed the wallpaper" toast on the other phone). */
   chatBgBy?: string;
+  /** Play tab usage shared by both: last opened (≤ 8) and pinned (≤ 6) games / activities. */
+  play?: PlayUsage;
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }

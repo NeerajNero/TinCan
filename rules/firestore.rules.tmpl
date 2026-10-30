@@ -88,8 +88,16 @@ service cloud.firestore {
         && incoming().uids.hasAll(existing().uids)
         && uid() in incoming().uids
         && incoming().roomTz is string && incoming().roomTz.size() > 0
-        && chatBgOk();
+        && chatBgOk()
+        && playOk();
       allow delete: if false;
+      // Play tab usage: recent (≤ 8 rows) and favourites (≤ 6 ids), nothing else under play.
+      function playOk() {
+        return !('play' in incoming()) || (incoming().play is map
+          && incoming().play.keys().hasOnly(['recent', 'favourites'])
+          && (!('recent' in incoming().play) || (incoming().play.recent is list && incoming().play.recent.size() <= 8))
+          && (!('favourites' in incoming().play) || (incoming().play.favourites is list && incoming().play.favourites.size() <= 6)));
+      }
       // Shared chat wallpaper: a short built-in id, or "photo" pointing at one of our Cloudinary assets.
       function chatBgOk() {
         return !('chatBg' in incoming()) || incoming().chatBg == null

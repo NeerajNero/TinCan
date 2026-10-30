@@ -137,6 +137,17 @@ h3,
   overscroll-behavior: contain;
 }
 
+/* A horizontal row that scrolls without a visible bar. */
+@utility scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility tap {
   min-height: 44px;
   min-width: 44px;

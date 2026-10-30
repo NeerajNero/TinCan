@@ -9,36 +9,50 @@ import { useEffect, useState } from "react";
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { CloseGameMenu } from "@/components/play/CloseGameMenu";
+import { BigTile, CompactTile, type TileBadge } from "@/components/play/PlayTile";
 import { RecentGamesList } from "@/components/play/RecentGamesList";
+import { useToast } from "@/components/toast/ToastProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { Sheet } from "@/components/ui/Sheet";
+import { HowToButton } from "@/components/ui/HowTo";
+import { Sheet, useStickyValue } from "@/components/ui/Sheet";
 import { HOWTO } from "@/content/howto";
 import { usePair } from "@/hooks/usePair";
 import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { roomDateKey } from "@/lib/dates";
 import { acceptGame, declineGame, gameRoute, inviteGame, isLive, isMyMove, loadRecentResults, recordFor, rematch, type GameResultDoc } from "@/lib/db/games";
+import { setPlayFavourite } from "@/lib/db/play";
 import { quizzesFrom } from "@/lib/db/quizzes";
 import { wordleRef } from "@/lib/db/wordle";
-import { DECK_KINDS, DECK_META } from "@/lib/deckMeta";
 import { onSnapshot } from "@/lib/firebase/fs";
 import type { GameOptions, GameType } from "@/lib/games";
-import { BOARD_GAMES, gameInfo, RECORD_GAMES } from "@/lib/games/catalog";
+import { gameInfo, RECORD_GAMES } from "@/lib/games/catalog";
 import { DOTS_SIZES } from "@/lib/games/dots";
+import { readPref, writePref } from "@/lib/localPref";
+import { entriesIn, pickSurprise, PLAY_SECTIONS, playInfo, type PlayEntry, type PlaySection } from "@/lib/play/catalog";
+import { favouritesOf, PLAY_RECENT_SHOWN, recentOf, sectionOpen, sectionPrefKey } from "@/lib/play/usage";
+
+const readSectionPrefs = (): Record<PlaySection, string | null> => ({ board: readPref(sectionPrefKey("board")), quick: readPref(sectionPrefKey("quick")), together: readPref(sectionPrefKey("together")) });
+
 export function PlayScreen() {
   const { uid, me, friend, friendUid, pair } = usePair();
   const { games } = useLiveEvents();
   const friendPresence = useFriendPresence();
   const router = useRouter();
   const startInvite = useStartInvite();
+  const { toast } = useToast();
   const [busy, setBusy] = useState<GameType | null>(null);
   const [pickSize, setPickSize] = useState(false);
+  const [menuFor, setMenuFor] = useState<PlayEntry | null>(null);
+  const menuEntry = useStickyValue(menuFor);
+  const [prefs, setPrefs] = useState(readSectionPrefs);
   const today = roomDateKey(pair);
   const [wordMine, setWordMine] = useState<{ done: boolean; solved: boolean } | null>(null);
   const [wordTheirs, setWordTheirs] = useState<{ done: boolean } | null>(null);
   const [newQuizzes, setNewQuizzes] = useState(0);
+  const friendName = friend?.nickname ?? "Friend";
   const friendPage = friendPresence?.online ? (friendPresence.page ?? "") : "";
 
   // Bounded extras: today's two wordle docs + the friend's published quizzes (≤5), filtered to untaken.
@@ -52,7 +66,7 @@ export function PlayScreen() {
       c();
     };
   }, [today, uid, friendUid]);
-  const nameOf = (id: string) => (id === uid ? me.nickname : (friend?.nickname ?? "Friend"));
+  const nameOf = (id: string) => (id === uid ? me.nickname : friendName);
 
   const openByType = (type: GameType) => games.find((g) => g.type === type && isLive(g));
 
@@ -82,8 +96,75 @@ export function PlayScreen() {
     }
   }
 
+  function open(entry: PlayEntry) {
+    if (entry.section === "board") void tapGame(entry.id as GameType);
+    else router.push(entry.href);
+  }
+
+  function surprise() {
+    if (!friendUid || busy) return;
+    const entry = pickSurprise();
+    toast({ key: "surprise", emoji: entry.emoji, title: `${entry.name} it is!`, durationMs: 2500 });
+    if (entry.section === "board") {
+      const type = entry.id as GameType;
+      if (openByType(type)) void tapGame(type);
+      else void startGame(type);
+    } else router.push(entry.href);
+  }
+
+  const recent = recentOf(pair.play)
+    .map((r) => playInfo(r.id))
+    .filter((e): e is PlayEntry => Boolean(e))
+    .slice(0, PLAY_RECENT_SHOWN);
+  const favouriteIds = favouritesOf(pair.play);
+  const favourites = favouriteIds.map((id) => playInfo(id)).filter((e): e is PlayEntry => Boolean(e));
+  const hasRecent = recent.length > 0;
+
+  function toggleSection(section: PlaySection) {
+    const next = sectionOpen(prefs[section], hasRecent) ? "0" : "1";
+    writePref(sectionPrefKey(section), next);
+    setPrefs((p) => ({ ...p, [section]: next }));
+  }
+
+  async function togglePin(entry: PlayEntry) {
+    const pinned = favouriteIds.includes(entry.id);
+    setMenuFor(null);
+    // A rejected write is already reported by the Firestore wrapper; the toast is only for the cap.
+    const ok = await setPlayFavourite(pair.play, entry.id, !pinned).catch(() => true);
+    if (!ok) toast({ key: "fav-full", emoji: "📌", title: "Favourites are full", body: "Unpin one first", durationMs: 3000 });
+  }
+
+  function badgeFor(entry: PlayEntry): TileBadge | null {
+    if (entry.section === "board") {
+      const type = entry.id as GameType;
+      if (busy === type) return { text: "Inviting…", short: "…", hot: false };
+      const game = openByType(type);
+      if (!game) return null;
+      if (game.status === "invited") return game.createdBy === uid ? { text: "Invite sent", short: "Sent", hot: false } : { text: "Invited you!", short: "Invited", hot: true };
+      return isMyMove(game, uid) ? { text: "Your turn", short: "Your turn", hot: true } : { text: "Their turn", short: "Their turn", hot: false };
+    }
+    if (entry.id === "word" && wordMine?.done) return { text: wordMine.solved ? "Today's word ✓" : "Done for today", short: "Done ✓", hot: false };
+    if (entry.id === "word" && wordTheirs?.done) return { text: "They've played", short: "Their go ✓", hot: true };
+    if (entry.id === "quiz" && newQuizzes > 0) return { text: `New quiz${newQuizzes > 1 ? ` ×${newQuizzes}` : ""}`, short: "New quiz", hot: true };
+    if (friendPage.startsWith(entry.href)) return { text: `${friendName} is here`, short: "Here", hot: true };
+    return null;
+  }
+
+  const tileProps = (entry: PlayEntry) => ({
+    entry,
+    badge: badgeFor(entry),
+    pinned: favouriteIds.includes(entry.id),
+    disabled: entry.section === "board" ? !friendUid || busy !== null : false,
+    onOpen: entry.section === "board" ? () => void tapGame(entry.id as GameType) : undefined,
+    onMenu: () => setMenuFor(entry),
+  });
+
   const invitesForMe = games.filter((g) => g.status === "invited" && g.createdBy !== uid);
-  const active = games.filter((g) => g.status === "active" || (g.status === "invited" && g.createdBy === uid));
+  const active = games
+    .filter((g) => g.status === "active" || (g.status === "invited" && g.createdBy === uid))
+    .map((g) => ({ g, rank: g.status === "invited" ? 2 : isMyMove(g, uid) ? 0 : 1 }))
+    .sort((a, b) => a.rank - b.rank || (b.g.lastMoveAt ?? 0) - (a.g.lastMoveAt ?? 0))
+    .map(({ g }) => g);
   const finished = games.filter((g) => g.status === "finished").sort((a, b) => (b.finishedAt ?? 0) - (a.finishedAt ?? 0));
 
   return (
@@ -92,68 +173,20 @@ export function PlayScreen() {
         <span className="text-4xl" aria-hidden>
           🎲
         </span>
-        <h1 className="text-3xl font-semibold">Play</h1>
+        <h1 className="flex-1 text-3xl font-semibold">Play</h1>
+        <HowToButton topic="play" />
       </header>
 
-      <div className="grid grid-cols-2 gap-3">
-        {BOARD_GAMES.map((type) => {
-          const open = openByType(type);
-          const meta = gameInfo(type);
-          const mine = open ? isMyMove(open, uid) : false;
-          return (
-            <button key={type} type="button" onClick={() => void tapGame(type)} disabled={!friendUid || busy !== null} className="card tap flex flex-col items-start gap-1.5 rounded-[24px] p-4 text-left disabled:opacity-60">
-              <span className="text-3xl" aria-hidden>
-                {meta.emoji}
-              </span>
-              <span className="font-heading text-lg font-semibold leading-tight">{meta.name}</span>
-              <span className={cn("text-xs", open ? "font-bold text-[var(--accent)]" : "text-muted")}>
-                {busy === type ? "Inviting…" : open ? (open.status === "invited" ? (open.createdBy === uid ? "Invite sent" : "Invited you!") : mine ? "Your turn" : "Their turn") : HOWTO[type].label}
-              </span>
-            </button>
-          );
-        })}
+      <div className="flex items-center gap-3 px-1">
+        <button type="button" onClick={surprise} disabled={!friendUid || busy !== null} className="tap rounded-full bg-accent px-4 py-2.5 text-sm font-bold text-accent-ink shadow-[0_8px_20px_-10px_var(--accent)] disabled:opacity-60">
+          🎲 Surprise us
+        </button>
+        <span className="text-xs text-muted">{friendUid ? "Picks something at random" : "Games unlock once your friend joins."}</span>
       </div>
-      {!friendUid && <p className="px-2 text-center text-xs text-muted">Games unlock once your friend joins.</p>}
-      <Sheet open={pickSize} onClose={() => setPickSize(false)} label="Board size" className="flex flex-col gap-3 px-5">
-        <p className="font-heading text-lg font-semibold">How big a board?</p>
-        <div className="flex gap-2">
-          {DOTS_SIZES.map((size) => (
-            <Button
-              key={size}
-              variant={size === 5 ? "primary" : "soft"}
-              onClick={() => {
-                setPickSize(false);
-                void startGame("dots", { size });
-              }}
-              className="flex-1 flex-col gap-0 py-3"
-            >
-              <span>
-                {size}×{size} dots
-              </span>
-              <span className="text-xs font-normal opacity-80">
-                {size - 1}×{size - 1} boxes{size === 5 ? " · quick" : " · longer"}
-              </span>
-            </Button>
-          ))}
-        </div>
-      </Sheet>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Quick play</h2>
-        <div className="grid grid-cols-2 gap-3">
-          <Tile href="/play/word" emoji="🟩" title="Daily word" badge={wordMine?.done ? (wordMine.solved ? "Today's word ✓" : "Done for today") : wordTheirs?.done ? "They've played" : HOWTO.word.label} hot={!wordMine?.done && Boolean(wordTheirs?.done)} />
-          <Tile href="/play/trivia" emoji="🧠" title="Trivia duel" badge={HOWTO.trivia.label} />
-          <Tile href="/play/quiz" emoji="🪞" title="Know-me quiz" badge={newQuizzes > 0 ? `New quiz${newQuizzes > 1 ? ` ×${newQuizzes}` : ""}` : HOWTO.quiz.label} hot={newQuizzes > 0} />
-          <Tile href="/play/twenty" emoji="🔍" title="20 Questions" badge={HOWTO.twenty.label} />
-          {DECK_KINDS.map((k) => (
-            <Tile key={k} href={`/play/deck/${k}`} emoji={DECK_META[k].emoji} title={DECK_META[k].name} badge={HOWTO[k].label} />
-          ))}
-        </div>
-      </section>
 
       {(invitesForMe.length > 0 || active.length > 0) && (
         <section className="flex flex-col gap-2">
-          <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Active games</h2>
+          <SectionTitle>Jump back in</SectionTitle>
           {invitesForMe.map((g) => (
             <Card key={g.id} className="flex items-center gap-3 px-4 py-3">
               <span className="text-2xl" aria-hidden>
@@ -194,9 +227,108 @@ export function PlayScreen() {
         </section>
       )}
 
+      {recent.length > 0 && (
+        <section className="flex flex-col gap-1">
+          <SectionTitle>Recent</SectionTitle>
+          <TileRow>
+            {recent.map((entry) => (
+              <CompactTile key={entry.id} {...tileProps(entry)} />
+            ))}
+          </TileRow>
+        </section>
+      )}
+
+      {favourites.length > 0 && (
+        <section className="flex flex-col gap-1">
+          <SectionTitle>Favourites</SectionTitle>
+          <TileRow>
+            {favourites.map((entry) => (
+              <CompactTile key={entry.id} {...tileProps(entry)} />
+            ))}
+          </TileRow>
+        </section>
+      )}
+
+      {PLAY_SECTIONS.map(({ id, title }) => {
+        const expanded = sectionOpen(prefs[id], hasRecent);
+        const entries = entriesIn(id);
+        return (
+          <section key={id} className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <SectionTitle>{title}</SectionTitle>
+              <button type="button" onClick={() => toggleSection(id)} aria-expanded={expanded} className="tap rounded-full px-3 py-1.5 text-xs font-bold text-[var(--accent)]">
+                {expanded ? "Show less" : "See all"}
+              </button>
+            </div>
+            {expanded ? (
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                {entries.map((entry) => (
+                  <BigTile key={entry.id} {...tileProps(entry)} blurb={HOWTO[entry.id].label} />
+                ))}
+              </div>
+            ) : (
+              <TileRow>
+                {entries.map((entry) => (
+                  <CompactTile key={entry.id} {...tileProps(entry)} />
+                ))}
+              </TileRow>
+            )}
+          </section>
+        );
+      })}
+
+      <Sheet open={pickSize} onClose={() => setPickSize(false)} label="Board size" className="flex flex-col gap-3 px-5">
+        <p className="font-heading text-lg font-semibold">How big a board?</p>
+        <div className="flex gap-2">
+          {DOTS_SIZES.map((size) => (
+            <Button
+              key={size}
+              variant={size === 5 ? "primary" : "soft"}
+              onClick={() => {
+                setPickSize(false);
+                void startGame("dots", { size });
+              }}
+              className="flex-1 flex-col gap-0 py-3"
+            >
+              <span>
+                {size}×{size} dots
+              </span>
+              <span className="text-xs font-normal opacity-80">
+                {size - 1}×{size - 1} boxes{size === 5 ? " · quick" : " · longer"}
+              </span>
+            </Button>
+          ))}
+        </div>
+      </Sheet>
+
+      <Sheet open={menuFor !== null} onClose={() => setMenuFor(null)} label={menuEntry ? menuEntry.name : "Tile"} className="flex flex-col gap-2 px-5">
+        {menuEntry && (
+          <>
+            <p className="flex items-center gap-2 font-heading text-lg font-semibold">
+              <span aria-hidden>{menuEntry.emoji}</span>
+              {menuEntry.name}
+            </p>
+            <Button
+              variant="soft"
+              onClick={() => {
+                setMenuFor(null);
+                open(menuEntry);
+              }}
+              className="justify-start py-3"
+            >
+              Open
+            </Button>
+            <Button variant="soft" onClick={() => void togglePin(menuEntry)} className="justify-start py-3">
+              {favouriteIds.includes(menuEntry.id) ? "Unpin" : "📌 Pin to favourites"}
+            </Button>
+            <p className="px-1 text-xs text-muted">Favourites are shared with {friendName}.</p>
+          </>
+        )}
+      </Sheet>
+
       {finished.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Just finished</h2>
+          <SectionTitle>Just finished</SectionTitle>
           {finished.map((g) => {
             const won = g.winnerId === uid;
             return (
@@ -224,16 +356,7 @@ export function PlayScreen() {
       )}
 
       <section className="flex flex-col gap-2">
-        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Together</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {TOGETHER.map((t) => (
-            <Tile key={t.href} href={t.href} emoji={t.emoji} title={t.title} badge={friendPage.startsWith(t.href) ? `${friend?.nickname ?? "Friend"} is here` : t.blurb} hot={friendPage.startsWith(t.href)} />
-          ))}
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">Record</h2>
+        <SectionTitle>Record</SectionTitle>
         <Card className="grid grid-cols-5 gap-2 p-3">
           {RECORD_GAMES.map((type) => {
             const r = recordFor(pair, type, uid, friendUid);
@@ -255,6 +378,15 @@ export function PlayScreen() {
     </div>
   );
 }
+
+const SectionTitle = ({ children }: { children: React.ReactNode }) => <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">{children}</h2>;
+
+/** A sideways-scrolling row of compact tiles: 3.5 visible, snapping, the page gutters used for bleed. */
+const TileRow = ({ children }: { children: React.ReactNode }) => (
+  <div className="scroll-x -mx-4 flex snap-x gap-2 px-4 pt-2.5 pb-1">
+    {children}
+  </div>
+);
 
 function RecentGames({ nameOf }: { nameOf: (uid: string) => string }) {
   const [open, setOpen] = useState(false);
@@ -280,28 +412,5 @@ function RecentGames({ nameOf }: { nameOf: (uid: string) => string }) {
         </ErrorBoundary>
       )}
     </div>
-  );
-}
-
-const TOGETHER = [
-  { href: "/play/whiteboard", emoji: "🖍️", title: "Whiteboard", blurb: HOWTO.whiteboard.label },
-  { href: "/play/pixel", emoji: "🟪", title: "Pixel art", blurb: HOWTO.pixel.label },
-  { href: "/play/pictionary", emoji: "🎨", title: "Pictionary", blurb: HOWTO.pictionary.label },
-  { href: "/play/watch", emoji: "📺", title: "Watch together", blurb: HOWTO.watch.label },
-  { href: "/play/listen", emoji: "🎧", title: "Listen together", blurb: HOWTO.listen.label },
-  { href: "/play/radio", emoji: "📻", title: "Radio", blurb: HOWTO.radio.label },
-  { href: "/play/timer", emoji: "⏱️", title: "Focus timer", blurb: HOWTO.timer.label },
-  { href: "/play/cook", emoji: "🍳", title: "Cook-along", blurb: HOWTO.cook.label },
-];
-
-function Tile({ href, emoji, title, badge, hot }: { href: string; emoji: string; title: string; badge: string; hot?: boolean }) {
-  return (
-    <Link href={href} className="card tap flex flex-col items-start gap-1.5 rounded-[24px] p-4">
-      <span className="text-3xl" aria-hidden>
-        {emoji}
-      </span>
-      <span className="font-heading text-lg font-semibold leading-tight">{title}</span>
-      <span className={cn("text-xs", hot ? "font-bold text-[var(--accent)]" : "text-muted")}>{badge}</span>
-    </Link>
   );
 }

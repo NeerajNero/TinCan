@@ -195,6 +195,20 @@ describe("pair/main", () => {
     await assertFails(updateDoc(doc(db, "pair/main"), { chatBg: { id: "dots", extra: 1 } }));
     await assertFails(updateDoc(doc(db, "pair/main"), { chatBg: "dots" }));
   });
+
+  it("holds Play usage (recent ≤ 8, favourites ≤ 6, nothing else)", async () => {
+    await seed(async (db) => setDoc(doc(db, "pair/main"), { uids: [A, B], roomTz: "UTC" }));
+    const db = asA().firestore();
+    const row = (i: number) => ({ id: `g${i}`, at: 1000 + i, by: A });
+    await assertSucceeds(updateDoc(doc(db, "pair/main"), { "play.recent": [row(1), row(2)] }));
+    await assertSucceeds(updateDoc(doc(db, "pair/main"), { "play.favourites": ["chess", "watch"] }));
+    await assertSucceeds(updateDoc(doc(db, "pair/main"), { play: { recent: Array.from({ length: 8 }, (_, i) => row(i)), favourites: Array.from({ length: 6 }, (_, i) => `f${i}`) } }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { "play.recent": Array.from({ length: 9 }, (_, i) => row(i)) }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { "play.favourites": Array.from({ length: 7 }, (_, i) => `f${i}`) }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { "play.other": 1 }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { "play.recent": "chess" }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { play: ["chess"] }));
+  });
 });
 
 describe("users: legacy chatBg", () => {

@@ -9,6 +9,7 @@ import { TakenScreen } from "@/components/auth/TakenScreen";
 import { WriteFailureToasts } from "@/components/dev/WriteFailureToasts";
 import { LiveEventsProvider } from "@/components/live/LiveEventsProvider";
 import { PresenceProvider } from "@/components/live/PresenceProvider";
+import { PlayUsageTracker } from "@/components/play/PlayUsageTracker";
 import { PushController } from "@/components/push/PushController";
 import { TabPrefetcher } from "@/components/shell/TabPrefetcher";
 import { UpdateWatcher } from "@/components/shell/UpdateWatcher";
@@ -46,6 +47,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                     <PushController />
                     <UpdateWatcher />
                     <TabPrefetcher />
+                    <PlayUsageTracker />
                     {process.env.NODE_ENV === "development" && <WriteFailureToasts />}
                     {children}
                   </LiveEventsProvider>

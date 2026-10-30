@@ -6,6 +6,7 @@
  * an emoji, no jargon.
  */
 export type HowToKey =
+  | "play"
   | "tictactoe"
   | "connectfour"
   | "chess"
@@ -48,6 +49,12 @@ export interface HowTo {
 }
 
 export const HOWTO: Record<HowToKey, HowTo> = {
+  play: {
+    title: "Play",
+    label: "Games and things to do together",
+    steps: ["🎲 Surprise us picks something at random and opens it", "📌 Long-press any tile to pin it — Favourites are shared", "🕑 Recent shows what you two opened last; rows scroll sideways", "🔔 Badges say Your turn, Invited, New quiz, Today's word ✓ or who's here"],
+    tip: "See all opens a section's full grid; the choice is remembered on this phone.",
+  },
   tictactoe: {
     title: "Tic-tac-toe",
     label: "Three in a row · quick one",

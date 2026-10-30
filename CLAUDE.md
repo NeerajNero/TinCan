@@ -88,11 +88,21 @@ app should feel like a small hello, not a dashboard.
 
 **Chat** — WhatsApp-like, single conversation (spec in its own section below).
 
-**Play** — two sections
-- Games: Tic-tac-toe, Connect Four, Chess, Checkers, Dots and Boxes, Hangman, Battleship, Pictionary,
-  Trivia duel, Daily word, Know-me quiz, Would You Rather, Never Have I Ever, Truth or Dare,
-  Conversation cards, 20 Questions. (The hangout wheel was removed in phase 22.)
-- Together: Whiteboard, Pixel art, Watch together, Listen together, Radio, Focus timer, Cook-along.
+**Play** — one landing, top to bottom
+- "🎲 Surprise us" chip: opens a random game or activity (every screen has its Invite button).
+- "Jump back in": invites for me, then active games with my turn first (hidden when empty).
+- "Recent" (up to 4 of `pair.play.recent`) and "Favourites" (`pair.play.favourites`, ≤ 6; long-press any
+  tile → "Pin to favourites" / "Unpin", shared by both), each hidden when empty.
+- Three collapsible sections, each a sideways row of compact tiles (emoji + short label, 3.5 visible) with
+  "See all" → the full two-column grid; the state is remembered per section on the device, all collapsed
+  by default once Recent has entries, expanded on a fresh install:
+  - Board games: Tic-tac-toe, Connect Four, Chess, Checkers, Dots and Boxes, Hangman, Battleship.
+  - Quick play: Daily word, Trivia duel, Know-me quiz, 20 Questions, Would You Rather, Never Have I Ever,
+    Truth or Dare, Conversation cards. (The hangout wheel was removed in phase 22.)
+  - Together: Whiteboard, Pixel art, Pictionary, Watch together, Listen together, Radio, Focus timer, Cook-along.
+- Status badges (Your turn, Invited, Invite sent, New quiz, Today's word ✓, "<friend> is here") render on tiles
+  in every row. Then "Just finished" (rematch) and the Record strip. Opening any game or together screen
+  prepends it to `pair.play.recent` (max 8, de-duplicated, one write per game per 10 minutes).
 
 **Memories** — Photo timeline, Memory map, Milestones, Journal, Jar, Time capsules,
 Open-when envelopes, Mood history (calendar for both).
@@ -141,7 +151,8 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
 `pair/main`: uids[2], roomTz, friendsSince, nextMeetup{date,label,place}, relationship (preset id,
   default "friends"; see `src/content/relationships.ts`), theme,
   pet{name,species,hungerAt,happyAt,sleepAt,level,bornAt}, plant{stage,lastGrowthDate},
-  garden{stickers[]}, streak{count,lastDateKey,best,monthBest,shields,shieldUsedOn}, chatBg, chatBgBy
+  garden{stickers[]}, streak{count,lastDateKey,best,monthBest,shields,shieldUsedOn}, chatBg, chatBgBy,
+  play{recent[{id,at (client ms),by}] ≤ 8, favourites[id] ≤ 6} (Play tab usage; ids are `lib/play/catalog.ts` ids)
 `messages/{id}`: senderId, type(text|image|voice|gif|sticker|system), text,
   media{url,publicId,variants{w320,w640,w800,blur,original|audio},w,h,durationMs,bytes},
   replyTo{id,preview,senderId,type},
@@ -484,6 +495,7 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - `messages`: `kind`/`meta` only on system lines; `kind == "invite"` requires meta keys route (same-origin path),
   activity (≤ 32), label (1–80), expiresAt (number) and optionally roundId (≤ 64), nothing else.
   `playlists/{watch|listen}`: keys items/updatedAt/updatedBy only, ≤ 50 items, updatedBy == caller.
+  `pair/main.play`: a map with only `recent` (list ≤ 8) and `favourites` (list ≤ 6).
 
 ## Security (phase 15a)
 - API routes share one guard (`src/lib/server/guard.ts`): ID token verified with revocation
