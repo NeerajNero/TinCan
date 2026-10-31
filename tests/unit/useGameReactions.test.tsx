@@ -22,14 +22,16 @@ const fake = {
   listeners: [] as Array<(c: FakeChild) => void>,
   removed: [] as string[],
   sent: [] as string[],
+  sentTo: [] as string[],
 };
 
 vi.mock("@/lib/rtdb", () => ({ rtdbRef: (path: string) => ({ path }) }));
 vi.mock("@/lib/db/reactions", () => ({
   gameReactionsPath: (id: string) => `gameReactions/${id}`,
-  sendGameReaction: async (_gameId: string, by: string, emoji: string) => {
+  sendGameReaction: async (gameId: string, by: string, emoji: string) => {
     const key = `-Nsent${fake.sent.length}`;
     fake.sent.push(key);
+    fake.sentTo.push(`gameReactions/${gameId}`);
     // The SDK raises child_added for the writer's own push at once (optimistic), then echoes it.
     for (const l of fake.listeners) l({ key, val: () => ({ by, emoji, at: 1 }) });
     for (const l of fake.listeners) l({ key, val: () => ({ by, emoji, at: 2 }) });
@@ -53,8 +55,8 @@ vi.mock("@/lib/firebase/rt", () => ({
   },
 }));
 
-function Probe() {
-  const { live, react } = useGameReactions("g1", "me");
+function Probe({ gameId = "g1" }: { gameId?: string }) {
+  const { live, react } = useGameReactions(gameId, "me");
   return (
     <button type="button" onClick={() => react("👏")} data-live={live.map((r) => r.id).join(",")}>
       react
@@ -72,6 +74,7 @@ beforeEach(() => {
   fake.listeners = [];
   fake.removed = [];
   fake.sent = [];
+  fake.sentTo = [];
   host = document.createElement("div");
   document.body.appendChild(host);
   root = createRoot(host);
@@ -82,11 +85,11 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const mount = async () => {
+const mount = async (gameId?: string) => {
   await act(async () => {
     root.render(
       <StrictMode>
-        <Probe />
+        <Probe gameId={gameId} />
       </StrictMode>,
     );
   });
@@ -121,6 +124,18 @@ describe("useGameReactions", () => {
     await tap(); // inside the tap gap: ignored
     expect(fake.sent).toHaveLength(1);
     expect(liveIds()).toBe("-Nsent0");
+  });
+
+  it("Battleship: writes under that game's id and animates there, pending shot or not", async () => {
+    const BATTLESHIP = "-Nbattleship42";
+    await mount(BATTLESHIP);
+    await tap();
+    await flush();
+    expect(fake.sentTo).toEqual([`gameReactions/${BATTLESHIP}`]);
+    expect(liveIds()).toBe("-Nsent0");
+    // The friend's reaction during my pending shot arrives through the same listener.
+    await emit("-Ntheirs", { by: "them", emoji: "😱", at: 3 });
+    expect(liveIds()).toBe("-Nsent0,-Ntheirs");
   });
 
   it("a reaction leaves after its animation", async () => {

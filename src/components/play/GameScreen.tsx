@@ -158,8 +158,11 @@ export function GameScreen({ gameId }: { gameId: string }) {
         </Card>
       )}
 
+      {/* Battleship's board is two grids tall: its reaction row sits above the board so it is reachable in both phases. */}
+      {game.status === "active" && mine && game.type === "battleship" && <ReactionRow onReact={react} />}
+
+      <ReactionBurst live={reactions} uid={uid} nameOf={nameOf} />
       <div className={cn("relative", game.status !== "active" && game.status !== "finished" && "pointer-events-none opacity-60")}>
-        <ReactionBurst live={reactions} uid={uid} nameOf={nameOf} />
         {game.type === "tictactoe" && <TicTacToeBoard state={state} canMove={canMove} legal={legal} line={result?.line} onMove={move} />}
         {game.type === "connectfour" && <ConnectFourBoard state={state} canMove={canMove} legal={legal} line={result?.line} onMove={move} />}
         {game.type === "checkers" && <CheckersBoard state={state} me={mine} canMove={canMove} legal={legal} onMove={move} />}
@@ -169,7 +172,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
         {game.type === "battleship" && <BattleshipBoard game={game} state={state} me={mine} uid={uid} nameOf={nameOf} />}
       </div>
 
-      {game.status === "active" && mine && <ReactionRow onReact={react} />}
+      {game.status === "active" && mine && game.type !== "battleship" && <ReactionRow onReact={react} />}
 
       {game.status === "active" && mine && !confirmResign && (
         <Button variant="ghost" onClick={() => setConfirmResign(true)} className="self-center text-sm text-muted">
