@@ -92,8 +92,20 @@
         "status": { ".validate": "newData.val() === 'invited' || newData.val() === 'active' || newData.val() === 'finished' || newData.val() === 'declined'" },
         "open": { ".validate": "newData.isBoolean()" },
         "endReason": { ".validate": "!newData.exists() || newData.val() === 'win' || newData.val() === 'draw' || newData.val() === 'resign' || newData.val() === 'abandoned' || newData.val() === 'cancelled'" },
-        "players": { ".validate": "newData.hasChildren(['first', 'second'])" },
-        "reaction": { ".validate": "newData.hasChildren(['by', 'emoji', 'at']) && newData.child('emoji').isString() && (newData.child('by').val() === auth.uid || (data.exists() && newData.child('at').val() === data.child('at').val() && newData.child('by').val() === data.child('by').val()))" }
+        "players": { ".validate": "newData.hasChildren(['first', 'second'])" }
+      }
+    },
+    "gameReactions": {
+      "$gameId": {
+        ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+        "$pushId": {
+          ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__ && ((!data.exists() && newData.exists()) || !newData.exists())",
+          ".validate": "newData.hasChildren(['by', 'emoji', 'at']) && newData.child('by').val() === auth.uid && newData.child('emoji').isString() && newData.child('emoji').val().length >= 1 && newData.child('emoji').val().length <= 8 && newData.child('at').isNumber()",
+          "by": { ".validate": true },
+          "emoji": { ".validate": true },
+          "at": { ".validate": true },
+          "$other": { ".validate": false }
+        }
       }
     },
     "gamePrivate": {

@@ -371,6 +371,23 @@ describe("invite system lines", () => {
   });
 });
 
+describe("rtdb gameReactions: a queue created as yourself, deleted by either, never edited", () => {
+  it("validates the shape and the writer", async () => {
+    const dbA = asA().database();
+    const dbB = asB().database();
+    await assertSucceeds(set(ref(dbA, "gameReactions/g1/r1"), { by: A, emoji: "👏", at: 1 }));
+    await assertFails(set(ref(dbA, "gameReactions/g1/r2"), { by: B, emoji: "👏", at: 1 }));
+    await assertFails(set(ref(dbA, "gameReactions/g1/r3"), { by: A, emoji: "", at: 1 }));
+    await assertFails(set(ref(dbA, "gameReactions/g1/r4"), { by: A, emoji: "👏👏👏👏👏", at: 1 }));
+    await assertFails(set(ref(dbA, "gameReactions/g1/r5"), { by: A, emoji: "👏", at: "now" }));
+    await assertFails(set(ref(dbA, "gameReactions/g1/r6"), { by: A, emoji: "👏", at: 1, extra: true }));
+    await assertFails(set(ref(dbA, "gameReactions/g1/r1"), { by: A, emoji: "😂", at: 2 }));
+    await assertSucceeds(get(ref(dbB, "gameReactions/g1")));
+    await assertSucceeds(remove(ref(dbB, "gameReactions/g1/r1")));
+    await assertFails(get(ref(asStranger().database(), "gameReactions/g1")));
+  });
+});
+
 describe("rtdb games: new types and the owner-only private subtree", () => {
   const node = (players = { first: A, second: B }) => ({ type: "battleship", state: "{}", turn: "first", players, status: "active", open: true, createdBy: A, createdAt: 1, lastMoveAt: 1, moves: 0, winnerId: null, endReason: null });
 

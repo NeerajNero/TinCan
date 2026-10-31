@@ -206,6 +206,9 @@ Every trivia question also carries an `explanation`. Word definitions are static
 `whiteboard/strokes/{id}`: {uid, color, width, points[[x,y]...]} — cap 500 strokes, Clear deletes all
 `pixel/grid`: 32×32 as array of 1024 palette indices; `pixel/cursor/{uid}`
 `games/{gameId}`: {type, state, turn, players, status, lastMoveAt, endReason(win|draw|resign|abandoned|cancelled)} — live boards
+`gameReactions/{gameId}/{pushId}`: {by, emoji, at} — the 👏/😱/🤔/😂 row during a board game, a queue like pings: each phone
+  animates a child once (by push id), ignores and deletes whatever existed when it opened, keeps ≤ 12 on screen; the sender
+  deletes its child after 5 s and the tick removes the node with the game
 `gamePrivate/{gameId}/{uid}`: {word, round} (Hangman setter) or {fleet: JSON of Ship[]} (Battleship) — readable and
   writable by that uid only (a separate top-level node: RTDB read rules cascade, so nothing private can live under the
   readable `games`); the tick removes it when it unlists or abandons the game
@@ -490,6 +493,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   string, `joined/{uid}` and `answered/{uid}` numbers that are the caller's own or unchanged (transactions
   rewrite the node), nothing else.
   `roomchat/{watch|listen}/{id}`: create only as yourself, delete by either, no edits, text 1–500, at ≤ now.
+  `gameReactions/{gameId}/{id}`: create only as yourself (`by == auth.uid`, `emoji` 1–8 chars, `at` number, nothing else),
+  delete by either, never edited.
   `gamePrivate/{gameId}/{uid}`: read and write by `$uid` only; `word` lower-case letters and spaces 1–20, `round`
   number, `fleet` string ≤ 600, nothing else. `games.type` enumerates the seven board games.
 - `messages`: `kind`/`meta` only on system lines; `kind == "invite"` requires meta keys route (same-origin path),

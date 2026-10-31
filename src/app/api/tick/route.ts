@@ -222,6 +222,7 @@ async function abandonStaleGames(ctx: Ctx) {
 async function closeGame(id: string, patch: Record<string, unknown>) {
   await adminRtdb().ref(`games/${id}`).update(patch);
   await adminRtdb().ref(`gamePrivate/${id}`).remove();
+  await adminRtdb().ref(`gameReactions/${id}`).remove();
 }
 
 const PET_MIN_PER_POINT = 14.4;

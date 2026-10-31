@@ -12,15 +12,17 @@ import { ConnectFourBoard } from "@/components/play/boards/ConnectFourBoard";
 import { TicTacToeBoard } from "@/components/play/boards/TicTacToeBoard";
 import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { FriendHereBadge } from "@/components/play/FriendHereBadge";
+import { ReactionBurst, ReactionRow } from "@/components/play/GameReactions";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Splash } from "@/components/ui/Splash";
 import type { HowToKey } from "@/content/howto";
+import { useGameReactions } from "@/hooks/useGameReactions";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
-import { acceptGame, declineGame, describeResult, GAME_REACTIONS, gameRoute, isMyMove, playerOf, playMove, rematch, resign, sendReaction, subscribeGame, uidOf, type LiveGame } from "@/lib/db/games";
+import { acceptGame, declineGame, describeResult, gameRoute, isMyMove, playerOf, playMove, rematch, resign, subscribeGame, uidOf, type LiveGame } from "@/lib/db/games";
 import type { GameType } from "@/lib/games";
 import { engineFor } from "@/lib/games/all";
 import type { BattleshipState } from "@/lib/games/battleship";
@@ -56,8 +58,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
   const [burst, setBurst] = useState(0);
   const celebrated = useRef(false);
   const [confirmResign, setConfirmResign] = useState(false);
-  const [floating, setFloating] = useState<{ emoji: string; by: string; at: number } | null>(null);
-  const lastReactionAt = useRef<number | null>(null);
+  const { live: reactions, react } = useGameReactions(gameId, uid);
 
   useEffect(() => {
     const unsub = subscribeGame(gameId, (g) => setGame(g));
@@ -77,26 +78,6 @@ export function GameScreen({ gameId }: { gameId: string }) {
   const state = useMemo(() => (game ? JSON.parse(game.state) : null), [game]);
   const legal = useMemo(() => (engine && state && game?.status === "active" ? engine.legalMoves(state) : []), [engine, state, game?.status]);
   const result = useMemo(() => (engine && state ? engine.status(state) : null), [engine, state]);
-
-  // Reactions: animate every change after the first snapshot.
-  const reaction = game?.reaction ?? null;
-  useEffect(() => {
-    if (!reaction) return;
-    if (lastReactionAt.current === null) {
-      lastReactionAt.current = reaction.at;
-      return;
-    }
-    if (reaction.at === lastReactionAt.current) return;
-    lastReactionAt.current = reaction.at;
-    setFloating(reaction);
-    try {
-      navigator.vibrate?.(20);
-    } catch {
-      // no haptics
-    }
-    const t = setTimeout(() => setFloating(null), 1800);
-    return () => clearTimeout(t);
-  }, [reaction]);
 
   // Confetti once for the winner.
   useEffect(() => {
@@ -172,22 +153,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
       )}
 
       <div className={cn("relative", game.status !== "active" && game.status !== "finished" && "pointer-events-none opacity-60")}>
-        <AnimatePresence>
-          {floating && (
-            <m.div
-              key={floating.at}
-              aria-live="polite"
-              className="pointer-events-none absolute inset-x-0 top-1/3 z-20 flex flex-col items-center"
-              initial={{ scale: 0.4, opacity: 0, y: 20 }}
-              animate={{ scale: [0.4, 1.4, 1.1], opacity: [0, 1, 1], y: [20, -10, -40] }}
-              exit={{ opacity: 0, y: -80 }}
-              transition={{ duration: 0.9, ease: "easeOut", times: [0, 0.4, 1] }}
-            >
-              <span className="text-7xl drop-shadow-lg">{floating.emoji}</span>
-              <span className="mt-1 rounded-full bg-surface/90 px-2 py-0.5 text-xs font-bold shadow">{floating.by === uid ? "You" : nameOf(floating.by)}</span>
-            </m.div>
-          )}
-        </AnimatePresence>
+        <ReactionBurst live={reactions} uid={uid} nameOf={nameOf} />
         {game.type === "tictactoe" && <TicTacToeBoard state={state} canMove={canMove} legal={legal} line={result?.line} onMove={move} />}
         {game.type === "connectfour" && <ConnectFourBoard state={state} canMove={canMove} legal={legal} line={result?.line} onMove={move} />}
         {game.type === "checkers" && <CheckersBoard state={state} me={mine} canMove={canMove} legal={legal} onMove={move} />}
@@ -197,15 +163,7 @@ export function GameScreen({ gameId }: { gameId: string }) {
         {game.type === "battleship" && <BattleshipBoard game={game} state={state} me={mine} uid={uid} nameOf={nameOf} />}
       </div>
 
-      {game.status === "active" && mine && (
-        <div role="group" aria-label="React" className="flex justify-center gap-2">
-          {GAME_REACTIONS.map((e) => (
-            <m.button key={e} type="button" whileTap={{ scale: 0.8 }} onClick={() => void sendReaction(game.id, uid, e)} aria-label={`React ${e}`} className="tap grid size-11 place-items-center rounded-full bg-surface text-2xl shadow-sm">
-              {e}
-            </m.button>
-          ))}
-        </div>
-      )}
+      {game.status === "active" && mine && <ReactionRow onReact={react} />}
 
       {game.status === "active" && mine && !confirmResign && (
         <Button variant="ghost" onClick={() => setConfirmResign(true)} className="self-center text-sm text-muted">

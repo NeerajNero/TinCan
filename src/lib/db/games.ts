@@ -22,8 +22,6 @@ import type { PairDoc } from "@/lib/types";
 
 export { describeResult, playerOf, resultForRecipient, uidOf, type GameNode, type LiveGame };
 
-export const GAME_REACTIONS = ["👏", "😱", "🤔", "😂"] as const;
-
 export const isLive = (g: GameNode) => g.status === "invited" || g.status === "active";
 
 export interface GameResultDoc {
@@ -129,11 +127,6 @@ export async function rematch(from: LiveGame): Promise<string> {
   await update(ref(getRtdb(), gamePath(from.id)), { open: false });
   void notify("yourTurn", { toUid: from.players.second === g.players.first ? from.players.first : from.players.second, body: `Rematch at ${gameInfo(from.type).name}! ${g.players.first === from.players.second ? "You move first." : "They move first."}`, data: { url: gameRoute(node.key as string) } });
   return node.key as string;
-}
-
-/** A quick 👏 / 😱 / 🤔 / 😂 for the other player; both boards animate it. */
-export function sendReaction(gameId: string, by: string, emoji: string): Promise<void> {
-  return update(ref(getRtdb(), gamePath(gameId)), { reaction: { by, emoji, at: rtdbNow() } });
 }
 
 /* ── moves ─────────────────────────────────────────────────────────────── */

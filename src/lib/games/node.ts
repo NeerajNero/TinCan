@@ -27,8 +27,6 @@ export interface GameNode {
   rematchOf?: string;
   /** Set when finished; the game stays listed (open) for a few hours, then the tick closes it. */
   finishedAt?: number;
-  /** Latest quick reaction from either player; clients animate on `at` change. */
-  reaction?: { by: string; emoji: string; at: number };
 }
 
 export interface LiveGame extends GameNode {

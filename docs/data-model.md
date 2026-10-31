@@ -49,7 +49,8 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 | `cursors/{uid}` | owner | x,y numbers in 0–1 | whiteboard |
 | `whiteboard/strokes/{id}`, `whiteboard/live/{uid}` | both / owner | points string ≤24k, hex colour, width number | SharedCanvas |
 | `pixel/grid`, `pixel/cursor/{uid}` | both / owner | grid exactly 1024 chars | pixel art |
-| `games/{id}` | both | type (tictactoe, connectfour, chess, checkers, dots, hangman, battleship), string state, turn, status, open bool, endReason enum, players{first,second}, reaction (own or unchanged) | board games; Hangman and Battleship nodes are rewritten by the server routes for guesses and shots |
+| `games/{id}` | both | type (tictactoe, connectfour, chess, checkers, dots, hangman, battleship), string state, turn, status, open bool, endReason enum, players{first,second} | board games; Hangman and Battleship nodes are rewritten by the server routes for guesses and shots |
+| `gameReactions/{gameId}/{pushId}` | create as self, delete by either | by, emoji (1–8 chars), at (server time) | the 👏/😱/🤔/😂 queue during a board game; each phone animates a push id once and ignores what existed at mount; the sender deletes its child after 5 s, the tick removes the node with the game |
 | `gamePrivate/{gameId}/{uid}` | **owner only** (read and write) | `word` lower-case letters and spaces 1–20 + `round` number (Hangman setter), or `fleet` string ≤ 600 (Battleship, JSON `Ship[]`); no other children | hidden information the other player must never read; the server routes read it with admin; the tick removes `gamePrivate/{id}` when it unlists or abandons the game. A separate top-level node because RTDB read rules cascade from the readable `games` |
 | `cards/{deck}` | both | — | deck games |
 | `pictionary/{id}` (+ strokes, live) | both | stroke/live limits as whiteboard; `rounds` 3 or 5 (absent = 3), `roundStartedAt` is a server timestamp | pictionary |
