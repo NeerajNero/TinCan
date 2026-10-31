@@ -7,7 +7,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
-import { child, get, push, ref, remove, set, update } from "firebase/database";
+import { child, get, push, ref, remove, serverTimestamp as rtdbServerTimestamp, set, update } from "firebase/database";
 import { deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 
@@ -385,6 +385,17 @@ describe("rtdb gameReactions: a queue created as yourself, deleted by either, ne
     await assertSucceeds(get(ref(dbB, "gameReactions/g1")));
     await assertSucceeds(remove(ref(dbB, "gameReactions/g1/r1")));
     await assertFails(get(ref(asStranger().database(), "gameReactions/g1")));
+  });
+
+  it("accepts exactly what the hook writes: push + set with a server timestamp, then the sender's own delete", async () => {
+    const dbA = asA().database();
+    const node = push(ref(dbA, "gameReactions/g2"));
+    await assertSucceeds(set(node, { by: A, emoji: "👏", at: rtdbServerTimestamp() }));
+    await assertSucceeds(get(ref(asB().database(), "gameReactions/g2")));
+    await assertSucceeds(remove(node));
+    const byB = push(ref(asB().database(), "gameReactions/g2"));
+    await assertSucceeds(set(byB, { by: B, emoji: "😂", at: rtdbServerTimestamp() }));
+    await assertSucceeds(remove(ref(dbA, `gameReactions/g2/${byB.key}`)));
   });
 });
 

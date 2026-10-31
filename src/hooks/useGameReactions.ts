@@ -9,24 +9,32 @@ import { rtdbRef } from "@/lib/rtdb";
 import { swallow } from "@/lib/swallow";
 
 /**
- * The reaction feed for one game. On mount every existing child is remembered
- * (never animated) and deleted; from then on `child_added` admits each push id
- * once, which also covers the sender's optimistic event and its server echo.
- * A reaction leaves `live` after its animation; `react` ignores a second tap
+ * The reaction feed for one game. On mount the node is read once: every child
+ * in that first snapshot is remembered (never animated) and deleted. From then
+ * on `child_added` admits each push id once, whatever its timestamp: the
+ * sender's own tap arrives through this same path (its optimistic event and
+ * the server echo share the key), so both phones behave identically. A
+ * reaction leaves `live` after its animation; `react` ignores a second tap
  * inside the tap gap and sends with a single write.
+ *
+ * The feed is decided outside React's state updater (`liveRef`), which runs
+ * later and, in StrictMode, twice: deciding inside it animated nothing.
  */
 export function useGameReactions(gameId: string, uid: string): { live: LiveReaction[]; react: (emoji: string) => void } {
   const [live, setLive] = useState<LiveReaction[]>([]);
-  const seen = useRef(new Set<string>());
+  const liveRef = useRef<LiveReaction[]>([]);
   const lastTap = useRef<number | null>(null);
 
   useEffect(() => {
-    const mine = new Set<string>();
-    seen.current = mine;
+    const seen = new Set<string>();
     const timers = new Set<ReturnType<typeof setTimeout>>();
     let cancelled = false;
     let unsub: (() => void) | null = null;
     const path = rtdbRef(gameReactionsPath(gameId));
+    const publish = (next: LiveReaction[]) => {
+      liveRef.current = next;
+      setLive(next);
+    };
 
     get(path)
       .then((snap) => {
@@ -35,18 +43,13 @@ export function useGameReactions(gameId: string, uid: string): { live: LiveReact
         snap.forEach((c) => {
           if (c.key) ids.push(c.key);
         });
-        for (const id of ingestExisting(mine, ids)) remove(rtdbRef(`${gameReactionsPath(gameId)}/${id}`)).catch(swallow);
+        for (const id of ingestExisting(seen, ids)) remove(rtdbRef(`${gameReactionsPath(gameId)}/${id}`)).catch(swallow);
         unsub = onChildAdded(query(path, limitToLast(REACTION_MAX_LIVE)), (c) => {
-          const now = Date.now();
-          let added: LiveReaction | null = null;
-          setLive((prev) => {
-            const r = admitReaction(mine, prev, c.key ?? "", c.val(), now);
-            added = r.added;
-            return r.added ? r.live : prev;
-          });
-          // setLive's updater runs synchronously here (outside a render), so `added` is known.
-          if (!added) return;
-          const id = (added as LiveReaction).id;
+          if (cancelled) return;
+          const r = admitReaction(seen, liveRef.current, c.key ?? "", c.val(), Date.now());
+          if (!r.added) return;
+          const { id } = r.added;
+          publish(r.live);
           try {
             navigator.vibrate?.(20);
           } catch {
@@ -54,7 +57,7 @@ export function useGameReactions(gameId: string, uid: string): { live: LiveReact
           }
           const t = setTimeout(() => {
             timers.delete(t);
-            setLive((prev) => prev.filter((x) => x.id !== id));
+            publish(liveRef.current.filter((x) => x.id !== id));
           }, REACTION_LIFE_MS);
           timers.add(t);
         });
@@ -65,7 +68,7 @@ export function useGameReactions(gameId: string, uid: string): { live: LiveReact
       cancelled = true;
       unsub?.();
       for (const t of timers) clearTimeout(t);
-      setLive([]);
+      publish([]);
     };
   }, [gameId]);
 

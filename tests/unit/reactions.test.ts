@@ -72,6 +72,22 @@ describe("a snapshot with old children", () => {
   });
 });
 
+describe("first snapshot vs later adds", () => {
+  it("a child added after the first snapshot animates; the initial children don't, whatever their timestamps", () => {
+    const seen = new Set<string>();
+    ingestExisting(seen, ["-N1", "-N2", "-N3"]);
+    let live: LiveReaction[] = [];
+    for (const id of ["-N1", "-N2", "-N3"]) {
+      const r = admitReaction(seen, live, id, { by: "them", emoji: "👏", at: t0 + 10 * 60_000 }, t0); // "future" timestamps: still ignored
+      live = r.live;
+      expect(r.added).toBeNull();
+    }
+    const r = admitReaction(seen, live, "-N4", { by: "them", emoji: "👏", at: t0 - 10 * 60_000 }, t0); // "old" timestamp: still shown
+    expect(r.added?.id).toBe("-N4");
+    expect(r.live).toHaveLength(1);
+  });
+});
+
 describe("feed limits", () => {
   it("keeps at most 12 live, dropping the oldest", () => {
     const p = phone();
