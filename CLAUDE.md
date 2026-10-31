@@ -595,7 +595,7 @@ of a task must say which docs were updated.
   `src/lib/firebase`, tests and scripts). Both wrappers report every rejected write (set/update/remove/
   push/transaction/onDisconnect, setDoc/updateDoc/addDoc/deleteDoc/batch/transaction) and every denied
   read or listener (get/getDoc/getDocs, onValue/onChildAdded/onSnapshot, even without a caller error
-  callback) to the Diagnostics log as `[write] op path → code` / `[read] …`; in development a
+  callback) to the Diagnostics log as `[write] op path → code: message` / `[read] …`; in development a
   permission-denied also shows as a toast (`WriteFailureToasts`). Never attach a listener that can't fail
   visibly. `tests/unit/rules-coverage.test.ts` (part of `pnpm test`) scans those wrappers' call sites and
   fails if a Firestore collection or RTDB top-level node has no explicit block in `rules/*.tmpl`, so a

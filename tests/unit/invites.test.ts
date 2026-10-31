@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { firebaseErrorCode, isPermissionDenied } from "@/lib/diagLog";
+import { firebaseErrorCode, firebaseErrorMessage, isPermissionDenied } from "@/lib/diagLog";
 import { rtdbPath } from "@/lib/firebase/rt";
 import { INVITE_COOLDOWN_MS, INVITE_TTL_MS, inviteAllowed, inviteCardState, inviteCooldownLeft, inviteText, isInviteRoute, joinRoute, markInvited, parseInviteMeta, resetInviteCooldowns } from "@/lib/invites";
 
@@ -63,6 +63,12 @@ describe("reported Firebase failures", () => {
     expect(firebaseErrorCode({ code: "firestore/unavailable" })).toBe("unavailable");
     expect(firebaseErrorCode(new TypeError("x"))).toBe("TypeError");
     expect(firebaseErrorCode(null)).toBe("unknown");
+    // The message travels too, minus the code it may repeat, so a code-less failure still says what happened.
+    expect(firebaseErrorMessage(new Error("Client is offline"))).toBe("Client is offline");
+    expect(firebaseErrorMessage({ code: "PERMISSION_DENIED", message: "PERMISSION_DENIED: Permission denied" })).toBe("Permission denied");
+    expect(firebaseErrorMessage({ code: "permission-denied", message: "Firebase: Missing or insufficient permissions." })).toBe("Missing or insufficient permissions.");
+    expect(firebaseErrorMessage({ code: "x", message: "y".repeat(400) })).toHaveLength(160);
+    expect(firebaseErrorMessage(null)).toBe("");
     expect(isPermissionDenied("permission-denied")).toBe(true);
     expect(isPermissionDenied("PERMISSION_DENIED")).toBe(true);
     expect(isPermissionDenied("unavailable")).toBe(false);

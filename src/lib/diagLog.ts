@@ -20,6 +20,8 @@ export interface FirebaseFailure {
   path: string;
   /** `permission-denied` (Firestore) or `PERMISSION_DENIED` (RTDB), else the error's code or name. */
   code: string;
+  /** The error's own message (trimmed), so a code-less failure ("Client is offline") still says what happened. */
+  message: string;
 }
 
 const MAX = 20;
@@ -78,6 +80,19 @@ export function firebaseErrorCode(err: unknown): string {
   return "unknown";
 }
 
+/** The error's message without the code it may repeat, at most 160 chars; "" when there is none. */
+export function firebaseErrorMessage(err: unknown): string {
+  const e = err as { message?: unknown; code?: unknown } | null;
+  const raw = e && typeof e.message === "string" ? e.message : typeof err === "string" ? err : "";
+  const code = e && typeof e.code === "string" ? e.code : "";
+  return raw
+    .replace(code ? new RegExp(`^(${code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}|${firebaseErrorCode(err)}):?\s*`) : /^$/, "")
+    .replace(/^Firebase:\s*/i, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+}
+
 /** True for a rules rejection from either database. */
 export const isPermissionDenied = (code: string): boolean => /permission[-_]denied/i.test(code);
 
@@ -87,8 +102,8 @@ export const isPermissionDenied = (code: string): boolean => /permission[-_]deni
  * Called by the SDK wrappers in `lib/firebase/fs.ts` and `lib/firebase/rt.ts`.
  */
 export function noteFirebaseFailure(kind: FirebaseFailure["kind"], op: string, path: string, err: unknown): void {
-  const failure: FirebaseFailure = { kind, op, path: path.slice(0, 200), code: firebaseErrorCode(err) };
-  push(kind, `${op} ${failure.path} → ${failure.code}`);
+  const failure: FirebaseFailure = { kind, op, path: path.slice(0, 200), code: firebaseErrorCode(err), message: firebaseErrorMessage(err) };
+  push(kind, `${op} ${failure.path} → ${failure.code}${failure.message && failure.message !== failure.code ? `: ${failure.message}` : ""}`);
   failureListeners.forEach((l) => l(failure));
 }
 
