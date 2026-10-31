@@ -28,7 +28,7 @@ A rule that silently denies a path is now visible: both SDK wrappers (`lib/fireb
 
 ## API guard (`src/lib/server/guard.ts`)
 
-Route keys: `push`, `media`, `sign`, `urls`, `gate`, `gif` and `games` (the two game-move routes: bucket 40 / 1 per s, daily cap 1500 per uid).
+Route keys: `push`, `media`, `sign`, `urls`, `gate`, `gif` and `games` (the two game-move routes: bucket 40 / 1 per s). The game routes use `guardFast` (perf: turn latency): the ID token is verified locally against Google's cached public keys without the revocation lookup, the token bucket is in memory only and nothing touches Firestore (no daily cap). Accepted trade-off: a revoked session can keep moving pieces in games it is already in until its token expires (≤ 1 h), but it cannot send, upload or spend anything, which stays behind the full `guard`.
 
 ID token verified with revocation check → `email_verified` + allowlist → per-uid token bucket → Firestore daily cap (`quota/{uid}_{day}`: push 1000, media 300, sign 300) → 16 KB body → `.strict()` zod. `/api/tick` compares `x-tick-secret` with `timingSafeEqual`. Response bodies carry only an error code.
 

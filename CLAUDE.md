@@ -111,7 +111,8 @@ Open-when envelopes, Mood history (calendar for both).
 
 **More** — Profile (nickname, city, avatar), Theme, Notification toggles, Friends-since date,
 Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), App build + "Check for updates",
-Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, last ten in the copy dump), Sign out.
+Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, and "Last move: 180 ms (chess, local)" / "Last shot: 1,240 ms
+(battleship, server)", tap → the board reflecting the turn through the RTDB listener; the last ten of each in the copy dump), Sign out.
 
 ## Design
 - Cute & playful: rounded 20px cards, soft pastel palette with one accent per tab, large emoji
@@ -509,7 +510,12 @@ Every trivia question also carries an `explanation`. Word definitions are static
   `pair/main.play`: a map with only `recent` (list ≤ 8) and `favourites` (list ≤ 6).
 
 ## Security (phase 15a)
-- API routes share one guard (`src/lib/server/guard.ts`): ID token verified with revocation
+- Game moves (`POST /api/games/*`) use the low-latency `guardFast`: the ID token verified locally against Google's cached
+  public keys (no revocation lookup), the token bucket in memory only, no Firestore; the route opens the game node with a
+  value listener and fetches every private subtree in parallel (one round trip), commits the transaction from the cached
+  value (one round trip), answers, and sends the your-turn push / result bookkeeping in `after()`. A revoked session can
+  keep moving pieces until its token expires (≤ 1 h); everything that sends, uploads or spends stays behind the full guard.
+- Every other API route shares one guard (`src/lib/server/guard.ts`): ID token verified with revocation
   checking, `email_verified` + allowlist required, bodies ≤ 16 KB and zod `.strict()`, an in-memory
   token bucket per uid per route, and a Firestore daily cap per uid (`quota/{uid}_{day}`, admin-only:
   push 1000, media/sign 300, games 1500). `/api/tick` compares its secret with `timingSafeEqual`. Error bodies

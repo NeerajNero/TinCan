@@ -101,7 +101,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs the same checks on every push a
 | `pnpm export` | Backup: dated JSON of all Firestore data plus a CSV of media URLs in `./exports/` |
 | `pnpm migrate-media` | Dry run: counts public media to make private. `pnpm migrate-media --yes` moves it to authenticated delivery and re-signs every stored URL |
 | `pnpm cloudinary:presets` | Creates/updates the two upload presets (Signed, authenticated) |
-| `pnpm analyze` / `pnpm knip` / `pnpm profile:chat` | Bundle report / dead-code check / chat render profile |
+| `pnpm analyze` / `pnpm knip` / `pnpm profile:chat` / `pnpm perf:turn` | Bundle report / dead-code check / chat render profile / game-turn latency on the emulators |
 | `pnpm size` | Initial JS per route (raw + gzip) from a production build; `--save` / `--compare` for before/after |
 | `pnpm words:definitions` | Rebuilds the daily-word definitions in `public/words/` from WordNet (only needed when the word list changes) |
 

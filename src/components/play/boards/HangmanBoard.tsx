@@ -14,6 +14,7 @@ import { guessHangmanLetter, privateGamePath, setHangmanWord, type LiveGame } fr
 import { currentRound, HANGMAN_MAX_LEN, HANGMAN_MAX_WRONG, HANGMAN_ROUNDS, type HangmanRound, type HangmanState } from "@/lib/games/hangman";
 import { other, type Player } from "@/lib/games/types";
 import { errorMessage } from "@/lib/swallow";
+import { turnTimer } from "@/lib/turnTiming";
 import { fetchDefinition, type WordDefinition } from "@/lib/wordDefinitions";
 
 const WORDS = answers as string[];
@@ -121,9 +122,11 @@ function Guessing({ game, state, round, iAmSetter, myWord, canGuess, setterName 
     if (!canGuess || busy || round.guessed.includes(letter)) return;
     setBusy(letter);
     setError(null);
+    turnTimer.start({ gameId: game.id, kind: "guess", game: "hangman", mode: "server", moves: game.moves ?? 0 });
     try {
       await guessHangmanLetter(game.id, letter);
     } catch (err) {
+      turnTimer.cancel(game.id);
       setError(errorMessage(err, "That guess didn't go through"));
     } finally {
       setBusy(null);

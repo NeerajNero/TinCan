@@ -24,7 +24,8 @@
     "size": "node scripts/measure-routes.mjs",
     "test:e2e": "next build && playwright test",
     "migrate-media": "node scripts/migrate-media-authenticated.mjs",
-    "export": "node scripts/export-data.mjs"
+    "export": "node scripts/export-data.mjs",
+    "perf:turn": "firebase emulators:exec --only auth,firestore,database --project demo-tincan \"node scripts/perf-turn.mjs\""
   },
   "dependencies": {
     "browser-image-compression": "^2.0.2",

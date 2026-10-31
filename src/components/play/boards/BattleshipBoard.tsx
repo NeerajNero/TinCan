@@ -12,10 +12,13 @@ import { fireBattleshipShot, gameRoute, privateGamePath, readyBattleship, type L
 import { BS_SHIPS, BS_SIZE, cellIndex, cellsOf, fleetValid, randomFleet, shipName, shipsFit, type BattleshipState, type Ship } from "@/lib/games/battleship";
 import { other, type Player } from "@/lib/games/types";
 import { errorMessage } from "@/lib/swallow";
+import { turnTimer } from "@/lib/turnTiming";
 
 const COLS = Array.from({ length: BS_SIZE }, (_, i) => i);
 const GRID_TRACKS = { gridTemplateColumns: `repeat(${BS_SIZE}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${BS_SIZE}, minmax(0, 1fr))` };
 const LETTERS = "ABCDEFGHIJ";
+/** A pending shot the listener never confirms (connection lost) unlocks the grid after this. */
+const PENDING_TIMEOUT_MS = 20_000;
 
 function parseFleet(raw: unknown): Ship[] | null {
   if (typeof raw !== "string") return null;
@@ -39,7 +42,9 @@ export function BattleshipBoard({ game, state, me, uid, nameOf }: { game: LiveGa
   const myReady = me ? state.ready[me] : false;
   const priv = useRtdbValue<{ fleet?: string }>(me && game.status !== "declined" ? privateGamePath(game.id, uid) : null);
   const myFleet = parseFleet(priv.value?.fleet) ?? [];
-  const [busyCell, setBusyCell] = useState<number | null>(null);
+  // A shot is "pending" from the tap until the listener shows it in my shots; the HTTP reply only clears it on error.
+  const [pendingCell, setPendingCell] = useState<number | null>(null);
+  const [retryCell, setRetryCell] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Sunk announcements: a shot that arrived after mount and sank something shows a banner until dismissed by the timer.
@@ -58,6 +63,14 @@ export function BattleshipBoard({ game, state, me, uid, nameOf }: { game: LiveGa
     return () => clearTimeout(t);
   }, [banner, lastKey, last?.by, me]);
 
+  const pending = me && pendingCell !== null && !state.shots[me][String(pendingCell)] ? pendingCell : null;
+  // A reply that never comes (connection dropped mid-shot) must not lock the grid for good.
+  useEffect(() => {
+    if (pending === null) return;
+    const t = setTimeout(() => setPendingCell(null), PENDING_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [pending]);
+
   if (!me) return <Card className="py-6 text-center text-muted">Only the two players can see the boards.</Card>;
 
   if (state.phase === "placing" && !myReady && active) {
@@ -71,15 +84,19 @@ export function BattleshipBoard({ game, state, me, uid, nameOf }: { game: LiveGa
   const mySunk = state.sunk[me];
 
   async function fire(cell: number) {
-    if (!myTurn || busyCell !== null || myShots[String(cell)]) return;
-    setBusyCell(cell);
+    if (!myTurn || pending !== null || myShots[String(cell)]) return;
+    setPendingCell(cell);
+    setRetryCell(null);
     setError(null);
+    turnTimer.start({ gameId: game.id, kind: "shot", game: "battleship", mode: "server", moves: game.moves ?? 0 });
     try {
       await fireBattleshipShot(game.id, cell);
+      // Success: nothing to do here; the RTDB listener reveals hit / miss / sunk and that clears `pending`.
     } catch (err) {
+      turnTimer.cancel(game.id);
+      setPendingCell(null);
+      setRetryCell(cell);
       setError(errorMessage(err, "That shot didn't go through"));
-    } finally {
-      setBusyCell(null);
     }
   }
 
@@ -115,17 +132,28 @@ export function BattleshipBoard({ game, state, me, uid, nameOf }: { game: LiveGa
               const shot = myShots[String(k)];
               const sunk = theirSunk.some((s) => s.cells.includes(k));
               const isLast = last?.by === me && last.cell === k;
+              const isPending = pending === k;
               return (
-                <button key={k} type="button" disabled={!myTurn || Boolean(shot) || busyCell !== null} onClick={() => void fire(k)} data-cell aria-label={`${LETTERS[Math.floor(k / BS_SIZE)]}${(k % BS_SIZE) + 1}${shot ? `, ${shot}` : ""}`} className={cn("grid min-h-0 min-w-0 place-items-center rounded-md text-[6cqw] leading-none", shot === "hit" ? (sunk ? "bg-red-700 text-white" : "bg-red-500 text-white") : shot === "miss" ? "bg-surface-2 text-muted" : "bg-sky-500/15", myTurn && !shot && "hover:bg-sky-500/30", isLast && "ring-2 ring-[var(--accent)]", busyCell === k && "animate-pulse")}>
-                  {shot === "hit" ? "✕" : shot === "miss" ? "•" : ""}
+                <button key={k} type="button" disabled={!myTurn || Boolean(shot) || pending !== null} onClick={() => void fire(k)} data-cell aria-label={`${LETTERS[Math.floor(k / BS_SIZE)]}${(k % BS_SIZE) + 1}${shot ? `, ${shot}` : isPending ? ", firing" : ""}`} className={cn("grid min-h-0 min-w-0 place-items-center rounded-md text-[6cqw] leading-none", isPending && "animate-pulse ring-2 ring-[var(--accent)] ring-inset", shot === "hit" ? (sunk ? "bg-red-700 text-white" : "bg-red-500 text-white") : shot === "miss" ? "bg-surface-2 text-muted" : "bg-sky-500/15", myTurn && !shot && "hover:bg-sky-500/30", isLast && "ring-2 ring-[var(--accent)]")}>
+                  {shot === "hit" ? "✕" : shot === "miss" ? "•" : isPending ? "◌" : ""}
                 </button>
               );
             }}
           />
           <p className="px-1 text-center text-xs text-muted" aria-live="polite">
-            {!active ? "" : myTurn ? "Tap a cell to fire" : `${friendName} is taking aim…`}
+            {!active ? "" : pending !== null ? "Firing…" : myTurn ? "Tap a cell to fire" : `${friendName} is taking aim…`}
           </p>
-          {error && <p className="text-center text-xs font-bold text-red-500">{error}</p>}
+          {error && (
+            <p className="flex items-center justify-center gap-2 text-center text-xs font-bold text-red-500">
+              {error}
+              {retryCell !== null && myTurn && (
+                <Button variant="soft" onClick={() => void fire(retryCell)} className="px-3 py-1 text-xs">
+                  Retry {LETTERS[Math.floor(retryCell / BS_SIZE)]}
+                  {(retryCell % BS_SIZE) + 1}
+                </Button>
+              )}
+            </p>
+          )}
         </section>
       )}
 

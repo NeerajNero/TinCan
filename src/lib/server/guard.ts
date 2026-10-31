@@ -57,12 +57,12 @@ export function errorResponse(err: unknown, route: RouteKey) {
 
 /* ── auth ──────────────────────────────────────────────────────────────── */
 
-async function requireCaller(req: Request): Promise<Caller> {
+async function requireCaller(req: Request, checkRevoked = true): Promise<Caller> {
   const idToken = /^Bearer\s+(.+)$/i.exec(req.headers.get("authorization") ?? "")?.[1];
   if (!idToken) throw new GuardError(401, "unauthorized", "missing bearer");
   let token;
   try {
-    token = await adminAuth().verifyIdToken(idToken, true); // checkRevoked
+    token = await adminAuth().verifyIdToken(idToken, checkRevoked);
   } catch (e) {
     throw new GuardError(401, "unauthorized", `token rejected: ${(e as Error).message}`);
   }
@@ -129,6 +129,20 @@ export async function guard(req: Request, route: RouteKey): Promise<Caller> {
   const caller = await requireCaller(req);
   takeToken(route, caller.uid);
   await takeDaily(route, caller.uid);
+  return caller;
+}
+
+/**
+ * The low-latency variant for game moves (`/api/games/*`): the ID token is
+ * verified locally against Google's cached public keys (no revocation lookup,
+ * which is a round trip to Firebase Auth), the token bucket is in memory only
+ * and nothing touches Firestore. A revoked session therefore keeps moving
+ * pieces for up to an hour, until its token expires; it can't send, upload or
+ * spend anything, which stays behind `guard`.
+ */
+export async function guardFast(req: Request, route: RouteKey): Promise<Caller> {
+  const caller = await requireCaller(req, false);
+  takeToken(route, caller.uid);
   return caller;
 }
 

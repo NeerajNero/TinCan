@@ -17,26 +17,49 @@ import { loadUser, postSystemMessageAdmin, sendPushTo } from "@/lib/server/push"
 
 const gameRef = (id: string) => adminRtdb().ref(`games/${id}`);
 
-export async function loadGame(id: string): Promise<GameNode> {
-  const snap = await gameRef(id).get();
-  if (!snap.exists()) throw new GuardError(404, "not_found");
-  return snap.val() as GameNode;
+export interface OpenGame {
+  game: GameNode;
+  /** Every `gamePrivate/{id}/{uid}` subtree, keyed by uid; only ever read here, never returned to a client. */
+  privates: Record<string, unknown>;
+  /** Rewrite the node atomically from the cached value (one round trip); `fn` returns undefined to abort (409). */
+  commit(fn: (current: GameNode) => GameNode | undefined): Promise<GameNode>;
+  /** Drop the listener without committing. */
+  close(): void;
 }
 
-export async function loadPrivate<T>(id: string, uid: string): Promise<T | null> {
-  const snap = await adminRtdb().ref(`gamePrivate/${id}/${uid}`).get();
-  return snap.exists() ? (snap.val() as T) : null;
-}
-
-/** Rewrite the node atomically; `fn` returns undefined to abort (409 to the caller). */
-export async function transactGame(id: string, fn: (current: GameNode) => GameNode | undefined): Promise<GameNode> {
-  const res = await gameRef(id).transaction((current: GameNode | null) => {
-    // The first pass may see null before the SDK has the value: hand it back so the compare fails and reruns.
-    if (current === null) return current;
-    return fn(current);
-  });
-  if (!res.committed || !res.snapshot.exists()) throw new GuardError(409, "move_rejected");
-  return res.snapshot.val() as GameNode;
+/**
+ * Open a game for one server move: the shared node and every private subtree
+ * are fetched in parallel (one round trip), and a value listener keeps the
+ * node cached so the transaction starts from it and commits in one round
+ * trip instead of first running against null and rerunning after the server
+ * sends the value. Call `commit` or `close` exactly once.
+ */
+export async function openGame(id: string): Promise<OpenGame> {
+  const ref = gameRef(id);
+  const keep = () => undefined;
+  ref.on("value", keep);
+  const close = () => ref.off("value", keep);
+  try {
+    const [snap, priv] = await Promise.all([ref.once("value"), adminRtdb().ref(`gamePrivate/${id}`).get()]);
+    if (!snap.exists()) throw new GuardError(404, "not_found");
+    return {
+      game: snap.val() as GameNode,
+      privates: (priv.val() as Record<string, unknown> | null) ?? {},
+      close,
+      commit: async (fn) => {
+        try {
+          const res = await ref.transaction((current: GameNode | null) => (current === null ? current : fn(current)));
+          if (!res.committed || !res.snapshot.exists()) throw new GuardError(409, "move_rejected");
+          return res.snapshot.val() as GameNode;
+        } finally {
+          close();
+        }
+      },
+    };
+  } catch (e) {
+    close();
+    throw e;
+  }
 }
 
 /** The finishing fields every server move sets when the game is over. */
@@ -47,7 +70,8 @@ export function finishedFields(winnerId: string): Pick<GameNode, "status" | "ope
 /**
  * After a committed server move: a your-turn push when the move handed the
  * turn over, or the result bookkeeping (gameResults, pair.records, the chat
- * line, the result push) when it ended the game.
+ * line, the result push) when it ended the game. Routes run it in `after()`,
+ * once the response has gone out: none of it is on the tap → board path.
  */
 export async function afterServerMove(id: string, before: GameNode, after: GameNode, callerUid: string, turnBody: string): Promise<void> {
   const url = `/play/${id}`;

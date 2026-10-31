@@ -16,6 +16,7 @@ import { onSnapshot } from "@/lib/firebase/fs";
 import { getFirestoreHealth, subscribeFirestoreHealth, type FirestoreHealth } from "@/lib/firestoreHealth";
 import { APP_BUILD, workerBuild } from "@/lib/swUpdate";
 import { formatTabSwitch, tabSwitchLine, tabTimer } from "@/lib/tabTiming";
+import { formatTurn, turnLabel, turnLine, turnTimer } from "@/lib/turnTiming";
 
 /** Owner-only troubleshooting panel. Listeners exist only while it's open. */
 export function DiagnosticsCard() {
@@ -122,6 +123,8 @@ function DiagnosticsPanel() {
   const firestoreLast = log.filter((e) => /firestore/i.test(e.text)).at(-1);
   const switches = tabTimer.list(); // refreshed by the 2 s clock above
   const lastSwitch = switches[switches.length - 1];
+  const turns = turnTimer.list();
+  const lastTurn = turns[turns.length - 1];
   const rows: Array<[string, string]> = [
     ["App build", APP_BUILD],
     ["Worker active", worker ? `${worker.active}${worker.controller ? " (controlling)" : worker.active === "none" ? "" : " (not controlling)"}` : "checking…"],
@@ -137,6 +140,7 @@ function DiagnosticsPanel() {
     ["Firestore last error", fsError ?? firestoreLast?.text ?? "none"],
     ["CSP", csp],
     ["Last tab switch", lastSwitch ? `${formatTabSwitch(lastSwitch)} → ${lastSwitch.href}` : "none yet (tap another tab)"],
+    [lastTurn ? turnLabel(lastTurn) : "Last move", lastTurn ? formatTurn(lastTurn) : "none yet (play a turn)"],
     ["Network", `${navigator.onLine ? "online" : "offline"}${conn ? ` · ${conn.type ?? "?"} / ${conn.effectiveType ?? "?"}${conn.downlink ? ` · ${conn.downlink} Mb/s` : ""}${conn.saveData ? " · data saver" : ""}` : ""}`],
     ["Display", `${window.matchMedia("(display-mode: standalone)").matches ? "installed app" : "browser tab"} · ${window.innerWidth}×${window.innerHeight}`],
     ["User agent", navigator.userAgent],
@@ -147,6 +151,8 @@ function DiagnosticsPanel() {
     for (const e of log) lines.push(`${new Date(e.at).toISOString()} [${e.kind}] ${e.text}`);
     lines.push("", `Tab switches (last ${switches.length}, tap → content paint):`);
     for (const s of switches) lines.push(tabSwitchLine(s));
+    lines.push("", `Turns (last ${turns.length}, tap → board via the RTDB listener):`);
+    for (const t of turns) lines.push(turnLine(t));
     return lines.join("\n");
   }
 

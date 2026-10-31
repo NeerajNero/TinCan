@@ -28,6 +28,7 @@
 | `pnpm test:rules` | build rules, start the emulators (Firestore 8181, RTDB 9191; needs Java), run `tests/rules.test.ts` |
 | `pnpm test:e2e` | production build + Playwright layout smoke test (mobile viewport; first run `npx playwright install chromium`) |
 | `pnpm profile:chat` | React Profiler run of a 300-message thread in happy-dom; prints mount and append cost |
+| `pnpm perf:turn` | Turn latency of the game routes and a local move against the Firebase emulators + a production `next start` (see testing.md) |
 | `pnpm analyze` | production build with the bundle analyzer report |
 | `pnpm size [routes…] [--save f] [--compare f]` | after `pnpm build`: starts `next start` on `SIZE_PORT` (3999), sums each route's initial JS (raw and gzip -9), prints a table and stops the server. `--save` keeps a baseline and `--compare` adds a Δ column. This is the number bundle budgets refer to |
 | `pnpm knip` | dead code / unused exports / unused deps; must be clean |

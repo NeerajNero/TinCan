@@ -29,6 +29,7 @@ import type { BattleshipState } from "@/lib/games/battleship";
 import { gameInfo } from "@/lib/games/catalog";
 import { currentRound, type HangmanState } from "@/lib/games/hangman";
 import { playSound } from "@/lib/sounds";
+import { turnTimer } from "@/lib/turnTiming";
 
 /** Board games share their how-to keys with the engine types. */
 const HOWTO_FOR_GAME: Record<GameType, HowToKey> = { tictactoe: "tictactoe", connectfour: "connectfour", chess: "chess", checkers: "checkers", dots: "dots", hangman: "hangman", battleship: "battleship" };
@@ -61,7 +62,10 @@ export function GameScreen({ gameId }: { gameId: string }) {
   const { live: reactions, react } = useGameReactions(gameId, uid);
 
   useEffect(() => {
-    const unsub = subscribeGame(gameId, (g) => setGame(g));
+    const unsub = subscribeGame(gameId, (g) => {
+      if (g) turnTimer.observe(g.id, g.moves ?? 0);
+      setGame(g);
+    });
     return () => unsub();
   }, [gameId]);
 
@@ -109,10 +113,12 @@ export function GameScreen({ gameId }: { gameId: string }) {
   async function move(m: unknown) {
     if (!game || !canMove) return;
     setBusy(true);
+    turnTimer.start({ gameId: game.id, kind: "move", game: game.type, mode: "local", moves: game.moves ?? 0 });
     try {
       await playMove(game, uid, m, nameOf);
     } catch {
       // Rejected (stale turn); the listener will refresh.
+      turnTimer.cancel(game.id);
     } finally {
       setBusy(false);
     }
