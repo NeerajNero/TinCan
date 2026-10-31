@@ -50,9 +50,9 @@ export function ChessBoard({ state, me, canMove, legal, onMove }: { state: Chess
   const ordered = flip ? [...squares].reverse() : squares;
 
   return (
-    <div className="mx-auto flex w-full max-w-[360px] flex-col gap-2">
+    <div className="board flex flex-col gap-2">
       <CapturedRow pieces={flip ? captured.byFirst : captured.bySecond} />
-      <div className="grid grid-cols-8 overflow-hidden rounded-[20px] border-4 border-[#5b4636]">
+      <div data-grid="chess" className="@container grid aspect-square overflow-hidden rounded-[20px] border-4 border-[#5b4636]" style={{ gridTemplateColumns: "repeat(8, minmax(0, 1fr))", gridTemplateRows: "repeat(8, minmax(0, 1fr))" }}>
         {ordered.map((sq) => {
           const f = FILES.indexOf(sq.charAt(0));
           const r = 8 - Number(sq[1]);
@@ -66,9 +66,10 @@ export function ChessBoard({ state, me, canMove, legal, onMove }: { state: Chess
               key={sq}
               type="button"
               onClick={() => tap(sq)}
+              data-cell
               aria-label={`${sq}${piece ? `, ${piece.color === "w" ? "white" : "black"} ${piece.type}` : ""}`}
               className={cn(
-                "relative grid aspect-square place-items-center text-[26px] leading-none",
+                "relative grid min-h-0 min-w-0 place-items-center text-[9cqw] leading-none",
                 light ? "bg-[#f0d9b5]" : "bg-[#b58863]",
                 last && "bg-[#f6f669]/70",
                 selected === sq && "ring-inset ring-4 ring-[var(--accent)]",
@@ -76,7 +77,7 @@ export function ChessBoard({ state, me, canMove, legal, onMove }: { state: Chess
               )}
             >
               {glyph && <span className={cn("drop-shadow", piece?.color === "w" ? "text-white [text-shadow:0_0_2px_#000]" : "text-black")}>{glyph}</span>}
-              {targets.has(sq) && <span className={cn("absolute rounded-full bg-[var(--accent)]/80", piece ? "inset-1 border-4 border-[var(--accent)]/70 bg-transparent" : "size-3")} aria-hidden />}
+              {targets.has(sq) && <span className={cn("absolute rounded-full bg-[var(--accent)]/80", piece ? "inset-[8%] border-[3px] border-[var(--accent)]/70 bg-transparent" : "size-[30%]")} aria-hidden />}
             </button>
           );
         })}

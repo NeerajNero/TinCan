@@ -140,6 +140,12 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
   photo from Memories (Cloudinary `w_600,q_auto:low` with a dim overlay). Rendered as one absolutely
   positioned layer behind the message list, never `background-attachment: fixed`. Bubbles use the opaque
   `--bubble-mine` / `--bubble-theirs` tokens plus a subtle shadow so they read on any option.
+- Game boards (tic-tac-toe, Connect Four, checkers, chess, Dots and Boxes, Battleship, pixel art, the drawing
+  canvas): the `board` utility (column width capped by `--board-max` and the screen height) with `aspect-square`,
+  cells from `repeat(n, minmax(0, 1fr))` columns *and* rows with gaps in the grid, never fixed pixel cells, never
+  `tap` on a cell (its 44 px minimum overlaps in narrow tracks); pieces sized in % of the cell or `cqw` of the grid
+  (`@container` on the grid, never on the cell itself); SVG boards use a `viewBox`. Battleship's two grids stack on
+  phones and sit side by side from 700 px. Guarded by `tests/e2e/boards.spec.ts` at 320 / 360 / 411 px.
 - Motion: import `m` from framer-motion (never `motion`); `<LazyMotion>` in Providers loads `domMax` lazily.
 - Images: never `next/image` with remote sources (Vercel Hobby meters optimisation). Cloudinary photos go
   through `CloudImage` (320/640 srcset, blur-up placeholder, async decode, lazy); GIF/YouTube/local previews

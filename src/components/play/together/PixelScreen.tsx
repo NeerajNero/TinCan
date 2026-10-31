@@ -4,6 +4,7 @@ import { Eraser, PaintBucket, Pen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
+import { PixelGrid } from "@/components/play/together/PixelGrid";
 import { ToolBtn } from "@/components/play/together/WhiteboardScreen";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -156,12 +157,8 @@ export function PixelScreen() {
           </Button>
         }
       />
-      <div className="relative mx-auto w-full max-w-[400px] overflow-hidden rounded-[16px] border border-border bg-white shadow-sm">
-        <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} className="grid touch-none select-none" style={{ gridTemplateColumns: `repeat(${PIXEL_SIZE}, 1fr)` }} role="img" aria-label="Pixel canvas">
-          {Array.from({ length: PIXEL_CELLS }, (_, i) => (
-            <span key={i} data-cell={i} className="aspect-square" style={{ background: PIXEL_PALETTE[parseInt(grid[i] ?? "0", 16)] ?? "#fff" }} />
-          ))}
-        </div>
+      <div className="board relative overflow-hidden rounded-[16px] border border-border bg-white shadow-sm [--board-max:400px]">
+        <PixelGrid grid={grid} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} />
         {friendIdx !== null && friend && (
           <div className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${((friendIdx % PIXEL_SIZE) + 0.5) * (100 / PIXEL_SIZE)}%`, top: `${(Math.floor(friendIdx / PIXEL_SIZE) + 0.5) * (100 / PIXEL_SIZE)}%` }} aria-hidden>
             <Avatar user={friend} size={20} className="ring-2 ring-white shadow" />

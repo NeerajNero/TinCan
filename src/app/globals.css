@@ -137,6 +137,19 @@ h3,
   overscroll-behavior: contain;
 }
 
+/*
+ * A game board: the column width, capped by the board's own size and by the
+ * screen height so it stays visible above its controls; never narrower than
+ * 200px. The element itself (or its grid) adds `aspect-square`; cells come from
+ * `repeat(n, minmax(0, 1fr))` tracks and must not carry `tap` (44px minimums
+ * overlap in narrow tracks).
+ */
+@utility board {
+  width: 100%;
+  max-width: max(200px, min(var(--board-max, 360px), calc(100dvh - 14rem)));
+  margin-inline: auto;
+}
+
 /* A horizontal row that scrolls without a visible bar. */
 @utility scroll-x {
   overflow-x: auto;

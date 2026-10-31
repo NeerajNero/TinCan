@@ -43,12 +43,12 @@ export function DotsBoard({ state, me, canMove, legal, names, onMove }: { state:
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="flex w-full max-w-[360px] items-center justify-between gap-2 text-sm font-bold" aria-live="polite">
+      <div className="board flex items-center justify-between gap-2 text-sm font-bold" aria-live="polite">
         <ScorePill p="first" name={names.first} score={scores.first} active={state.turn === "first"} mine={me === "first"} />
         <span className="text-xs text-muted">{b * b - scores.first - scores.second} left</span>
         <ScorePill p="second" name={names.second} score={scores.second} active={state.turn === "second"} mine={me === "second"} right />
       </div>
-      <svg viewBox={`0 0 ${size} ${size}`} className="card w-full max-w-[360px] rounded-[24px] p-2" role="group" aria-label="Dots and Boxes board">
+      <svg data-grid="dots" viewBox={`0 0 ${size} ${size}`} className="card board aspect-square rounded-[24px] p-2" role="group" aria-label="Dots and Boxes board">
         {Array.from(state.boxes).map((owner, k) => {
           if (owner === ".") return null;
           const r = Math.floor(k / b);
@@ -72,6 +72,7 @@ export function DotsBoard({ state, me, canMove, legal, names, onMove }: { state:
             <g key={key}>
               {e.taken && (
                 <m.rect
+                  data-cell
                   initial={last ? { opacity: 0 } : false}
                   animate={{ opacity: 1 }}
                   x={horizontal ? e.x + DOT : e.x - EDGE / 2}

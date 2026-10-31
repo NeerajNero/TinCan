@@ -30,7 +30,7 @@ export function CheckersBoard({ state, me, canMove, legal, onMove }: { state: Ch
   const order = Array.from({ length: 64 }, (_, k) => (flip ? 63 - k : k));
 
   return (
-    <div className="mx-auto grid w-full max-w-[360px] grid-cols-8 overflow-hidden rounded-[20px] border-4 border-[#7a5236]">
+    <div data-grid="checkers" className="board @container grid aspect-square overflow-hidden rounded-[20px] border-4 border-[#7a5236]" style={{ gridTemplateColumns: "repeat(8, minmax(0, 1fr))", gridTemplateRows: "repeat(8, minmax(0, 1fr))" }}>
       {order.map((i) => {
         const r = Math.floor(i / 8);
         const c = i % 8;
@@ -44,18 +44,19 @@ export function CheckersBoard({ state, me, canMove, legal, onMove }: { state: Ch
             key={i}
             type="button"
             onClick={() => tap(i)}
+            data-cell
             aria-label={`Square ${String.fromCharCode(97 + c)}${8 - r}${owner ? `, ${owner === "first" ? "red" : "black"} piece` : ""}`}
-            className={cn("relative grid aspect-square place-items-center", dark ? "bg-[#8b5e3c]" : "bg-[#f2d6b3]", selected === i && "ring-inset ring-4 ring-[var(--accent)]", onPath && "bg-red-400/60")}
+            className={cn("relative grid min-h-0 min-w-0 place-items-center", dark ? "bg-[#8b5e3c]" : "bg-[#f2d6b3]", selected === i && "ring-inset ring-4 ring-[var(--accent)]", onPath && "bg-red-400/60")}
           >
             {owner && (
               <m.span
                 layout
-                className={cn("grid size-[78%] place-items-center rounded-full text-base shadow-md", owner === "first" ? "bg-[#e63946] text-white" : "bg-[#1d1d2b] text-white", canMove && movable.has(i) && selected === null && "ring-2 ring-white/70")}
+                className={cn("grid size-[78%] place-items-center rounded-full text-[5cqw] leading-none shadow-md", owner === "first" ? "bg-[#e63946] text-white" : "bg-[#1d1d2b] text-white", canMove && movable.has(i) && selected === null && "ring-2 ring-white/70")}
               >
                 {isKing(ch) ? "♛" : ""}
               </m.span>
             )}
-            {target && <span className="absolute size-3 rounded-full bg-[var(--accent)] shadow" aria-hidden />}
+            {target && <span className="absolute size-[30%] rounded-full bg-[var(--accent)] shadow" aria-hidden />}
           </button>
         );
       })}

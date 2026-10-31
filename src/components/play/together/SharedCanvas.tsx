@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { CanvasFrame } from "@/components/play/together/CanvasFrame";
 import { Avatar } from "@/components/ui/Avatar";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
@@ -86,23 +87,6 @@ export function SharedCanvas({ base, canDraw, tool, color, width, cursors = fals
     if (current.current) drawStroke(ctx, { color: tool === "eraser" ? ERASER : color, width: tool === "eraser" ? width * 2 : width, points: JSON.stringify(current.current) }, w, h);
   });
 
-  // Size the bitmap to the element (square, device-pixel aware).
-  useEffect(() => {
-    const c = canvasRef.current;
-    const wrap = wrapRef.current;
-    if (!c || !wrap) return;
-    const ro = new ResizeObserver(() => {
-      const size = Math.floor(wrap.clientWidth);
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      c.width = size * dpr;
-      c.height = size * dpr;
-      c.style.width = `${size}px`;
-      c.style.height = `${size}px`;
-      setStrokes((s) => [...s]); // repaint
-    });
-    ro.observe(wrap);
-    return () => ro.disconnect();
-  }, []);
 
   useEffect(() => {
     controls?.({
@@ -158,13 +142,12 @@ export function SharedCanvas({ base, canDraw, tool, color, width, cursors = fals
   }
 
   return (
-    <div ref={wrapRef} className="relative w-full overflow-hidden rounded-[20px] border border-border bg-white shadow-sm">
-      <canvas ref={canvasRef} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onPointerLeave={() => void onUp()} className="block w-full touch-none select-none" aria-label="Shared canvas" />
+    <CanvasFrame wrapRef={wrapRef} canvasRef={canvasRef} onResize={() => setStrokes((s) => [...s])} canvasProps={{ onPointerDown: onDown, onPointerMove: onMove, onPointerUp: onUp, onPointerCancel: onUp, onPointerLeave: () => void onUp() }}>
       {cursors && friendCursor && friend && now.getTime() - (friendCursor.at ?? 0) < 15_000 && (
         <div className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${friendCursor.x * 100}%`, top: `${friendCursor.y * 100}%` }} aria-hidden>
           <Avatar user={friend} size={22} className="ring-2 ring-white shadow" />
         </div>
       )}
-    </div>
+    </CanvasFrame>
   );
 }

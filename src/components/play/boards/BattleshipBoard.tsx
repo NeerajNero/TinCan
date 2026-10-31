@@ -14,6 +14,7 @@ import { other, type Player } from "@/lib/games/types";
 import { errorMessage } from "@/lib/swallow";
 
 const COLS = Array.from({ length: BS_SIZE }, (_, i) => i);
+const GRID_TRACKS = { gridTemplateColumns: `repeat(${BS_SIZE}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${BS_SIZE}, minmax(0, 1fr))` };
 const LETTERS = "ABCDEFGHIJ";
 
 function parseFleet(raw: unknown): Ship[] | null {
@@ -100,13 +101,14 @@ export function BattleshipBoard({ game, state, me, uid, nameOf }: { game: LiveGa
         </Card>
       )}
 
+      <div className="flex flex-col gap-3 min-[700px]:flex-row min-[700px]:items-start">
       {state.phase !== "placing" && (
-        <section className="flex flex-col gap-1.5">
+        <section className="flex flex-col gap-1.5 min-[700px]:min-w-0 min-[700px]:flex-1">
           <header className="flex items-center justify-between px-1 text-sm font-bold">
             <span>{friendName}&apos;s waters</span>
             <span className="text-xs text-muted">{BS_SHIPS.length - theirSunk.length} of {BS_SHIPS.length} afloat</span>
           </header>
-          <Grid
+          <BattleshipGrid
             size="lg"
             label={`${friendName}'s grid`}
             cell={(k) => {
@@ -114,7 +116,7 @@ export function BattleshipBoard({ game, state, me, uid, nameOf }: { game: LiveGa
               const sunk = theirSunk.some((s) => s.cells.includes(k));
               const isLast = last?.by === me && last.cell === k;
               return (
-                <button key={k} type="button" disabled={!myTurn || Boolean(shot) || busyCell !== null} onClick={() => void fire(k)} aria-label={`${LETTERS[Math.floor(k / BS_SIZE)]}${(k % BS_SIZE) + 1}${shot ? `, ${shot}` : ""}`} className={cn("tap grid aspect-square place-items-center rounded-md text-base", shot === "hit" ? (sunk ? "bg-red-700 text-white" : "bg-red-500 text-white") : shot === "miss" ? "bg-surface-2 text-muted" : "bg-sky-500/15", myTurn && !shot && "hover:bg-sky-500/30", isLast && "ring-2 ring-[var(--accent)]", busyCell === k && "animate-pulse")}>
+                <button key={k} type="button" disabled={!myTurn || Boolean(shot) || busyCell !== null} onClick={() => void fire(k)} data-cell aria-label={`${LETTERS[Math.floor(k / BS_SIZE)]}${(k % BS_SIZE) + 1}${shot ? `, ${shot}` : ""}`} className={cn("grid min-h-0 min-w-0 place-items-center rounded-md text-[6cqw] leading-none", shot === "hit" ? (sunk ? "bg-red-700 text-white" : "bg-red-500 text-white") : shot === "miss" ? "bg-surface-2 text-muted" : "bg-sky-500/15", myTurn && !shot && "hover:bg-sky-500/30", isLast && "ring-2 ring-[var(--accent)]", busyCell === k && "animate-pulse")}>
                   {shot === "hit" ? "✕" : shot === "miss" ? "•" : ""}
                 </button>
               );
@@ -127,12 +129,12 @@ export function BattleshipBoard({ game, state, me, uid, nameOf }: { game: LiveGa
         </section>
       )}
 
-      <section className="flex flex-col gap-1.5">
+      <section className="flex flex-col gap-1.5 min-[700px]:min-w-0 min-[700px]:flex-1">
         <header className="flex items-center justify-between px-1 text-sm font-bold">
           <span>Your fleet</span>
           <span className="text-xs text-muted">{BS_SHIPS.length - mySunk.length} of {BS_SHIPS.length} afloat</span>
         </header>
-        <Grid
+        <BattleshipGrid
           size={state.phase === "placing" ? "lg" : "sm"}
           label="Your grid"
           cell={(k) => {
@@ -140,20 +142,22 @@ export function BattleshipBoard({ game, state, me, uid, nameOf }: { game: LiveGa
             const shot = theirShots[String(k)];
             const isLast = last?.by === other(me) && last.cell === k;
             return (
-              <span key={k} aria-label={`${LETTERS[Math.floor(k / BS_SIZE)]}${(k % BS_SIZE) + 1}${ship ? ", ship" : ""}${shot ? `, ${shot}` : ""}`} className={cn("grid aspect-square place-items-center rounded-[4px] text-[10px]", ship ? (shot === "hit" ? "bg-red-500 text-white" : "bg-slate-500 text-white") : shot === "miss" ? "bg-surface-2 text-muted" : "bg-sky-500/15", isLast && "ring-2 ring-[var(--accent)]")}>
+              <span key={k} data-cell aria-label={`${LETTERS[Math.floor(k / BS_SIZE)]}${(k % BS_SIZE) + 1}${ship ? ", ship" : ""}${shot ? `, ${shot}` : ""}`} className={cn("grid min-h-0 min-w-0 place-items-center rounded-[4px] text-[6cqw] leading-none", ship ? (shot === "hit" ? "bg-red-500 text-white" : "bg-slate-500 text-white") : shot === "miss" ? "bg-surface-2 text-muted" : "bg-sky-500/15", isLast && "ring-2 ring-[var(--accent)]")}>
                 {shot === "hit" ? "✕" : shot === "miss" ? "•" : ""}
               </span>
             );
           }}
         />
       </section>
+      </div>
     </div>
   );
 }
 
-function Grid({ size, label, cell }: { size: "lg" | "sm"; label: string; cell: (k: number) => React.ReactNode }) {
+/** One 10×10 grid; exported for the boards harness. */
+export function BattleshipGrid({ size, label, cell }: { size: "lg" | "sm"; label: string; cell: (k: number) => React.ReactNode }) {
   return (
-    <div role="grid" aria-label={label} className={cn("card mx-auto grid w-full grid-cols-10 rounded-[20px]", size === "lg" ? "max-w-[340px] gap-1 p-2" : "max-w-[220px] gap-0.5 p-1.5")}>
+    <div role="grid" data-grid={`battleship-${size}`} aria-label={label} className={cn("card board @container grid aspect-square rounded-[20px]", size === "lg" ? "gap-1 p-2 [--board-max:340px]" : "gap-0.5 p-1.5 [--board-max:220px]")} style={GRID_TRACKS}>
       {COLS.flatMap((r) => COLS.map((c) => cell(cellIndex(r, c))))}
     </div>
   );
@@ -283,12 +287,12 @@ function FleetPlacer({ onReady }: { onReady: (fleet: Ship[]) => Promise<void> })
         </div>
       </Card>
 
-      <div ref={gridRef} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={() => (drag.current = null)} role="grid" aria-label="Your grid" className="card mx-auto grid w-full max-w-[340px] touch-none grid-cols-10 gap-1 rounded-[20px] p-2">
+      <div ref={gridRef} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={() => (drag.current = null)} role="grid" data-grid="battleship-place" aria-label="Your grid" className="card board @container grid aspect-square touch-none gap-1 rounded-[20px] p-2 [--board-max:340px]" style={GRID_TRACKS}>
         {COLS.flatMap((r) =>
           COLS.map((c) => {
             const k = cellIndex(r, c);
             const idx = occupant(k);
-            return <span key={k} aria-label={`${LETTERS[r]}${c + 1}${idx >= 0 ? `, ${shipName(BS_SHIPS[idx] ?? 0)}` : ""}`} className={cn("grid aspect-square place-items-center rounded-md", idx >= 0 ? (idx === selected ? "bg-[var(--accent)]" : "bg-slate-500") : "bg-sky-500/15")} />;
+            return <span key={k} data-cell aria-label={`${LETTERS[r]}${c + 1}${idx >= 0 ? `, ${shipName(BS_SHIPS[idx] ?? 0)}` : ""}`} className={cn("grid min-h-0 min-w-0 place-items-center rounded-md", idx >= 0 ? (idx === selected ? "bg-[var(--accent)]" : "bg-slate-500") : "bg-sky-500/15")} />;
           }),
         )}
       </div>
