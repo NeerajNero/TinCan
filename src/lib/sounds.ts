@@ -1,6 +1,6 @@
 /** Tiny synthesised sound effects (Web Audio, no files). Off unless the More toggle is on. */
 const SOUNDS_KEY = "tincan-sounds";
-export type SoundKind = "ping" | "send" | "win" | "unlock" | "petTap" | "petFeed" | "petSleep" | "petWake";
+export type SoundKind = "ping" | "send" | "win" | "unlock" | "key" | "petTap" | "petFeed" | "petSleep" | "petWake";
 
 export function soundsEnabled(): boolean {
   try {
@@ -48,6 +48,8 @@ const RECIPES: Record<SoundKind, (c: AudioContext) => void> = {
     tone(c, 988, 0.1, 0.18, "triangle");
   },
   send: (c) => tone(c, 1320, 0, 0.07, "sine", 0.1),
+  // Keyboard click: a very short, quiet tick.
+  key: (c) => tone(c, 1900, 0, 0.025, "square", 0.035),
   win: (c) => [523, 659, 784, 1047].forEach((f, i) => tone(c, f, i * 0.09, 0.22, "triangle", 0.16)),
   unlock: (c) => [1568, 1976, 2349, 2637].forEach((f, i) => tone(c, f, i * 0.06, 0.3, "sine", 0.09)),
   // Pet chirps: short pitch glides, quieter than the UI blips.

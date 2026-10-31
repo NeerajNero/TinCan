@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
+import { GameScreen } from "@/components/play/GameScreen";
 import { CANVAS_COLORS, CANVAS_WIDTHS, SharedCanvas, type Tool } from "@/components/play/together/SharedCanvas";
 import { ToolBtn } from "@/components/play/together/WhiteboardScreen";
 import { Button } from "@/components/ui/Button";
@@ -20,6 +21,7 @@ import { recordGenericResult } from "@/lib/db/games";
 import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRound, invitePictionary, nextRound, parseGuesses, parseOptions, pictRoute, ROUND_MS, ROUND_OPTIONS, roundsOf, submitGuess, subscribeOpenPictionary, subscribePictionary, type LivePictionary } from "@/lib/db/pictionary";
 import { clearStrokes } from "@/lib/db/together";
 import { recordTogetherEvent } from "@/lib/garden";
+import { haptic } from "@/lib/haptics";
 import { DEFAULT_ROUNDS, type RoundCount } from "@/lib/pictionary";
 
 function winnerIdOf(g: LivePictionary): string | null {
@@ -150,11 +152,31 @@ export function PictionaryGame({ id }: { id: string }) {
     const text = guess;
     setGuess("");
     const hit = await submitGuess(game, uid, text, serverNow);
-    if (hit) setBurst((b) => b + 1);
+    if (hit) {
+      haptic("success");
+      setBurst((b) => b + 1);
+    }
   }
 
+  const guessDock = game.status === "active" && game.word && !drawer && !game.roundOver && (
+    <form
+      className="flex gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void sendGuess();
+      }}
+    >
+      <Input value={guess} onChange={(e) => setGuess(e.target.value.slice(0, 60))} placeholder="Your guess" aria-label="Guess" autoFocus />
+      <Button type="submit" disabled={!guess.trim()} className="shrink-0 px-4">
+        Guess
+      </Button>
+    </form>
+  );
+
   return (
-    <div className="-mb-6 flex min-h-0 flex-1 flex-col gap-3">
+    <GameScreen
+      header={
+        <>
       <SubHeader help="pictionary" emoji="🎨" title={`Pictionary · round ${Math.min(game.round, rounds)}/${rounds}`} back="/play/pictionary" screenName="Pictionary" invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: "pictionary", route: pictRoute(game.id), label: "Pictionary", roundId: game.id }} />
 
       <div className="card flex items-center gap-3 rounded-[20px] px-3 py-2">
@@ -164,6 +186,10 @@ export function PictionaryGame({ id }: { id: string }) {
         {game.word && !game.roundOver && <span className={cn("font-heading text-xl font-semibold tabular-nums", left < 10_000 && "text-red-500")}>{Math.ceil(left / 1000)}s</span>}
       </div>
 
+        </>
+      }
+      dock={guessDock || undefined}
+    >
       {game.status === "invited" && (
         <Card className="flex items-center gap-2">
           {game.createdBy === uid ? (
@@ -241,20 +267,6 @@ export function PictionaryGame({ id }: { id: string }) {
               </div>
             </div>
           )}
-          {!drawer && !game.roundOver && (
-            <form
-              className="flex gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void sendGuess();
-              }}
-            >
-              <Input value={guess} onChange={(e) => setGuess(e.target.value.slice(0, 60))} placeholder="Your guess" aria-label="Guess" autoFocus />
-              <Button type="submit" disabled={!guess.trim()} className="shrink-0 px-4">
-                Guess
-              </Button>
-            </form>
-          )}
           <div className="card flex max-h-32 flex-col-reverse gap-1 overflow-y-auto rounded-[20px] p-2">
             {[...guesses].reverse().map((g, i) => (
               <p key={i} className={cn("rounded-xl px-2 py-1 text-sm", g.text.toLowerCase() === game.word?.toLowerCase() ? "bg-emerald-400/25 font-bold" : "bg-surface-2")}>
@@ -292,6 +304,6 @@ export function PictionaryGame({ id }: { id: string }) {
         </Card>
       )}
       <Confetti burst={burst} />
-    </div>
+    </GameScreen>
   );
 }

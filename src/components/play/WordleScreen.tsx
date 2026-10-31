@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { LetterKeyboard } from "@/components/games/LetterKeyboard";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
+import { GameScreen } from "@/components/play/GameScreen";
 import { WordleGrid } from "@/components/play/WordleGrid";
 import { WordleHistory } from "@/components/play/WordleHistory";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +18,7 @@ import { sendText } from "@/lib/db/messages";
 import { saveGuesses, settleWordleDay, wordleRef, type WordleDoc } from "@/lib/db/wordle";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
+import { haptic } from "@/lib/haptics";
 import { readPref, writePref } from "@/lib/localPref";
 import { notify } from "@/lib/notify";
 import { definitionHeading, fetchDefinition, type WordDefinition } from "@/lib/wordDefinitions";
@@ -79,6 +81,7 @@ export function WordleScreen() {
   const keyStates = keyboardStates(guesses, answer);
 
   function flash(msg: string) {
+    haptic("error");
     setToast(msg);
     setShake((s) => s + 1);
     setTimeout(() => setToast(null), 1200);
@@ -91,6 +94,8 @@ export function WordleScreen() {
     const solved = draft.toLowerCase() === answer;
     const finished = solved || next.length >= MAX_GUESSES;
     setDraft("");
+    if (solved) haptic("success");
+    else if (finished) haptic("error");
     await saveGuesses(today, uid, next, solved, finished);
     if (solved) {
       setBurst((b) => b + 1);
@@ -140,13 +145,15 @@ export function WordleScreen() {
   }, [todayDay, today, uid, friendUid]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <SubHeader help="word" emoji="🟩" title="Daily word" back="/play" screenName="Daily word" invite={{ activity: "word", route: "/play/word", label: "the Daily word" }} />
+    <GameScreen
+      header={<SubHeader help="word" emoji="🟩" title="Daily word" back="/play" screenName="Daily word" invite={{ activity: "word", route: "/play/word", label: "the Daily word" }} />}
+      dock={mine !== undefined && !done ? <LetterKeyboard withActions label="Keyboard" states={keyStates} onKey={onKey} /> : undefined}
+    >
       {mine === undefined && <Card className="py-8 text-center text-muted">Loading…</Card>}
 
       {mine !== undefined && (
         <>
-          <div className="relative mx-auto w-full max-w-[320px]">
+          <div className="relative">
             <AnimatePresence>
               {toast && (
                 <m.p key={toast} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute inset-x-0 -top-8 z-10 text-center text-sm font-bold">
@@ -167,8 +174,6 @@ export function WordleScreen() {
               </Button>
             </Card>
           )}
-
-          {!done && <LetterKeyboard withActions label="Keyboard" states={keyStates} onKey={onKey} />}
 
           {bothDone && theirs && (
             <Card className="flex flex-col gap-3">
@@ -197,7 +202,7 @@ export function WordleScreen() {
         </>
       )}
       <Confetti burst={burst} />
-    </div>
+    </GameScreen>
   );
 }
 

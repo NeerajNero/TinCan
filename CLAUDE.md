@@ -147,6 +147,19 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
   `tap` on a cell (its 44 px minimum overlaps in narrow tracks); pieces sized in % of the cell or `cqw` of the grid
   (`@container` on the grid, never on the cell itself); SVG boards use a `viewBox`. Battleship's two grids stack on
   phones and sit side by side from 700 px. Guarded by `tests/e2e/boards.spec.ts` at 320 / 360 / 411 px.
+- Game layout: every game and together screen with input (board games, daily word, Hangman, trivia rounds, 20 Questions,
+  decks, Pictionary) renders the `GameScreen` composite (`components/play/GameScreen.tsx`): a header, a content area
+  that takes the rest of the viewport (a size container: boards fit it through the `board` utility's `--board-fit`),
+  and a dock pinned above the tab bar (part of the fixed shell, never of the scroll). The composite fills `<main>`
+  exactly, so the page never scrolls; only the content area may, and only when it truly doesn't fit. Keyboards,
+  option / vote / answer buttons, inputs and the reaction row live in the dock, through the `dock` prop or from
+  anywhere inside the content with `<Dock>`. The board-game screen is `BoardGameScreen`.
+- Pressable (`components/ui/Pressable.tsx`) is the one primitive for keys and option / vote / answer buttons: pressed on
+  pointerdown, released on pointerup / cancel / leave (90 ms spring to scale 0.94), a 10 ms haptic on press, an optional
+  key-click under the Sounds toggle, `touch-action: manipulation`, no selection, no long-press callout. Disabled and
+  used keys look clearly different and give no feedback. Result feedback goes through `lib/haptics.ts` (`tap` 10,
+  `success` [20, 40, 20], `error` [40, 30, 40]): solved word / right answer vs wrong guess / wrong answer. Letter entry
+  pops a tile (1.1 → 1) and colour reveals fade over 150 ms; `prefers-reduced-motion` drops the scale and keeps the colour.
 - Motion: import `m` from framer-motion (never `motion`); `<LazyMotion>` in Providers loads `domMax` lazily.
 - Images: never `next/image` with remote sources (Vercel Hobby meters optimisation). Cloudinary photos go
   through `CloudImage` (320/640 srcset, blur-up placeholder, async decode, lazy); GIF/YouTube/local previews
@@ -693,6 +706,10 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 25. ✅ **Share target, shortcuts, three games** (commit "phase 23") — Android share target (`/share` via the
     worker's Cache API stash), four home-screen shortcuts, Dots and Boxes, Hangman and Battleship on the turn-based
     engine with owner-only `gamePrivate` subtrees and two server routes for the hidden-information moves.
+26. ✅ **Game input feel** (commit "phase 26") — the `GameScreen` composite (header, fitted content, docked input) on the
+    board games, daily word, Hangman, trivia, 20 Questions, decks and Pictionary; `Pressable` keys and options with
+    haptics and key-clicks; tile pop and colour fades; the boards spec extended with the daily word and Hangman at six
+    viewport sizes.
 
 Each phase ends with: typecheck + lint green, a commit named after the phase, and a printed
 summary of what was built, what was skipped, and anything the owner must do manually.

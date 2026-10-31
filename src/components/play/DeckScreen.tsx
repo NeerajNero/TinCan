@@ -4,8 +4,10 @@ import { AnimatePresence, m } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
+import { Dock, GameScreen } from "@/components/play/GameScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Pressable } from "@/components/ui/Pressable";
 import { Sheet } from "@/components/ui/Sheet";
 import { usePair } from "@/hooks/usePair";
 import { cn } from "@/lib/cn";
@@ -41,16 +43,34 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
     if (kind === "nhie") void bumpTally(kind, { points: { [uid]: mine === "have" ? 1 : 0, [friendUid]: theirs === "have" ? 1 : 0 } });
   }, [node, both, kind, mine, theirs, uid, friendUid]);
 
+  const dock = (
+    <>
+      {node === null && (
+        <Button onClick={() => void flipNext(kind, uid, kind === "tod" ? { turn: uid } : {})} className="py-3">
+          Flip a card
+        </Button>
+      )}
+      {node && (
+        <div className="flex items-center justify-between gap-2 px-1">
+          <p className="min-w-0 text-xs text-muted">
+            Card {node.index + 1} · flipped by {node.flippedBy === uid ? "you" : friendName}
+            {kind === "wyr" && node.tally?.compared ? ` · agreed ${node.tally.agreed ?? 0}/${node.tally.compared}` : ""}
+            {kind === "nhie" && node.tally?.points ? ` · ${me.nickname} ${node.tally.points[uid] ?? 0} · ${friendName} ${friendUid ? (node.tally.points[friendUid] ?? 0) : 0}` : ""}
+          </p>
+          <Button
+            onClick={() => void flipNext(kind, uid, kind === "tod" ? { turn: node.turn && friendUid ? (node.turn === uid ? friendUid : uid) : uid } : {})}
+            disabled={(kind === "wyr" || kind === "nhie") && Boolean(mine) && !both}
+            className="shrink-0 px-4 py-2 text-sm"
+          >
+            {kind === "tod" ? "Done · next" : "Next card"}
+          </Button>
+        </div>
+      )}
+    </>
+  );
+
   return (
-    <div className="flex flex-col gap-4">
-      <SubHeader
-        help={kind}
-        emoji={meta.emoji}
-        title={meta.name}
-        back="/play"
-        screenName={meta.name}
-        invite={{ activity: kind, route: `/play/deck/${kind}`, label: meta.name }}
-      />
+    <GameScreen header={<SubHeader help={kind} emoji={meta.emoji} title={meta.name} back="/play" screenName={meta.name} invite={{ activity: kind, route: `/play/deck/${kind}`, label: meta.name }} />} dock={node === undefined ? undefined : dock}>
 
       {node === undefined && <Card className="py-10 text-center text-muted">Shuffling…</Card>}
       {node === null && (
@@ -59,7 +79,6 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
             {meta.emoji}
           </span>
           <p className="text-muted">{meta.blurb}. Flip the first card?</p>
-          <Button onClick={() => void flipNext(kind, uid, kind === "tod" ? { turn: uid } : {})}>Flip a card</Button>
         </Card>
       )}
 
@@ -109,42 +128,25 @@ export function DeckScreen({ kind }: { kind: DeckKind }) {
           </Button>
         </div>
       </Sheet>
-      {node && (
-        <div className="flex items-center justify-between px-1">
-          <p className="text-xs text-muted">
-            Card {node.index + 1} · flipped by {node.flippedBy === uid ? "you" : friendName}
-            {kind === "wyr" && node.tally?.compared ? ` · agreed ${node.tally.agreed ?? 0}/${node.tally.compared}` : ""}
-            {kind === "nhie" && node.tally?.points ? ` · ${me.nickname} ${node.tally.points[uid] ?? 0} · ${friendName} ${friendUid ? (node.tally.points[friendUid] ?? 0) : 0}` : ""}
-          </p>
-          <Button
-            onClick={() => void flipNext(kind, uid, kind === "tod" ? { turn: node.turn && friendUid ? (node.turn === uid ? friendUid : uid) : uid } : {})}
-            disabled={(kind === "wyr" || kind === "nhie") && Boolean(mine) && !both}
-            className="px-4 py-2 text-sm"
-          >
-            {kind === "tod" ? "Done · next" : "Next card"}
-          </Button>
-        </div>
-      )}
-    </div>
+    </GameScreen>
   );
 }
 
 function Choice({ label, picked, revealTheirs, theirsPicked, onPick, disabled }: { label: string; picked: boolean; revealTheirs: boolean; theirsPicked: boolean; onPick: () => void; disabled: boolean }) {
   return (
-    <button
-      type="button"
+    <Pressable
       onClick={onPick}
       disabled={disabled}
       aria-pressed={picked}
       className={cn(
-        "tap relative flex-1 rounded-2xl px-3 py-4 text-left text-[15px] font-semibold transition-colors",
-        picked ? "bg-[var(--accent)] text-white" : "bg-surface-2",
+        "relative min-h-11 flex-1 rounded-2xl px-3 py-3 text-left text-[15px] font-semibold transition-colors duration-150",
+        picked ? "bg-[var(--accent)] text-white" : disabled ? "bg-surface-2 opacity-60" : "bg-surface-2",
         revealTheirs && theirsPicked && !picked && "ring-2 ring-[var(--accent-memories)]",
       )}
     >
       {label}
       {revealTheirs && theirsPicked && <span className="absolute -top-2 -right-1 rounded-full bg-[var(--accent-memories)] px-2 py-0.5 text-[10px] font-bold text-white">them</span>}
-    </button>
+    </Pressable>
   );
 }
 
@@ -153,11 +155,15 @@ function WyrCardView({ index, mine, theirs, both, friendName, onPick }: { index:
   return (
     <Card className="flex flex-col gap-3">
       <p className="text-center text-xs font-bold uppercase tracking-wide text-muted">Would you rather…</p>
-      <div className="flex flex-col gap-2">
-        <Choice label={card.a} picked={mine === "A"} revealTheirs={both} theirsPicked={theirs === "A"} onPick={() => onPick("A")} disabled={Boolean(mine)} />
-        <p className="text-center text-xs font-bold text-muted">or</p>
-        <Choice label={card.b} picked={mine === "B"} revealTheirs={both} theirsPicked={theirs === "B"} onPick={() => onPick("B")} disabled={Boolean(mine)} />
-      </div>
+      <p className="text-center font-heading text-lg font-semibold leading-snug">{card.a}</p>
+      <p className="text-center text-xs font-bold text-muted">or</p>
+      <p className="text-center font-heading text-lg font-semibold leading-snug">{card.b}</p>
+      <Dock>
+        <div className="flex flex-col gap-2" role="group" aria-label="Pick one">
+          <Choice label={card.a} picked={mine === "A"} revealTheirs={both} theirsPicked={theirs === "A"} onPick={() => onPick("A")} disabled={Boolean(mine)} />
+          <Choice label={card.b} picked={mine === "B"} revealTheirs={both} theirsPicked={theirs === "B"} onPick={() => onPick("B")} disabled={Boolean(mine)} />
+        </div>
+      </Dock>
       <p className="text-center text-sm text-muted">
         {!mine ? "Pick one" : !theirs ? `Waiting for ${friendName}…` : mine === theirs ? "Same! 🎉" : "Different picks 👀"}
       </p>
@@ -169,10 +175,12 @@ function NhieCardView({ index, mine, theirs, both, friendName, onPick }: { index
   return (
     <Card className="flex flex-col gap-3">
       <p className="font-heading text-xl font-semibold leading-snug">{nhieCard(index)}</p>
-      <div className="flex gap-2">
-        <Choice label="I have 🙋" picked={mine === "have"} revealTheirs={both} theirsPicked={theirs === "have"} onPick={() => onPick("have")} disabled={Boolean(mine)} />
-        <Choice label="Never 😇" picked={mine === "never"} revealTheirs={both} theirsPicked={theirs === "never"} onPick={() => onPick("never")} disabled={Boolean(mine)} />
-      </div>
+      <Dock>
+        <div className="flex gap-2" role="group" aria-label="Confess">
+          <Choice label="I have 🙋" picked={mine === "have"} revealTheirs={both} theirsPicked={theirs === "have"} onPick={() => onPick("have")} disabled={Boolean(mine)} />
+          <Choice label="Never 😇" picked={mine === "never"} revealTheirs={both} theirsPicked={theirs === "never"} onPick={() => onPick("never")} disabled={Boolean(mine)} />
+        </div>
+      </Dock>
       <p className="text-center text-sm text-muted">{!mine ? "Confess?" : !theirs ? `Waiting for ${friendName}…` : theirs === "have" && mine === "have" ? "Both guilty 😂" : theirs === "have" ? `${friendName} has!` : mine === "have" ? "Only you 🙈" : "Both innocent"}</p>
     </Card>
   );
@@ -211,9 +219,11 @@ function TodCardView({ index, node, uid, friendUid, myName, friendName, onPick }
           </m.span>
           <p className="font-heading text-2xl font-semibold">{spinning ? (face === "truth" ? "Truth…" : "Dare…") : "Spin for truth or dare"}</p>
           {myTurn && (
-            <Button onClick={spin} disabled={spinning}>
-              Spin
-            </Button>
+            <Dock>
+              <Button onClick={spin} disabled={spinning} className="py-3">
+                Spin
+              </Button>
+            </Dock>
           )}
         </>
       ) : (

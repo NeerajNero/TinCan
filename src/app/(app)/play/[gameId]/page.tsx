@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { GameScreen } from "@/components/play/GameScreen";
+import { BoardGameScreen } from "@/components/play/BoardGameScreen";
 
 
 
@@ -8,5 +8,5 @@ export const metadata: Metadata = { title: "Game" };
 
 export default async function Page({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = await params;
-  return <GameScreen gameId={gameId} />;
+  return <BoardGameScreen gameId={gameId} />;
 }

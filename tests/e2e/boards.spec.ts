@@ -58,3 +58,60 @@ for (const width of [320, 360, 411]) {
     expect(errors).toEqual([]);
   });
 }
+
+/**
+ * The GameScreen composite (phase 26) with the daily word and Hangman: at
+ * phone widths and heights the dock's bottom edge stays inside the viewport
+ * (above the tab-bar row), the page and <main> do not scroll (only the content
+ * area may), the board fits the content area, and the keyboard never scrolls
+ * sideways.
+ */
+for (const screen of ["word", "hangman"]) {
+  for (const width of [320, 360, 411]) {
+    for (const height of [740, 826]) {
+      test(`${screen} on GameScreen at ${width}×${height}: dock in view, no page scroll, keyboard fits`, async ({ page }) => {
+        await page.setViewportSize({ width, height });
+        const errors = collectErrors(page);
+        await page.goto(`/e2e/game-screen?screen=${screen}`);
+        await page.waitForLoadState("networkidle");
+        await page.waitForTimeout(300);
+        const m = await page.evaluate(() => {
+          const dock = document.querySelector<HTMLElement>("[data-game-dock]")!;
+          const main = document.querySelector<HTMLElement>("[data-main]")!;
+          const content = document.querySelector<HTMLElement>("[data-game-content]")!;
+          const tabbar = document.querySelector<HTMLElement>("[data-tabbar]")!;
+          const kb = document.querySelector<HTMLElement>("[role=group][aria-label]")!;
+          const grid = document.querySelector<HTMLElement>("[data-grid]");
+          const r = (el: HTMLElement) => el.getBoundingClientRect();
+          return {
+            dockBottom: r(dock).bottom,
+            dockHeight: r(dock).height,
+            tabbarTop: r(tabbar).top,
+            viewport: window.innerHeight,
+            docScroll: document.documentElement.scrollHeight,
+            docClient: document.documentElement.clientHeight,
+            mainScroll: main.scrollHeight,
+            mainClient: main.clientHeight,
+            contentScroll: content.scrollHeight,
+            contentClient: content.clientHeight,
+            kbScroll: kb.scrollWidth,
+            kbClient: kb.clientWidth,
+            gridW: grid ? r(grid).width : 0,
+            gridH: grid ? r(grid).height : 0,
+          };
+        });
+        expect.soft(m.dockHeight, "the dock has content").toBeGreaterThan(40);
+        expect.soft(m.dockBottom, "dock bottom inside the viewport").toBeLessThanOrEqual(m.viewport + 0.5);
+        expect.soft(m.dockBottom, "dock sits above the tab bar").toBeLessThanOrEqual(m.tabbarTop + 0.5);
+        expect.soft(m.docScroll, "the page has no vertical scroll").toBeLessThanOrEqual(m.docClient);
+        expect.soft(m.mainScroll, "<main> does not scroll (only the content area may)").toBeLessThanOrEqual(m.mainClient + 1);
+        expect.soft(m.contentScroll, "the board fits the content area without scrolling").toBeLessThanOrEqual(m.contentClient + 1);
+        expect.soft(m.kbScroll, "keyboard scrollWidth vs clientWidth").toBe(m.kbClient);
+        if (screen === "word") expect.soft(Math.abs(m.gridW / m.gridH - 5 / 6), "word grid keeps 5:6").toBeLessThan(0.05);
+        const doc = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
+        expect.soft(doc.scroll, "no horizontal overflow").toBeLessThanOrEqual(doc.client);
+        expect(errors).toEqual([]);
+      });
+    }
+  }
+}

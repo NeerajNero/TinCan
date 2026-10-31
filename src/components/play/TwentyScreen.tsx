@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 
 import { SubHeader } from "@/components/memories/SubHeader";
+import { GameScreen } from "@/components/play/GameScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Pressable } from "@/components/ui/Pressable";
 import { usePair } from "@/hooks/usePair";
 import { createSystemMessage } from "@/lib/chat/system";
 import { cn } from "@/lib/cn";
@@ -65,10 +67,51 @@ export function TwentyScreen() {
     void notify("yourTurn", { toUid: node.holderUid, body: `20 Questions: final guess "${g}"`, data: { url: ROUTE } });
   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <SubHeader help="twenty" emoji="🔍" title="20 Questions" back="/play" screenName="20 Questions" invite={{ activity: "twenty", route: "/play/twenty", label: "20 Questions" }} />
+  const dock = node && node.status !== "setup" && (
+    <>
+      {active && holder && pending && (
+        <div className="flex gap-2" role="group" aria-label="Answer">
+          <Pressable onClick={() => void answer("yes")} className="min-h-12 flex-1 rounded-2xl bg-emerald-500 font-bold text-white">Yes</Pressable>
+          <Pressable onClick={() => void answer("sortof")} className="min-h-12 flex-1 rounded-2xl bg-amber-500 font-bold text-white">Sort of</Pressable>
+          <Pressable onClick={() => void answer("no")} className="min-h-12 flex-1 rounded-2xl bg-red-500 font-bold text-white">No</Pressable>
+        </div>
+      )}
+      {active && holder && !pending && <p className="text-center text-sm text-muted">Waiting for a question…</p>}
+      {active && !holder && !pending && (
+        <form
+          className="flex flex-col gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void ask();
+          }}
+        >
+          <div className="flex gap-2">
+            <Input value={text} onChange={(e) => setText(e.target.value.slice(0, 140))} placeholder={asked < MAX_QUESTIONS ? "Is it bigger than a cat?" : "Out of questions — guess!"} aria-label="Question" />
+            <Button type="submit" disabled={!text.trim() || asked >= MAX_QUESTIONS} className="shrink-0 px-4">
+              Ask
+            </Button>
+          </div>
+          <Button variant="soft" onClick={() => void guess()} disabled={!text.trim()} className="self-end px-4 py-2 text-sm">
+            Use this as my final guess
+          </Button>
+        </form>
+      )}
+      {active && !holder && pending && <p className="text-center text-sm text-muted">Waiting for {nameOf(node.holderUid)} to answer…</p>}
+      {node.status === "done" && (
+        <div className="flex flex-col items-center gap-2">
+          {holder && !node.won && node.finalGuess && (
+            <Button variant="soft" onClick={() => void judgeGuess(true)} className="text-sm">
+              Close enough — give it to them
+            </Button>
+          )}
+          <Button onClick={() => void clearRound()}>New round</Button>
+        </div>
+      )}
+    </>
+  );
 
+  return (
+    <GameScreen header={<SubHeader help="twenty" emoji="🔍" title="20 Questions" back="/play" screenName="20 Questions" invite={{ activity: "twenty", route: "/play/twenty", label: "20 Questions" }} />} dock={dock || undefined}>
       {node === undefined && <Card className="py-8 text-center text-muted">Loading…</Card>}
 
       {(node === null || node?.status === "setup") && (
@@ -101,7 +144,7 @@ export function TwentyScreen() {
             <span className="font-heading text-2xl font-semibold tabular-nums">{MAX_QUESTIONS - asked}</span>
           </Card>
 
-          <Card className="flex max-h-[45dvh] flex-col gap-2 overflow-y-auto">
+          <Card className="flex flex-col gap-2">
             {questions.length === 0 && <p className="text-center text-sm text-muted">No questions yet.</p>}
             {questions.map((q, i) => (
               <div key={i} className="flex flex-col gap-1">
@@ -122,49 +165,8 @@ export function TwentyScreen() {
               </p>
             )}
           </Card>
-
-          {active && holder && pending && (
-            <div className="flex gap-2">
-              <Button onClick={() => void answer("yes")} className="flex-1 bg-emerald-500 text-white">Yes</Button>
-              <Button onClick={() => void answer("sortof")} className="flex-1 bg-amber-500 text-white">Sort of</Button>
-              <Button onClick={() => void answer("no")} className="flex-1 bg-red-500 text-white">No</Button>
-            </div>
-          )}
-          {active && holder && !pending && <p className="text-center text-sm text-muted">Waiting for a question…</p>}
-
-          {active && !holder && !pending && (
-            <form
-              className="flex flex-col gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void ask();
-              }}
-            >
-              <div className="flex gap-2">
-                <Input value={text} onChange={(e) => setText(e.target.value.slice(0, 140))} placeholder={asked < MAX_QUESTIONS ? "Is it bigger than a cat?" : "Out of questions — guess!"} aria-label="Question" />
-                <Button type="submit" disabled={!text.trim() || asked >= MAX_QUESTIONS} className="shrink-0 px-4">
-                  Ask
-                </Button>
-              </div>
-              <Button variant="soft" onClick={() => void guess()} disabled={!text.trim()} className="self-end px-4 py-2 text-sm">
-                Use this as my final guess
-              </Button>
-            </form>
-          )}
-          {active && !holder && pending && <p className="text-center text-sm text-muted">Waiting for {nameOf(node.holderUid)} to answer…</p>}
-
-          {node.status === "done" && (
-            <Card className="flex flex-col items-center gap-2 text-center">
-              {holder && !node.won && node.finalGuess && (
-                <Button variant="soft" onClick={() => void judgeGuess(true)} className="text-sm">
-                  Close enough — give it to them
-                </Button>
-              )}
-              <Button onClick={() => void clearRound()}>New round</Button>
-            </Card>
-          )}
         </>
       )}
-    </div>
+    </GameScreen>
   );
 }

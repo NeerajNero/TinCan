@@ -1,9 +1,10 @@
 "use client";
 
-import { AnimatePresence, m } from "framer-motion";
-import { useEffect, useState } from "react";
+import { AnimatePresence, m, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 import { LetterKeyboard } from "@/components/games/LetterKeyboard";
+import { Dock } from "@/components/play/GameScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -13,6 +14,7 @@ import { cn } from "@/lib/cn";
 import { guessHangmanLetter, privateGamePath, setHangmanWord, type LiveGame } from "@/lib/db/games";
 import { currentRound, HANGMAN_MAX_LEN, HANGMAN_MAX_WRONG, HANGMAN_ROUNDS, type HangmanRound, type HangmanState } from "@/lib/games/hangman";
 import { other, type Player } from "@/lib/games/types";
+import { haptic } from "@/lib/haptics";
 import { errorMessage } from "@/lib/swallow";
 import { turnTimer } from "@/lib/turnTiming";
 import { fetchDefinition, type WordDefinition } from "@/lib/wordDefinitions";
@@ -58,7 +60,7 @@ export function HangmanBoard({ game, state, me, uid, nameOf }: { game: LiveGame;
           {state.phase === "setting" && iAmSetter && active && <SetWord game={game} uid={uid} />}
           {state.phase === "setting" && !iAmSetter && (
             <Card className="flex items-center gap-3 py-6 text-center">
-              <Figure wrong={0} />
+              <HangmanFigure wrong={0} />
               <p className="min-w-0 flex-1 text-sm text-muted">Waiting for {name(setter)} to pick a word…</p>
             </Card>
           )}
@@ -117,6 +119,15 @@ function Guessing({ game, state, round, iAmSetter, myWord, canGuess, setterName 
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const shown = myWord && myWord.length === round.mask.length ? myWord : round.mask;
+  // Result feedback from the shared state (the listener is what reveals the guess): a hit uncovers letters, a miss adds a part.
+  const seen = useRef({ mask: round.mask, wrong: round.wrong });
+  useEffect(() => {
+    const prev = seen.current;
+    seen.current = { mask: round.mask, wrong: round.wrong };
+    if (!canGuess) return;
+    if (round.wrong > prev.wrong) haptic("error");
+    else if (round.mask !== prev.mask) haptic("success");
+  }, [round.mask, round.wrong, canGuess]);
 
   async function guess(letter: string) {
     if (!canGuess || busy || round.guessed.includes(letter)) return;
@@ -135,7 +146,7 @@ function Guessing({ game, state, round, iAmSetter, myWord, canGuess, setterName 
 
   return (
     <Card className="flex flex-col items-center gap-3">
-      <Figure wrong={round.wrong} />
+      <HangmanFigure wrong={round.wrong} />
       <WordTiles mask={round.mask} shown={shown} revealedToSetter={iAmSetter} />
       <p className="text-xs text-muted" aria-live="polite">
         {round.wrong}/{HANGMAN_MAX_WRONG} misses{round.guessed ? ` · tried ${round.guessed.split("").join(" ")}` : ""}
@@ -143,6 +154,7 @@ function Guessing({ game, state, round, iAmSetter, myWord, canGuess, setterName 
       {iAmSetter && <p className="text-center text-xs text-muted">Only you can see the letters. {state.phase === "guessing" ? "Sit tight while they guess." : ""}</p>}
       {!iAmSetter && !canGuess && <p className="text-center text-xs text-muted">{setterName}&apos;s word — the round is theirs to watch.</p>}
       {canGuess && (
+        <Dock>
         <LetterKeyboard
           states={Object.fromEntries(round.guessed.split("").map((k) => [k, round.mask.includes(k) ? "correct" : "absent"]))}
           isDisabled={(k) => round.guessed.includes(k)}
@@ -151,14 +163,16 @@ function Guessing({ game, state, round, iAmSetter, myWord, canGuess, setterName 
           onKey={(k) => void guess(k)}
           keyLabel={(k) => `Guess ${k.toUpperCase()}`}
         />
+        {error && <p className="text-center text-xs font-bold text-red-500">{error}</p>}
+        </Dock>
       )}
-      {error && <p className="text-xs font-bold text-red-500">{error}</p>}
     </Card>
   );
 }
 
-function WordTiles({ mask, shown, revealedToSetter }: { mask: string; shown: string; revealedToSetter: boolean }) {
+export function WordTiles({ mask, shown, revealedToSetter }: { mask: string; shown: string; revealedToSetter: boolean }) {
   const words = shown.split(" ");
+  const reduce = useReducedMotion();
   return (
     <div className="flex flex-wrap justify-center gap-x-4 gap-y-2" aria-label={`Word: ${mask.split("").join(" ")}`}>
       {words.map((w, wi) => (
@@ -166,9 +180,9 @@ function WordTiles({ mask, shown, revealedToSetter }: { mask: string; shown: str
           {w.split("").map((ch, i) => {
             const hidden = mask.split(" ")[wi]?.[i] === "_";
             return (
-              <span key={i} className={cn("grid h-9 w-7 place-items-center border-b-4 font-heading text-xl font-semibold uppercase", hidden ? (revealedToSetter ? "border-muted/40 text-muted" : "border-[var(--accent)] text-transparent") : "border-[var(--accent)]")}>
+              <m.span key={i} animate={{ scale: hidden || reduce ? 1 : [1.1, 1] }} transition={{ duration: 0.15 }} className={cn("grid h-9 w-7 place-items-center border-b-4 font-heading text-xl font-semibold uppercase transition-colors duration-150", hidden ? (revealedToSetter ? "border-muted/40 text-muted" : "border-[var(--accent)] text-transparent") : "border-[var(--accent)]")}>
                 {hidden && !revealedToSetter ? "" : ch}
-              </span>
+              </m.span>
             );
           })}
         </span>
@@ -209,7 +223,7 @@ function RoundCard({ index, round, name }: { index: number; round: HangmanRound;
 }
 
 /** Gallows plus up to six body parts, each fading in as misses mount. */
-function Figure({ wrong }: { wrong: number }) {
+export function HangmanFigure({ wrong }: { wrong: number }) {
   const part = (i: number) => wrong > i;
   const stroke = { stroke: "var(--text)", strokeWidth: 4, strokeLinecap: "round" as const, fill: "none" };
   return (

@@ -41,6 +41,10 @@ Errors: fire-and-forget promises end in `.catch(swallow)`; anything shown to the
 - The document is locked. New full-screen pages outside the shell use `screen-fixed` (and `justify-center-safe` if centred, so tall content isn't cut off at the top). Inside the shell, never use `h-dvh`/`min-h-dvh`; fill with `flex-1 min-h-0`.
 - Focus programmatically with `focusNoScroll(el)` and on mount with `ref={autoFocusRef}`; `Input`'s `autoFocus` already does this.
 
+## Game screens
+
+Anything with game input renders `components/play/GameScreen` (header · fitted content · dock above the tab bar) and never its own scroller; put keyboards, option / vote / answer buttons and inputs in the dock (`dock` prop or `<Dock>` from inside). Keys and option buttons are `components/ui/Pressable`; result feedback is `lib/haptics` (`tap` / `success` / `error`). Boards are the `board` utility with `aspect-square` (or another ratio) so they fit the content height. Guarded by `tests/e2e/boards.spec.ts`.
+
 ## Design tokens
 
 Theme colours are CSS variables on `:root` (`--bg`, `--surface`, `--surface-2`, `--border`, `--muted`, `--accent`, `--accent-soft`, …) with light/dark values; Tailwind utilities map to them (`bg-surface`, `text-muted`, `bg-accent-soft`). Each tab sets its own `--accent`. Cards are `rounded-[20px]`; tap targets ≥ 44 px; every icon-only button has `aria-label`.

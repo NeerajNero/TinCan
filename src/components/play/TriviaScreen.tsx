@@ -7,9 +7,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { SubHeader } from "@/components/memories/SubHeader";
 import { Confetti } from "@/components/plan/Confetti";
+import { Dock, GameScreen } from "@/components/play/GameScreen";
 import type { InviteSpec } from "@/components/play/InviteButton";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Pressable } from "@/components/ui/Pressable";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { useStartInvite } from "@/hooks/useStartInvite";
@@ -17,6 +19,7 @@ import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
 import { advanceLive, answerLive, createRound, openLiveSession, recentRounds, submitAnswers, switchToAsync, triviaRef, type LiveStatus, type TriviaRoundDoc } from "@/lib/db/trivia";
 import { onSnapshot } from "@/lib/firebase/fs";
+import { haptic } from "@/lib/haptics";
 import { notify } from "@/lib/notify";
 import { errorMessage } from "@/lib/swallow";
 import { pointsFor, QUESTION_MS, REVEAL_MS, ROUND_SIZE, shuffledOptions, totalScore, TRIVIA_BANK, type TriviaAnswer } from "@/lib/trivia";
@@ -120,8 +123,10 @@ export function TriviaRound({ id }: { id: string }) {
   const theirsDone = Boolean(friendUid && round.answers?.[friendUid]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <SubHeader help="trivia" emoji={round.mode === "live" ? "⚡" : "🧠"} title={round.mode === "live" ? "Live duel" : "Trivia round"} back="/play/trivia" screenName="Trivia duel" invite={mineDone && theirsDone ? undefined : inviteFor(id, round.mode)} />
+    <GameScreen
+      header={<SubHeader help="trivia" emoji={round.mode === "live" ? "⚡" : "🧠"} title={round.mode === "live" ? "Live duel" : "Trivia round"} back="/play/trivia" screenName="Trivia duel" invite={mineDone && theirsDone ? undefined : inviteFor(id, round.mode)} />
+      }
+    >
       {mineDone && theirsDone && <Results round={round} uid={uid} friendUid={friendUid} nameOf={nameOf} />}
       {mineDone && !theirsDone && (
         <Card className="flex flex-col items-center gap-2 py-8 text-center">
@@ -131,7 +136,7 @@ export function TriviaRound({ id }: { id: string }) {
       )}
       {!mineDone && round.mode === "async" && <AsyncPlay round={round} uid={uid} friendUid={friendUid} theirsDone={theirsDone} />}
       {!mineDone && round.mode === "live" && <LivePlay round={round} uid={uid} friendUid={friendUid} theirsDone={theirsDone} />}
-    </div>
+    </GameScreen>
   );
 }
 
@@ -167,26 +172,28 @@ function Question({ round, index, onAnswer, deadline }: { round: TriviaRoundDoc;
         <div className="h-full bg-[var(--accent)] transition-[width] duration-200" style={{ width: `${picked === null ? (left / QUESTION_MS) * 100 : 0}%` }} />
       </div>
       <p className="font-heading text-lg font-semibold leading-snug">{q.q}</p>
-      <div className="grid grid-cols-1 gap-2">
-        {options.map((o, i) => (
-          <button
-            key={i}
-            type="button"
-            disabled={picked !== null}
-            onClick={() => {
-              pickedRef.current = i;
-              setPicked(i);
-              onAnswer(i, Date.now() - started);
-            }}
-            className={cn(
-              "tap rounded-2xl px-4 py-3 text-left text-[15px] font-semibold",
-              picked === null ? "bg-surface-2" : i === answer ? "bg-emerald-500 text-white" : picked === i ? "bg-red-500 text-white" : "bg-surface-2 opacity-50",
-            )}
-          >
-            {o}
-          </button>
-        ))}
-      </div>
+      <Dock>
+        <div className="grid grid-cols-1 gap-2" role="group" aria-label="Answers">
+          {options.map((o, i) => (
+            <Pressable
+              key={i}
+              disabled={picked !== null}
+              onClick={() => {
+                pickedRef.current = i;
+                setPicked(i);
+                haptic(i === answer ? "success" : "error");
+                onAnswer(i, Date.now() - started);
+              }}
+              className={cn(
+                "min-h-11 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold transition-colors duration-150",
+                picked === null ? "bg-surface-2" : i === answer ? "bg-emerald-500 text-white" : picked === i ? "bg-red-500 text-white" : "bg-surface-2 opacity-50",
+              )}
+            >
+              {o}
+            </Pressable>
+          ))}
+        </div>
+      </Dock>
       <AnimatePresence>
         {picked !== null && (
           <m.div key="reveal" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl bg-surface-2 px-4 py-3">

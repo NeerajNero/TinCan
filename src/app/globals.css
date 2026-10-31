@@ -146,8 +146,23 @@ h3,
  */
 @utility board {
   width: 100%;
-  max-width: max(200px, min(var(--board-max, 360px), calc(100dvh - 14rem)));
+  max-width: max(200px, min(var(--board-max, 360px), var(--board-fit, calc(100dvh - 14rem))));
   margin-inline: auto;
+}
+
+/* GameScreen's content area: a size container so boards can fit its height (`--board-fit`). */
+@utility game-content {
+  container-type: size;
+  --board-fit: calc(100cqh - 1.5rem);
+}
+
+/* Keys and option buttons: no double-tap zoom, no selection, no long-press callout, no grey flash. */
+@utility pressable {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* A horizontal row that scrolls without a visible bar. */
