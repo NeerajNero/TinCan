@@ -23,6 +23,7 @@ export const PUSH_TYPES = [
   "invite",
   "petHungry",
   "digest",
+  "rules-drift",
 ] as const;
 export type PushType = (typeof PUSH_TYPES)[number];
 
@@ -46,6 +47,8 @@ export const TOGGLE_FOR: Record<PushType, NotifKey | null> = {
   petHungry: "petHungry",
   // Governed by notif.digest.enabled (checked in sendPushTo), not a boolean toggle.
   digest: null,
+  // Owner-only operations alert: master switch only.
+  "rules-drift": null,
 };
 
 export interface PushPayload {
@@ -108,5 +111,7 @@ export function composePush(type: PushType, senderName: string, payload: PushPay
       return { title: payload.title ?? "Your pet is hungry 🍽️", body: body || "Feed it before it sulks", url: "/", tag: "pet" };
     case "digest":
       return { title: payload.title ?? "☀️ Good morning", body: body || "Here's your day", url: "/", tag: "digest" };
+    case "rules-drift":
+      return { title: "⚠️ Firebase rules are out of date", body: body || "CI deploy failed or hasn't run", url: "/more", tag: "rules-drift" };
   }
 }

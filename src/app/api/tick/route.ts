@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 
 import { relationshipFor } from "@/content/relationships";
+import { isOwnerEmail } from "@/lib/allowlist";
 import { questionFor } from "@/lib/daily";
 import { addDays, dateKeyIn, dateKeyToLocalDate, daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
 import { digestPush, type DigestInput } from "@/lib/digest";
@@ -13,8 +14,10 @@ import { resolveCountdown } from "@/lib/meetup";
 import { todaysMilestones, verifyDueIn, yearsLine } from "@/lib/milestones";
 import { statFrom } from "@/lib/pet";
 import { favouritePing, recapLine } from "@/lib/recap";
+import { rulesInSync, rulesStatusLine } from "@/lib/rulesVersion";
 import { secretMatches } from "@/lib/server/guard";
 import { loadUser, pairUids, postSystemMessageAdmin, sendPushTo, type SendResult, type UserDocLite } from "@/lib/server/push";
+import { liveRulesStatus } from "@/lib/server/rulesDrift";
 import { DEFAULT_DIGEST_HOUR, type MilestoneDoc, type PairDoc } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +27,8 @@ const WINDOW_MIN = 15;
 const DAILY_NUDGE_AT = 20 * 60;
 const STREAK_RISK_AT = 21 * 60;
 const REMINDERS_AT = 9 * 60;
+/** Rules drift check: after the 09:00 reminders, once a day. */
+const RULES_CHECK_AT = 9 * 60 + 30;
 const CAPSULE_LOOKBACK_MS = 48 * 60 * 60 * 1000;
 
 interface Action {
@@ -309,6 +314,25 @@ async function morningDigest(ctx: Ctx, pair: PairDoc) {
  * Then `streak.monthBest` restarts from the current count and the ping
  * counts are snapshotted on `pair.recap` so next month can diff them.
  */
+/**
+ * 09:30 ROOM_TZ, once a day: read the version markers out of the live
+ * Firestore and RTDB rules and compare them with the version this deployment
+ * was built from (see lib/rulesVersion). On a mismatch the owner (first
+ * allowlisted email, else the first uid) gets one push under the master
+ * switch only; a dry run reports the comparison without sending.
+ */
+async function rulesDrift(ctx: Ctx, minutes: number) {
+  if (!inWindow(minutes, RULES_CHECK_AT)) return;
+  await once(ctx, "rules-drift", `rules-drift-${ctx.today}`, async () => {
+    const status = await liveRulesStatus();
+    const line = rulesStatusLine(status);
+    if (rulesInSync(status)) return `rules in sync: ${line}`;
+    const owner = ctx.uids.find((u) => isOwnerEmail(ctx.users[u]?.email)) ?? ctx.uids[0];
+    if (owner !== undefined) await push(ctx, owner, "rules-drift", { body: `CI deploy failed or hasn't run · ${line}` });
+    return `rules drift: ${line}`;
+  });
+}
+
 async function monthlyRecap(ctx: Ctx, minutes: number, pair: PairDoc) {
   if (ctx.today.slice(8) !== "01" || !inWindow(minutes, REMINDERS_AT)) return;
   const prevMonthKey = addDays(ctx.today, -1).slice(0, 7); // yyyy-MM of the month that just ended
@@ -388,6 +412,7 @@ export async function GET(req: Request) {
     await petHunger(ctx, pair);
     await morningDigest(ctx, pair);
     await monthlyRecap(ctx, minutes, pair);
+    await rulesDrift(ctx, minutes);
 
     // A live run answers with counts only: cron-job.org keeps response bodies in its history, and the
     // action details carry nicknames, scheduled-message text and capsule titles. Details: ?dry=1 (pnpm tick:dry).

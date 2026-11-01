@@ -91,4 +91,4 @@ Data-only FCM messages (no `notification` key) so the worker alone decides what 
 
 ## Scheduler
 
-`GET /api/tick` (header `x-tick-secret`) runs idempotent jobs keyed in `tickLog/{jobKey}`: scheduled messages, 20:00 daily-question nudge, 21:00 streak warning, capsule unlocks, 09:00 milestone/meetup reminders, abandoned/finished-game housekeeping (which also drops `gamePrivate/{id}`), pet hunger. Time-of-day jobs fire inside a 15-minute window. `?dry=1` reports without writing.
+`GET /api/tick` (header `x-tick-secret`) runs idempotent jobs keyed in `tickLog/{jobKey}`: scheduled messages, 20:00 daily-question nudge, 21:00 streak warning, capsule unlocks, 09:00 milestone/meetup reminders, abandoned/finished-game housekeeping (which also drops `gamePrivate/{id}`), pet hunger, the morning digest, the monthly recap, and a daily rules-drift check (live `RULES_VERSION` markers vs the build's; owner push on mismatch). Time-of-day jobs fire inside a 15-minute window. `?dry=1` reports without writing.

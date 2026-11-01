@@ -9,7 +9,11 @@ import { resolve } from "node:path";
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { child, get, limitToLast, push, query as rtdbQuery, ref, remove, serverTimestamp as rtdbServerTimestamp, set, update } from "firebase/database";
 import { deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where, writeBatch } from "firebase/firestore";
-import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+
+import { rulesVersion } from "../scripts/lib/rules-version.mjs";
+import { extractFirestoreRulesVersion, extractRtdbRulesVersion } from "../src/lib/rulesVersion";
+
 
 const root = resolve(__dirname, "..");
 function parseEnv(path: string): Record<string, string> {
@@ -416,6 +420,22 @@ describe("rtdb gameReactions: a queue created as yourself, deleted by either, ne
       await assertSucceeds(remove(ref(dbB, `gameReactions/${id}/${node.key}`)));
       await assertFails(get(ref(asStranger().database(), `gameReactions/${id}`)));
     }
+  });
+});
+
+describe("rtdb meta: the RULES_VERSION marker", () => {
+  it("is readable by the pair, never writable by a client, and the built rules carry this checkout's version", async () => {
+    const version = rulesVersion(root);
+    await assertSucceeds(get(ref(asA().database(), "meta/rulesVersion")));
+    await assertFails(get(ref(asStranger().database(), "meta/rulesVersion")));
+    await assertFails(set(ref(asA().database(), "meta/rulesVersion"), version));
+    await assertFails(set(ref(asA().database(), "meta/rulesVersion"), "deadbeef"));
+    await assertFails(set(ref(asB().database(), "meta/other"), 1));
+    // The deploy stamps it with admin access (the CLI), which the `.write: false` doesn't bind.
+    await env$.withSecurityRulesDisabled(async (ctx) => set(ref(ctx.database(), "meta/rulesVersion"), version));
+    await assertSucceeds(get(ref(asB().database(), "meta/rulesVersion")));
+    expect(extractRtdbRulesVersion(readFileSync(resolve(root, "database.rules.json"), "utf8"))).toBe(version);
+    expect(extractFirestoreRulesVersion(readFileSync(resolve(root, "firestore.rules"), "utf8"))).toBe(version);
   });
 });
 

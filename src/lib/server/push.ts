@@ -17,6 +17,7 @@ const DEAD_TOKEN_CODES = new Set([
 
 export interface UserDocLite {
   nickname?: string;
+  email?: string;
   tz?: string;
   fcmTokens?: string[];
   notif?: Partial<NotifPrefs>;

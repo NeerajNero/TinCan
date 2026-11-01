@@ -23,7 +23,8 @@
 | `pnpm typecheck` | `next typegen && tsc --noEmit` |
 | `pnpm lint` | ESLint with Next core-web-vitals + TypeScript + React Compiler rules |
 | `pnpm rules:build` | `rules/*.tmpl` → `firestore.rules`, `database.rules.json`, `.firebaserc` |
-| `pnpm rules:deploy` | build, then `firebase deploy --only firestore:rules,firestore:indexes,database` — rules plus `firestore.indexes.json` (needs `npm i -g firebase-tools` and `firebase login`). Index builds take a few minutes; the Firebase console → Firestore → Indexes shows progress |
+| `pnpm rules:deploy` | build, then `firebase deploy --only firestore:rules,firestore:indexes,database` — rules plus `firestore.indexes.json` — then `pnpm rules:stamp` (needs `npm i -g firebase-tools` and `firebase login`). CI does the same on pushes to `main` that touch the rules (below); this is the local fallback. Index builds take a few minutes; the Firebase console → Firestore → Indexes shows progress |
+| `pnpm rules:stamp` | `firebase database:set /meta/rulesVersion` to this checkout's RULES_VERSION (the CLI's admin access; clients can't write it). Fails if the live rules don't carry the same version, so a stale deploy is caught at once |
 | `pnpm test` | vitest unit tests in `tests/unit` (engines, dates/streak, pet, availability, ping cooldown) |
 | `pnpm test:rules` | build rules, start the emulators (Firestore 8181, RTDB 9191; needs Java), run `tests/rules.test.ts` |
 | `pnpm test:e2e` | production build + Playwright layout smoke test (mobile viewport; first run `npx playwright install chromium`) |
@@ -45,19 +46,27 @@
 
 1. `pnpm typecheck && pnpm lint` (and `pnpm build` for anything touching config, the worker or dependencies).
 2. Commit, `git push` → Vercel builds `main` automatically. `vercel.json` pins the function region to Singapore (`"regions": ["sin1"]`, the one region Hobby allows), next to the Realtime Database; it overrides the dashboard's Settings → Functions value, so changing the region is a commit, not a console click.
-3. If `rules/*.tmpl` or `firestore.indexes.json` changed: `pnpm rules:deploy`. The app and rules are deployed separately. A rules change without a deploy shows up as `permission-denied` in the console; a missing composite index as `failed-precondition` ("The query requires an index"); a missing RTDB `.indexOn` as a console warning ("Using an unspecified index…") and the whole node downloaded to the phone. `pnpm test` fails first: `tests/unit/rules-coverage.test.ts` prints the entry to add to `firestore.indexes.json` for any query that needs one, refuses `orderBy(documentId(), "desc")` outright (order ascending over an id range instead), and names the RTDB node that needs `.indexOn` for an `orderByChild` field.
+3. If `rules/*.tmpl` or `firestore.indexes.json` changed, the push to `main` deploys them: the `deploy-rules` CI job (below) runs `build-rules` → `firebase deploy` → `rules:stamp` once `checks` and `rules` pass. Watch it in Actions; `pnpm rules:deploy` is the local fallback. The app (Vercel) and the rules (CI) still deploy separately, so the two can disagree for a few minutes; **RULES_VERSION** tells them apart: `scripts/lib/rules-version.mjs` hashes the two templates (8 hex), `build-rules` writes it as `// RULES_VERSION …` in `firestore.rules` and as the `.validate` of `meta/rulesVersion` in the RTDB rules, `next.config.ts` bakes it into the app as `NEXT_PUBLIC_RULES_VERSION`. More → Diagnostics shows "Rules: live … · expected … ✓/✗" (`GET /api/rules/status`), and the tick's daily drift job pushes the owner when the live rules lag the deployed app ("⚠️ Firebase rules are out of date — CI deploy failed or hasn't run"). A rules change without a deploy shows up as `permission-denied` in the console; a missing composite index as `failed-precondition` ("The query requires an index"); a missing RTDB `.indexOn` as a console warning ("Using an unspecified index…") and the whole node downloaded to the phone. `pnpm test` fails first: `tests/unit/rules-coverage.test.ts` prints the entry to add to `firestore.indexes.json` for any query that needs one, refuses `orderBy(documentId(), "desc")` outright (order ascending over an id range instead), and names the RTDB node that needs `.indexOn` for an `orderByChild` field.
 4. If `src/app/sw.ts` or precached assets changed, the new worker installs on the next launch or hourly check and *waits*: each phone shows the persistent "Update available · Reload" toast (or More → Check for updates says so) and the tap hands over and reloads once. Nothing updates silently mid-session; a closed-and-reopened app activates the waiting worker on its own. A hard refresh or reinstall is never required.
 5. Check `/api/health` and the console for CSP reports after a config change.
 
 ## CI
 
-`.github/workflows/ci.yml` runs the existing checks on GitHub Actions; nothing in it needs `.env.local` or a secret (the workflow `env` holds obviously fake `NEXT_PUBLIC_*` values, `tincan-ci-fake`, and two `example.com` emails, which `scripts/build-rules.mjs`, `tests/rules.test.ts` and `tests/trivia-live.test.ts` read from `process.env` when no env file exists).
+`.github/workflows/ci.yml` runs the existing checks on GitHub Actions; the three check jobs need no `.env.local` or secret (the workflow `env` holds obviously fake `NEXT_PUBLIC_*` values, `tincan-ci-fake`, and two `example.com` emails, which `scripts/build-rules.mjs`, `tests/rules.test.ts` and `tests/trivia-live.test.ts` read from `process.env` when no env file exists). The fourth job, `deploy-rules`, deploys the Firebase rules and needs three repository settings (GitHub → Settings → Secrets and variables → Actions):
+
+| Setting | Kind | Value |
+| --- | --- | --- |
+| `FIREBASE_SERVICE_ACCOUNT` | secret | the same base64 service-account JSON as on Vercel. The job decodes it to a temp file and points `GOOGLE_APPLICATION_CREDENTIALS` at it for the Firebase CLI; the project id comes from the JSON |
+| `ALLOWED_EMAILS` | secret | the two emails, comma-separated, exactly as on Vercel (they are compiled into the rules) |
+| `CLOUDINARY_CLOUD_NAME` | **variable** (not secret: it is public in the client bundle) | your Cloudinary cloud name. The Firestore rules validate every media URL against it, so the fake CI value must never be deployed; the job refuses to run without it |
 
 | Job | When | What |
 | --- | --- | --- |
 | `checks` | every push and pull request | `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm lint`, `pnpm knip`, `pnpm test` (Node from `engines.node`, pnpm from `packageManager`, the pnpm store cached by the lockfile) |
 | `rules` | every push and pull request | the same, plus Temurin Java 21 and `firebase-tools`, then `pnpm test:rules` on the emulators; the emulator jars are cached under `~/.cache/firebase/emulators` |
 | `e2e` | pushes to `main`, or by hand | Playwright's Chromium (cached under `~/.cache/ms-playwright`, keyed by the lockfile; `--with-deps` on a miss, `install-deps` on a hit), then `pnpm test:e2e` (production build with the placeholder env + Playwright); on failure the HTML report and traces are uploaded as the `playwright-report` artifact. Two YouTube *playback* tests are skipped there (YouTube refuses to play from GitHub's datacenter addresses); loading, cueing, embed URL and player size still run. "Failed to load resource" console errors from Google / Firebase hosts are ignored only when the build's project id ends in `-ci-fake` (`tests/e2e/violations.ts`) |
+
+| `deploy-rules` | pushes to `main`, after `checks` and `rules` pass, and only when `rules/**`, `firestore.indexes.json`, `scripts/build-rules.mjs`, `scripts/rules-stamp.mjs` or `scripts/lib/rules-version.mjs` changed between the push's base and head (a `git diff --quiet` step; a first or force push deploys) | checks the three settings above, `firebase-tools`, service account → `$RUNNER_TEMP/sa.json` → `GOOGLE_APPLICATION_CREDENTIALS`, `node scripts/build-rules.mjs` with the real emails / cloud name / project id, `firebase deploy --only firestore:rules,firestore:indexes,database --non-interactive`, `node scripts/rules-stamp.mjs`. Rules changes on a PR are only tested; they deploy when the PR merges |
 
 A new push cancels the run still going on the same branch or PR (`concurrency`). To run the e2e job by hand: GitHub → Actions → CI → "Run workflow" → pick the branch (that is `workflow_dispatch`; it runs all three jobs). The README badge shows the latest `main` result.
 
@@ -67,6 +76,7 @@ A new push cancels the run still going on the same branch or PR (`concurrency`).
 - **RTDB connections**: 100 simultaneous on Spark; the app keeps ≤ ~6 per client. If a screen leaks a listener, `useRtdbValue` with a `null` path on unmount is the pattern.
 - **Push**: More → Notifications → "Send a test". A failure there means the token, the VAPID key or the service worker registration.
 - **Tick**: cron-job.org history should show 200s; `pnpm tick:dry` locally against production to see the plan.
+- **Rules**: More → Diagnostics → "Rules: live … · expected … ✓". A ✗ means the `deploy-rules` job failed or hasn't run for the latest templates (Actions tab), or the app is a build from a newer commit than the last deploy; the tick also pushes the owner once a day while they differ.
 - **Dependencies**: `pnpm outdated`, `pnpm audit --prod`.
 
 ## Updating radio stations

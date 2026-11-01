@@ -179,6 +179,12 @@
       ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
       ".write": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__"
     },
+    "meta": {
+      ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",
+      ".write": false,
+      "rulesVersion": { ".validate": "newData.val() === '__RULES_VERSION__'" },
+      "$other": { ".validate": false }
+    },
     "trivia": {
       "$roundId": {
         ".read": "auth != null && auth.token.email_verified === true && __ALLOWED_EMAILS__",

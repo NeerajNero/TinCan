@@ -59,6 +59,7 @@ Every stored asset reference is `{ url, publicId, variants }` (messages.media, m
 | `watch/main`, `listen/main`, `listen/queue` | both | — | watch/listen together |
 | `roomchat/{room}/{pushId}` (`room` = `watch` / `listen`) | owner creates (`uid == auth.uid`), either deletes, no edits; either may remove the whole room | uid, text 1–500 chars, at number ≤ now; no other children | Watch / Listen side chat (`hooks/useRoomChat`): one `orderByKey().limitToLast(60)` query while the screen is open, newest 50 shown; the sender trims anything beyond 50 after each send |
 | `radio/main`, `timer/main`, `cook/{recipeId}` | both | — | radio, focus timer, cook-along |
+| `meta/rulesVersion` | read by the pair; **no client write** (`.write: false`) | `.validate`: the string must equal the `RULES_VERSION` the rules were built with (8 hex) | stamped by `pnpm rules:stamp` (Firebase CLI, admin access) after every deploy; the `.validate` itself is the marker the drift check reads out of the live rules |
 
 `.indexOn: ["open"]` on `games` and on `pictionary` serves the two landing queries (`orderByChild("open").equalTo(true)`, also used by the tick's stale-game sweep). All other RTDB reads are single nodes or `orderByKey()` windows, which need no index. `tests/unit/rules-coverage.test.ts` fails on any `orderByChild` field without an `.indexOn` on its node.
 

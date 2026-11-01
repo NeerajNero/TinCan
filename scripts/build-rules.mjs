@@ -1,13 +1,19 @@
 #!/usr/bin/env node
 /**
- * Fills rules/*.tmpl with the two allowlisted emails and the Firebase project id,
- * writing firestore.rules, database.rules.json and .firebaserc (all gitignored).
+ * Fills rules/*.tmpl with the two allowlisted emails, the Cloudinary cloud name,
+ * the Firebase project id and RULES_VERSION (scripts/lib/rules-version.mjs: a hash
+ * of the two templates, embedded as a comment in firestore.rules and as the
+ * `.validate` of meta/rulesVersion in the RTDB rules, so the live rules can be
+ * compared with the build), writing firestore.rules, database.rules.json and
+ * .firebaserc (all gitignored).
  *
  * Reads ALLOWED_EMAILS and NEXT_PUBLIC_FIREBASE_PROJECT_ID from the environment,
  * then .env.local, then .env. Never prints their values.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+
+import { rulesVersion } from "./lib/rules-version.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 
@@ -73,13 +79,17 @@ const firestoreList = `[${emails.map(q).join(", ")}]`;
 // RTDB has no functions, so every rule inlines an OR of equality checks.
 const rtdbExpr = `(${emails.map((e) => `auth.token.email === ${q(e)}`).join(" || ")})`;
 
+const version = rulesVersion(root);
+
 function render(tmplName, outName, replacement) {
   const tmpl = readFileSync(resolve(root, "rules", tmplName), "utf8");
-  if (!tmpl.includes("__ALLOWED_EMAILS__")) {
-    console.error(`build-rules: ${tmplName} has no __ALLOWED_EMAILS__ placeholder.`);
-    process.exit(1);
+  for (const placeholder of ["__ALLOWED_EMAILS__", "__RULES_VERSION__"]) {
+    if (!tmpl.includes(placeholder)) {
+      console.error(`build-rules: ${tmplName} has no ${placeholder} placeholder.`);
+      process.exit(1);
+    }
   }
-  const out = tmpl.replaceAll("__ALLOWED_EMAILS__", replacement).replaceAll("__CLOUDINARY_CLOUD__", cloudName);
+  const out = tmpl.replaceAll("__ALLOWED_EMAILS__", replacement).replaceAll("__CLOUDINARY_CLOUD__", cloudName).replaceAll("__RULES_VERSION__", version);
   if (outName.endsWith(".json")) JSON.parse(out); // fail loudly on broken JSON
   writeFileSync(resolve(root, outName), out);
   console.log(`build-rules: wrote ${outName}`);
@@ -92,4 +102,4 @@ writeFileSync(
   resolve(root, ".firebaserc"),
   JSON.stringify({ projects: { default: projectId } }, null, 2) + "\n",
 );
-console.log("build-rules: wrote .firebaserc");
+console.log(`build-rules: wrote .firebaserc (RULES_VERSION ${version})`);

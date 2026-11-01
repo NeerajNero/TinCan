@@ -61,7 +61,17 @@ pnpm rules:deploy               # builds the security rules with your two emails
 pnpm dev
 ```
 
-`ALLOWED_EMAILS` *is* the pairing. The first email is the owner. The values live only in `.env*` and on Vercel. Never commit or paste them.
+`ALLOWED_EMAILS` *is* the pairing. The first email is the owner. The values live only in `.env*`, on Vercel and (two of them) in GitHub Actions. Never commit or paste them.
+
+### 4b. GitHub Actions (rules deploy)
+
+After the first manual `pnpm rules:deploy`, CI keeps the Firebase rules in step with `rules/*.tmpl`: every push to `main` that changes the rules or `firestore.indexes.json` runs the `deploy-rules` job. In the repo → Settings → Secrets and variables → Actions add:
+
+- [ ] Secret `FIREBASE_SERVICE_ACCOUNT` — the same base64 service-account JSON as `.env`.
+- [ ] Secret `ALLOWED_EMAILS` — the same two emails, comma-separated.
+- [ ] Variable `CLOUDINARY_CLOUD_NAME` (Variables tab, not a secret) — your Cloudinary cloud name; the rules validate media URLs against it.
+
+More → Diagnostics shows "Rules: live … · expected … ✓" once the deployed rules match the app build, and the owner gets a push if they drift.
 
 ### 5. Vercel (Hobby, free)
 
@@ -94,8 +104,8 @@ Both people sign in with Google and pick a nickname and city; that forms the pai
 | `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`) |
 | `pnpm test:e2e` | Builds, then Playwright on a phone viewport: no CSP violations (page and worker), the document never scrolls. First run: `npx playwright install chromium` |
 
-GitHub Actions (`.github/workflows/ci.yml`) runs the same checks on every push and pull request: typecheck, lint, knip and unit tests; the rules tests on the emulators; and, on pushes to `main` or by hand, the production build + Playwright with placeholder env values. See [`docs/operations.md`](docs/operations.md) → CI.
-| `pnpm rules:deploy` | Builds `rules/*.tmpl` with your emails and deploys Firestore rules, Firestore indexes (`firestore.indexes.json`) and Realtime Database rules |
+GitHub Actions (`.github/workflows/ci.yml`) runs the same checks on every push and pull request: typecheck, lint, knip and unit tests; the rules tests on the emulators; and, on pushes to `main` or by hand, the production build + Playwright with placeholder env values. On pushes to `main` that change the rules it also deploys them to Firebase (`deploy-rules`, needs the two secrets and the variable from step 4b). See [`docs/operations.md`](docs/operations.md) → CI.
+| `pnpm rules:deploy` | Builds `rules/*.tmpl` with your emails and deploys Firestore rules, Firestore indexes (`firestore.indexes.json`) and Realtime Database rules, then stamps `meta/rulesVersion` (`pnpm rules:stamp`). CI does this on pushes to `main` that touch the rules; this is the local fallback |
 | `pnpm tick:dry` | Shows what the scheduler would do right now, without sending anything |
 | `pnpm reset:dry` / `pnpm reset` | Wipes everything except the owner's account (dry run by default) |
 | `pnpm export` | Backup: dated JSON of all Firestore data plus a CSV of media URLs in `./exports/` |

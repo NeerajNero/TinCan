@@ -6,6 +6,7 @@ import type { NextConfig } from "next";
 
 
 import { buildPermissionsPolicy, buildWorkerCsp } from "./csp";
+import { rulesVersion } from "./scripts/lib/rules-version.mjs";
 
 
 /** Short commit id of this build (Vercel's, else local git), shown in More → Diagnostics. */
@@ -13,7 +14,8 @@ const BUILD_ID = (process.env.VERCEL_GIT_COMMIT_SHA || spawnSync("git", ["rev-pa
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
+  // RULES_VERSION: the hash of rules/*.tmpl in this checkout, compared with the live rules by the tick and Diagnostics.
+  env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID, NEXT_PUBLIC_RULES_VERSION: rulesVersion(__dirname) },
   experimental: {
     // Every page is dynamic (CSP nonce), so the router cache would otherwise
     // drop a tab's payload the moment you leave it. Five minutes makes a return

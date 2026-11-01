@@ -112,7 +112,8 @@ Open-when envelopes, Mood history (calendar for both).
 **More** — Profile (nickname, city, avatar), Theme, Notification toggles, Friends-since date,
 Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), App build + "Check for updates",
 Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, and "Last move: 180 ms (chess, local)" / "Last shot: 1,240 ms
-(battleship, server)", tap → the board reflecting the turn through the RTDB listener; the last ten of each in the copy dump), Sign out.
+(battleship, server)", tap → the board reflecting the turn through the RTDB listener; the last ten of each in the copy dump; and
+"Rules: live 207861db · expected 207861db ✓" from `GET /api/rules/status`, ✗ when the live rules lag the build), Sign out.
 
 ## Design
 - Cute & playful: rounded 20px cards, soft pastel palette with one accent per tab, large emoji
@@ -240,6 +241,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
 `cook/{recipeId}`: {checked{stepIdx:true}, by}
 `twenty/{gameId}`: {holderUid, secret, questionsAsked, status}
 `trivia/{roundId}`: {joined{uid: ms}, qIndex?, qStartedAt?, startedBy?, answered{uid: choice}} — the live duel cursor (see Trivia duel)
+`meta/rulesVersion`: the RULES_VERSION string the last deploy stamped (written by `pnpm rules:stamp` through the CLI, admin
+  access; clients read only). Its `.validate` pins the version the live rules were built from, which the drift check reads.
 `invites/{uid}/{pushId}`: {from, activity, label, route, at} — a queue like pings; the receiver shows a Join / Not now toast and deletes it
 `roomchat/{room}/{pushId}` (room: watch|listen): {uid, text (1–500), at} — the Watch/Listen side chat, newest 50 kept
 
@@ -320,6 +323,11 @@ Every trivia question also carries an `explanation`. Word definitions are static
      line, no push. Both query shapes need the composite indexes in `firestore.indexes.json`.
   9. 09:00 ROOM_TZ: any milestone still marked `verify` whose next occurrence is exactly 7 days away →
      "Is this date right?" push to both (milestone toggle) deep-linking to `/memories/milestones?edit={id}`.
+  10. Rules drift, 09:30 ROOM_TZ once a day (`tickLog/rules-drift-{dateKey}`): read the live RTDB rules
+      (admin `getRules()`) and the live Firestore rules (Firebase Rules API, release `cloud.firestore`),
+      extract their `RULES_VERSION` markers and compare with `NEXT_PUBLIC_RULES_VERSION` (the hash of
+      `rules/*.tmpl` this deployment was built from). Mismatch → one `rules-drift` push to the owner (first
+      allowlisted email), master switch only: "⚠️ Firebase rules are out of date — CI deploy failed or hasn't run".
 - Dry run: `pnpm tick:dry` prints what would be sent without sending.
 
 ## Media — Cloudinary
@@ -506,6 +514,9 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - `envelopes`: body readable by `forUid` only after `openedAt` is set by them, and by author always.
 - `scheduled`: readable/deletable by sender only; delivery is done by the server (admin).
 - `tickLog`, `push`: admin-only (no client access).
+- RULES_VERSION: `scripts/build-rules.mjs` embeds the hash of the two templates (`scripts/lib/rules-version.mjs`, 8 hex)
+  as `// RULES_VERSION …` in `firestore.rules` and as `meta/rulesVersion`'s `.validate` in the RTDB rules; `next.config.ts`
+  puts the same hash in `NEXT_PUBLIC_RULES_VERSION`, so the tick and Diagnostics can tell live rules from the build's.
 - RTDB: `presence/{uid}`, `typing/{uid}`, `cursors/{uid}`, `lamp/{uid}` writable only by `uid`;
   `pings/{uid}` and `invites/{uid}` children creatable by the other user (`from == auth.uid`, validated
   shape, `route` a same-origin path) and deletable by the owner, `invites/{uid}` readable by the owner only;
@@ -616,12 +627,17 @@ of a task must say which docs were updated.
   errors go through `errorMessage()` (`src/lib/swallow.ts`). Pure logic lives in `src/lib` so `pnpm test`
   (vitest unit tests in `tests/unit`) can cover it; `pnpm profile:chat` measures the chat list.
 - GitHub Actions (`.github/workflows/ci.yml`) runs typecheck, lint, knip, unit tests and the rules tests on
-  every push and PR, and the build + Playwright on pushes to main; it needs no secrets (placeholder env).
+  every push and PR, and the build + Playwright on pushes to main; those jobs need no secrets (placeholder env).
+  `deploy-rules` runs on pushes to main after `checks` and `rules` pass, only when `rules/**`,
+  `firestore.indexes.json` or the rules scripts changed: builds with the `ALLOWED_EMAILS` secret and the
+  `CLOUDINARY_CLOUD_NAME` variable, deploys with the Firebase CLI authenticated by the `FIREBASE_SERVICE_ACCOUNT`
+  secret (`GOOGLE_APPLICATION_CREDENTIALS` from a temp file), then stamps `meta/rulesVersion`.
 - `pnpm typecheck` and `pnpm lint` must pass before each commit. One commit per phase, and
   `git push` after every commit — the remote is the backup. The full finish list (knip, tests, e2e when relevant,
   `pnpm size` for bundle budgets, docs) is in `docs/adding-a-feature.md` → Finish; `/ship` runs it.
-- Rules deploy via Firebase CLI: `pnpm rules:deploy` → `firebase deploy --only firestore:rules,firestore:indexes,database`
-  (`firestore.indexes.json`, referenced from `firebase.json`, travels with the rules).
+- Rules deploy: CI does it (above). Locally `pnpm rules:deploy` → build, `firebase deploy --only
+  firestore:rules,firestore:indexes,database` (`firestore.indexes.json`, referenced from `firebase.json`, travels with
+  the rules), then `pnpm rules:stamp`. The daily drift check (tick job 10) catches a deploy that failed or never ran.
 - Accessibility basics: buttons have labels, tap targets ≥ 44 px, colour is never the only signal.
 - Anything read back from storage that names a game goes through `gameInfo()` in
   `src/lib/games/catalog.ts` (never index a catalogue directly; stored rows may hold types this build

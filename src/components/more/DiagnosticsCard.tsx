@@ -8,12 +8,14 @@ import { Card } from "@/components/ui/Card";
 import { useAuth } from "@/hooks/useAuth";
 import { useNow } from "@/hooks/useNow";
 import { useRtdbValue } from "@/hooks/useRtdbValue";
+import { authedFetch } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { pairRef } from "@/lib/db/refs";
 import { diagEntries, type DiagEntry } from "@/lib/diagLog";
 import { rtdbPrefersLongPolling } from "@/lib/firebase/client";
 import { onSnapshot } from "@/lib/firebase/fs";
 import { getFirestoreHealth, subscribeFirestoreHealth, type FirestoreHealth } from "@/lib/firestoreHealth";
+import { EXPECTED_RULES_VERSION, rulesStatusLine, type RulesStatus } from "@/lib/rulesVersion";
 import { APP_BUILD, workerBuild } from "@/lib/swUpdate";
 import { formatTabSwitch, tabSwitchLine, tabTimer } from "@/lib/tabTiming";
 import { formatTurn, turnLabel, turnLine, turnTimer } from "@/lib/turnTiming";
@@ -72,6 +74,18 @@ async function workerInfo(): Promise<WorkerInfo> {
   return { controller: Boolean(navigator.serviceWorker.controller), active, waiting, installing };
 }
 
+/** "live 207861db · expected 207861db ✓" from GET /api/rules/status (the live markers), else why not. */
+async function rulesLine(): Promise<string> {
+  try {
+    const res = await authedFetch("/api/rules/status");
+    if (!res.ok) return `couldn't check (HTTP ${res.status}) · expected ${EXPECTED_RULES_VERSION}`;
+    const status = (await res.json()) as RulesStatus;
+    return rulesStatusLine(status);
+  } catch {
+    return `couldn't check (offline?) · expected ${EXPECTED_RULES_VERSION}`;
+  }
+}
+
 async function cspMode(): Promise<string> {
   try {
     const res = await fetch(window.location.pathname, { method: "HEAD", cache: "no-store" });
@@ -92,6 +106,7 @@ function DiagnosticsPanel() {
   const [fsError, setFsError] = useState<string | null>(null);
   const [worker, setWorker] = useState<WorkerInfo | null>(null);
   const [csp, setCsp] = useState("checking…");
+  const [rules, setRules] = useState("checking…");
   const [token, setToken] = useState<{ issuedAt: number; expiresAt: number } | null>(null);
   const [log, setLog] = useState<readonly DiagEntry[]>(() => diagEntries());
   const health = useSyncExternalStore(subscribeFirestoreHealth, getFirestoreHealth, getFirestoreHealth);
@@ -111,6 +126,7 @@ function DiagnosticsPanel() {
     let live = true;
     void workerInfo().then((w) => live && setWorker(w));
     void cspMode().then((c) => live && setCsp(c));
+    void rulesLine().then((r) => live && setRules(r));
     void user?.getIdTokenResult().then((r) => live && setToken({ issuedAt: Date.parse(r.issuedAtTime), expiresAt: Date.parse(r.expirationTime) }));
     const t = setInterval(() => setLog(diagEntries()), 2000);
     return () => {
@@ -139,6 +155,7 @@ function DiagnosticsPanel() {
     ["Firestore reconnects", fmtHealth(health, now.getTime())],
     ["Firestore last error", fsError ?? firestoreLast?.text ?? "none"],
     ["CSP", csp],
+    ["Rules", rules],
     ["Last tab switch", lastSwitch ? `${formatTabSwitch(lastSwitch)} → ${lastSwitch.href}` : "none yet (tap another tab)"],
     [lastTurn ? turnLabel(lastTurn) : "Last move", lastTurn ? formatTurn(lastTurn) : "none yet (play a turn)"],
     ["Network", `${navigator.onLine ? "online" : "offline"}${conn ? ` · ${conn.type ?? "?"} / ${conn.effectiveType ?? "?"}${conn.downlink ? ` · ${conn.downlink} Mb/s` : ""}${conn.saveData ? " · data saver" : ""}` : ""}`],
