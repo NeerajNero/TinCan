@@ -3,25 +3,32 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { gameReactionsPath, sendGameReaction } from "@/lib/db/reactions";
-import { limitToLast, onChildAdded, onValue, query, remove } from "@/lib/firebase/rt";
+import { firebaseErrorCode, isPermissionDenied } from "@/lib/diagLog";
+import { limitToLast, onValue, query, remove } from "@/lib/firebase/rt";
 import { admitReaction, ingestExisting, REACTION_LIFE_MS, REACTION_MAX_LIVE, tapAllowed, type LiveReaction } from "@/lib/reactions";
 import { rtdbRef } from "@/lib/rtdb";
 import { swallow } from "@/lib/swallow";
 
-/** After a cancelled subscription (a refused read, a transport error) the listeners are re-attached with this backoff. */
+/** After a transport cancel (never a rules denial) the listener is re-attached with this backoff. */
 const RETRY_MS = [2000, 5000, 15000, 30000];
 
 /**
- * The reaction feed for one game, from one subscription: `child_added` on the
- * last 12 children plus a `value` listener on the same query. The SDK raises
- * child_added for everything already there *before* the first value event, so
- * those keys are the first snapshot: remembered (never animated) and deleted.
- * Every child_added after that first value event animates once, whatever its
- * timestamp; the sender's own tap arrives through this same path (its
- * optimistic event and the server echo share the key). No separate `get()`:
- * a dropped connection only delays the first value event, it cannot fail the
- * read, and the SDK re-sends the data on reconnect. If the subscription is
- * cancelled anyway, the hook re-attaches with a backoff instead of staying dead.
+ * The reaction feed for one game, from exactly one subscription: a `value`
+ * listener on the last 12 children. The first snapshot is whatever was there
+ * when the screen opened: remembered (never animated) and deleted. Every key
+ * that appears in a later snapshot animates once, whatever its timestamp; the
+ * sender's own tap arrives through this same path (its optimistic event and
+ * the server echo share the key). No separate `get()`: a dropped connection
+ * only delays the first snapshot, it cannot fail the read, and the SDK re-sends
+ * on reconnect.
+ *
+ * One listener, not a child_added + value pair: when the backend refuses a
+ * query the SDK cancels *every* registration on it, so a pair received two
+ * cancels, scheduled two retries, and doubled the number of listeners with
+ * every wave (2, 4, 8, 16 denials in one millisecond). A cancel is handled
+ * once per attachment. A rules denial (PERMISSION_DENIED) is final: the
+ * wrapper logged it once, nothing re-attaches. Any other cancel (a transport
+ * error) re-attaches with a backoff instead of staying dead.
  *
  * The feed is decided outside React's state updater (`liveRef`), which runs
  * later and, in StrictMode, twice: deciding inside it animated nothing.
@@ -45,59 +52,58 @@ export function useGameReactions(gameId: string, uid: string): { live: LiveReact
 
     const attach = () => {
       if (cancelled) return;
-      const q = query(path, limitToLast(REACTION_MAX_LIVE));
-      let initial: string[] | null = []; // keys delivered before the first value event
-      const onCancel = () => {
-        // Logged by the wrapper. Drop this subscription and try again later; a later success starts from a fresh first snapshot.
-        detach?.();
-        detach = null;
-        const wait = RETRY_MS[Math.min(attempt, RETRY_MS.length - 1)] ?? 30000;
-        attempt += 1;
-        const t = setTimeout(() => {
-          timers.delete(t);
-          attach();
-        }, wait);
-        timers.add(t);
-      };
-      const offAdded = onChildAdded(
-        q,
-        (c) => {
-          const id = c.key ?? "";
-          if (initial) {
-            initial.push(id);
+      let first = true;
+      let settled = false; // this attachment was cancelled; the SDK may say so more than once
+      const off = onValue(
+        query(path, limitToLast(REACTION_MAX_LIVE)),
+        (snap) => {
+          const ids: string[] = [];
+          const nodes = new Map<string, unknown>();
+          snap.forEach((c) => {
+            const id = c.key ?? "";
+            ids.push(id);
+            nodes.set(id, c.val());
+          });
+          if (first) {
+            // The first snapshot: everything so far was there when the screen opened.
+            first = false;
+            attempt = 0;
+            for (const id of ingestExisting(seen, ids)) remove(rtdbRef(`${gameReactionsPath(gameId)}/${id}`)).catch(swallow);
             return;
           }
-          const r = admitReaction(seen, liveRef.current, id, c.val(), Date.now());
-          if (!r.added) return;
-          publish(r.live);
-          try {
-            navigator.vibrate?.(20);
-          } catch {
-            // no haptics
+          for (const id of ids) {
+            const r = admitReaction(seen, liveRef.current, id, nodes.get(id), Date.now());
+            if (!r.added) continue;
+            publish(r.live);
+            try {
+              navigator.vibrate?.(20);
+            } catch {
+              // no haptics
+            }
+            const t = setTimeout(() => {
+              timers.delete(t);
+              publish(liveRef.current.filter((x) => x.id !== id));
+            }, REACTION_LIFE_MS);
+            timers.add(t);
           }
+        },
+        (err) => {
+          if (settled || cancelled) return;
+          settled = true;
+          // The SDK has already dropped the registration; the wrapper logged the failure once.
+          off();
+          detach = null;
+          if (isPermissionDenied(firebaseErrorCode(err))) return; // rules said no: retrying would only repeat the denial
+          const wait = RETRY_MS[Math.min(attempt, RETRY_MS.length - 1)] ?? 30000;
+          attempt += 1;
           const t = setTimeout(() => {
             timers.delete(t);
-            publish(liveRef.current.filter((x) => x.id !== id));
-          }, REACTION_LIFE_MS);
+            attach();
+          }, wait);
           timers.add(t);
         },
-        onCancel,
       );
-      const offValue = onValue(
-        q,
-        () => {
-          if (!initial) return;
-          // The first snapshot: everything so far was there when the screen opened.
-          for (const id of ingestExisting(seen, initial)) remove(rtdbRef(`${gameReactionsPath(gameId)}/${id}`)).catch(swallow);
-          initial = null;
-          attempt = 0;
-        },
-        onCancel,
-      );
-      detach = () => {
-        offAdded();
-        offValue();
-      };
+      detach = off;
     };
     attach();
 

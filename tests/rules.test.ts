@@ -7,7 +7,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
-import { child, get, push, ref, remove, serverTimestamp as rtdbServerTimestamp, set, update } from "firebase/database";
+import { child, get, limitToLast, push, query as rtdbQuery, ref, remove, serverTimestamp as rtdbServerTimestamp, set, update } from "firebase/database";
 import { deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 
@@ -396,6 +396,26 @@ describe("rtdb gameReactions: a queue created as yourself, deleted by either, ne
     const byB = push(ref(asB().database(), "gameReactions/g2"));
     await assertSucceeds(set(byB, { by: B, emoji: "😂", at: rtdbServerTimestamp() }));
     await assertSucceeds(remove(ref(dbA, `gameReactions/g2/${byB.key}`)));
+  });
+
+  it("accepts every game type's id (Hangman, Battleship, a board game) and one with no game node at all", async () => {
+    const game = (type: string) => ({ type, state: "{}", turn: "first", players: { first: A, second: B }, status: "active", open: true, createdBy: A, createdAt: 1, lastMoveAt: 1, moves: 0 });
+    await env$.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.database();
+      await set(ref(db, "games/-NhangmanGame"), game("hangman"));
+      await set(ref(db, "games/-NbattleshipGame"), game("battleship"));
+      await set(ref(db, "games/-NchessGame"), game("chess"));
+    });
+    for (const id of ["-NhangmanGame", "-NbattleshipGame", "-NchessGame", "-NnoSuchGame"]) {
+      const dbA = asA().database();
+      const dbB = asB().database();
+      // The hook's own read: the last 12 children.
+      await assertSucceeds(get(rtdbQuery(ref(dbB, `gameReactions/${id}`), limitToLast(12))));
+      const node = push(ref(dbA, `gameReactions/${id}`));
+      await assertSucceeds(set(node, { by: A, emoji: "😱", at: rtdbServerTimestamp() }));
+      await assertSucceeds(remove(ref(dbB, `gameReactions/${id}/${node.key}`)));
+      await assertFails(get(ref(asStranger().database(), `gameReactions/${id}`)));
+    }
   });
 });
 

@@ -597,7 +597,8 @@ of a task must say which docs were updated.
   read or listener (get/getDoc/getDocs, onValue/onChildAdded/onSnapshot, even without a caller error
   callback) to the Diagnostics log as `[write] op path → code: message` / `[read] …`; in development a
   permission-denied also shows as a toast (`WriteFailureToasts`). Never attach a listener that can't fail
-  visibly. `tests/unit/rules-coverage.test.ts` (part of `pnpm test`) scans those wrappers' call sites and
+  visibly. A listener cancelled with PERMISSION_DENIED is never re-attached (one log line, then stop); only
+  transport cancels may retry, from a single listener per screen. `tests/unit/rules-coverage.test.ts` (part of `pnpm test`) scans those wrappers' call sites and
   fails if a Firestore collection or RTDB top-level node has no explicit block in `rules/*.tmpl`, so a
   new path needs its rule in the same commit. It also classifies every Firestore `query(...)` and fails when
   one needs a composite index that `firestore.indexes.json` lacks (printing the entry) or orders by document id
