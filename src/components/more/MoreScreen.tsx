@@ -15,12 +15,13 @@ import { ThemeSwitch } from "@/components/more/ThemeSwitch";
 import { TipsCard } from "@/components/more/TipsCard";
 import { UpdateCard } from "@/components/more/UpdateCard";
 import { UsageCard } from "@/components/more/UsageCard";
-import { InboxBell } from "@/components/shell/InboxBell";
+import { useHeader } from "@/components/shell/HeaderProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useAuth } from "@/hooks/useAuth";
 
 export function MoreScreen() {
+  useHeader({ emoji: "✨", title: "More" });
   const { signOut } = useAuth();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -37,13 +38,6 @@ export function MoreScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <header className="flex items-center gap-3 px-1">
-        <span className="text-4xl" aria-hidden>
-          ✨
-        </span>
-        <h1 className="flex-1 text-3xl font-semibold">More</h1>
-        <InboxBell />
-      </header>
 
       <ProfileCard />
       <PairCard />

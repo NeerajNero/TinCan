@@ -11,12 +11,11 @@ import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { BigTile, CompactTile, type TileBadge } from "@/components/play/PlayTile";
 import { RecentGamesList } from "@/components/play/RecentGamesList";
-import { InboxBell } from "@/components/shell/InboxBell";
+import { useHeader } from "@/components/shell/HeaderProvider";
 import { useToast } from "@/components/toast/ToastProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { HowToButton } from "@/components/ui/HowTo";
 import { Sheet, useStickyValue } from "@/components/ui/Sheet";
 import { HOWTO } from "@/content/howto";
 import { usePair } from "@/hooks/usePair";
@@ -38,6 +37,7 @@ import { favouritesOf, PLAY_RECENT_SHOWN, recentOf, sectionOpen, sectionPrefKey 
 const readSectionPrefs = (): Record<PlaySection, string | null> => ({ board: readPref(sectionPrefKey("board")), quick: readPref(sectionPrefKey("quick")), together: readPref(sectionPrefKey("together")) });
 
 export function PlayScreen() {
+  useHeader({ emoji: "🎲", title: "Play", help: "play" });
   const { uid, me, friend, friendUid, pair } = usePair();
   const { games } = useLiveEvents();
   const friendPresence = useFriendPresence();
@@ -170,14 +170,6 @@ export function PlayScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <header className="flex items-center gap-3 px-1">
-        <span className="text-4xl" aria-hidden>
-          🎲
-        </span>
-        <h1 className="flex-1 text-3xl font-semibold">Play</h1>
-        <InboxBell />
-        <HowToButton topic="play" />
-      </header>
 
       <div className="flex items-center gap-3 px-1">
         <button type="button" onClick={surprise} disabled={!friendUid || busy !== null} className="tap rounded-full bg-accent px-4 py-2.5 text-sm font-bold text-accent-ink shadow-[0_8px_20px_-10px_var(--accent)] disabled:opacity-60">

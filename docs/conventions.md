@@ -37,13 +37,23 @@ Errors: fire-and-forget promises end in `.catch(swallow)`; anything shown to the
 ## Overlays and scrolling
 
 - Bottom sheets and menus: `<Sheet open onClose label className>` from `components/ui/Sheet`. It portals to `<body>`, adds the scrim, the drag handle, Escape-to-close and the safe-area bottom padding, and mounts children only while open. `className` styles the content column (include horizontal padding, default `px-4`); `tone`, `height`, `maxHeight`, `scroll` cover the chat drawer case. For a `T | null`-driven menu use `useStickyValue` so the content stays during the exit animation.
-- Any other fixed overlay (viewer, ping overlay, confetti, floating buttons) is wrapped in `<Portal>` and takes its z-index from `Z`. Never rely on `position: fixed` inside a screen: the chat header's `backdrop-blur`, the tab transition's transform and similar make an ancestor the containing block.
+- Any other fixed overlay (viewer, ping overlay, confetti, floating buttons) is wrapped in `<Portal>` and takes its z-index from `Z`. Never rely on `position: fixed` inside a screen: the tab transition's transform and similar make an ancestor the containing block.
 - The document is locked. New full-screen pages outside the shell use `screen-fixed` (and `justify-center-safe` if centred, so tall content isn't cut off at the top). Inside the shell, never use `h-dvh`/`min-h-dvh`; fill with `flex-1 min-h-0`.
 - Focus programmatically with `focusNoScroll(el)` and on mount with `ref={autoFocusRef}`; `Input`'s `autoFocus` already does this.
 
+## App header (the header slot pattern)
+
+There is one header, `components/app-header.tsx`, mounted once by `AppShell` above the scrolling `<main>` (fixed 56 px + the top safe-area inset, the theme background, never animated or remounted). Pages never render a header of their own; they *declare* one:
+
+- Call `useHeader({ title, back?, actions?, subtitle?, emoji?, leading?, help? })` from `components/shell/HeaderProvider` at the top of the screen component (before any early return), or render `components/memories/SubHeader` (the same hook with the sub-screen defaults: back arrow, emoji, title, `action`, `invite`, `help`, and the friend-here badge or a `subtitle`). Both render nothing in place.
+- Slots: **left** = the back arrow (when `back` is set) and the `emoji` or a custom `leading` node (chat's avatar); **centre** = `title` + one-line `subtitle` (chat's "typing…", the friend-here badge, a game's turn status), both truncated; **right** = `actions`, then the `?` button for `help`, then the bell in a fixed 44 px slot, so a badge count change never shifts the icons.
+- The provider keeps the last declaration until the next page declares, so a `loading.tsx` or a navigation never shows a blank or skeleton header; skeletons therefore have no header bones. Declaring runs after every render of the caller and never clears on unmount.
+- `back` pops history when this session navigated here in-app, else goes to the given route (or the tab root for `true`).
+- Guarded by `tests/e2e/header.spec.ts` (the header's, the bell's and the slot's bounding boxes are identical across a tab switch and badge changes, on the `/e2e/header` harness) and `tests/unit/app-header.test.tsx` (keep-last behaviour).
+
 ## Game screens
 
-Anything with game input renders `components/play/GameScreen` (header · fitted content · dock above the tab bar) and never its own scroller; put keyboards, option / vote / answer buttons and inputs in the dock (`dock` prop or `<Dock>` from inside). Keys and option buttons are `components/ui/Pressable`; result feedback is `lib/haptics` (`tap` / `success` / `error`). Boards are the `board` utility with `aspect-square` (or another ratio) so they fit the content height. Guarded by `tests/e2e/boards.spec.ts`.
+Anything with game input renders `components/play/GameScreen` (an optional pinned strip such as a board game's seats card — the page header is the app header, declared with `SubHeader` — · fitted content · dock above the tab bar) and never its own scroller; put keyboards, option / vote / answer buttons and inputs in the dock (`dock` prop or `<Dock>` from inside). Keys and option buttons are `components/ui/Pressable`; result feedback is `lib/haptics` (`tap` / `success` / `error`). Boards are the `board` utility with `aspect-square` (or another ratio) so they fit the content height. Guarded by `tests/e2e/boards.spec.ts`.
 
 ## Design tokens
 

@@ -129,23 +129,31 @@ export function BoardGameScreen({ gameId }: { gameId: string }) {
     <GameScreen
       header={
         <>
-      <SubHeader emoji={meta.emoji} title={meta.name} back="/play" help={HOWTO_FOR_GAME[game.type]} invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: game.type, route: gameRoute(game.id), label: `a game of ${meta.name}`, roundId: game.id }} />
+      <SubHeader
+        emoji={meta.emoji}
+        title={meta.name}
+        back="/play"
+        help={HOWTO_FOR_GAME[game.type]}
+        invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: game.type, route: gameRoute(game.id), label: `a game of ${meta.name}`, roundId: game.id }}
+        action={<CloseGameMenu game={game} onDone={() => router.push("/play")} className="tap grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2" />}
+        subtitle={
+          <span aria-live="polite" className="font-bold text-text">
+            {game.status === "invited" && (game.createdBy === uid ? `Waiting for ${nameOf(game.players.second)} to accept…` : `${nameOf(game.createdBy)} invited you`)}
+            {game.status === "active" && placing && (myTurn ? "Place your ships" : `Waiting for ${nameOf(uidOf(game, game.turn))} to place ships`)}
+            {game.status === "active" && !placing && (myTurn ? "Your turn" : `${nameOf(uidOf(game, game.turn))}'s turn`)}
+            {game.status === "finished" && (game.winnerId ? (game.winnerId === uid ? "You won! 🎉" : `${nameOf(game.winnerId)} won`) : game.endReason === "abandoned" ? "Abandoned" : game.endReason === "cancelled" ? "Cancelled" : "Draw")}
+            {game.status === "declined" && "Declined"}
+          </span>
+        }
+      />
 
-      {/* sticky turn header */}
+      {/* pinned seats strip (not a page header: who plays whom and whose move) */}
       <div className="py-1">
         <div className="card flex items-center gap-3 rounded-[20px] px-3 py-2">
-          <CloseGameMenu game={game} onDone={() => router.push("/play")} className="tap grid size-9 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2" />
           <Seat uid={game.players.first} label={firstLabel} active={game.status === "active" && (placing ? isMyMove(game, game.players.first) : game.turn === "first")} me={uid} meDoc={me} friendDoc={friend} nameOf={nameOf} />
           <span className="text-xs font-bold text-muted">vs</span>
           <Seat uid={game.players.second} label={secondLabel} active={game.status === "active" && (placing ? isMyMove(game, game.players.second) : game.turn === "second")} me={uid} meDoc={me} friendDoc={friend} nameOf={nameOf} right />
         </div>
-        <p className="pt-1 text-center text-sm font-bold" aria-live="polite">
-          {game.status === "invited" && (game.createdBy === uid ? `Waiting for ${nameOf(game.players.second)} to accept…` : `${nameOf(game.createdBy)} invited you`)}
-          {game.status === "active" && placing && (myTurn ? "Place your ships" : `Waiting for ${nameOf(uidOf(game, game.turn))} to place ships`)}
-          {game.status === "active" && !placing && (myTurn ? "Your turn" : `${nameOf(uidOf(game, game.turn))}'s turn`)}
-          {game.status === "finished" && (game.winnerId ? (game.winnerId === uid ? "You won! 🎉" : `${nameOf(game.winnerId)} won`) : game.endReason === "abandoned" ? "Abandoned" : game.endReason === "cancelled" ? "Cancelled" : "Draw")}
-          {game.status === "declined" && "Declined"}
-        </p>
         <FriendHereBadge invite={game.status === "finished" || game.status === "declined" ? undefined : { activity: game.type, route: gameRoute(game.id), label: `a game of ${meta.name}`, roundId: game.id }} />
       </div>
 

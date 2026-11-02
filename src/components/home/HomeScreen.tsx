@@ -23,7 +23,7 @@ import { SnapCard } from "@/components/home/SnapCard";
 import { StreakPlant } from "@/components/home/StreakPlant";
 import { WaitingCard } from "@/components/home/WaitingCard";
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
-import { InboxBell } from "@/components/shell/InboxBell";
+import { useHeader } from "@/components/shell/HeaderProvider";
 import { SnapTakeover } from "@/components/snap/SnapTakeover";
 import { Splash } from "@/components/ui/Splash";
 import { useChatMeta } from "@/hooks/useChatMeta";
@@ -40,22 +40,9 @@ import { readPref, writePref } from "@/lib/localPref";
 import { yearsLine } from "@/lib/milestones";
 import { SNAP_DISMISS_KEY, snapCardState, snapPinned, snapTakeoverDue } from "@/lib/snap";
 
-function Header({ nickname }: { nickname: string }) {
-  return (
-    <header className="flex items-center gap-3 px-1">
-      <span className="text-4xl" aria-hidden>
-        🥫
-      </span>
-      <div className="min-w-0 flex-1">
-        <h1 className="truncate text-3xl font-semibold">Hi, {nickname}</h1>
-      </div>
-      <InboxBell />
-    </header>
-  );
-}
-
 export function HomeScreen() {
   const { me, friend, friendUid, pair } = usePair();
+  useHeader({ emoji: "🥫", title: `Hi, ${me.nickname}` });
   const data = useHomeData();
   const { ping: activePing, dismissPing } = useLiveEvents();
   // The "Ping" home-screen shortcut opens /?ping=1: scroll the ping row in and glow it.
@@ -64,7 +51,6 @@ export function HomeScreen() {
   if (pair.uids.length < 2 || !friendUid) {
     return (
       <div className="flex flex-col gap-4">
-        <Header nickname={me.nickname} />
         <WaitingCard />
         <PushNudgeCard />
         <DailyQuestionCard today={data.today} friendUid={null} friendName={null} />
@@ -76,7 +62,6 @@ export function HomeScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Header nickname={me.nickname} />
       <MilestoneBanner />
       <Cards data={data} friendUid={friendUid} pingShortcut={pingShortcut} />
       <SleepToggle />

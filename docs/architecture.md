@@ -31,7 +31,7 @@ Nothing under `src/components`, `src/hooks` or the client half of `src/lib` may 
           <PresenceProvider>    friend's presence node, in its own context so heartbeats re-render only presence UI
             <LiveEventsProvider>  pings queue, lamp, open games, today's daily doc, garden unlocks → toasts
               <PushController/>   token refresh + foreground pushes → toasts, only once push is enabled (lazy firebase/messaging)
-              <AppShell>          h-dvh column: offline banner, scrolling <main>, tab bar
+              <AppShell>          fixed column: HeaderProvider › persistent app header, offline banner, scrolling <main> (cross-fades), tab bar
 ```
 
 `<Providers>` also wraps everything in framer-motion's `<LazyMotion>` with a lazily imported `domMax` bundle, so components use `m.*` and the full `motion` runtime never ships in a route chunk.
@@ -54,7 +54,7 @@ The six tab routes live under the `(app)` route group, whose single layout mount
 
 ## Layout
 
-The document never scrolls. `html`/`body` are clamped in `globals.css`; `AppShell` is `fixed inset-0` (centred 480 px column) whose `<main>` is the only scroller, with the tab bar as the last flex row. Pages outside the shell use the `screen-fixed` utility. `useDocumentScrollLock` (mounted in `Providers`) snaps the layout viewport back to 0,0 on any `visualViewport` scroll/resize, and focus goes through `focusNoScroll` so Android's scroll-into-view can't move the page. Sheets and overlays are portalled to `<body>` (`ui/Sheet`, `ui/Portal`) with one z-index scale (`Z`). `tests/e2e/layout.spec.ts` guards the lock.
+The document never scrolls. `html`/`body` are clamped in `globals.css`; `AppShell` is `fixed inset-0` (centred 480 px column): the persistent app header first (`components/app-header.tsx`, 56 px + safe-area top, content declared by pages via `useHeader`, kept through navigation by `HeaderProvider`), then `<main>` as the only scroller (only its content cross-fades on a tab switch), then the tab bar as the last flex row; header and tab bar never remount. Pages outside the shell use the `screen-fixed` utility. `useDocumentScrollLock` (mounted in `Providers`) snaps the layout viewport back to 0,0 on any `visualViewport` scroll/resize, and focus goes through `focusNoScroll` so Android's scroll-into-view can't move the page. Sheets and overlays are portalled to `<body>` (`ui/Sheet`, `ui/Portal`) with one z-index scale (`Z`). `tests/e2e/layout.spec.ts` guards the lock.
 
 ## Realtime split
 

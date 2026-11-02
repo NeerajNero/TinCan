@@ -64,9 +64,18 @@ app should feel like a small hello, not a dashboard.
   person's own tz. `dateKey` = `yyyy-MM-dd` in the relevant tz.
 
 ## Screens (bottom tab bar: Home · Chat · Play · Memories · Plan · More)
-Every tab's header row (emoji + title on the left; on Chat the friend's name) ends with a bell 🔔 (phase 28,
-`components/shell/InboxBell`) carrying an unread badge from `users/{me}.inbox.unread` (hidden at zero, "99+" cap),
-next to the ? help button where a screen has one. Tapping it opens the **Notifications** inbox as the shared Sheet at
+One persistent app header (`components/app-header.tsx`, chore "persistent app header") is mounted once by the shell above
+the scrolling main area: 56 px + the top safe-area inset, the theme background, three slots — left (back arrow on
+sub-routes, else the page's emoji or chat's avatar), centre (title + a one-line subtitle: chat's "typing…", the friend-here
+badge, a game's turn status), right (the page's actions, the ? help button, and the bell in a fixed 44 px slot so a badge
+change never shifts the icons). Pages declare their content with `useHeader({ title, back?, actions?, subtitle?, emoji?,
+leading?, help? })` from `components/shell/HeaderProvider` (sub-screens via `SubHeader`, which renders nothing in place);
+the provider keeps the last content until the next page declares, so navigation and `loading.tsx` never show a blank or
+skeleton header, and skeletons carry no header bones. Back pops history when this session navigated in-app, else goes to
+the tab root. Tabs show emoji + name; Chat shows the friend's avatar + name. Only `<main>`'s content cross-fades on a tab
+switch; header and tab bar never animate or remount (`tests/e2e/header.spec.ts`). The right slot ends with the bell 🔔
+(phase 28, `components/shell/InboxBell`) carrying an unread badge from `users/{me}.inbox.unread` (hidden at zero, "99+"
+cap). Tapping it opens the **Notifications** inbox as the shared Sheet at
 90 % height (grabber drag down, scrim tap or Escape closes; the page beneath keeps its scroll): header "Notifications"
 + "Mark all read", rows newest first (emoji per type, title, body, "×N" for a collapsed burst, relative time, an unread
 dot for rows newer than the `lastReadAt` the sheet opened with), swipe left to delete, "Load older" (30 per page), a
@@ -183,8 +192,9 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
   overridable in More.
 - Mobile-first; desktop just centres a 480px column. Safe-area insets respected.
 - The document never scrolls: html/body are `height: 100%; overflow: hidden; overscroll-behavior: none`.
-  The app shell is `position: fixed; inset: 0` with `<main>` as the only scroller and the tab bar as its
-  last row; screens outside the shell (sign-in, onboarding, splash, offline…) use the `screen-fixed`
+  The app shell is `position: fixed; inset: 0` with the persistent app header as its first row (it owns the
+  top safe-area inset), `<main>` as the only scroller and the tab bar as its last row; screens outside the
+  shell (sign-in, onboarding, splash, offline…) use the `screen-fixed`
   utility. Focus with `focusNoScroll` / `autoFocusRef` (`src/lib/focus.ts`), never bare `.focus()` or
   `autoFocus` on raw elements (`Input` handles `autoFocus` itself). `useDocumentScrollLock` resets any
   layout-viewport drift. Guarded by `pnpm test:e2e`.
@@ -208,7 +218,8 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
   (`@container` on the grid, never on the cell itself); SVG boards use a `viewBox`. Battleship's two grids stack on
   phones and sit side by side from 700 px. Guarded by `tests/e2e/boards.spec.ts` at 320 / 360 / 411 px.
 - Game layout: every game and together screen with input (board games, daily word, Hangman, trivia rounds, 20 Questions,
-  decks, Pictionary) renders the `GameScreen` composite (`components/play/GameScreen.tsx`): a header, a content area
+  decks, Pictionary) renders the `GameScreen` composite (`components/play/GameScreen.tsx`): an optional pinned strip
+  (a board game's seats card; the page header itself is the app header, declared with `SubHeader`), a content area
   that takes the rest of the viewport (a size container: boards fit it through the `board` utility's `--board-fit`),
   and a dock pinned above the tab bar (part of the fixed shell, never of the scroll). The composite fills `<main>`
   exactly, so the page never scrolls; only the content area may, and only when it truly doesn't fit. Keyboards,

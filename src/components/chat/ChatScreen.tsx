@@ -12,6 +12,7 @@ import { MessageList } from "@/components/chat/MessageList";
 import { MessageMenu } from "@/components/chat/MessageMenu";
 import { ScheduleSheet } from "@/components/chat/ScheduleSheet";
 import { WaitingCard } from "@/components/home/WaitingCard";
+import { useHeader } from "@/components/shell/HeaderProvider";
 import { Splash } from "@/components/ui/Splash";
 import { useMessages } from "@/hooks/useMessages";
 import { usePair } from "@/hooks/usePair";
@@ -45,13 +46,19 @@ import { swallow } from "@/lib/swallow";
 import type { ChatBgPref, Message } from "@/lib/types";
 import { addPendingViewOnce, viewOnceState } from "@/lib/viewOnce";
 
+/** Before the friend has joined: just the tab's name in the header. */
+function WaitingHeader() {
+  useHeader({ emoji: "💬", title: "Chat" });
+  return null;
+}
+
 export function ChatScreen() {
   const { uid, me, friend, friendUid, loading, pair } = usePair();
 
   if (!friendUid) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="px-1 text-3xl font-semibold">Chat</h1>
+        <WaitingHeader />
         <WaitingCard />
       </div>
     );

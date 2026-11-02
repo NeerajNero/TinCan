@@ -4,8 +4,7 @@ import Link from "next/link";
 
 import { CountdownHero } from "@/components/plan/CountdownHero";
 import { UpcomingSection } from "@/components/plan/UpcomingSection";
-import { InboxBell } from "@/components/shell/InboxBell";
-import { HowToButton } from "@/components/ui/HowTo";
+import { useHeader } from "@/components/shell/HeaderProvider";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { roomDateKey } from "@/lib/dates";
@@ -15,19 +14,12 @@ import { LIST_KINDS } from "@/lib/types";
 /** Plan (phase 29): hero countdown → Upcoming (7 days inline) → Lists (Bucket, Wishlist) → Trips. */
 export function PlanScreen() {
   const { pair } = usePair();
+  useHeader({ emoji: "🗓️", title: "Plan", help: "plan" });
   const now = useNow(60_000);
   const today = roomDateKey(pair, now);
 
   return (
     <div className="flex flex-col gap-4">
-      <header className="flex items-center gap-3 px-1">
-        <span className="text-4xl" aria-hidden>
-          🗓️
-        </span>
-        <h1 className="flex-1 text-3xl font-semibold">Plan</h1>
-        <InboxBell />
-        <HowToButton topic="plan" />
-      </header>
 
       <CountdownHero today={today} />
 

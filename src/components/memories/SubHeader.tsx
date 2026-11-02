@@ -1,34 +1,44 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-
 import { FriendHereBadge } from "@/components/play/FriendHereBadge";
 import { InviteButton, type InviteSpec } from "@/components/play/InviteButton";
-import { HowToButton } from "@/components/ui/HowTo";
+import { useHeader } from "@/components/shell/HeaderProvider";
 import type { HowToKey } from "@/content/howto";
 
+interface SubHeaderProps {
+  emoji: string;
+  title: string;
+  /** Where Back lands when this session has no in-app history to pop. */
+  back?: string;
+  action?: React.ReactNode;
+  /** Shows the friend-here line in the subtitle slot. */
+  screenName?: string;
+  help?: HowToKey;
+  /** Adds "Invite" and gives the friend-here line its compact Invite (phase 21). */
+  invite?: InviteSpec;
+  /** Replaces the friend-here line (a game's turn status). */
+  subtitle?: React.ReactNode;
+}
+
 /**
- * Back link + title for sub-screens. `help` adds the ? button (auto-opens on the
- * first visit on this device). `invite` adds "Share invite" and gives the
- * friend-here line its compact Invite (phase 21: the old Nudge).
+ * A sub-screen's header, declared onto the persistent app header (chore:
+ * persistent app header): back arrow, emoji, title, actions (+ Invite), the ?
+ * button, and the friend-here badge (or a custom subtitle) under the title.
+ * Renders nothing in place.
  */
-export function SubHeader({ emoji, title, back = "/memories", action, screenName, help, invite }: { emoji: string; title: string; back?: string; action?: React.ReactNode; screenName?: string; help?: HowToKey; invite?: InviteSpec }) {
-  return (
-    <header className="flex flex-col gap-1">
-    <div className="flex items-center gap-2 px-1">
-      <Link href={back} aria-label="Back" className="tap -ml-2 grid size-11 place-items-center rounded-full text-muted hover:bg-surface-2">
-        <ChevronLeft size={22} />
-      </Link>
-      <span className="text-3xl" aria-hidden>
-        {emoji}
-      </span>
-      <h1 className="min-w-0 flex-1 truncate text-2xl font-semibold">{title}</h1>
-      {action}
-      {invite && <InviteButton spec={invite} />}
-      {help && <HowToButton topic={help} />}
-    </div>
-    {screenName && <FriendHereBadge invite={invite} />}
-    </header>
-  );
+export function SubHeader({ emoji, title, back = "/memories", action, screenName, help, invite, subtitle }: SubHeaderProps) {
+  useHeader({
+    emoji,
+    title,
+    back,
+    help,
+    actions: (
+      <>
+        {action}
+        {invite && <InviteButton spec={invite} />}
+      </>
+    ),
+    subtitle: subtitle ?? (screenName ? <FriendHereBadge invite={invite} /> : undefined),
+  });
+  return null;
 }

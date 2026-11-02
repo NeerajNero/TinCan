@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { InboxBell } from "@/components/shell/InboxBell";
+import { useHeader } from "@/components/shell/HeaderProvider";
 import { HowToButton } from "@/components/ui/HowTo";
 const SECTIONS = [
   { href: "/memories/photos", emoji: "📷", title: "Photos", blurb: "Your timeline" },
@@ -19,15 +19,9 @@ const SECTIONS = [
 ];
 
 export function MemoriesHub() {
+  useHeader({ emoji: "📸", title: "Memories" });
   return (
     <div className="flex flex-col gap-4">
-      <header className="flex items-center gap-3 px-1">
-        <span className="text-4xl" aria-hidden>
-          📸
-        </span>
-        <h1 className="flex-1 text-3xl font-semibold">Memories</h1>
-        <InboxBell />
-      </header>
       <div className="grid grid-cols-2 gap-3">
         {SECTIONS.map((s) => (
           <div key={s.href} className="relative">

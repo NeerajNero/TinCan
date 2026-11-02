@@ -60,12 +60,12 @@ export function FriendHereBadge({ invite }: { invite?: InviteSpec }) {
   }
 
   return (
-    <p className={cn("flex items-center gap-2 px-1 text-xs", here ? "font-bold text-[var(--accent)]" : "text-muted")} aria-live="polite">
+    <span className={cn("flex items-center gap-2 text-xs", here ? "font-bold text-[var(--accent)]" : "text-muted")} aria-live="polite">
       <span aria-hidden>{online ? "●" : "○"}</span>
       <span className="min-w-0 truncate">
         {here ? `${name} is here` : online ? `${name} is ${labelFor(page)}` : friendPresence?.lastSeen ? `last seen ${formatDistanceToNowStrict(new Date(friendPresence.lastSeen), { addSuffix: true })}` : `${name} is offline`}
       </span>
       {online && !here && invite && <InviteButton spec={invite} compact />}
-    </p>
+    </span>
   );
 }
