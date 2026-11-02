@@ -49,7 +49,7 @@ service cloud.firestore {
     match /users/{userId} {
       function userFields() {
         return ['name', 'nickname', 'email', 'photoURL', 'avatar', 'previousAvatarPublicId', 'bio',
-                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'homeCards', 'note', 'createdAt'];
+                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'homeCards', 'note', 'lastOpenAt', 'createdAt'];
       }
       // Home layout (phase 27): the card order and the hidden ids, short lists of short strings.
       function homeCardsOk() {
@@ -73,7 +73,8 @@ service cloud.firestore {
           && incoming().tz is string && incoming().tz.size() > 0 && incoming().tz.size() <= 64
           && incoming().fcmTokens is list && incoming().fcmTokens.size() <= 10
           && (!('avatar' in incoming()) || incoming().avatar == null || (cloudinaryUrl(incoming().avatar.url) && variantsOk(incoming().avatar)))
-          && homeCardsOk() && noteOk();
+          && homeCardsOk() && noteOk()
+          && (!('lastOpenAt' in incoming()) || incoming().lastOpenAt == null || incoming().lastOpenAt is timestamp);
       }
       // The chat wallpaper moved to pair/main.chatBg (phase 22b); a legacy users.chatBg can only be deleted.
       allow read: if allowed();
@@ -373,25 +374,25 @@ service cloud.firestore {
 
     // ── snaps/{dateKey} (+ entries/{uid}): the daily snap (phase 27) ─────
     match /snaps/{dateKey} {
-      // The summary both read: who posted, their thumbnail, who was late. Each poster merges only its own keys.
-      function summaryKeys() { return ['dateKey', 'posted', 'thumbs', 'late']; }
+      // The summary both read: who posted, their thumbnail, who posted after the prompt. Each poster merges only its own keys.
+      function summaryKeys() { return ['dateKey', 'posted', 'thumbs', 'later']; }
       function ownKey(field) { return incoming().get(field, {}).keys().hasOnly([uid()]); }
       function ownDiff(field) { return mapDiffKeys(field).hasOnly([uid()]); }
       function thumbOk() { return !(uid() in incoming().get('thumbs', {})) || cloudinaryUrl(incoming().thumbs[uid()]); }
       allow read: if allowed();
       allow create: if allowed()
         && incoming().keys().hasOnly(summaryKeys()) && incoming().dateKey == dateKey
-        && ownKey('posted') && ownKey('thumbs') && ownKey('late') && thumbOk();
+        && ownKey('posted') && ownKey('thumbs') && ownKey('later') && thumbOk();
       allow update: if allowed()
         && incoming().keys().hasOnly(summaryKeys()) && incoming().dateKey == dateKey
-        && ownDiff('posted') && ownDiff('thumbs') && ownDiff('late') && thumbOk();
+        && ownDiff('posted') && ownDiff('thumbs') && ownDiff('later') && thumbOk();
       // The 60-day sweep deletes with admin access.
       allow delete: if false;
 
       match /entries/{entryUid} {
         // "Post yours to see theirs": the other person's entry opens only once mine exists.
         function mineExists() { return exists(/databases/$(database)/documents/snaps/$(dateKey)/entries/$(uid())); }
-        function entryKeys() { return ['url', 'publicId', 'variants', 'w', 'h', 'caption', 'at', 'late', 'lateByMin', 'savedToMemories']; }
+        function entryKeys() { return ['url', 'publicId', 'variants', 'w', 'h', 'caption', 'at', 'onTime', 'later', 'savedToMemories']; }
         function withinEditWindow() { return request.time < existing().at + duration.value(10, 'm'); }
         allow read: if allowed() && (entryUid == uid() || mineExists());
         allow create: if isMe(entryUid)
@@ -399,7 +400,7 @@ service cloud.firestore {
           && cloudinaryUrl(incoming().url) && variantsOk(incoming())
           && strMax(incoming(), 'caption', 60)
           && isServerTime(incoming().at)
-          && incoming().late is bool && incoming().lateByMin is number && incoming().lateByMin >= 0
+          && incoming().onTime is bool && incoming().later is bool && incoming().onTime != incoming().later
           && incoming().savedToMemories == false;
         // The owner may fix the caption for ten minutes; either person may keep a snap (savedToMemories → true) any time.
         allow update: if allowed() && (

@@ -482,7 +482,7 @@ describe("rtdb games: new types and the owner-only private subtree", () => {
 
 const signedSnap = (t: string, id = "s1") => `https://res.cloudinary.com/${CLOUD}/image/authenticated/s--AbCd_12---/${t}/tincan/snaps/${id}`;
 const snapVariants = (id = "s1") => ({ w320: signedSnap("w_320", id), w640: signedSnap("w_640", id), w800: signedSnap("w_800", id), blur: signedSnap("e_blur:2000", id), original: signedSnap("v1", id) });
-const snapEntry = (id = "s1", extra: Record<string, unknown> = {}) => ({ url: signedSnap("v1", id), publicId: `tincan/snaps/${id}`, variants: snapVariants(id), w: 1080, h: 1440, caption: "hi", at: serverTimestamp(), late: false, lateByMin: 0, savedToMemories: false, ...extra });
+const snapEntry = (id = "s1", extra: Record<string, unknown> = {}) => ({ url: signedSnap("v1", id), publicId: `tincan/snaps/${id}`, variants: snapVariants(id), w: 1080, h: 1440, caption: "hi", at: serverTimestamp(), onTime: true, later: false, savedToMemories: false, ...extra });
 const DAY = "2026-11-02";
 
 describe("snaps: the friend's entry opens only once mine exists", () => {
@@ -495,9 +495,9 @@ describe("snaps: the friend's entry opens only once mine exists", () => {
     await assertSucceeds(getDoc(doc(dbB, `snaps/${DAY}`)));
     await assertFails(getDoc(doc(dbB, `snaps/${DAY}/entries/${A}`)));
     await assertSucceeds(getDoc(doc(dbA, `snaps/${DAY}/entries/${A}`)));
-    // B posts (late), then may read A's.
-    await assertSucceeds(setDoc(doc(dbB, `snaps/${DAY}/entries/${B}`), snapEntry("b1", { late: true, lateByMin: 7 })));
-    await assertSucceeds(setDoc(doc(dbB, `snaps/${DAY}`), { dateKey: DAY, posted: { [B]: true }, thumbs: { [B]: signedSnap("w_320", "b1") }, late: { [B]: true } }, { merge: true }));
+    // B posts (later), then may read A's.
+    await assertSucceeds(setDoc(doc(dbB, `snaps/${DAY}/entries/${B}`), snapEntry("b1", { onTime: false, later: true })));
+    await assertSucceeds(setDoc(doc(dbB, `snaps/${DAY}`), { dateKey: DAY, posted: { [B]: true }, thumbs: { [B]: signedSnap("w_320", "b1") }, later: { [B]: true } }, { merge: true }));
     await assertSucceeds(getDoc(doc(dbB, `snaps/${DAY}/entries/${A}`)));
     await assertSucceeds(getDoc(doc(dbA, `snaps/${DAY}/entries/${B}`)));
     await assertFails(getDoc(doc(asStranger().firestore(), `snaps/${DAY}/entries/${A}`)));
@@ -513,7 +513,8 @@ describe("snaps: the friend's entry opens only once mine exists", () => {
     await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { at: new Date(0) })));
     await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { caption: "c".repeat(61) })));
     await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { savedToMemories: true })));
-    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { lateByMin: -1 })));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { onTime: true, later: true })));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { onTime: "yes" })));
     await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { extra: 1 })));
     await assertSucceeds(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("a1")));
     await assertFails(deleteDoc(doc(dbA, `snaps/${DAY}/entries/${A}`)));
@@ -529,7 +530,7 @@ describe("snaps: the friend's entry opens only once mine exists", () => {
     const dbB = asB().firestore();
     await assertSucceeds(updateDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), { caption: "better" }));
     await assertFails(updateDoc(doc(dbB, `snaps/${DAY}/entries/${B}`), { caption: "too late" }));
-    await assertFails(updateDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), { late: true }));
+    await assertFails(updateDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), { later: true }));
     await assertFails(updateDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), { url: signedSnap("v1", "other") }));
     await assertFails(updateDoc(doc(dbB, `snaps/${DAY}/entries/${A}`), { caption: "not mine" }));
     // Save to memories: either person, any time, only to true.
@@ -570,8 +571,11 @@ describe("users: homeCards and note are owner-only and shaped", () => {
       await setDoc(doc(db, `users/${B}`), user(B, EMAIL_B ?? ""));
     }),
   );
-  it("homeCards: order and hidden lists, nothing else, only on my own doc", async () => {
+  it("homeCards: order and hidden lists, nothing else, only on my own doc; lastOpenAt is a timestamp", async () => {
     const db = asA().firestore();
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { lastOpenAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { lastOpenAt: "now" }));
+    await assertFails(updateDoc(doc(db, `users/${B}`), { lastOpenAt: serverTimestamp() }));
     await assertSucceeds(updateDoc(doc(db, `users/${A}`), { homeCards: { order: ["pet", "presence"], hidden: ["lamp"] } }));
     await assertSucceeds(updateDoc(doc(db, `users/${A}`), { homeCards: deleteField() }));
     await assertFails(updateDoc(doc(db, `users/${A}`), { homeCards: { order: ["pet"], hidden: [], extra: 1 } }));

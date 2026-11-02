@@ -14,7 +14,7 @@ import { updateDoc } from "@/lib/firebase/fs";
 import { notify } from "@/lib/notify";
 import { disablePush, enablePush, permissionState, type EnableResult } from "@/lib/push";
 import { swallow } from "@/lib/swallow";
-import { DEFAULT_DIGEST_HOUR, NOTIF_KEYS, NOTIF_LABELS } from "@/lib/types";
+import { DEFAULT_DIGEST_HOUR, NOTIF_KEYS, NOTIF_LABELS, notifOn } from "@/lib/types";
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 const hourLabel = (h: number) => `${String(h).padStart(2, "0")}:00`;
@@ -38,7 +38,7 @@ export function NotificationsCard() {
   const [hint, setHint] = useState<string | null>(permission === "denied" ? HINTS.denied : null);
   const [testState, setTestState] = useState<"idle" | "sent">("idle");
   const [open, setOpen] = useState(false);
-  const offCount = NOTIF_KEYS.filter((k) => me.notif?.[k] === false).length;
+  const offCount = NOTIF_KEYS.filter((k) => !notifOn(me.notif, k)).length;
 
   async function toggleMaster(next: boolean) {
     setBusy(true);
@@ -134,7 +134,7 @@ export function NotificationsCard() {
           >
             <ul className={enabled ? "" : "opacity-50"}>
               {NOTIF_KEYS.map((key) => {
-                const on = me.notif?.[key] !== false;
+                const on = notifOn(me.notif, key);
                 return (
                   <li key={key} className="flex items-center justify-between gap-3 py-2">
                     <label htmlFor={`notif-${key}`} className="text-sm font-semibold">

@@ -233,8 +233,8 @@ export const HOWTO: Record<HowToKey, HowTo> = {
   snap: {
     title: "Daily snap",
     label: "One photo a day, same minute for both",
-    steps: ["⏰ Every day a surprise minute between 9:00 and 22:00 — you both get a push", "📸 You have two minutes to snap whatever's in front of you", "👀 Theirs stays blurred until you post yours; late posts get a tag", "🔥 Days you both post build a snap streak; Memories → Snaps keeps 60 days"],
-    tip: "Save to memories keeps a snap in your photo timeline for good.",
+    steps: ["⏰ Every day a surprise minute between 9:00 and 22:00", "📸 Next time you open Tincan you get two minutes to snap what's in front of you", "👀 Theirs stays blurred until you post yours; after two minutes it says “later”", "🔥 Days you both post build a snap streak; Memories → Snaps keeps 60 days"],
+    tip: "Not now keeps a Post button on Home for the day. Save to memories keeps a snap for good.",
   },
   homeLayout: {
     title: "Home layout",

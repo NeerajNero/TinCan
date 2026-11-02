@@ -29,7 +29,7 @@ const newestFirst = (a: Day, b: Day) => (a.id < b.id ? 1 : a.id > b.id ? -1 : 0)
 
 /**
  * Memories → Snaps: days newest first (30 per page from the summaries), both
- * thumbnails and a late tag per day; tap a day for both snaps full size and
+ * thumbnails and a "later" tag per day; tap a day for both snaps full size and
  * swipe between days. Only summaries are listed; a day's two entries load
  * when it opens (two reads). A day I skipped keeps the friend's snap hidden.
  */
@@ -63,7 +63,7 @@ export function SnapsScreen() {
 function DayTile({ day, uid, friendUid, onOpen }: { day: Day; uid: string; friendUid: string | null; onOpen: () => void }) {
   const mine = day.posted?.[uid] === true;
   const theirs = Boolean(friendUid && day.posted?.[friendUid]);
-  const late = Boolean(day.late?.[uid] || (friendUid && day.late?.[friendUid]));
+  const later = Boolean(day.later?.[uid] || (friendUid && day.later?.[friendUid]));
   return (
     <button type="button" onClick={onOpen} className="card tap flex flex-col gap-2 rounded-[24px] p-3 text-left" aria-label={`Snaps from ${format(dateKeyToLocalDate(day.id), "d MMM yyyy")}`}>
       <div className="flex gap-1.5">
@@ -72,7 +72,7 @@ function DayTile({ day, uid, friendUid, onOpen }: { day: Day; uid: string; frien
       </div>
       <div className="flex items-center justify-between gap-2 px-0.5">
         <span className="text-xs font-bold">{format(dateKeyToLocalDate(day.id), "EEE d MMM")}</span>
-        {late && <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">late</span>}
+        {later && <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">later</span>}
       </div>
     </button>
   );
@@ -169,7 +169,7 @@ function FullSnap({ who, entry, loading, missing, tz }: { who: string; entry: Sn
     <div className="flex min-h-0 flex-1 flex-col gap-1">
       <div className="flex items-center justify-between text-xs text-white/70">
         <span className="font-bold uppercase tracking-wide">{who}</span>
-        {entry?.late && <span className="rounded-full bg-amber-400/30 px-2 py-0.5 font-bold text-amber-200">late · {entry.lateByMin} min</span>}
+        {entry?.later && <span className="rounded-full bg-amber-400/30 px-2 py-0.5 font-bold text-amber-200">later</span>}
       </div>
       <div className={cn("grid min-h-0 flex-1 place-items-center overflow-hidden rounded-2xl bg-white/5", loading && !missing && "animate-pulse")}>
         {missing ? (

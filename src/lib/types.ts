@@ -35,9 +35,17 @@ export const DEFAULT_DIGEST_HOUR = 8;
 /** Per-type toggles plus the master switch. `enabled` stays false until the user opts in. */
 export type NotifPrefs = Record<NotifKey, boolean> & { enabled: boolean; digest?: DigestPref };
 
-/** Every type on, master off. */
+/** Types that start off: the app is opened deliberately, so the snap prompt is in-app (the takeover) unless someone opts into the push. */
+const NOTIF_DEFAULT_OFF: ReadonlySet<NotifKey> = new Set<NotifKey>(["snap"]);
+
+/** Whether a per-type toggle is on, honouring its default when the key was never written. */
+export function notifOn(prefs: Partial<Record<NotifKey, boolean>> | null | undefined, key: NotifKey): boolean {
+  return prefs?.[key] ?? !NOTIF_DEFAULT_OFF.has(key);
+}
+
+/** Every type at its default (all on but the opt-ins), master off. */
 export function defaultNotifPrefs(): NotifPrefs {
-  return { ...(Object.fromEntries(NOTIF_KEYS.map((k) => [k, true])) as Record<NotifKey, boolean>), enabled: false };
+  return { ...(Object.fromEntries(NOTIF_KEYS.map((k) => [k, !NOTIF_DEFAULT_OFF.has(k)])) as Record<NotifKey, boolean>), enabled: false };
 }
 
 export const NOTIF_LABELS: Record<NotifKey, string> = {
@@ -55,7 +63,7 @@ export const NOTIF_LABELS: Record<NotifKey, string> = {
   meetup: "Meetup countdown (7 and 1 day)",
   invite: "Game invites",
   envelopeOpened: "Friend opened your envelope",
-  snap: "Snap time (daily photo)",
+  snap: "Snap time push (the app prompts you anyway)",
   note: "Friend posted a note",
 };
 
@@ -112,6 +120,8 @@ export interface UserDoc {
   homeCards?: HomeCardsPref;
   /** The current note, or null once cleared / expired. */
   note?: UserNote | null;
+  /** When Home's digest card was last dismissed (or sat for 30 s): the next open's "since" point. */
+  lastOpenAt?: Timestamp | null;
   createdAt: Timestamp | null;
 }
 
@@ -197,6 +207,8 @@ export interface PairDoc {
   play?: PlayUsage;
   /** Daily snap schedule (written by the tick) and streak (client transaction). */
   snap?: SnapSchedule;
+  /** Jar activity mirrored by the jar writes (client ms), so Home's digest needs no jar listener. */
+  jar?: { addedAt?: number; addedBy?: string; drawnAt?: number; drawnBy?: string };
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }
@@ -489,7 +501,8 @@ export interface SnapSummaryDoc {
   posted?: Record<string, boolean>;
   /** The poster's w320 variant, for the Home row and the Memories grid. */
   thumbs?: Record<string, string>;
-  late?: Record<string, boolean>;
+  /** Posted after the two-minute prompt. */
+  later?: Record<string, boolean>;
 }
 
 /** One person's snap for a day; the other person may read it only once their own entry exists. */
@@ -502,8 +515,10 @@ export interface SnapEntryDoc {
   /** ≤ 60 chars. */
   caption: string;
   at: Timestamp | null;
-  late: boolean;
-  lateByMin: number;
+  /** Posted inside the two minutes after the prompt appeared. */
+  onTime: boolean;
+  /** Posted after them (the Home card's "Post today's snap"). */
+  later: boolean;
   /** Copied into the photo timeline; the 60-day sweep keeps it. */
   savedToMemories: boolean;
 }

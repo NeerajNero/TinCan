@@ -7,8 +7,10 @@
 import { daysBetween } from "@/lib/dates";
 import type { DateKey, SnapSchedule, SnapStreak, SnapSummaryDoc } from "@/lib/types";
 
-/** Both have this long after the minute before a post counts as late. */
+/** The prompt's countdown: a post inside it is `onTime`, after it `later`. */
 export const SNAP_WINDOW_MS = 2 * 60_000;
+/** localStorage: the room day whose takeover was dismissed on this device. */
+export const SNAP_DISMISS_KEY = "tincan:snap-dismissed";
 export const SNAP_CAPTION_MAX = 60;
 /** Entries older than this are swept unless saved to memories. */
 export const SNAP_RETENTION_DAYS = 60;
@@ -29,17 +31,15 @@ export function pickSnapMinute(rand: number, notBefore = SNAP_EARLIEST_MIN): num
   return from + Math.floor(r * (SNAP_LATEST_MIN - from));
 }
 
-/** Milliseconds of the 2-minute window still left (0 once it has passed, or before the minute). */
-export function snapWindowLeftMs(todayAt: number, now: number): number {
-  if (now < todayAt) return 0;
-  return Math.max(0, todayAt + SNAP_WINDOW_MS - now);
+/** Milliseconds left until `deadline` (the prompt's two minutes), never negative. */
+export function snapWindowLeftMs(deadline: number, now: number): number {
+  return Math.max(0, deadline - now);
 }
 
-/** Inside the window → on time; after it → late by whole minutes, rounded up. */
-export function snapLateness(todayAt: number, now: number): { late: boolean; lateByMin: number } {
-  const over = now - (todayAt + SNAP_WINDOW_MS);
-  if (over <= 0) return { late: false, lateByMin: 0 };
-  return { late: true, lateByMin: Math.max(1, Math.ceil(over / 60_000)) };
+/** Posted before the deadline → onTime; after it (or with no deadline, e.g. from the Home card) → later. */
+export function snapTiming(deadline: number | null, now: number): { onTime: boolean; later: boolean } {
+  const onTime = deadline !== null && now <= deadline;
+  return { onTime, later: !onTime };
 }
 
 /** "1:32" for a countdown. */
@@ -51,13 +51,12 @@ export function formatCountdown(ms: number): string {
 /**
  * What the Home card shows:
  * - hidden: no snap scheduled for today yet, or the minute hasn't come
- * - open: the 2-minute window is running and I haven't posted
- * - late: the window has passed and I haven't posted (Post still works, marked late)
+ * - due: the minute has come and I haven't posted ("Post today's snap"; the takeover shows unless dismissed)
  * - waiting: I posted, the friend hasn't
  * - both: both posted
  * A day that ended with nobody or one posting is simply a new day's "hidden".
  */
-export type SnapCardState = "hidden" | "open" | "late" | "waiting" | "both";
+export type SnapCardState = "hidden" | "due" | "waiting" | "both";
 
 export function snapCardState(schedule: SnapSchedule | null | undefined, summary: SnapSummaryDoc | null | undefined, uid: string, friendUid: string | null, today: DateKey, now: number): SnapCardState {
   if (!schedule || schedule.todayKey !== today || now < schedule.todayAt) return "hidden";
@@ -65,11 +64,24 @@ export function snapCardState(schedule: SnapSchedule | null | undefined, summary
   const theirs = Boolean(friendUid && summary?.posted?.[friendUid] === true);
   if (mine && theirs) return "both";
   if (mine) return "waiting";
-  return now < schedule.todayAt + SNAP_WINDOW_MS ? "open" : "late";
+  return "due";
 }
 
 /** The snap card is pinned to the top of Home while it's my move to post. */
-export const snapPinned = (state: SnapCardState): boolean => state === "open" || state === "late";
+export const snapPinned = (state: SnapCardState): boolean => state === "due";
+
+/**
+ * The full-screen takeover shows on open (and on resume) when today's minute
+ * has come, my entry for today doesn't exist, and this device hasn't
+ * dismissed today's prompt. Dismissing leaves the Home card's button for the
+ * rest of the day; a new room day starts over.
+ */
+export function snapTakeoverDue(args: { schedule: SnapSchedule | null | undefined; summary: Pick<SnapSummaryDoc, "posted"> | null | undefined; uid: string; today: DateKey; now: number; dismissedFor: string | null }): boolean {
+  const { schedule, summary, uid, today, now, dismissedFor } = args;
+  if (!schedule || schedule.todayKey !== today || now < schedule.todayAt) return false;
+  if (summary?.posted?.[uid] === true) return false;
+  return dismissedFor !== today;
+}
 
 /**
  * The streak after both posted on `today`: a consecutive room-day extends it,

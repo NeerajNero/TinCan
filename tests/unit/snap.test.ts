@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatCountdown, nextSnapStreak, pickSnapMinute, SNAP_EARLIEST_MIN, SNAP_LATEST_MIN, SNAP_WINDOW_MS, snapCardState, snapLateness, snapPinned, snapStreakAfter, snapWindowLeftMs } from "@/lib/snap";
+import { formatCountdown, nextSnapStreak, pickSnapMinute, SNAP_EARLIEST_MIN, SNAP_LATEST_MIN, SNAP_WINDOW_MS, snapCardState, snapPinned, snapStreakAfter, snapTakeoverDue, snapTiming, snapWindowLeftMs } from "@/lib/snap";
 
 const A = "uid-a";
 const B = "uid-b";
@@ -28,18 +28,18 @@ describe("daily snap: picking the minute", () => {
   });
 });
 
-describe("daily snap: window and lateness", () => {
-  it("counts down inside the two minutes, then is late by whole minutes rounded up", () => {
-    expect(snapWindowLeftMs(AT, AT - 1000)).toBe(0);
-    expect(snapWindowLeftMs(AT, AT)).toBe(SNAP_WINDOW_MS);
-    expect(snapWindowLeftMs(AT, AT + 28_000)).toBe(92_000);
+describe("daily snap: the prompt's two minutes", () => {
+  it("counts down to the deadline; a post before it is on time, after it (or with no deadline) later", () => {
+    const deadline = AT + SNAP_WINDOW_MS;
+    expect(snapWindowLeftMs(deadline, AT)).toBe(SNAP_WINDOW_MS);
+    expect(snapWindowLeftMs(deadline, AT + 28_000)).toBe(92_000);
+    expect(snapWindowLeftMs(deadline, deadline + 1)).toBe(0);
     expect(formatCountdown(92_000)).toBe("1:32");
     expect(formatCountdown(0)).toBe("0:00");
-    expect(snapLateness(AT, AT + 119_000)).toEqual({ late: false, lateByMin: 0 });
-    expect(snapLateness(AT, AT + SNAP_WINDOW_MS)).toEqual({ late: false, lateByMin: 0 });
-    expect(snapLateness(AT, AT + SNAP_WINDOW_MS + 1)).toEqual({ late: true, lateByMin: 1 });
-    expect(snapLateness(AT, AT + SNAP_WINDOW_MS + 61_000)).toEqual({ late: true, lateByMin: 2 });
-    expect(snapLateness(AT, AT + SNAP_WINDOW_MS + 3 * 60 * 60_000)).toEqual({ late: true, lateByMin: 180 });
+    expect(snapTiming(deadline, AT + 119_000)).toEqual({ onTime: true, later: false });
+    expect(snapTiming(deadline, deadline)).toEqual({ onTime: true, later: false });
+    expect(snapTiming(deadline, deadline + 1)).toEqual({ onTime: false, later: true });
+    expect(snapTiming(null, AT)).toEqual({ onTime: false, later: true });
   });
 });
 
@@ -50,17 +50,36 @@ describe("daily snap: the Home card", () => {
     expect(snapCardState(schedule, null, A, B, TODAY, AT - 1)).toBe("hidden");
     expect(snapCardState({ todayKey: "2026-11-01", todayAt: AT - 86_400_000 }, { dateKey: TODAY, posted: { [A]: true } }, A, B, TODAY, AT)).toBe("hidden");
   });
-  it("open inside the window, late after it, waiting once I posted, both once both did; only open and late pin", () => {
-    expect(snapCardState(schedule, null, A, B, TODAY, AT + 1000)).toBe("open");
-    expect(snapCardState(schedule, { dateKey: TODAY, posted: { [B]: true } }, A, B, TODAY, AT + 1000)).toBe("open");
-    expect(snapCardState(schedule, null, A, B, TODAY, AT + SNAP_WINDOW_MS + 1)).toBe("late");
+  it("due once the minute has come, waiting once I posted, both once both did; only due pins", () => {
+    expect(snapCardState(schedule, null, A, B, TODAY, AT)).toBe("due");
+    expect(snapCardState(schedule, { dateKey: TODAY, posted: { [B]: true } }, A, B, TODAY, AT + 3 * 3_600_000)).toBe("due");
     expect(snapCardState(schedule, { dateKey: TODAY, posted: { [A]: true } }, A, B, TODAY, AT + 5000)).toBe("waiting");
     expect(snapCardState(schedule, { dateKey: TODAY, posted: { [A]: true, [B]: true } }, A, B, TODAY, AT + 5000)).toBe("both");
-    expect(snapPinned("open")).toBe(true);
-    expect(snapPinned("late")).toBe(true);
+    expect(snapPinned("due")).toBe(true);
     expect(snapPinned("waiting")).toBe(false);
     expect(snapPinned("both")).toBe(false);
     expect(snapPinned("hidden")).toBe(false);
+  });
+});
+
+describe("daily snap: the takeover on open", () => {
+  const schedule = { todayKey: TODAY, todayAt: AT };
+  const base = { schedule, summary: null, uid: A, today: TODAY, now: AT, dismissedFor: null };
+  it("shows once the minute has come and my entry is missing", () => {
+    expect(snapTakeoverDue({ ...base, now: AT - 1 })).toBe(false); // before todayAt
+    expect(snapTakeoverDue(base)).toBe(true); // at the minute
+    expect(snapTakeoverDue({ ...base, now: AT + 6 * 3_600_000 })).toBe(true); // hours later, still unposted
+    expect(snapTakeoverDue({ ...base, summary: { posted: { [B]: true } } })).toBe(true); // only the friend posted
+  });
+  it("never shows once posted, after a dismissal today, without a schedule, or for yesterday's minute", () => {
+    expect(snapTakeoverDue({ ...base, summary: { posted: { [A]: true } } })).toBe(false);
+    expect(snapTakeoverDue({ ...base, dismissedFor: TODAY })).toBe(false);
+    expect(snapTakeoverDue({ ...base, schedule: undefined })).toBe(false);
+    expect(snapTakeoverDue({ ...base, schedule: { todayKey: "2026-11-01", todayAt: AT - 86_400_000 } })).toBe(false);
+  });
+  it("a dismissal only lasts the day: the next room day prompts again", () => {
+    expect(snapTakeoverDue({ ...base, dismissedFor: "2026-11-01" })).toBe(true);
+    expect(snapTakeoverDue({ ...base, today: "2026-11-03", schedule: { todayKey: "2026-11-03", todayAt: AT + 86_400_000 }, now: AT + 86_400_000 + 60_000, dismissedFor: TODAY })).toBe(true);
   });
 });
 

@@ -32,7 +32,7 @@ export interface SnapMedia {
 }
 
 /** Write my entry, then merge my keys into the day's summary. */
-export async function postSnap(uid: string, dateKey: DateKey, media: SnapMedia, caption: string, lateness: { late: boolean; lateByMin: number }): Promise<SnapEntryDoc> {
+export async function postSnap(uid: string, dateKey: DateKey, media: SnapMedia, caption: string, timing: { onTime: boolean; later: boolean }): Promise<SnapEntryDoc> {
   const entry: SnapEntryDoc = {
     url: media.url,
     publicId: media.publicId,
@@ -41,8 +41,8 @@ export async function postSnap(uid: string, dateKey: DateKey, media: SnapMedia, 
     h: media.h,
     caption: caption.trim().slice(0, SNAP_CAPTION_MAX),
     at: serverTimestamp() as unknown as Timestamp,
-    late: lateness.late,
-    lateByMin: lateness.lateByMin,
+    onTime: timing.onTime,
+    later: timing.later,
     savedToMemories: false,
   };
   await setDoc(snapEntryRef(dateKey, uid), entry);
@@ -53,7 +53,7 @@ export async function postSnap(uid: string, dateKey: DateKey, media: SnapMedia, 
       dateKey,
       posted: { [uid]: true },
       ...(thumb ? { thumbs: { [uid]: thumb } } : {}),
-      ...(lateness.late ? { late: { [uid]: true } } : {}),
+      ...(timing.later ? { later: { [uid]: true } } : {}),
     },
     { merge: true },
   );

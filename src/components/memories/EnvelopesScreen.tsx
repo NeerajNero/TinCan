@@ -9,11 +9,13 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { usePair } from "@/hooks/usePair";
+import { createSystemMessage } from "@/lib/chat/system";
 import { cn } from "@/lib/cn";
 import { envelopesByMe, envelopesForMe, openEnvelope, readEnvelopeBody, writeEnvelope } from "@/lib/db/envelopes";
 import { onSnapshot, type QueryDocumentSnapshot } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import { notify } from "@/lib/notify";
+import { swallow } from "@/lib/swallow";
 import { ENVELOPE_LABELS, type EnvelopeDoc } from "@/lib/types";
 
 interface Envelope extends EnvelopeDoc {
@@ -23,7 +25,7 @@ const mapDoc = (d: QueryDocumentSnapshot<EnvelopeDoc>): Envelope => ({ id: d.id,
 const newestFirst = (a: Envelope, b: Envelope) => (b.createdAt?.toMillis() ?? 0) - (a.createdAt?.toMillis() ?? 0);
 
 export function EnvelopesScreen() {
-  const { uid, friend, friendUid } = usePair();
+  const { uid, me, friend, friendUid } = usePair();
   const [forMe, setForMe] = useState<Envelope[]>([]);
   const [byMe, setByMe] = useState<Envelope[]>([]);
   const [composing, setComposing] = useState(false);
@@ -59,7 +61,17 @@ export function EnvelopesScreen() {
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">For you, from {friendName}</h2>
         {forMe.length === 0 && <Card className="py-6 text-center text-sm text-muted">No envelopes yet. They&apos;ll show up here, sealed.</Card>}
         {forMe.map((e) => (
-          <EnvelopeCard key={e.id} envelope={e} uid={uid} canOpen onOpened={() => void notify("envelope-opened", { toUid: e.authorId, body: `opened your “open when ${e.label}” envelope 💌` })} />
+          <EnvelopeCard
+            key={e.id}
+            envelope={e}
+            uid={uid}
+            canOpen
+            onOpened={() => {
+              void notify("envelope-opened", { toUid: e.authorId, body: `opened your “open when ${e.label}” envelope 💌` });
+              // The in-app counterpart: a chat line the author sees whenever they open the app.
+              void createSystemMessage("envelope-open", `💌 ${me.nickname} opened your “open when ${e.label}” envelope`, { who: me.nickname, label: e.label }).catch(swallow);
+            }}
+          />
         ))}
       </section>
 

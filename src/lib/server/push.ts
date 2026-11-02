@@ -5,7 +5,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { systemMessageData, type SystemKind, type SystemMeta } from "@/lib/chat/systemKinds";
 import { adminDb, adminMessaging, adminRtdb } from "@/lib/firebase/admin";
 import { composePush, TOGGLE_FOR, type PushPayload, type PushType } from "@/lib/pushTypes";
-import type { NotifPrefs } from "@/lib/types";
+import { notifOn, type NotifPrefs } from "@/lib/types";
 
 const PRUNE_EVERY = 25;
 const KEEP_LOGS = 200;
@@ -65,7 +65,7 @@ export async function sendPushTo(toUid: string, type: PushType, opts: SendOption
   const tokens = Array.from(new Set(recipient.fcmTokens ?? [])).filter(Boolean);
   if (recipient.notif?.enabled !== true || tokens.length === 0) return { ...base, reason: "push_off" };
   const toggle = TOGGLE_FOR[type];
-  if (toggle && recipient.notif?.[toggle] === false) return { ...base, reason: "type_off" };
+  if (toggle && !notifOn(recipient.notif, toggle)) return { ...base, reason: "type_off" };
   if (type === "digest" && recipient.notif?.digest?.enabled !== true) return { ...base, reason: "type_off" };
 
   if (opts.skipWhenOnPage) {

@@ -21,6 +21,8 @@ export const SYSTEM_KINDS = [
   "hangout",
   "invite",
   "recap",
+  // phase 27b: the in-app counterpart of the envelope-opened push.
+  "envelope-open",
 ] as const;
 export type SystemKind = (typeof SYSTEM_KINDS)[number];
 
@@ -87,6 +89,8 @@ function systemText(kind: unknown, meta?: SystemMeta | null): string {
       return `🎯 An invite to ${str(m, "label") ?? "play"}`;
     case "recap":
       return `📊 ${str(m, "month") ?? "Last month"} in numbers`;
+    case "envelope-open":
+      return `💌 ${who} opened an envelope${str(m, "label") ? ` — “open when ${str(m, "label")}”` : ""}`;
     default:
       return FALLBACK;
   }

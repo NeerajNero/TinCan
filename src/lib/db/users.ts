@@ -76,3 +76,10 @@ export function setNote(uid: string, text: string, emoji: string | null, now = D
 export function clearNote(uid: string): Promise<void> {
   return updateDoc(userRef(uid), { note: null });
 }
+
+/* ── Home digest (phase 27b) ───────────────────────────────────────────── */
+
+/** The next open's "since" point: written when the digest card is dismissed or has sat for 30 s. */
+export function touchLastOpen(uid: string): Promise<void> {
+  return updateDoc(userRef(uid), { lastOpenAt: serverTimestamp() });
+}

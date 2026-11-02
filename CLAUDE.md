@@ -78,9 +78,22 @@ app should feel like a small hello, not a dashboard.
   avatar (two lines max); tap your own avatar to write / replace / clear (push `note` to the friend, own toggle);
   tap the friend's bubble → Reply opens the chat with the note quoted in the reply strip. Clients hide a note past
   `expiresAt`; the 03:00 tick nulls it.
-- Daily snap card (phase 27): window open → "📸 Snap time · 1:32 left" with Take; posted, friend not → "Posted ·
-  waiting for X"; both → a thin row with the two thumbnails (tap opens the day); hidden before the minute and on
-  days that ended with nobody or one posting; 🔥 snap streak from 2 days.
+- Daily snap card (phase 27): minute come, mine unposted → "📸 Snap time!" with "Post today's snap" (pinned; the
+  takeover below handles the first look); posted, friend not → "Posted · waiting for X"; both → a thin row with
+  the two thumbnails (tap opens the day); hidden before the minute and on days that ended with nobody or one
+  posting; 🔥 snap streak from 2 days.
+- Snap takeover (phase 27b): we don't rely on push, the app is opened deliberately. On open (and on resume), when
+  now ≥ `pair.snap.todayAt`, my entry for today doesn't exist and this device hasn't dismissed today's prompt
+  (localStorage `tincan:snap-dismissed` = dateKey), a full-screen Snap takeover covers Home with a 2-minute
+  countdown from the moment it appears; posting inside it marks `onTime: true`, after it `later: true`. "Not now"
+  dismisses for the day and leaves the card's "Post today's snap". The friend's blur rule and the streak are unchanged.
+- Digest card (phase 27b, card id `digest`, first by default after the pinned cards): on open, from data Home already
+  holds and `users/{me}.lastOpenAt`: unread messages, the friend's snap posted today, their new note, games on my
+  move / invites waiting, jar notes added or drawn by the friend (`pair.jar` mirror), the friend's daily answer,
+  a milestone or festival today, the pet needing food. One friendly sentence ("☀️ Since you were last here — 3
+  things happened:") with tappable chips that deep-link, hidden when nothing happened. Dismissing it, tapping a
+  chip, or 30 s on screen writes `lastOpenAt`, so the next open starts from there. The items come from the
+  morning-digest builder (`lib/digest.digestItems`), so the push and the card stay in sync.
 - Ping row: 4 big bouncy buttons — Thinking of you 💭, Hug 🤗, High-five ✋, Wave 👋.
   Sending animates on both screens, vibrates the receiver (`navigator.vibrate`), sends push.
 - Lamp: tap my lamp → friend's lamp glows the same colour for 10 min (RTDB). Long-press picks colour.
@@ -184,14 +197,15 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
 
 ## Data model — Firestore
 `users/{uid}`: name, nickname, email, photoURL, tz, city, lat, lng, fcmTokens[], notif{...},
-  homeCards{order[], hidden[]}, note{text ≤ 60, emoji?, at, expiresAt} | null, createdAt
+  homeCards{order[], hidden[]}, note{text ≤ 60, emoji?, at, expiresAt} | null, lastOpenAt (the digest's "since"), createdAt
   (`chatBg` is legacy: readable, deletable, never written)
 `pair/main`: uids[2], roomTz, friendsSince, nextMeetup{date,label,place}, relationship (preset id,
   default "friends"; see `src/content/relationships.ts`), theme,
   pet{name,species,hungerAt,happyAt,sleepAt,level,bornAt}, plant{stage,lastGrowthDate},
   garden{stickers[]}, streak{count,lastDateKey,best,monthBest,shields,shieldUsedOn}, chatBg, chatBgBy,
   play{recent[{id,at (client ms),by}] ≤ 8, favourites[id] ≤ 6} (Play tab usage; ids are `lib/play/catalog.ts` ids),
-  snap{todayKey, todayAt (ms, written by the tick), streak{count, lastDateKey, best} (client transaction)}
+  snap{todayKey, todayAt (ms, written by the tick), streak{count, lastDateKey, best} (client transaction)},
+  jar{addedAt, addedBy, drawnAt, drawnBy} (client ms, mirrored by the jar writes for the Home digest)
 `messages/{id}`: senderId, type(text|image|voice|gif|sticker|system), text,
   media{url,publicId,variants{w320,w640,w800,blur,original|audio},w,h,durationMs,bytes},
   replyTo{id,preview,senderId,type},
@@ -199,9 +213,9 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
   deletedFor[], deletedForEveryone, createdAt, kind?, meta?  (kind/meta: system lines only),
   viewOnce?, viewedAt?  (view-once photos / voice notes, phase 27)
 `checkins/{dateKey}`: {uid:true}  — written once per user per day on app open
-`snaps/{dateKey}`: { dateKey, posted{uid: true}, thumbs{uid: w320 url}, late{uid: true} } — the day's summary, merged
+`snaps/{dateKey}`: { dateKey, posted{uid: true}, thumbs{uid: w320 url}, later{uid: true} } — the day's summary, merged
   by each poster (own keys only), readable by both; `snaps/{dateKey}/entries/{uid}`: { url, publicId, variants, w, h,
-  caption ≤ 60, at, late, lateByMin, savedToMemories } — written by that uid only; readable by the other person only
+  caption ≤ 60, at, onTime, later (exactly one true), savedToMemories } — written by that uid only; readable by the other person only
   once `snaps/{dateKey}/entries/{their uid}` exists (`exists()` in the rule); caption editable for 10 min, then only
   `savedToMemories` (either person, to true). Swept after 60 days unless saved (asset + doc).
 `moods/{dateKey}_{uid}`: emoji, note, at
@@ -290,7 +304,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   receipts or ticks. `SystemPill` shows text, else a line from kind + meta, else ✨ — never an empty row.
   Kinds: sleep, wake, relationship, game-result, game-cancel, twenty-result, pet-adopt, pet-fed, pet-level,
   pet-hungry, garden-sticker, capsule-unlock, hangout (legacy, nothing writes it), invite, recap (the monthly
-  numbers line, server-written). `invite` lines render as `InvitePill` (see Invites).
+  numbers line, server-written), envelope-open (phase 27b: "💌 X opened your “open when sad” envelope", the in-app
+  counterpart of the envelope-opened push). `invite` lines render as `InvitePill` (see Invites).
 - Day separators ("Today", "Yesterday", date), unread divider on open, jump-to-bottom FAB,
   unread count badge on the Chat tab, last-message preview on Home.
 - Images: compress in browser (max 1080 px, ~0.3 MB, JPEG/WebP) → signed upload to preset
@@ -330,7 +345,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   Types and defaults (all toggleable in More → Notifications):
   message ✓, ping ✓, lamp ✓, your-turn ✓, friend answered daily question ✓, jar note ✓,
   capsule unlocked ✓, scheduled message ✓, pet hungry ✓, streak at risk ✓, milestone ✓,
-  meetup countdown (7/1 day) ✓, pictionary/trivia invite ✓, snap time ✓, friend posted a note ✓,
+  meetup countdown (7/1 day) ✓, pictionary/trivia invite ✓, snap time (default **off**: the in-app takeover
+  prompts anyway; `NOTIF_DEFAULT_OFF` / `notifOn()` in `lib/types.ts`) , friend posted a note ✓,
   morning digest (its own switch + hour picker,
   `notif.digest = { enabled, hour }`, default off / 08:00 in the user's tz) ✓.
 - De-duplicate with `push/{id}` keyed by event (e.g. `pet-hungry-2026-10-12`).
@@ -364,8 +380,9 @@ Every trivia question also carries an `explanation`. Word definitions are static
   11. Daily snap schedule: from 00:05 ROOM_TZ the first tick of a day with no minute yet picks one uniformly in
       [09:00, 22:00) (or what is left of that range when the tick runs late) and writes `pair/main.snap.todayKey /
       todayAt`; once per day (`tickLog/snap-schedule-{dateKey}`).
-  12. Snap time: when now ≥ `todayAt` and not yet sent (`tickLog/snap-push-{dateKey}`) → push both
-      "📸 Snap time! You have 2 minutes" (`snap` type, own toggle, deep link `/snap`).
+  12. Snap time: when now ≥ `todayAt` and not yet sent (`tickLog/snap-push-{dateKey}`) → push
+      "📸 Snap time! You have 2 minutes" (`snap` type, deep link `/snap`) to whoever opted into the toggle
+      (default off; the in-app takeover is the prompt).
   13. 03:00 ROOM_TZ housekeeping (`tickLog/housekeeping-{dateKey}`): notes past `expiresAt` are nulled; snap days
       older than 60 days lose their entries (Cloudinary asset + doc) unless `savedToMemories`, and the summary when
       nothing is left (≤ 20 days per run). The morning digest also mentions today's snap when its window has passed
@@ -395,11 +412,12 @@ Every trivia question also carries an `explanation`. Word definitions are static
   after mine; push when friend answers. History in Memories.
 - **Daily snap** (phase 27, `/snap`): camera-first (`<input type="file" accept="image/*" capture="environment">`
   opened on arrival where the browser allows it, else the big "Open camera" button), "Flip to selfie"
-  (`capture="user"`), "Choose from gallery"; preview with Retake, a 60-char caption and Post; a countdown of the
-  2-minute window, after which Post still works and marks `late` + `lateByMin`. Compress (1080 px, ~0.3 MB) → signed
+  (`capture="user"`), "Choose from gallery"; preview with Retake, a 60-char caption and Post (`SnapCapture`, shared
+  with the Home takeover); a 2-minute countdown — from the takeover's appearance, or from the minute when `/snap` is
+  opened directly — inside which a post is `onTime`, after which Post still works and marks `later`. Compress (1080 px, ~0.3 MB) → signed
   upload to `tincan/snaps` → write `snaps/{dateKey}/entries/{me}` → merge my keys into `snaps/{dateKey}`. Before
   posting the friend's snap is a blurred placeholder ("post yours to see it", never fetched: the rule refuses it);
-  after posting both snaps sit side by side with captions, times, a late tag and "Save to memories" (a `sharedAsset`
+  after posting both snaps sit side by side with captions, times, a "later" tag and "Save to memories" (a `sharedAsset`
   memory + `savedToMemories: true`, either person for either snap). Friend not in yet → "Waiting for X" with an
   invite-style Nudge (`startInvite("snap", "/snap", …)`, 2-minute cooldown). `pair.snap.streak` counts consecutive
   room-days on which both posted, bumped in a transaction by whichever client first sees both posted (Home's
@@ -570,10 +588,10 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - `envelopes`: body readable by `forUid` only after `openedAt` is set by them, and by author always.
 - `scheduled`: readable/deletable by sender only; delivery is done by the server (admin).
 - `tickLog`, `push`: admin-only (no client access).
-- `users/{uid}.homeCards` (map of `order` / `hidden` lists ≤ 24) and `.note` (null, or text 1–60, emoji ≤ 8, `at`
-  and `expiresAt` timestamps) are owner-only like the rest of the doc. `pair/main.snap`: a client may write only
+- `users/{uid}.homeCards` (map of `order` / `hidden` lists ≤ 24), `.note` (null, or text 1–60, emoji ≤ 8, `at`
+  and `expiresAt` timestamps) and `.lastOpenAt` (timestamp or null) are owner-only like the rest of the doc. `pair/main.snap`: a client may write only
   `streak` (count, lastDateKey, best); `todayKey` / `todayAt` are the tick's.
-- `snaps/{dateKey}`: summary keys `dateKey` (== id), `posted`, `thumbs` (our Cloudinary URL), `late`; each poster
+- `snaps/{dateKey}`: summary keys `dateKey` (== id), `posted`, `thumbs` (our Cloudinary URL), `later`; each poster
   touches only its own uid key. `snaps/{dateKey}/entries/{uid}`: create only by `uid` with the entry shape, server
   `at`, `savedToMemories: false`; read by the owner always and by the other person only if
   `exists(/snaps/{dateKey}/entries/{request.auth.uid})`; update: owner → caption / savedToMemories within 10 min of
@@ -793,6 +811,9 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
     `users.homeCards` with a pinned-to-top rule; the daily snap (tick-picked minute, 2-minute window, exists()-gated
     entries, streak, Memories → Snaps, 60-day sweep); 24-hour notes over the avatars with a chat reply; view-once
     photos and voice notes (`?once=1` URLs the worker never caches, recipient-only `viewedAt`, server-side destroy).
+    Then "chore: snap on open + in-app digest": the snap prompt became a full-screen takeover on open (push opt-in,
+    `onTime` / `later`), Home gained the digest card over `users.lastOpenAt`, and every push-only signal got an in-app
+    counterpart (envelope-open chat line, jar activity in the digest).
 26. ✅ **Game input feel** (commit "phase 26") — the `GameScreen` composite (header, fitted content, docked input) on the
     board games, daily word, Hangman, trivia, 20 Questions, decks and Pictionary; `Pressable` keys and options with
     haptics and key-clicks; tile pop and colour fades; the boards spec extended with the daily word and Hangman at six

@@ -362,7 +362,11 @@ async function snapSchedule(ctx: Ctx, minutes: number, pair: PairDoc) {
   });
 }
 
-/** At (or after) today's minute: "📸 Snap time! You have 2 minutes" to both, once. */
+/**
+ * At (or after) today's minute: "📸 Snap time! You have 2 minutes", once. The
+ * app prompts in-app (the Home takeover), so this push is opt-in: the `snap`
+ * toggle defaults off and `sendPushTo` skips anyone who hasn't turned it on.
+ */
 async function snapTime(ctx: Ctx, pair: PairDoc) {
   const s = pair.snap;
   if (!s || s.todayKey !== ctx.today || ctx.now.getTime() < s.todayAt) return;
