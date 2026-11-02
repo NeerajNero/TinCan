@@ -2,8 +2,9 @@
 /**
  * Chore "view-once toggle placement": the 👁️ toggle lives inside the attachment
  * preview, so a text-only composer never shows it; it appears with picked
- * photos and with a recorded (not yet sent) voice note, defaults to off, and
- * resets after each send.
+ * photos and with a recorded (not yet sent) voice note, defaults to off, is
+ * icon-only in both states (the filled background says "on"), and resets after
+ * each send.
  */
 import { domMax, LazyMotion, MotionGlobalConfig } from "framer-motion";
 import { act } from "react";
@@ -114,7 +115,8 @@ describe("view-once toggle placement", () => {
     expect(t!.textContent).toBe("");
     act(() => t!.click());
     expect(toggle()!.getAttribute("aria-pressed")).toBe("true");
-    expect(toggle()!.textContent).toContain("View once");
+    expect(toggle()!.textContent).toBe(""); // icon only in both states
+    expect(toggle()!.getAttribute("title")).toBe("View once: on");
     await act(async () => q<HTMLButtonElement>('button[aria-label="Send"]').click());
     await flush();
     expect(onSendImages).toHaveBeenCalledTimes(1);
