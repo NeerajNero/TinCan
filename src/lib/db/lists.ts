@@ -1,21 +1,17 @@
 import { getDb } from "@/lib/firebase/client";
-import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, where, writeBatch, type CollectionReference, type Query } from "@/lib/firebase/fs";
+import { addDoc, collection, deleteDoc, doc, limit, orderBy, query, serverTimestamp, updateDoc, writeBatch, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import type { ListItemDoc, ListKind } from "@/lib/types";
 
 export const LIST_META: Record<ListKind, { emoji: string; title: string; blurb: string }> = {
   bucket: { emoji: "🪣", title: "Bucket list", blurb: "Things to do together, someday" },
   wishlist: { emoji: "🌠", title: "Wishlist", blurb: "Little wants, big wants" },
-  gifts: { emoji: "🎁", title: "Gift ideas", blurb: "Only you can see these" },
-  todo: { emoji: "✅", title: "To-do", blurb: "Shared chores and errands" },
 };
 
 const itemsCol = (kind: ListKind) => collection(getDb(), "lists", kind, "items") as CollectionReference<ListItemDoc>;
 
-/** One bounded listener; gift ideas are filtered to the author (the rules require it). */
-export function itemsQuery(kind: ListKind, uid: string): Query<ListItemDoc> {
-  return kind === "gifts"
-    ? query(itemsCol(kind), where("addedBy", "==", uid), limit(200))
-    : query(itemsCol(kind), orderBy("order", "asc"), limit(200));
+/** One bounded listener per list. */
+export function itemsQuery(kind: ListKind): Query<ListItemDoc> {
+  return query(itemsCol(kind), orderBy("order", "asc"), limit(200));
 }
 
 export async function addItem(kind: ListKind, uid: string, text: string, order: number): Promise<string> {

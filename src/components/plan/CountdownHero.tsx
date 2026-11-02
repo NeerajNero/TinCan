@@ -8,20 +8,20 @@ import { MeetupEditor } from "@/components/more/PairCard";
 import { Card } from "@/components/ui/Card";
 import { usePair } from "@/hooks/usePair";
 import { dateKeyToLocalDate, daysBetween } from "@/lib/dates";
-import { resolveCountdown } from "@/lib/meetup";
+import { nearestCountdown } from "@/lib/upcoming";
 
-/** Plan's hero: days until the meetup (or nearest trip), with the meetup editable inline. */
+/** Plan's hero: days until the nearest of the meetup, the next trip and the next countdown event (one selector with Home's card), with the meetup editable inline. */
 export function CountdownHero({ today }: { today: string }) {
   const { pair } = usePair();
   const [editing, setEditing] = useState(false);
-  const target = resolveCountdown(pair, today);
+  const target = nearestCountdown(pair, today);
   const days = target ? daysBetween(today, target.date) : null;
 
   return (
     <Card className="flex flex-col gap-3 bg-accent-soft">
       <div className="flex items-center gap-4">
         <span className="text-5xl" aria-hidden>
-          {days === null ? "🗓️" : days <= 0 ? "🎉" : target?.source === "trip" ? "🧳" : "✈️"}
+          {days === null ? "🗓️" : days <= 0 ? "🎉" : target?.source === "trip" ? "🧳" : target?.source === "event" ? (target.emoji ?? "📅") : "✈️"}
         </span>
         <div className="min-w-0 flex-1">
           {target && days !== null ? (
@@ -30,6 +30,7 @@ export function CountdownHero({ today }: { today: string }) {
               <p className="mt-1 truncate text-sm text-muted">
                 {[target.label, target.place].filter(Boolean).join(" · ") || (target.source === "trip" ? "Next trip" : "Next meetup")} · {format(dateKeyToLocalDate(target.date), "EEE, d MMM")}
                 {target.source === "trip" && " (from your trips)"}
+                {target.source === "event" && " (from Upcoming)"}
               </p>
             </>
           ) : (

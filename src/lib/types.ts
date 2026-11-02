@@ -22,6 +22,7 @@ export const NOTIF_KEYS = [
   "envelopeOpened",
   "snap",
   "note",
+  "eventAdded",
 ] as const;
 
 export type NotifKey = (typeof NOTIF_KEYS)[number];
@@ -66,6 +67,7 @@ export const NOTIF_LABELS: Record<NotifKey, string> = {
   envelopeOpened: "Friend opened your envelope",
   snap: "Snap time push (the app prompts you anyway)",
   note: "Friend posted a note",
+  eventAdded: "Friend added an upcoming event",
 };
 
 /* ── users/{uid} ───────────────────────────────────────────────────────── */
@@ -230,6 +232,10 @@ export interface PairDoc {
   snap?: SnapSchedule;
   /** Jar activity mirrored by the jar writes (client ms), so Home's digest needs no jar listener. */
   jar?: { addedAt?: number; addedBy?: string; drawnAt?: number; drawnBy?: string };
+  /** The nearest upcoming event with `countdown: true`, mirrored by the event writes (phase 29) so Home needs no events listener. */
+  nextCountdown?: CountdownSummary | null;
+  /** The last event added (client ms, who, what), mirrored by `addEvent` for Home's digest chip. */
+  eventAdded?: EventAddedMirror;
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }
@@ -544,6 +550,49 @@ export interface SnapEntryDoc {
   savedToMemories: boolean;
 }
 
+/* ── events/{id} (phase 29) ────────────────────────────────────────────── */
+
+/** `who`: one uid, or "both". */
+export const EVENT_BOTH = "both";
+
+export interface EventDoc {
+  /** ≤ 60 chars. */
+  title: string;
+  /** Optional fields are absent on create and nulled by an edit that clears them. */
+  emoji?: string | null;
+  /** yyyy-MM-dd; multi-day when `endDate` is set (inclusive). */
+  date: DateKey;
+  endDate?: DateKey | null;
+  /** "HH:mm" in ROOM_TZ, or absent for all-day. */
+  time?: string | null;
+  who: string;
+  /** ≤ 200 chars. */
+  note: string;
+  /** Counts down on Plan's hero and Home's countdown card. */
+  countdown: boolean;
+  createdBy: string;
+  createdAt: Timestamp | null;
+}
+
+/** `pair/main.nextCountdown`: the nearest upcoming countdown event, kept by whichever client last wrote an event. */
+export interface CountdownSummary {
+  id: string;
+  title: string;
+  emoji?: string;
+  date: DateKey;
+  endDate?: DateKey;
+  who: string;
+}
+
+/** `pair/main.eventAdded`: who added what, last (for the digest chip). */
+interface EventAddedMirror {
+  at: number;
+  by: string;
+  title: string;
+  date: DateKey;
+  emoji?: string;
+}
+
 /* ── places/{id} ───────────────────────────────────────────────────────── */
 
 export type PlaceKind = "been" | "want";
@@ -559,21 +608,10 @@ export interface PlaceDoc {
   createdAt: Timestamp | null;
 }
 
-/* ── availability/{uid} ────────────────────────────────────────────────── */
-
-export const WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-export type WeekdayKey = (typeof WEEKDAY_KEYS)[number];
-
-export interface AvailabilityDoc {
-  /** "HH:mm" half-hour slot starts, in the owner's own tz. */
-  slots: Partial<Record<WeekdayKey, string[]>>;
-  tz: string;
-  updatedAt: Timestamp | null;
-}
-
 /* ── lists/{kind}/items/{id} ───────────────────────────────────────────── */
 
-export const LIST_KINDS = ["bucket", "wishlist", "gifts", "todo"] as const;
+/** Phase 29 removed `gifts` and `todo`; `scripts/cleanup-plan.mjs` deletes any leftover docs. */
+export const LIST_KINDS = ["bucket", "wishlist"] as const;
 export type ListKind = (typeof LIST_KINDS)[number];
 
 export interface ListItemDoc {

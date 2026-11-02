@@ -127,6 +127,7 @@ function Cards({ data, friendUid, pingShortcut }: { data: HomeData; friendUid: s
     jar: pair.jar,
     milestonesToday: milestoneDay.milestones.map((m) => (m.derived && m.years !== null ? yearsLine(m.years, preset.pairNoun) : m.title)),
     pet: pair.pet,
+    eventAdded: pair.eventAdded,
   });
 
   const cards: Record<HomeCardId, ReactNode> = {

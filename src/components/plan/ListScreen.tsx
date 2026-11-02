@@ -35,7 +35,7 @@ export function ListScreen({ kind }: { kind: ListKind }) {
   const meta = LIST_META[kind];
 
   useEffect(() => {
-    const unsub = onSnapshot(itemsQuery(kind, uid), (snap) => {
+    const unsub = onSnapshot(itemsQuery(kind), (snap) => {
       setItems(snap.docs.map(mapDoc).sort((a, b) => a.order - b.order));
       setReady(true);
       setOrder(null);
@@ -73,8 +73,7 @@ export function ListScreen({ kind }: { kind: ListKind }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <SubHeader emoji={meta.emoji} title={kind === "gifts" && friend ? `Gift ideas for ${friend.nickname}` : meta.title} back="/plan" />
-      {kind === "gifts" && <p className="-mt-2 px-2 text-xs text-muted">Only you can see this list. {friend?.nickname ?? "They"} keeps their own.</p>}
+      <SubHeader emoji={meta.emoji} title={meta.title} back="/plan" />
 
       <form
         className="flex gap-2"
@@ -83,7 +82,7 @@ export function ListScreen({ kind }: { kind: ListKind }) {
           void add();
         }}
       >
-        <Input value={text} onChange={(e) => setText(e.target.value.slice(0, 200))} placeholder={kind === "todo" ? "Add a task" : "Add something"} aria-label="New item" />
+        <Input value={text} onChange={(e) => setText(e.target.value.slice(0, 200))} placeholder="Add something" aria-label="New item" />
         <Button type="submit" disabled={!text.trim()} className="shrink-0 px-4">
           Add
         </Button>

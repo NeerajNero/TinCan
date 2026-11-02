@@ -148,7 +148,25 @@ thumbnails and a late tag per day; tap for both full size, swipe between days; o
 a day's two entries load on open), Memory map, Milestones, Journal, Jar, Time capsules,
 Open-when envelopes, Mood history (calendar for both).
 
-**Plan** — Meetup countdown, Call-time finder, Lists (bucket, wishlist, gift ideas, to-do), Trips.
+**Plan** (phase 29) — top to bottom: the hero countdown → **Upcoming** → Lists (Bucket list, Wishlist) → Trips.
+- Hero: days until the nearest of `pair.nextMeetup`, the nearest upcoming trip and the nearest countdown event
+  (`lib/upcoming.nearestCountdown`, the one selector Home's countdown card uses too); past targets only when nothing is
+  ahead. Set / Edit changes the meetup inline.
+- Upcoming: an agenda for the next 7 days inline ("See all" → `/plan/upcoming`, 30 days at a time up to 400, events paged
+  by 50) merging `events/*` with milestones (incl. imported festivals and the friendiversary), festivals from the seed not
+  imported yet, and trips — the last three derived from their existing docs, never duplicated. Grouped by day, today
+  highlighted; each row shows the person's avatar (or both), emoji, title, time, note, "Day n of N" on spans, ⏳ on
+  countdown events. Tap an event to edit or delete it (either person may); milestone / festival / trip rows link to
+  their screens. "Add" opens the editor (title ≤ 60, emoji chip, date, optional end date or time, Me / friend / Both,
+  note ≤ 200, "Count down to this"); "Mark busy" creates an all-day "Busy" event for me over a chosen range in one tap.
+- Countdowns: any event with `countdown: true` counts down; the writer mirrors the nearest one onto
+  `pair/main.nextCountdown` (and the last add onto `pair.eventAdded`), so Home reads it with no extra listener. Adding an
+  event sends the `event-added` push (toggle, default on) → inbox row, and Home's digest shows "📅 Shravya added:
+  Exam · 14 Nov".
+- Listener budget: Plan opens exactly one new bounded listener (`events` where `date ≥ today`, by date, limit 50), only
+  while a Plan screen is mounted; lists and trips still load only when opened.
+- Removed in phase 29: the Call-time finder (`availability`), Gift ideas and To-do (`scripts/cleanup-plan.mjs` deletes
+  their leftover docs; dry run by default, `--yes` to apply).
 
 **More** — Profile (nickname, city, avatar), Theme, Home layout (phase 27), Notification toggles, Friends-since date,
 Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), App build + "Check for updates",
@@ -244,10 +262,13 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
 `memories/{id}`: uploaderId, url, publicId, w, h, caption, takenAt, placeId?, createdAt
 `places/{id}`: name, lat, lng, kind(been|want), note, visitedAt, addedBy
 `milestones/{id}`: title, date, repeatYearly, emoji, effect? (festival effect id)
-`lists/{kind}/items/{id}` (kind: bucket|wishlist|gifts|todo): text, addedBy, done, doneAt, note, url, order
-  — `gifts` items are private to their author (rule-enforced: read/write only by `addedBy`)
+`lists/{kind}/items/{id}` (kind: bucket|wishlist; gifts and todo were removed in phase 29): text, addedBy, done, doneAt,
+  note, url, order
 `trips/{id}`: title, startDate, endDate, place, days[{date, stops[{time,name,note}]}]
-`availability/{uid}`: slots{ "mon": [ "09:00","09:30",...] } in that user's tz
+`events/{id}` (phase 29): title ≤ 60, emoji?, date (yyyy-MM-dd), endDate?, time? ("HH:mm"), who (uid | "both"),
+  note ≤ 200, countdown (bool), createdBy, createdAt — either person adds, edits or deletes any event; the writer
+  mirrors `pair/main.nextCountdown { id, title, emoji?, date, endDate?, who }` (the nearest countdown event with a day
+  left, or null) and `pair/main.eventAdded { at (client ms), by, title, date, emoji? }`
 `gameResults/{id}`: game, players[], winnerId|null, score{}, startedAt, endedAt
 `quizzes/{id}`: authorId, questions[{q, answer, decoys[3]}], takenBy{uid:{score,answers[],at}}
 `wordle/{dateKey}_{uid}`: guesses[], solved, at
@@ -365,7 +386,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   message ✓, ping ✓, lamp ✓, your-turn ✓, friend answered daily question ✓, jar note ✓,
   capsule unlocked ✓, scheduled message ✓, pet hungry ✓, streak at risk ✓, milestone ✓,
   meetup countdown (7/1 day) ✓, pictionary/trivia invite ✓, snap time (default **off**: the in-app takeover
-  prompts anyway; `NOTIF_DEFAULT_OFF` / `notifOn()` in `lib/types.ts`) , friend posted a note ✓,
+  prompts anyway; `NOTIF_DEFAULT_OFF` / `notifOn()` in `lib/types.ts`) , friend posted a note ✓, friend added an
+  upcoming event ✓ (`event-added`, phase 29),
   morning digest (its own switch + hour picker,
   `notif.digest = { enabled, hour }`, default off / 08:00 in the user's tz) ✓.
 - De-duplicate with `push/{id}` keyed by event (e.g. `pet-hungry-2026-10-12`).
@@ -485,9 +507,9 @@ Every trivia question also carries an `explanation`. Word definitions are static
   editing the milestone; the seed is only the import source. Milestones carry `verify?: boolean` (the
   seed's lunar dates import with it; a "Date needs checking" switch in the editor sets it): the list shows
   "⚠️ check the date" + "Looks right ✓", editing the date clears it, and the tick reminds 7 days before.
-- **Call-time finder**: each sets weekly 30-min availability in their tz; overlap shown in both
-  tz; "Propose" posts a chat message with the slot.
-- **Lists**: four kinds, shared (gift ideas private to the author), check-off, reorder by drag, who-added avatar.
+- **Upcoming** (phase 29): see Plan. Pure parts in `lib/upcoming.ts` (agenda merge and grouping, the countdown selector,
+  the mirrored summary, wording); writes in `lib/db/events.ts`; the one listener in `hooks/useEvents`.
+- **Lists**: two shared kinds (Bucket list, Wishlist), check-off, reorder by drag, who-added avatar.
 - **Trips**: simple day/stop planner; countdown on Home uses the nearest upcoming trip if
   `nextMeetup` is empty.
 - **Turn-based games** (tic-tac-toe, connect four, chess via chess.js, checkers, dots and boxes, hangman,
@@ -593,7 +615,7 @@ Every trivia question also carries an `explanation`. Word definitions are static
   Rate limit: one invite per activity per 2 minutes per person (client cooldown; the button shows "Invited ✓",
   a second tap toasts "Already invited"). Labels complete the sentence "🎯 {nickname} started …".
 - **How-to sheets**: every game, together activity and slow feature (pet, plant, garden, jar, capsules,
-  envelopes, daily question, call-time finder) has an entry in `src/content/howto.ts`, shown by the ? in
+  envelopes, daily question, the Plan tab, Upcoming) has an entry in `src/content/howto.ts`, shown by the ? in
   its header (auto-opens once per device) and used for Play tile sub-labels. No tours or tooltips.
 - **Usage meter**: client counts Firestore reads/writes per session and estimates daily use vs
   the free quota; shows a friendly gauge in More. Purely informational.
@@ -610,6 +632,12 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - `envelopes`: body readable by `forUid` only after `openedAt` is set by them, and by author always.
 - `scheduled`: readable/deletable by sender only; delivery is done by the server (admin).
 - `tickLog`, `push`: admin-only (no client access).
+- `events/{id}` (phase 29): read by both; create only as `createdBy == uid` with server `createdAt`; update by either
+  with `createdBy` / `createdAt` unchanged; delete by either; shape: keys title / emoji / date / endDate / time / who /
+  note / countdown / createdBy / createdAt only, title 1–60, emoji ≤ 8 (or null), `date` and `endDate` yyyy-MM-dd with
+  `endDate ≥ date`, `time` HH:mm, `who` 1–128, note ≤ 200, countdown bool. `pair/main.nextCountdown` (map with id /
+  title ≤ 60 / emoji / date / endDate / who, or null) and `pair/main.eventAdded` (at number, by, title ≤ 60, date,
+  emoji) are shape-checked; `lists/{kind}` accepts only `bucket` and `wishlist`; `availability` has no rule any more.
 - `users/{uid}.homeCards` (map of `order` / `hidden` lists ≤ 24), `.note` (null, or text 1–60, emoji ≤ 8, `at`
   and `expiresAt` timestamps) and `.lastOpenAt` (timestamp or null) are owner-only like the rest of the doc.
   `.inbox` (phase 28) is a map of `unread` (int ≥ 0) and `lastReadAt` (timestamp | null); when a client write touches
@@ -796,7 +824,7 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 6. ✅ **Daily & letters** — daily question, journal, time capsules, open-when envelopes, jar,
    scheduled messages, `/api/tick` with all jobs, `pnpm tick:dry`.
 7. ✅ **Memories** — photo timeline, memory map (Leaflet/OSM), milestones, mood history.
-8. ✅ **Plan** — countdown, call-time finder, four lists, trips.
+8. ✅ **Plan** — countdown, call-time finder, four lists, trips (the finder, gift ideas and to-do were removed in phase 29).
 9. ✅ **Play v1** — game lobby/invites, tic-tac-toe, connect four, chess, checkers, your-turn
    push, results + head-to-head record, rematch.
 10. ✅ **Play v2** — deck games (WYR, NHIE, truth/dare, conversation cards), 20 Questions,
@@ -844,6 +872,10 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 28. ✅ **Inbox bell + overlay** (commit "chore: inbox bell + overlay") — a notifications inbox: every push the server
     composes becomes a row in `inbox/{uid}/items` (bursts collapse), `users.inbox.unread` feeds a bell with a badge on
     every tab header, and the shared Sheet at 90 % shows the list (mark all read, swipe to delete, load older).
+29. ✅ **Plan tab rework** (commit "phase 29: plan tab rework") — removed the Call-time finder, Gift ideas and To-do
+    (+ `scripts/cleanup-plan.mjs`); added Upcoming: `events/*` merged with milestones, festivals and trips into a
+    day-grouped agenda, "Mark busy", countdown events with a mirrored `pair.nextCountdown`, one shared countdown
+    selector for Plan's hero and Home's card, the `event-added` push / inbox row / digest chip.
 26. ✅ **Game input feel** (commit "phase 26") — the `GameScreen` composite (header, fitted content, docked input) on the
     board games, daily word, Hangman, trivia, 20 Questions, decks and Pictionary; `Pressable` keys and options with
     haptics and key-clicks; tile pop and colour fades; the boards spec extended with the daily word and Hangman at six

@@ -6,9 +6,12 @@ export interface CountdownTarget {
   date: DateKey;
   label: string;
   place: string;
-  source: "meetup" | "trip";
-  /** For trips, the last day. */
+  /** `event` only from `lib/upcoming.nearestCountdown` (phase 29); the tick's meetup reminder never sees it. */
+  source: "meetup" | "trip" | "event";
+  /** For trips and multi-day events, the last day. */
   endDate?: DateKey;
+  /** Events: the emoji chosen for it. */
+  emoji?: string;
 }
 
 export function resolveCountdown(pair: Pick<PairDoc, "nextMeetup" | "tripsSummary">, today: DateKey): CountdownTarget | null {

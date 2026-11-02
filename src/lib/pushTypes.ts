@@ -26,6 +26,7 @@ export const PUSH_TYPES = [
   "rules-drift",
   "snap",
   "note",
+  "event-added",
 ] as const;
 export type PushType = (typeof PUSH_TYPES)[number];
 
@@ -53,6 +54,7 @@ export const TOGGLE_FOR: Record<PushType, NotifKey | null> = {
   "rules-drift": null,
   snap: "snap",
   note: "note",
+  "event-added": "eventAdded",
 };
 
 export interface PushPayload {
@@ -121,5 +123,7 @@ export function composePush(type: PushType, senderName: string, payload: PushPay
       return { title: "📸 Snap time!", body: body || "You have 2 minutes", url: "/snap", tag: "snap" };
     case "note":
       return { title: senderName, body: `📝 posted a note: ${body.slice(0, 120)}`.trim(), url: "/", tag: "note" };
+    case "event-added":
+      return { title: senderName, body: `📅 added: ${body.slice(0, 120)}`.trim(), url: "/plan", tag: "event" };
   }
 }

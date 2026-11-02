@@ -90,4 +90,5 @@ export const INBOX_EMOJI: Record<PushType, string> = {
   "rules-drift": "⚠️",
   snap: "📸",
   note: "📝",
+  "event-added": "📅",
 };

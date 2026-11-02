@@ -39,7 +39,7 @@ Errors go back as `{ error: "<code>" }` with 400/401/403/413/429/500; details ar
 - Logs to `push/{id}` (pruned to ~200) for de-duplication of event-keyed pushes.
 - `postSystemMessageAdmin(senderId, text)` writes a `system` chat message with the admin SDK (used by the tick).
 
-Push types: `message, ping, lamp, test, daily-answer, daily-nudge, streak-risk, capsule-unlocked, envelope-opened, jar, scheduled, milestone, meetup, yourTurn, invite, petHungry, digest` (`digest` is governed by `notif.digest.enabled` rather than a boolean toggle; checked in `sendPushTo`). Adding one is described in adding-a-feature.md.
+Push types: `message, ping, lamp, test, daily-answer, daily-nudge, streak-risk, capsule-unlocked, envelope-opened, jar, scheduled, milestone, meetup, yourTurn, invite, petHungry, digest, rules-drift, snap, note, event-added` (`event-added`, phase 29: "📅 added: Exam · 14 Nov", toggle `eventAdded` default on, deep link `/plan`) (`digest` is governed by `notif.digest.enabled` rather than a boolean toggle; checked in `sendPushTo`). Adding one is described in adding-a-feature.md.
 
 ## `/api/tick` jobs
 

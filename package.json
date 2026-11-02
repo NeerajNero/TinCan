@@ -17,6 +17,7 @@
     "tick:dry": "node scripts/tick-dry.mjs",
     "reset:dry": "node scripts/reset-data.mjs",
     "reset": "node scripts/reset-data.mjs --yes",
+    "cleanup:plan": "node scripts/cleanup-plan.mjs",
     "test:rules": "pnpm rules:build && firebase emulators:exec --only firestore,database \"vitest run --config vitest.rules.config.mts\"",
     "test": "vitest run",
     "analyze": "ANALYZE=true next build",

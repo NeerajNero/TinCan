@@ -14,7 +14,7 @@ It is built for **exactly two Google accounts**, and nobody else can open it. It
 | **Chat** | ✓ / ✓✓ / blue ticks, typing, swipe to reply, reactions, edit/delete, photos, voice notes, GIFs, stickers, scheduled messages, offline queue, chat backgrounds |
 | **Play** | tic-tac-toe, connect four, chess, checkers · would-you-rather, never-have-I-ever, truth or dare, conversation cards · 20 Questions · trivia duel · know-me quiz · daily word (scoreboard + history) · whiteboard, pixel art, pictionary, watch together, listen together, radio, focus timer, cook-along |
 | **Memories** | photo timeline · memory map · milestones · journal · jar · time capsules · open-when envelopes · mood history · daily-question history · garden |
-| **Plan** | meetup countdown · call-time finder across time zones · bucket list, wishlist, gift ideas, to-do · trips |
+| **Plan** | countdown to the nearest meetup, trip or countdown event · Upcoming agenda (events, milestones, festivals, trips; Mark busy) · bucket list, wishlist · trips |
 | **More** | profile, theme, chat background, notifications, sounds, usage meter, sign out |
 
 Documentation for developers lives in [`docs/`](docs/README.md). The product and engineering spec, and the rules an AI pair-programmer follows here, are in [`CLAUDE.md`](CLAUDE.md). Changes are recorded in [`CHANGELOG.md`](CHANGELOG.md).
@@ -100,7 +100,7 @@ Both people sign in with Google and pick a nickname and city; that forms the pai
 | `pnpm build` / `pnpm start` | Production build and server |
 | `pnpm typecheck` | TypeScript (`strict` + `noUncheckedIndexedAccess`) |
 | `pnpm lint` | ESLint (Next, TypeScript, React Compiler rules, import order) |
-| `pnpm test` | Unit tests: game engines, dates and streak, pet, call-time overlap, pings, Recent games, theme script, trivia bank (every question explained), word definitions (every answer defined), daily word results, and the rules/index scan (every collection has a rule, every query needing a composite index is in `firestore.indexes.json`) |
+| `pnpm test` | Unit tests: game engines, dates and streak, pet, the Upcoming agenda, pings, Recent games, theme script, trivia bank (every question explained), word definitions (every answer defined), daily word results, and the rules/index scan (every collection has a rule, every query needing a composite index is in `firestore.indexes.json`) |
 | `pnpm test:rules` | Security-rules tests on the Firebase emulators (needs Java: `brew install --cask temurin`) |
 | `pnpm test:e2e` | Builds, then Playwright on a phone viewport: no CSP violations (page and worker), the document never scrolls. First run: `npx playwright install chromium` |
 
@@ -120,7 +120,6 @@ GitHub Actions (`.github/workflows/ci.yml`) runs the same checks on every push a
 ## Privacy & access
 
 **Who can see what.** Only the two allowlisted Google accounts can sign in, read or write anything. Inside the app, both of you see everything you share, with these exceptions:
-- **Gift ideas** are visible only to whoever added them.
 - **Time-capsule bodies** stay hidden from the other person until the unlock time.
 - **Open-when envelope bodies** stay hidden until the recipient opens them.
 - **Scheduled messages** are visible only to their sender until they are delivered.
@@ -184,7 +183,7 @@ Fonts are self-hosted, so Google Fonts receives nothing.
 - **Media.** Uploads are signed for a fixed parameter set. Assets use authenticated delivery, and their URLs are signed server-side for a fixed set of variants. Unsigned or tampered URLs return 401. The rules validate every stored media URL.
 - **CSP with a nonce.** A per-request nonce, with no `'unsafe-inline'` scripts and an exact host list (`csp.ts`). The service worker has its own policy. `CSP_REPORT_ONLY=1` switches to report-only for debugging.
 - **Other headers.** nosniff, `X-Frame-Options: DENY`, a strict referrer policy, and a Permissions-Policy that allows the microphone for the app only and playback features (autoplay, encrypted media, fullscreen, picture-in-picture) for the app and the YouTube player.
-- **Rules tests.** `pnpm test:rules` covers: strangers blocked, message edit rights, private bodies, gifts privacy, pings, pair uids, signed media, place unlinking.
+- **Rules tests.** `pnpm test:rules` covers: strangers blocked, message edit rights, private bodies, list kinds, events, pings, pair uids, signed media, place unlinking.
 - **Secrets.** Server-only. The client bundle is checked to contain none.
 
 ---

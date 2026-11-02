@@ -37,9 +37,10 @@ export type HowToKey =
   | "capsules"
   | "envelopes"
   | "daily"
-  | "calls"
   | "snap"
-  | "homeLayout";
+  | "homeLayout"
+  | "plan"
+  | "upcoming";
 
 export interface HowTo {
   title: string;
@@ -241,10 +242,16 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     label: "Arrange your Home cards",
     steps: ["↕️ Drag the handle to reorder the cards on Home", "🙈 Switch a card off to hide it — it's your layout, not shared", "📌 Snap time and a game waiting on your move always jump to the top", "🔁 Reset to default puts everything back"],
   },
-  calls: {
-    title: "Call-time finder",
-    label: "When you're both free",
-    steps: ["🗓️ Paint your free half-hours each week, in your own time", "🌍 Overlaps show in both your time zones", "📞 Tap Propose to send a slot to chat"],
-    tip: "Set it once — it repeats every week.",
+  plan: {
+    title: "the Plan tab",
+    label: "Countdown, upcoming, lists, trips",
+    steps: ["⏳ The hero counts down to the nearest meetup, trip or countdown event", "📅 Upcoming shows the next 7 days; See all looks further ahead", "🪣 Bucket list and Wishlist are shared; tick, drag, add", "🧳 Trips plan a visit day by day"],
+    tip: "Set the meetup date from the hero's Set button.",
+  },
+  upcoming: {
+    title: "Upcoming",
+    label: "What's coming, for both of you",
+    steps: ["➕ Add an event: a title, a day (or a range), a time, who it's for", "🙋 Mark busy blocks days for you in one tap", "🎉 Milestones, festivals and trips appear by themselves", "⏳ Switch on Count down and it leads the hero and Home"],
+    tip: "Both of you can edit or delete any event.",
   },
 };

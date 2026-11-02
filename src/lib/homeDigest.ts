@@ -8,6 +8,7 @@ import { noteLine, noteVisible } from "@/lib/notes";
 import { statFrom } from "@/lib/pet";
 import { SNAP_WINDOW_MS } from "@/lib/snap";
 import type { DailyQuestionDoc, PairDoc, SnapSummaryDoc, UserNote } from "@/lib/types";
+import { eventLine } from "@/lib/upcoming";
 
 export interface HomeDigestSource {
   uid: string;
@@ -27,6 +28,8 @@ export interface HomeDigestSource {
   jar: PairDoc["jar"] | undefined;
   milestonesToday: string[];
   pet: PairDoc["pet"] | undefined;
+  /** `pair.eventAdded` (phase 29): the last event added, mirrored by the event writes. */
+  eventAdded?: PairDoc["eventAdded"];
 }
 
 const after = (ms: number | null | undefined, since: number | null): boolean => typeof ms === "number" && (since === null || ms > since);
@@ -40,6 +43,8 @@ export function homeDigestInput(src: HomeDigestSource): DigestInput {
   const friendAnswerAt = src.daily?.answers?.[src.friendUid]?.at?.toMillis?.() ?? null;
   const jarAdded = src.jar?.addedBy === src.friendUid && after(src.jar.addedAt, since);
   const jarDrawn = src.jar?.drawnBy === src.friendUid && after(src.jar.drawnAt, since);
+  const ev = src.eventAdded;
+  const friendEvent = ev && ev.by === src.friendUid && after(ev.at, since) ? eventLine({ title: ev.title, date: ev.date }) : null;
   return {
     yourTurn: src.myTurn,
     invites: src.invites,
@@ -55,5 +60,6 @@ export function homeDigestInput(src: HomeDigestSource): DigestInput {
     friendAnswered: after(friendAnswerAt, since),
     jarAdded,
     jarDrawn,
+    friendEvent,
   };
 }

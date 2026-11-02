@@ -30,6 +30,8 @@ export interface DigestInput {
   /** The friend dropped a note in my jar / drew one of mine since the last open. */
   jarAdded?: boolean;
   jarDrawn?: boolean;
+  /** The friend added an upcoming event since the last open: its line ("Exam · 14 Nov"). */
+  friendEvent?: string | null;
 }
 
 export interface DigestItem {
@@ -57,6 +59,7 @@ export function digestItems(d: DigestInput, friendName = "your friend"): DigestI
   if (d.dailyUnanswered) items.push({ key: "daily", emoji: "💭", text: "today's question is waiting", url: "/" });
   if (d.jarAdded) items.push({ key: "jar-added", emoji: "🫙", text: `${friendName} dropped a note in your jar`, url: "/memories/jar" });
   if (d.jarDrawn) items.push({ key: "jar-drawn", emoji: "🫙", text: `${friendName} drew one of your jar notes`, url: "/memories/jar" });
+  if (d.friendEvent) items.push({ key: "event", emoji: "📅", text: `${friendName} added: ${d.friendEvent}`, url: "/plan" });
   if (d.jarNotes > 0) items.push({ key: "jar", emoji: "🫙", text: `${n(d.jarNotes, "jar note")} to draw`, url: "/memories/jar" });
   if (d.pet) {
     const needs = [d.pet.food < PET_LOW ? "food" : null, d.pet.joy < PET_LOW ? "a play" : null].filter((x): x is string => x !== null);

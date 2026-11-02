@@ -4,12 +4,12 @@ import { format } from "date-fns";
 
 import { Card } from "@/components/ui/Card";
 import { dateKeyToLocalDate, daysBetween } from "@/lib/dates";
-import { resolveCountdown } from "@/lib/meetup";
 import type { PairDoc } from "@/lib/types";
+import { nearestCountdown } from "@/lib/upcoming";
 
-/** Days until the next meetup, or the nearest upcoming trip when none is set. Renders nothing otherwise. */
-export function CountdownCard({ pair, today }: { pair: Pick<PairDoc, "nextMeetup" | "tripsSummary">; today: string }) {
-  const meetup = resolveCountdown(pair, today);
+/** Days until the nearest of the meetup, the next trip and the next countdown event (`lib/upcoming.nearestCountdown`, shared with Plan's hero). Renders nothing otherwise. */
+export function CountdownCard({ pair, today }: { pair: Pick<PairDoc, "nextMeetup" | "tripsSummary" | "nextCountdown">; today: string }) {
+  const meetup = nearestCountdown(pair, today);
   if (!meetup) return null;
   const days = daysBetween(today, meetup.date);
   const where = [meetup.label, meetup.place].filter(Boolean).join(" · ");
@@ -20,7 +20,7 @@ export function CountdownCard({ pair, today }: { pair: Pick<PairDoc, "nextMeetup
   return (
     <Card className="flex items-center gap-4">
       <span className="text-4xl" aria-hidden>
-        {days <= 0 ? "🎉" : meetup.source === "trip" ? "🧳" : "✈️"}
+        {days <= 0 ? "🎉" : meetup.source === "trip" ? "🧳" : meetup.source === "event" ? (meetup.emoji ?? "📅") : "✈️"}
       </span>
       <div className="min-w-0 flex-1">
         <p className="font-heading text-2xl font-semibold">{headline}</p>

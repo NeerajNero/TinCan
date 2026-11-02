@@ -169,14 +169,63 @@ describe("places", () => {
   });
 });
 
-describe("lists", () => {
-  it("gift ideas are invisible to the other person", async () => {
-    await seed(async (db) => {
-      await setDoc(doc(db, "lists/gifts/items/g1"), { text: "a scarf", note: "", url: "", addedBy: A, done: false, doneAt: null, order: 0, createdAt: new Date() });
-    });
-    await assertFails(getDoc(doc(asB().firestore(), "lists/gifts/items/g1")));
-    await assertSucceeds(getDoc(doc(asA().firestore(), "lists/gifts/items/g1")));
-    await assertSucceeds(getDocs(query(collection(asB().firestore(), "lists/gifts/items"), where("addedBy", "==", B))));
+describe("lists (phase 29: bucket and wishlist only)", () => {
+  it("the two shared kinds work for both; gifts and todo are gone", async () => {
+    const item = { text: "see the northern lights", note: "", url: "", addedBy: A, done: false, doneAt: null, order: 0, createdAt: new Date() };
+    const a = asA().firestore();
+    await assertSucceeds(setDoc(doc(a, "lists/bucket/items/i1"), item));
+    await assertSucceeds(getDoc(doc(asB().firestore(), "lists/bucket/items/i1")));
+    await assertSucceeds(updateDoc(doc(asB().firestore(), "lists/bucket/items/i1"), { done: true }));
+    await assertSucceeds(setDoc(doc(a, "lists/wishlist/items/i2"), item));
+    await assertFails(setDoc(doc(a, "lists/gifts/items/g1"), item));
+    await assertFails(setDoc(doc(a, "lists/todo/items/t1"), item));
+    await seed(async (db) => setDoc(doc(db, "lists/gifts/items/g1"), item));
+    await assertFails(getDoc(doc(a, "lists/gifts/items/g1")));
+    await assertFails(getDocs(query(collection(a, "lists/gifts/items"), where("addedBy", "==", A))));
+  });
+});
+
+describe("events (phase 29: Plan → Upcoming)", () => {
+  const ev = { title: "Exam", emoji: "📚", date: "2026-11-14", who: A, note: "", countdown: true, createdBy: A, createdAt: serverTimestamp() };
+  beforeEach(() => seed(async (db) => setDoc(doc(db, "pair/main"), { uids: [A, B], roomTz: "UTC" })));
+  it("either person creates (as themselves, server time), edits any event and deletes any event", async () => {
+    const a = asA().firestore();
+    const b = asB().firestore();
+    await assertSucceeds(setDoc(doc(a, "events/e1"), ev));
+    await assertSucceeds(setDoc(doc(b, "events/e2"), { ...ev, who: "both", createdBy: B, endDate: "2026-11-16", countdown: false }));
+    await assertSucceeds(getDocs(query(collection(b, "events"), where("date", ">=", "2026-11-01"))));
+    await assertSucceeds(updateDoc(doc(b, "events/e1"), { title: "Big exam", time: "09:30", note: "bring the pens" }));
+    await assertSucceeds(updateDoc(doc(a, "events/e2"), { endDate: null, time: null, emoji: null }));
+    await assertFails(updateDoc(doc(b, "events/e1"), { createdBy: B }));
+    await assertSucceeds(deleteDoc(doc(b, "events/e1")));
+    await assertFails(setDoc(doc(a, "events/e3"), { ...ev, createdBy: B }));
+    await assertFails(setDoc(doc(a, "events/e3"), { ...ev, createdAt: new Date() }));
+    await assertFails(getDoc(doc(asStranger().firestore(), "events/e2")));
+  });
+  it("the shape is checked: title 1–60, date keys, endDate ≥ date, HH:mm, note ≤ 200, countdown bool, no extra keys", async () => {
+    const a = asA().firestore();
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, title: "" }));
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, title: "x".repeat(61) }));
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, date: "14/11/2026" }));
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, endDate: "2026-11-13" }));
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, time: "9am" }));
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, note: "n".repeat(201) }));
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, countdown: "yes" }));
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, who: "" }));
+    await assertFails(setDoc(doc(a, "events/x"), { ...ev, extra: 1 }));
+    await assertSucceeds(setDoc(doc(a, "events/x"), { ...ev, endDate: "2026-11-14", time: "23:59", note: "n".repeat(200) }));
+  });
+  it("pair.nextCountdown and pair.eventAdded mirrors are shaped", async () => {
+    const a = asA().firestore();
+    await assertSucceeds(updateDoc(doc(a, "pair/main"), { nextCountdown: { id: "e1", title: "Exam", emoji: "📚", date: "2026-11-14", who: A } }));
+    await assertSucceeds(updateDoc(doc(a, "pair/main"), { nextCountdown: { id: "e2", title: "Trip", date: "2026-12-01", endDate: "2026-12-05", who: "both" } }));
+    await assertSucceeds(updateDoc(doc(a, "pair/main"), { nextCountdown: null }));
+    await assertFails(updateDoc(doc(a, "pair/main"), { nextCountdown: { id: "e1", title: "Exam", date: "2026-11-14", who: A, extra: 1 } }));
+    await assertFails(updateDoc(doc(a, "pair/main"), { nextCountdown: { id: "e1", title: "Exam", date: "soon", who: A } }));
+    await assertFails(updateDoc(doc(a, "pair/main"), { nextCountdown: "e1" }));
+    await assertSucceeds(updateDoc(doc(a, "pair/main"), { eventAdded: { at: 1700000000000, by: A, title: "Exam", date: "2026-11-14", emoji: "📚" } }));
+    await assertFails(updateDoc(doc(a, "pair/main"), { eventAdded: { at: "now", by: A, title: "Exam", date: "2026-11-14" } }));
+    await assertFails(updateDoc(doc(a, "pair/main"), { eventAdded: { at: 1, by: A, title: "Exam", date: "2026-11-14", note: "x" } }));
   });
 });
 

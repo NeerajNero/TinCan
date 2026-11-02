@@ -25,7 +25,8 @@
 | `pnpm rules:build` | `rules/*.tmpl` → `firestore.rules`, `database.rules.json`, `.firebaserc` |
 | `pnpm rules:deploy` | build, then `firebase deploy --only firestore:rules,firestore:indexes,database` — rules plus `firestore.indexes.json` — then `pnpm rules:stamp` (needs `npm i -g firebase-tools` and `firebase login`). CI does the same on pushes to `main` that touch the rules (below); this is the local fallback. Index builds take a few minutes; the Firebase console → Firestore → Indexes shows progress |
 | `pnpm rules:stamp` | `firebase database:set /meta/rulesVersion` to this checkout's RULES_VERSION (the CLI's admin access; clients can't write it). Fails if the live rules don't carry the same version, so a stale deploy is caught at once |
-| `pnpm test` | vitest unit tests in `tests/unit` (engines, dates/streak, pet, availability, ping cooldown) |
+| `pnpm cleanup:plan` | phase 29: counts (default) or, with `--yes`, deletes every `availability/*`, `lists/gifts/*` and `lists/todo/*` document left by the removed Call-time finder, Gift ideas and To-do |
+| `pnpm test` | vitest unit tests in `tests/unit` (engines, dates/streak, pet, upcoming agenda, ping cooldown) |
 | `pnpm test:rules` | build rules, start the emulators (Firestore 8181, RTDB 9191; needs Java), run `tests/rules.test.ts` |
 | `pnpm test:e2e` | production build + Playwright layout smoke test (mobile viewport; first run `npx playwright install chromium`) |
 | `pnpm profile:chat` | React Profiler run of a 300-message thread in happy-dom; prints mount and append cost |

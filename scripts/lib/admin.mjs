@@ -51,5 +51,5 @@ export function configureCloudinary(script) {
 /** Error text without request objects (the Cloudinary SDK can attach auth headers). */
 export const message = (err) => err?.error?.message ?? err?.message ?? "unknown error";
 
-/** Subcollections the app uses: capsules/{id}/private, envelopes/{id}/private, lists/{kind}/items. */
+/** Subcollections the app uses: capsules/{id}/private, envelopes/{id}/private, lists/{bucket|wishlist}/items. */
 export const SUBCOLLECTION_GROUPS = ["private", "items"];
