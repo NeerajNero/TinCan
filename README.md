@@ -65,7 +65,7 @@ pnpm dev
 
 ### 4b. GitHub Actions (rules deploy)
 
-After the first manual `pnpm rules:deploy`, CI keeps the Firebase rules in step with `rules/*.tmpl`: every push to `main` that changes the rules or `firestore.indexes.json` runs the `deploy-rules` job. In the repo → Settings → Secrets and variables → Actions add:
+After the first manual `pnpm rules:deploy`, CI keeps the Firebase rules in step with `rules/*.tmpl`: every push to `main` that changes the rules or `firestore.indexes.json` runs the `deploy-rules` job (until the settings below exist it skips with a green "rules deploy skipped — run pnpm rules:deploy locally" notice). In the repo → Settings → Secrets and variables → Actions add:
 
 - [ ] Secret `FIREBASE_SERVICE_ACCOUNT` — the same base64 service-account JSON as `.env`.
 - [ ] Secret `ALLOWED_EMAILS` — the same two emails, comma-separated.

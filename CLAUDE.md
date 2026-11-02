@@ -737,7 +737,9 @@ of a task must say which docs were updated.
   `deploy-rules` runs on pushes to main after `checks` and `rules` pass, only when `rules/**`,
   `firestore.indexes.json` or the rules scripts changed: builds with the `ALLOWED_EMAILS` secret and the
   `CLOUDINARY_CLOUD_NAME` variable, deploys with the Firebase CLI authenticated by the `FIREBASE_SERVICE_ACCOUNT`
-  secret (`GOOGLE_APPLICATION_CREDENTIALS` from a temp file), then stamps `meta/rulesVersion`.
+  secret (`GOOGLE_APPLICATION_CREDENTIALS` from a temp file), then stamps `meta/rulesVersion`. When any of the
+  three settings is absent the job writes a notice ("rules deploy skipped — run pnpm rules:deploy locally"), skips
+  the rest and ends green; the daily drift check still catches live rules that lag the templates.
 - `pnpm typecheck` and `pnpm lint` must pass before each commit. One commit per phase, and
   `git push` after every commit — the remote is the backup. The full finish list (knip, tests, e2e when relevant,
   `pnpm size` for bundle budgets, docs) is in `docs/adding-a-feature.md` → Finish; `/ship` runs it.

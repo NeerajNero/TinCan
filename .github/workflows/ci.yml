@@ -4,8 +4,9 @@
 # (production build + Playwright) on pushes to main or by hand (Actions → CI → Run workflow).
 # `deploy-rules` is `pnpm rules:deploy` on pushes to main that touch the rules, after `checks`
 # and `rules` pass: it needs the FIREBASE_SERVICE_ACCOUNT and ALLOWED_EMAILS secrets and the
-# CLOUDINARY_CLOUD_NAME variable (docs/operations.md → CI). The live rules fell behind the
-# templates four times while deploying was a manual step.
+# CLOUDINARY_CLOUD_NAME variable (docs/operations.md → CI); without them it writes a notice and
+# skips, green ("run pnpm rules:deploy locally"). The live rules fell behind the templates four
+# times while deploying was a manual step.
 name: CI
 
 on:
@@ -146,25 +147,33 @@ jobs:
             echo "Rules changed:"; git diff --name-only "$BEFORE" "$AFTER" -- $paths
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Check the secrets and the variable are set
+      - name: Are the secrets and the variable set? (absent → the job skips, green)
+        id: ready
         if: steps.changed.outputs.changed == 'true'
         env:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          [ -n "$SA" ] || { echo "::error::Add the FIREBASE_SERVICE_ACCOUNT secret (base64 of the service-account JSON) in Settings → Secrets and variables → Actions."; exit 1; }
-          [ -n "$ALLOWED_EMAILS" ] || { echo "::error::Add the ALLOWED_EMAILS secret (the two emails, comma-separated)."; exit 1; }
-          [ -n "$NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME" ] || { echo "::error::Add the CLOUDINARY_CLOUD_NAME repository variable (the Firestore rules validate media URLs by cloud name; the CI placeholder must never be deployed)."; exit 1; }
-      - if: steps.changed.outputs.changed == 'true'
+          missing=""
+          [ -n "$SA" ] || missing="$missing FIREBASE_SERVICE_ACCOUNT (secret: base64 of the service-account JSON)"
+          [ -n "$ALLOWED_EMAILS" ] || missing="$missing ALLOWED_EMAILS (secret: the two emails, comma-separated)"
+          [ -n "$NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME" ] || missing="$missing CLOUDINARY_CLOUD_NAME (repository variable: the rules validate media URLs by cloud name; the CI placeholder must never be deployed)"
+          if [ -n "$missing" ]; then
+            echo "::notice title=rules deploy skipped::rules deploy skipped — run pnpm rules:deploy locally. Missing in Settings → Secrets and variables → Actions:$missing"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.changed.outputs.changed == 'true' && steps.ready.outputs.ready == 'true'
         uses: pnpm/action-setup@v4
-      - if: steps.changed.outputs.changed == 'true'
+      - if: steps.changed.outputs.changed == 'true' && steps.ready.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version-file: package.json
           cache: pnpm
-      - if: steps.changed.outputs.changed == 'true'
+      - if: steps.changed.outputs.changed == 'true' && steps.ready.outputs.ready == 'true'
         run: npm install -g firebase-tools
       - name: Service account → temp file (GOOGLE_APPLICATION_CREDENTIALS)
-        if: steps.changed.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true' && steps.ready.outputs.ready == 'true'
         env:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
@@ -172,11 +181,11 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
           echo "FIREBASE_PROJECT_ID=$(node -e 'console.log(JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8")).project_id)' "$RUNNER_TEMP/sa.json")" >> "$GITHUB_ENV"
       - name: Build the rules (real emails, cloud name and project id; RULES_VERSION from the templates)
-        if: steps.changed.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true' && steps.ready.outputs.ready == 'true'
         run: NEXT_PUBLIC_FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_ID" node scripts/build-rules.mjs
       - name: Deploy Firestore rules + indexes and RTDB rules
-        if: steps.changed.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true' && steps.ready.outputs.ready == 'true'
         run: firebase deploy --only firestore:rules,firestore:indexes,database --project "$FIREBASE_PROJECT_ID" --non-interactive
       - name: Stamp meta/rulesVersion
-        if: steps.changed.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true' && steps.ready.outputs.ready == 'true'
         run: node scripts/rules-stamp.mjs
