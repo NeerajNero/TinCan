@@ -24,6 +24,8 @@ export const PUSH_TYPES = [
   "petHungry",
   "digest",
   "rules-drift",
+  "snap",
+  "note",
 ] as const;
 export type PushType = (typeof PUSH_TYPES)[number];
 
@@ -49,6 +51,8 @@ export const TOGGLE_FOR: Record<PushType, NotifKey | null> = {
   digest: null,
   // Owner-only operations alert: master switch only.
   "rules-drift": null,
+  snap: "snap",
+  note: "note",
 };
 
 export interface PushPayload {
@@ -113,5 +117,9 @@ export function composePush(type: PushType, senderName: string, payload: PushPay
       return { title: payload.title ?? "☀️ Good morning", body: body || "Here's your day", url: "/", tag: "digest" };
     case "rules-drift":
       return { title: "⚠️ Firebase rules are out of date", body: body || "CI deploy failed or hasn't run", url: "/more", tag: "rules-drift" };
+    case "snap":
+      return { title: "📸 Snap time!", body: body || "You have 2 minutes", url: "/snap", tag: "snap" };
+    case "note":
+      return { title: senderName, body: `📝 posted a note: ${body.slice(0, 120)}`.trim(), url: "/", tag: "note" };
   }
 }

@@ -8,7 +8,7 @@ import { resolve } from "node:path";
 
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { child, get, limitToLast, push, query as rtdbQuery, ref, remove, serverTimestamp as rtdbServerTimestamp, set, update } from "firebase/database";
-import { deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where, writeBatch } from "firebase/firestore";
+import { deleteDoc, deleteField, doc, getDoc, serverTimestamp, setDoc, updateDoc, collection, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { rulesVersion } from "../scripts/lib/rules-version.mjs";
@@ -475,5 +475,149 @@ describe("rtdb games: new types and the owner-only private subtree", () => {
     await assertFails(set(mine, { word: "apple", round: 0, secret: true }));
     await assertSucceeds(set(mine, { word: "apple", round: 0 }));
     await assertSucceeds(remove(mine));
+  });
+});
+
+/* ── phase 27: snaps, notes, home layout, view-once ─────────────────────── */
+
+const signedSnap = (t: string, id = "s1") => `https://res.cloudinary.com/${CLOUD}/image/authenticated/s--AbCd_12---/${t}/tincan/snaps/${id}`;
+const snapVariants = (id = "s1") => ({ w320: signedSnap("w_320", id), w640: signedSnap("w_640", id), w800: signedSnap("w_800", id), blur: signedSnap("e_blur:2000", id), original: signedSnap("v1", id) });
+const snapEntry = (id = "s1", extra: Record<string, unknown> = {}) => ({ url: signedSnap("v1", id), publicId: `tincan/snaps/${id}`, variants: snapVariants(id), w: 1080, h: 1440, caption: "hi", at: serverTimestamp(), late: false, lateByMin: 0, savedToMemories: false, ...extra });
+const DAY = "2026-11-02";
+
+describe("snaps: the friend's entry opens only once mine exists", () => {
+  it("B is refused A's entry before posting and allowed after; a stranger never", async () => {
+    const dbA = asA().firestore();
+    const dbB = asB().firestore();
+    await assertSucceeds(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("a1")));
+    await assertSucceeds(setDoc(doc(dbA, `snaps/${DAY}`), { dateKey: DAY, posted: { [A]: true }, thumbs: { [A]: signedSnap("w_320", "a1") } }, { merge: true }));
+    // Before B posts: the summary is readable, the entry is not.
+    await assertSucceeds(getDoc(doc(dbB, `snaps/${DAY}`)));
+    await assertFails(getDoc(doc(dbB, `snaps/${DAY}/entries/${A}`)));
+    await assertSucceeds(getDoc(doc(dbA, `snaps/${DAY}/entries/${A}`)));
+    // B posts (late), then may read A's.
+    await assertSucceeds(setDoc(doc(dbB, `snaps/${DAY}/entries/${B}`), snapEntry("b1", { late: true, lateByMin: 7 })));
+    await assertSucceeds(setDoc(doc(dbB, `snaps/${DAY}`), { dateKey: DAY, posted: { [B]: true }, thumbs: { [B]: signedSnap("w_320", "b1") }, late: { [B]: true } }, { merge: true }));
+    await assertSucceeds(getDoc(doc(dbB, `snaps/${DAY}/entries/${A}`)));
+    await assertSucceeds(getDoc(doc(dbA, `snaps/${DAY}/entries/${B}`)));
+    await assertFails(getDoc(doc(asStranger().firestore(), `snaps/${DAY}/entries/${A}`)));
+    await assertFails(getDoc(doc(asStranger().firestore(), `snaps/${DAY}`)));
+    // The Memories query shape.
+    await assertSucceeds(getDocs(query(collection(dbB, "snaps"), where("dateKey", "<=", DAY))));
+  });
+
+  it("an entry is written only by its owner, once, with our Cloudinary asset and a server time", async () => {
+    const dbA = asA().firestore();
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${B}`), snapEntry("x")));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { url: "https://evil.example/x.jpg" })));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { at: new Date(0) })));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { caption: "c".repeat(61) })));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { savedToMemories: true })));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { lateByMin: -1 })));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("x", { extra: 1 })));
+    await assertSucceeds(setDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), snapEntry("a1")));
+    await assertFails(deleteDoc(doc(dbA, `snaps/${DAY}/entries/${A}`)));
+  });
+
+  it("edits: the owner may fix the caption within ten minutes; either may keep a snap; nothing else changes", async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, `snaps/${DAY}/entries/${A}`), { ...snapEntry("a1"), at: new Date() });
+      await setDoc(doc(db, `snaps/${DAY}/entries/${B}`), { ...snapEntry("b1"), at: new Date(Date.now() - 11 * 60_000) });
+      await setDoc(doc(db, `snaps/${DAY}`), { dateKey: DAY, posted: { [A]: true, [B]: true } });
+    });
+    const dbA = asA().firestore();
+    const dbB = asB().firestore();
+    await assertSucceeds(updateDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), { caption: "better" }));
+    await assertFails(updateDoc(doc(dbB, `snaps/${DAY}/entries/${B}`), { caption: "too late" }));
+    await assertFails(updateDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), { late: true }));
+    await assertFails(updateDoc(doc(dbA, `snaps/${DAY}/entries/${A}`), { url: signedSnap("v1", "other") }));
+    await assertFails(updateDoc(doc(dbB, `snaps/${DAY}/entries/${A}`), { caption: "not mine" }));
+    // Save to memories: either person, any time, only to true.
+    await assertSucceeds(updateDoc(doc(dbB, `snaps/${DAY}/entries/${A}`), { savedToMemories: true }));
+    await assertSucceeds(updateDoc(doc(dbB, `snaps/${DAY}/entries/${B}`), { savedToMemories: true }));
+    await assertFails(updateDoc(doc(dbB, `snaps/${DAY}/entries/${A}`), { savedToMemories: false }));
+  });
+
+  it("the summary takes only the poster's own keys, our thumbnail, and the id as dateKey", async () => {
+    const dbA = asA().firestore();
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}`), { dateKey: DAY, posted: { [B]: true } }, { merge: true }));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}`), { dateKey: "2026-01-01", posted: { [A]: true } }, { merge: true }));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}`), { dateKey: DAY, posted: { [A]: true }, thumbs: { [A]: "https://evil.example/t.jpg" } }, { merge: true }));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}`), { dateKey: DAY, posted: { [A]: true }, extra: 1 }, { merge: true }));
+    await assertSucceeds(setDoc(doc(dbA, `snaps/${DAY}`), { dateKey: DAY, posted: { [A]: true }, thumbs: { [A]: signedSnap("w_320", "a1") } }, { merge: true }));
+    await assertFails(setDoc(doc(dbA, `snaps/${DAY}`), { dateKey: DAY, thumbs: { [B]: signedSnap("w_320", "b1") } }, { merge: true }));
+    await assertFails(deleteDoc(doc(dbA, `snaps/${DAY}`)));
+  });
+
+  it("pair.snap: a client may write the streak but never move today's minute", async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, "pair/main"), { uids: [A, B], roomTz: "UTC", friendsSince: null, nextMeetup: null, snap: { todayKey: DAY, todayAt: 1_800_000_000_000 } });
+    });
+    const db = asA().firestore();
+    await assertSucceeds(updateDoc(doc(db, "pair/main"), { "snap.streak": { count: 1, lastDateKey: DAY, best: 1 } }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { "snap.todayAt": 1 }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { "snap.todayKey": "2026-01-01" }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { "snap.streak": { count: 1, lastDateKey: DAY, best: 1, extra: true } }));
+    await assertFails(updateDoc(doc(db, "pair/main"), { "snap.other": 1 }));
+  });
+});
+
+describe("users: homeCards and note are owner-only and shaped", () => {
+  const user = (uid: string, email: string) => ({ name: "n", nickname: "nick", email, photoURL: null, tz: "UTC", city: "c", lat: 0, lng: 0, fcmTokens: [], notif: { enabled: false }, createdAt: new Date() });
+  beforeEach(() =>
+    seed(async (db) => {
+      await setDoc(doc(db, `users/${A}`), user(A, EMAIL_A ?? ""));
+      await setDoc(doc(db, `users/${B}`), user(B, EMAIL_B ?? ""));
+    }),
+  );
+  it("homeCards: order and hidden lists, nothing else, only on my own doc", async () => {
+    const db = asA().firestore();
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { homeCards: { order: ["pet", "presence"], hidden: ["lamp"] } }));
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { homeCards: deleteField() }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { homeCards: { order: ["pet"], hidden: [], extra: 1 } }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { homeCards: { order: "pet", hidden: [] } }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { homeCards: { order: Array.from({ length: 25 }, (_, i) => `c${i}`), hidden: [] } }));
+    await assertFails(updateDoc(doc(db, `users/${B}`), { homeCards: { order: ["pet"], hidden: [] } }));
+  });
+  it("note: 1–60 chars, optional emoji, server time, an expiry; null clears it", async () => {
+    const db = asA().firestore();
+    const note = { text: "coffee run", emoji: "☕", at: serverTimestamp(), expiresAt: new Date(Date.now() + 86_400_000) };
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { note }));
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { note: null }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { note: { ...note, text: "" } }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { note: { ...note, text: "x".repeat(61) } }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { note: { ...note, extra: 1 } }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { note: { text: "no expiry", at: serverTimestamp() } }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { note: { ...note, at: "now" } }));
+    await assertFails(updateDoc(doc(db, `users/${B}`), { note }));
+    await assertSucceeds(getDoc(doc(asB().firestore(), `users/${A}`)));
+  });
+});
+
+describe("messages: view-once", () => {
+  const image = (extra: Record<string, unknown> = {}) => ({ senderId: A, type: "image", text: "", status: "sent", reactions: {}, deliveredAt: null, readAt: null, deletedFor: [], deletedForEveryone: false, createdAt: serverTimestamp(), media: { url: `${signedSnap("v1").replace("/snaps/", "/images/")}?once=1`, publicId: "tincan/images/s1" }, ...extra });
+  it("the sender may flag a photo or voice note, not a text, and never pre-set viewedAt", async () => {
+    const db = asA().firestore();
+    await assertSucceeds(setDoc(doc(db, "messages/v1"), image({ viewOnce: true, viewedAt: null })));
+    await assertSucceeds(setDoc(doc(db, "messages/v2"), image({ viewOnce: false })));
+    await assertFails(setDoc(doc(db, "messages/v3"), image({ type: "text", media: null, viewOnce: true })));
+    await assertFails(setDoc(doc(db, "messages/v4"), image({ viewOnce: "yes" })));
+    await assertFails(setDoc(doc(db, "messages/v5"), image({ viewOnce: true, viewedAt: serverTimestamp() })));
+  });
+  it("viewedAt is written only by the recipient, only on a view-once message, only once, with the server time", async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, "messages/v1"), { ...image({ viewOnce: true, viewedAt: null }), createdAt: new Date() });
+      await setDoc(doc(db, "messages/plain"), { ...image(), createdAt: new Date() });
+    });
+    const dbA = asA().firestore();
+    const dbB = asB().firestore();
+    await assertFails(updateDoc(doc(dbA, "messages/v1"), { viewedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(dbB, "messages/plain"), { viewedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(dbB, "messages/v1"), { viewedAt: new Date(0) }));
+    await assertFails(updateDoc(doc(dbB, "messages/v1"), { viewedAt: serverTimestamp(), text: "x" }));
+    await assertSucceeds(updateDoc(doc(dbB, "messages/v1"), { viewedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(dbB, "messages/v1"), { viewedAt: serverTimestamp() }));
+    // The usual receipts still work alongside.
+    await assertSucceeds(updateDoc(doc(dbB, "messages/v1"), { readAt: serverTimestamp(), status: "read" }));
   });
 });

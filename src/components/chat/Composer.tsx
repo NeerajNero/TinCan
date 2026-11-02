@@ -1,7 +1,7 @@
 "use client";
 
 import { m } from "framer-motion";
-import { Clock, ImagePlus, Mic, Send, SmilePlus, X } from "lucide-react";
+import { Clock, Eye, ImagePlus, Mic, Send, SmilePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { AttachmentStrip } from "@/components/chat/media/AttachmentStrip";
@@ -18,6 +18,7 @@ import {
   VoiceRecorder,
   type Recording,
 } from "@/lib/media/recorder";
+import { isNoteReply } from "@/lib/notes";
 import type { Message } from "@/lib/types";
 
 interface ComposerProps {
@@ -29,8 +30,9 @@ interface ComposerProps {
   onCancelEdit: () => void;
   onSend: (text: string) => Promise<void>;
   onSaveEdit: (message: Message, text: string) => Promise<void>;
-  onSendImages: (files: File[], caption: string) => void;
-  onSendVoice: (recording: Recording) => void;
+  /** `viewOnce`: the friend may open the photo(s) / voice note once; the asset is destroyed on open. */
+  onSendImages: (files: File[], caption: string, viewOnce: boolean) => void;
+  onSendVoice: (recording: Recording, viewOnce: boolean) => void;
   onSendSticker: (id: string) => void;
   onSendGif: (gif: Gif) => void;
   /** Opens the "send later" sheet with the current draft; the parent owns the sheet. */
@@ -63,6 +65,7 @@ export function Composer(props: ComposerProps) {
   // The parent re-keys this component per edit target, so the initial value is enough.
   const [text, setText] = useState(() => editing?.text ?? "");
   const [files, setFiles] = useState<File[]>([]);
+  const [viewOnce, setViewOnce] = useState(false);
   const [panel, setPanel] = useState(false);
   const [busy, setBusy] = useState(false);
   const [rec, setRec] = useState<RecView>({
@@ -112,9 +115,11 @@ export function Composer(props: ComposerProps) {
         await onSaveEdit(editing, value);
       } else if (files.length > 0) {
         const picked = files;
+        const once = viewOnce;
         setFiles([]);
+        setViewOnce(false);
         setText("");
-        onSendImages(picked, value);
+        onSendImages(picked, value, once);
       } else {
         setText("");
         await onSend(value);
@@ -159,7 +164,7 @@ export function Composer(props: ComposerProps) {
     ? { label: "Editing", body: editing.text, onClose: onCancelEdit }
     : replyTo
       ? {
-          label: `Replying to ${replyTo.senderId === uid ? "yourself" : friendName}`,
+          label: isNoteReply(replyTo.id) ? `Replying to ${friendName}'s note` : `Replying to ${replyTo.senderId === uid ? "yourself" : friendName}`,
           body: replyTo.deletedForEveryone
             ? "This message was deleted"
             : replyTo.text || replyTo.type,
@@ -193,6 +198,23 @@ export function Composer(props: ComposerProps) {
             files={files}
             onRemove={(i) => setFiles((f) => f.filter((_, idx) => idx !== i))}
           />
+        )}
+        {(files.length > 0 || showMic) && !editing && (
+          <div className="mb-1.5 flex justify-end px-1">
+            <button
+              type="button"
+              onClick={() => setViewOnce((v) => !v)}
+              aria-pressed={viewOnce}
+              aria-label={viewOnce ? "View once is on" : "Send as view once"}
+              className={cn(
+                "tap flex h-7 items-center gap-1 rounded-full border px-2.5 text-[11px] font-bold",
+                viewOnce ? "border-[var(--accent)] bg-accent-soft text-text" : "border-border text-muted",
+              )}
+            >
+              <Eye size={13} aria-hidden />
+              {viewOnce ? "View once · on" : files.length > 0 ? "View once" : "View once (voice)"}
+            </button>
+          </div>
         )}
 
         <div className="flex items-end gap-1.5">
@@ -288,7 +310,14 @@ export function Composer(props: ComposerProps) {
             </>
           )}
           {showMic ? (
-            <RecordButton onRecorded={onSendVoice} onViewChange={setRec} />
+            <RecordButton
+              onRecorded={(clip) => {
+                const once = viewOnce;
+                setViewOnce(false);
+                onSendVoice(clip, once);
+              }}
+              onViewChange={setRec}
+            />
           ) : (
             <m.button
               type="button"

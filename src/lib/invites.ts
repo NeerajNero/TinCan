@@ -8,7 +8,7 @@
 import type { GameType } from "@/lib/games/types";
 
 /** Everything that can be invited to; also what `InvitePill` and the toasts show. */
-export type InviteActivity = GameType | "trivia" | "pictionary" | "twenty" | "wyr" | "nhie" | "tod" | "convo" | "word" | "quiz" | "whiteboard" | "pixel" | "watch" | "listen" | "radio" | "timer" | "cook";
+export type InviteActivity = GameType | "trivia" | "pictionary" | "twenty" | "wyr" | "nhie" | "tod" | "convo" | "word" | "quiz" | "whiteboard" | "pixel" | "watch" | "listen" | "radio" | "timer" | "cook" | "snap";
 
 export const INVITE_EMOJI: Record<InviteActivity, string> = {
   tictactoe: "❌",
@@ -34,6 +34,7 @@ export const INVITE_EMOJI: Record<InviteActivity, string> = {
   radio: "📻",
   timer: "⏱️",
   cook: "🍳",
+  snap: "📸",
 };
 
 /** How long the chat card's Join button stays live. */

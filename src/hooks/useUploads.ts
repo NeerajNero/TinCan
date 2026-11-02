@@ -10,6 +10,7 @@ import type { Recording } from "@/lib/media/recorder";
 import { notify } from "@/lib/notify";
 import { errorMessage } from "@/lib/swallow";
 import type { ReplyTo } from "@/lib/types";
+import { onceUrl, onceVariants } from "@/lib/viewOnce";
 export interface Upload {
   id: string;
   kind: "image" | "voice";
@@ -71,7 +72,7 @@ export function useUploads(uid: string, friendUid: string) {
   );
 
   const sendImages = useCallback(
-    (files: File[], caption: string, replyTo: ReplyTo | null) => {
+    (files: File[], caption: string, replyTo: ReplyTo | null, viewOnce = false) => {
       files.forEach((file, index) => {
         const id = `img-${Date.now()}-${index}`;
         const previewUrl = URL.createObjectURL(file);
@@ -79,14 +80,18 @@ export function useUploads(uid: string, friendUid: string) {
           const { blob, w, h } = await compressImage(file);
           patch(id, { w, h });
           const up = await uploadToCloudinary(blob, { kind: "image", onProgress: (f) => patch(id, { progress: f }) });
+          // View-once URLs carry ?once=1 so the service worker never caches them.
+          const url = viewOnce ? onceUrl(up.url) : up.url;
+          const variants = viewOnce ? onceVariants(up.variants) : up.variants;
           const messageId = await sendMedia(
             uid,
             "image",
-            { url: up.url, publicId: up.publicId, variants: up.variants, w: up.w ?? w, h: up.h ?? h, bytes: up.bytes },
+            { url, publicId: up.publicId, variants, w: up.w ?? w, h: up.h ?? h, bytes: up.bytes },
             index === 0 ? caption : "",
             index === 0 ? replyTo : null,
+            viewOnce,
           );
-          await notify("message", { toUid: friendUid, body: caption ? `📷 ${caption}` : "📷 Photo", data: { messageId } });
+          await notify("message", { toUid: friendUid, body: viewOnce ? "👁️ Photo" : caption ? `📷 ${caption}` : "📷 Photo", data: { messageId } });
         });
       });
     },
@@ -94,18 +99,21 @@ export function useUploads(uid: string, friendUid: string) {
   );
 
   const sendVoice = useCallback(
-    (rec: Recording, replyTo: ReplyTo | null) => {
+    (rec: Recording, replyTo: ReplyTo | null, viewOnce = false) => {
       const id = `voice-${Date.now()}`;
       enqueue({ id, kind: "voice", previewUrl: null, progress: 0, error: null, durationMs: rec.durationMs, caption: "" }, async () => {
         const up = await uploadToCloudinary(rec.blob, { kind: "audio", onProgress: (f) => patch(id, { progress: f }) });
+        const url = viewOnce ? onceUrl(up.url) : up.url;
+        const variants = viewOnce ? onceVariants(up.variants) : up.variants;
         const messageId = await sendMedia(
           uid,
           "voice",
-          { url: up.url, publicId: up.publicId, variants: up.variants, durationMs: rec.durationMs, bytes: up.bytes },
+          { url, publicId: up.publicId, variants, durationMs: rec.durationMs, bytes: up.bytes },
           "",
           replyTo,
+          viewOnce,
         );
-        await notify("message", { toUid: friendUid, body: "🎤 Voice note", data: { messageId } });
+        await notify("message", { toUid: friendUid, body: viewOnce ? "👁️ Voice note" : "🎤 Voice note", data: { messageId } });
         void recordTogetherEvent("voice", uid);
       });
     },

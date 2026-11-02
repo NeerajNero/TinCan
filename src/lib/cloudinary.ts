@@ -19,8 +19,8 @@ interface SignedUpload {
 }
 
 /** Ask the server for a one-off signature; the param set is fixed there. */
-async function sign(kind: UploadKind, bytes: number): Promise<SignedUpload> {
-  const res = await authedFetch("/api/media/sign", { method: "POST", body: JSON.stringify({ kind, bytes }) });
+async function sign(kind: UploadKind, bytes: number, folder?: UploadFolder): Promise<SignedUpload> {
+  const res = await authedFetch("/api/media/sign", { method: "POST", body: JSON.stringify({ kind, bytes, ...(folder ? { folder } : {}) }) });
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(body.error === "too_large" ? `File is over the ${kind === "image" ? "5" : "3"} MB limit` : body.error === "rate_limited" || body.error === "daily_cap" ? "Too many uploads right now — try again in a bit" : "Couldn't prepare the upload");
@@ -29,6 +29,8 @@ async function sign(kind: UploadKind, bytes: number): Promise<SignedUpload> {
 }
 
 type UploadKind = "image" | "audio";
+/** Image uploads go to `tincan/images` unless a special folder is named (daily snaps: `tincan/snaps`). */
+type UploadFolder = "snaps";
 
 export interface UploadResult {
   url: string;
@@ -50,6 +52,8 @@ interface UploadOptions {
   retries?: number;
   /** Variant table to sign: avatar uploads get a face crop. Defaults from `kind`. */
   purpose?: VariantPurpose;
+  /** Images only: a folder other than the chat's (`snaps`). */
+  folder?: UploadFolder;
 }
 
 const cloudinaryConfigured = Boolean(publicEnv.cloudinary.cloudName);
@@ -114,7 +118,7 @@ export async function uploadToCloudinary(blob: Blob, options: UploadOptions): Pr
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const signed = await sign(options.kind, blob.size);
+      const signed = await sign(options.kind, blob.size, options.kind === "image" ? options.folder : undefined);
       const raw = await uploadOnce(blob, signed, options);
       const { format, ...rest } = raw;
       const variants = await signedUrls(raw.publicId, options.purpose ?? (options.kind === "audio" ? "audio" : "image"), format);

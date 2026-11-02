@@ -75,6 +75,7 @@ function mount(messages: Message[], onRender: ProfilerOnRenderCallback): { root:
               onReply={noop}
               onReact={noop}
               onOpenImage={noop}
+              onOpenViewOnce={() => undefined}
               deletingIds={new Set()}
               uploads={[]}
               onRetryUpload={noop}

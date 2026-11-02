@@ -86,19 +86,21 @@ export async function sendText(senderId: string, text: string, replyTo: ReplyTo 
   return ref.id;
 }
 
-/** Image, voice, gif or sticker. `text` is the optional caption. */
+/** Image, voice, gif or sticker. `text` is the optional caption; `viewOnce` marks a photo or voice note the friend may open once. */
 export async function sendMedia(
   senderId: string,
   type: Exclude<MessageType, "text" | "system">,
   media: MessageMedia,
   text = "",
   replyTo: ReplyTo | null = null,
+  viewOnce = false,
 ): Promise<string> {
   const ref = await addDoc(messagesCol(), {
     senderId,
     type,
     text: text.slice(0, MAX_TEXT),
     media,
+    ...(viewOnce ? { viewOnce: true, viewedAt: null } : {}),
     replyTo,
     reactions: {},
     status: "sent",
@@ -112,8 +114,9 @@ export async function sendMedia(
 }
 
 /** Short label for a non-text message, used in previews, quotes and pushes. */
-export function mediaLabel(m: Pick<Message, "type" | "text" | "deletedForEveryone" | "kind" | "meta">): string {
+export function mediaLabel(m: Pick<Message, "type" | "text" | "deletedForEveryone" | "kind" | "meta"> & { viewOnce?: boolean }): string {
   if (m.deletedForEveryone) return "This message was deleted";
+  if (m.viewOnce && (m.type === "image" || m.type === "voice")) return m.type === "voice" ? "👁️ Voice note" : "👁️ Photo";
   switch (m.type) {
     case "image":
       return m.text ? `📷 ${m.text}` : "📷 Photo";
@@ -156,6 +159,11 @@ export function deleteForMe(id: string, uid: string): Promise<void> {
 /** Text-only soft delete. Media messages go through DELETE /api/media instead. */
 export function deleteForEveryone(id: string): Promise<void> {
   return updateDoc(messageRef(id), { deletedForEveryone: true, text: "", media: null });
+}
+
+/** The recipient opened a view-once message (rules: recipient only, server time). The server clears the asset. */
+export function markViewed(id: string): Promise<void> {
+  return updateDoc(messageRef(id), { viewedAt: serverTimestamp() });
 }
 
 /** Set my reaction, or clear it when it's already the same emoji. */

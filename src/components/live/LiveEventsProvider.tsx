@@ -13,6 +13,7 @@ import { usePair } from "@/hooks/usePair";
 import { useVisible } from "@/hooks/useVisible";
 import { roomDateKey } from "@/lib/dates";
 import { backfillDateKey, dailyRef } from "@/lib/db/daily";
+import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { gameRoute, resultForRecipient, subscribeOpenGames, type LiveGame } from "@/lib/db/games";
 import { mediaLabel } from "@/lib/db/messages";
 import { migrateWallpaper } from "@/lib/db/pair";
@@ -22,6 +23,7 @@ import { lampPath, rtdbRef } from "@/lib/rtdb";
 import { playSound } from "@/lib/sounds";
 import { swallow } from "@/lib/swallow";
 import { PINGS, type DailyQuestionDoc, type LampNode, type PingKind } from "@/lib/types";
+import { readPendingViewOnce, removePendingViewOnce } from "@/lib/viewOnce";
 import { sameWallpaper } from "@/lib/wallpaper";
 
 interface LiveEvents {
@@ -200,6 +202,18 @@ export function LiveEventsProvider({ children }: { children: React.ReactNode }) 
     if (prev.first || sameWallpaper(prev.pref, pairBg)) return;
     if (bgBy && bgBy !== uid) toast({ key: "wallpaper", emoji: "🎨", title: `${friendName} changed the wallpaper`, body: "Tap to see the chat", url: "/chat", vibrate: false });
   }, [pairBg, bgBy, uid, friendName, toast]);
+
+  /* ── view-once opens whose server delete failed: retry once per app open ── */
+  useEffect(() => {
+    for (const id of readPendingViewOnce()) {
+      deleteViaServer("message", id)
+        .then(() => removePendingViewOnce(id))
+        .catch((err: unknown) => {
+          // Gone or not ours any more: nothing left to retry.
+          if (err instanceof Error && (err.message === "not_found" || err.message === "forbidden")) removePendingViewOnce(id);
+        });
+    }
+  }, []);
 
   /* ── garden unlocks → toast for both ───────────────────────────────── */
   const seenStickers = useRef<Set<string> | null>(null);

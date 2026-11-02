@@ -65,8 +65,22 @@ app should feel like a small hello, not a dashboard.
 
 ## Screens (bottom tab bar: Home · Chat · Play · Memories · Plan · More)
 **Home** — the hello screen
+- Layout (phase 27): the cards render in the order saved on `users/{uid}.homeCards = { order, hidden }`
+  (ids in `lib/homeCards.ts`: presence, snap, chatPreview, games, pings, lamp, dailyQuestion, mood, onThisDay,
+  streakPlant, pet, countdown, nextUp; notes are part of presence). Defaults live in code; ids the preference
+  lacks are appended in default order so a new card appears by itself. More → "Home layout": drag to reorder,
+  switch to hide, "Reset to default". Pinned-to-top rule, not configurable: while today's snap is open or
+  unposted the snap card renders first; while it's my move in a game that card renders next; a hidden card still
+  pins (pin wins). The milestone banner stays at the top and the sleep/wake toggle at the bottom.
 - Presence card: friend's avatar, online dot / "last seen 12 min ago", awake/sleeping badge,
-  their local time and weather (Open-Meteo by their city), distance between the two cities.
+  their local time and weather (Open-Meteo by their city), distance between the two cities. Notes (phase 27):
+  `users/{uid}.note = { text ≤ 60, emoji?, at, expiresAt: at + 24 h } | null` shows as a speech bubble over each
+  avatar (two lines max); tap your own avatar to write / replace / clear (push `note` to the friend, own toggle);
+  tap the friend's bubble → Reply opens the chat with the note quoted in the reply strip. Clients hide a note past
+  `expiresAt`; the 03:00 tick nulls it.
+- Daily snap card (phase 27): window open → "📸 Snap time · 1:32 left" with Take; posted, friend not → "Posted ·
+  waiting for X"; both → a thin row with the two thumbnails (tap opens the day); hidden before the minute and on
+  days that ended with nobody or one posting; 🔥 snap streak from 2 days.
 - Ping row: 4 big bouncy buttons — Thinking of you 💭, Hug 🤗, High-five ✋, Wave 👋.
   Sending animates on both screens, vibrates the receiver (`navigator.vibrate`), sends push.
 - Lamp: tap my lamp → friend's lamp glows the same colour for 10 min (RTDB). Long-press picks colour.
@@ -104,12 +118,14 @@ app should feel like a small hello, not a dashboard.
   in every row. Then "Just finished" (rematch) and the Record strip. Opening any game or together screen
   prepends it to `pair.play.recent` (max 8, de-duplicated, one write per game per 10 minutes).
 
-**Memories** — Photo timeline, Memory map, Milestones, Journal, Jar, Time capsules,
+**Memories** — Photo timeline, Snaps (phase 27: days newest first, 30 per page from the summaries, both
+thumbnails and a late tag per day; tap for both full size, swipe between days; only summaries are listed,
+a day's two entries load on open), Memory map, Milestones, Journal, Jar, Time capsules,
 Open-when envelopes, Mood history (calendar for both).
 
 **Plan** — Meetup countdown, Call-time finder, Lists (bucket, wishlist, gift ideas, to-do), Trips.
 
-**More** — Profile (nickname, city, avatar), Theme, Notification toggles, Friends-since date,
+**More** — Profile (nickname, city, avatar), Theme, Home layout (phase 27), Notification toggles, Friends-since date,
 Next meetup, Pet name, Usage meter (today's Firestore read/write estimate), App build + "Check for updates",
 Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, and "Last move: 180 ms (chess, local)" / "Last shot: 1,240 ms
 (battleship, server)", tap → the board reflecting the turn through the RTDB listener; the last ten of each in the copy dump; and
@@ -167,19 +183,27 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
   are plain `<img>`.
 
 ## Data model — Firestore
-`users/{uid}`: name, nickname, email, photoURL, tz, city, lat, lng, fcmTokens[], notif{...}, createdAt
+`users/{uid}`: name, nickname, email, photoURL, tz, city, lat, lng, fcmTokens[], notif{...},
+  homeCards{order[], hidden[]}, note{text ≤ 60, emoji?, at, expiresAt} | null, createdAt
   (`chatBg` is legacy: readable, deletable, never written)
 `pair/main`: uids[2], roomTz, friendsSince, nextMeetup{date,label,place}, relationship (preset id,
   default "friends"; see `src/content/relationships.ts`), theme,
   pet{name,species,hungerAt,happyAt,sleepAt,level,bornAt}, plant{stage,lastGrowthDate},
   garden{stickers[]}, streak{count,lastDateKey,best,monthBest,shields,shieldUsedOn}, chatBg, chatBgBy,
-  play{recent[{id,at (client ms),by}] ≤ 8, favourites[id] ≤ 6} (Play tab usage; ids are `lib/play/catalog.ts` ids)
+  play{recent[{id,at (client ms),by}] ≤ 8, favourites[id] ≤ 6} (Play tab usage; ids are `lib/play/catalog.ts` ids),
+  snap{todayKey, todayAt (ms, written by the tick), streak{count, lastDateKey, best} (client transaction)}
 `messages/{id}`: senderId, type(text|image|voice|gif|sticker|system), text,
   media{url,publicId,variants{w320,w640,w800,blur,original|audio},w,h,durationMs,bytes},
   replyTo{id,preview,senderId,type},
   reactions{uid:emoji}, status(sent|delivered|read), deliveredAt, readAt, editedAt,
-  deletedFor[], deletedForEveryone, createdAt, kind?, meta?  (kind/meta: system lines only)
+  deletedFor[], deletedForEveryone, createdAt, kind?, meta?  (kind/meta: system lines only),
+  viewOnce?, viewedAt?  (view-once photos / voice notes, phase 27)
 `checkins/{dateKey}`: {uid:true}  — written once per user per day on app open
+`snaps/{dateKey}`: { dateKey, posted{uid: true}, thumbs{uid: w320 url}, late{uid: true} } — the day's summary, merged
+  by each poster (own keys only), readable by both; `snaps/{dateKey}/entries/{uid}`: { url, publicId, variants, w, h,
+  caption ≤ 60, at, late, lateByMin, savedToMemories } — written by that uid only; readable by the other person only
+  once `snaps/{dateKey}/entries/{their uid}` exists (`exists()` in the rule); caption editable for 10 min, then only
+  `savedToMemories` (either person, to true). Swept after 60 days unless saved (asset + doc).
 `moods/{dateKey}_{uid}`: emoji, note, at
 `dailyQuestions/{dateKey}`: questionIndex, answers{uid:{text,at}}
 `journal/{id}`: authorId, text, mood, media[], createdAt
@@ -275,6 +299,14 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - Voice: `MediaRecorder` `audio/webm;codecs=opus` at 32 kbps, max 2 min, hold-to-record with
   slide-to-cancel → Cloudinary preset `tincan_audio` (resource_type `video`) → bubble with
   play/pause, duration, simple progress bar, 1×/1.5× speed.
+- View-once (phase 27): with a photo attached (or before a voice note) a "View once 👁️" chip in the composer;
+  the message stores `viewOnce: true, viewedAt: null` and its stored URLs carry `?once=1` (Cloudinary ignores unknown
+  query params on signed URLs; verified against the live cloud), which the service worker never caches. Recipient:
+  "👁️ Photo · tap to view once" → the viewer with no Save-to-memories / share, a voice note plays once with no
+  scrub; on close (or when the audio ends) the client writes `viewedAt` (rules: recipient only, once, server time)
+  and calls `DELETE /api/media { kind: "message" }`, which destroys the asset and clears `media` without marking the
+  line deleted; both bubbles then read "👁️ Opened" (the sender with the time). The sender sees "👁️ View once ·
+  not opened yet" and can't reopen. A failed delete is retried on the next app open from a localStorage list.
 - Delete for everyone on media also calls `DELETE /api/media` (server, Cloudinary destroy).
 - Offline: Firestore persistence enabled; queued sends show a clock icon until sent.
 - Notifications: push on every new message unless the recipient is online with the chat
@@ -298,7 +330,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
   Types and defaults (all toggleable in More → Notifications):
   message ✓, ping ✓, lamp ✓, your-turn ✓, friend answered daily question ✓, jar note ✓,
   capsule unlocked ✓, scheduled message ✓, pet hungry ✓, streak at risk ✓, milestone ✓,
-  meetup countdown (7/1 day) ✓, pictionary/trivia invite ✓, morning digest (its own switch + hour picker,
+  meetup countdown (7/1 day) ✓, pictionary/trivia invite ✓, snap time ✓, friend posted a note ✓,
+  morning digest (its own switch + hour picker,
   `notif.digest = { enabled, hour }`, default off / 08:00 in the user's tz) ✓.
 - De-duplicate with `push/{id}` keyed by event (e.g. `pet-hungry-2026-10-12`).
 
@@ -328,13 +361,23 @@ Every trivia question also carries an `explanation`. Word definitions are static
       extract their `RULES_VERSION` markers and compare with `NEXT_PUBLIC_RULES_VERSION` (the hash of
       `rules/*.tmpl` this deployment was built from). Mismatch → one `rules-drift` push to the owner (first
       allowlisted email), master switch only: "⚠️ Firebase rules are out of date — CI deploy failed or hasn't run".
+  11. Daily snap schedule: from 00:05 ROOM_TZ the first tick of a day with no minute yet picks one uniformly in
+      [09:00, 22:00) (or what is left of that range when the tick runs late) and writes `pair/main.snap.todayKey /
+      todayAt`; once per day (`tickLog/snap-schedule-{dateKey}`).
+  12. Snap time: when now ≥ `todayAt` and not yet sent (`tickLog/snap-push-{dateKey}`) → push both
+      "📸 Snap time! You have 2 minutes" (`snap` type, own toggle, deep link `/snap`).
+  13. 03:00 ROOM_TZ housekeeping (`tickLog/housekeeping-{dateKey}`): notes past `expiresAt` are nulled; snap days
+      older than 60 days lose their entries (Cloudinary asset + doc) unless `savedToMemories`, and the summary when
+      nothing is left (≤ 20 days per run). The morning digest also mentions today's snap when its window has passed
+      and the person hasn't posted.
 - Dry run: `pnpm tick:dry` prints what would be sent without sending.
 
 ## Media — Cloudinary
 - Two presets, both **Signed** mode with delivery type **authenticated** (`pnpm cloudinary:presets`
   sets this): `tincan_image` (folder `tincan/images`, incoming `c_limit,w_1080,h_1080,q_auto:low`) and
   `tincan_audio` (folder `tincan/audio`, resource type video).
-- Upload: `POST /api/media/sign` signs a fixed param set (timestamp, folder, preset, `type=authenticated`,
+- Upload: `POST /api/media/sign` signs a fixed param set (timestamp, folder — `tincan/images`, or `tincan/snaps`
+  with `folder: "snaps"` for the daily snap —, preset, `type=authenticated`,
   the image transformation; 5 MB image / 3 MB audio cap) → the browser uploads straight to Cloudinary →
   `POST /api/media/urls` returns signed delivery URLs for the fixed variant set in
   `src/lib/media-variants.json` (images: w320, w640, w800, blur, original; avatars: face 256, original;
@@ -350,6 +393,19 @@ Every trivia question also carries an `explanation`. Word definitions are static
 ## Feature specs (brief)
 - **Daily question**: index = days since epoch in ROOM_TZ mod list length. Reveal friend's answer
   after mine; push when friend answers. History in Memories.
+- **Daily snap** (phase 27, `/snap`): camera-first (`<input type="file" accept="image/*" capture="environment">`
+  opened on arrival where the browser allows it, else the big "Open camera" button), "Flip to selfie"
+  (`capture="user"`), "Choose from gallery"; preview with Retake, a 60-char caption and Post; a countdown of the
+  2-minute window, after which Post still works and marks `late` + `lateByMin`. Compress (1080 px, ~0.3 MB) → signed
+  upload to `tincan/snaps` → write `snaps/{dateKey}/entries/{me}` → merge my keys into `snaps/{dateKey}`. Before
+  posting the friend's snap is a blurred placeholder ("post yours to see it", never fetched: the rule refuses it);
+  after posting both snaps sit side by side with captions, times, a late tag and "Save to memories" (a `sharedAsset`
+  memory + `savedToMemories: true`, either person for either snap). Friend not in yet → "Waiting for X" with an
+  invite-style Nudge (`startInvite("snap", "/snap", …)`, 2-minute cooldown). `pair.snap.streak` counts consecutive
+  room-days on which both posted, bumped in a transaction by whichever client first sees both posted (Home's
+  `useSnapToday`); 🔥 from 2. Home's one new listener is `snaps/{today}`.
+- **Notes** (phase 27): see Home → Presence card. Pure parts in `lib/notes.ts`; writes in `lib/db/users.ts`.
+- **Home layout** (phase 27): see Home → Layout. Pure parts in `lib/homeCards.ts`.
 - **Streak/plant**: client writes `checkins/{dateKey}.{uid}=true` on app open. `pair.streak` =
   { count, lastDateKey, best, monthBest, shields (0–3), shieldUsedOn }: reaching a multiple of 7 earns a
   shield; a one-day gap with a shield consumes it and keeps counting (`shieldUsedOn` = the missed day,
@@ -514,6 +570,16 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - `envelopes`: body readable by `forUid` only after `openedAt` is set by them, and by author always.
 - `scheduled`: readable/deletable by sender only; delivery is done by the server (admin).
 - `tickLog`, `push`: admin-only (no client access).
+- `users/{uid}.homeCards` (map of `order` / `hidden` lists ≤ 24) and `.note` (null, or text 1–60, emoji ≤ 8, `at`
+  and `expiresAt` timestamps) are owner-only like the rest of the doc. `pair/main.snap`: a client may write only
+  `streak` (count, lastDateKey, best); `todayKey` / `todayAt` are the tick's.
+- `snaps/{dateKey}`: summary keys `dateKey` (== id), `posted`, `thumbs` (our Cloudinary URL), `late`; each poster
+  touches only its own uid key. `snaps/{dateKey}/entries/{uid}`: create only by `uid` with the entry shape, server
+  `at`, `savedToMemories: false`; read by the owner always and by the other person only if
+  `exists(/snaps/{dateKey}/entries/{request.auth.uid})`; update: owner → caption / savedToMemories within 10 min of
+  `at`, anyone → `savedToMemories: true` only; no client delete.
+- `messages.viewOnce` (bool, images / voice only) is set on create with `viewedAt` empty; `viewedAt` is written
+  only by the recipient, once, as server time (alongside the receipt fields).
 - RULES_VERSION: `scripts/build-rules.mjs` embeds the hash of the two templates (`scripts/lib/rules-version.mjs`, 8 hex)
   as `// RULES_VERSION …` in `firestore.rules` and as `meta/rulesVersion`'s `.validate` in the RTDB rules; `next.config.ts`
   puts the same hash in `NEXT_PUBLIC_RULES_VERSION`, so the tick and Diagnostics can tell live rules from the build's.
@@ -668,7 +734,7 @@ CSP_REPORT_ONLY=                     # debug: 1 = report-only CSP
 E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 ```
 
-## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–24 shipped
+## Build order (one Claude Code prompt per phase; stop at the end of each) — phases 1–27 shipped
 1. ✅ **Scaffold** — Next.js app, deps, `.env.example`, folder skeleton, Firebase client/admin
    init, Google sign-in page, allowlist gate, app shell with bottom tabs and placeholder pages,
    PWA manifest + icons + service worker shell, theme tokens and fonts.
@@ -723,6 +789,10 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
 25. ✅ **Share target, shortcuts, three games** (commit "phase 23") — Android share target (`/share` via the
     worker's Cache API stash), four home-screen shortcuts, Dots and Boxes, Hangman and Battleship on the turn-based
     engine with owner-only `gamePrivate` subtrees and two server routes for the hidden-information moves.
+27. ✅ **Snaps, notes, view-once, home layout** (commit "phase 27") — Home card order and hidden cards on
+    `users.homeCards` with a pinned-to-top rule; the daily snap (tick-picked minute, 2-minute window, exists()-gated
+    entries, streak, Memories → Snaps, 60-day sweep); 24-hour notes over the avatars with a chat reply; view-once
+    photos and voice notes (`?once=1` URLs the worker never caches, recipient-only `viewedAt`, server-side destroy).
 26. ✅ **Game input feel** (commit "phase 26") — the `GameScreen` composite (header, fitted content, docked input) on the
     board games, daily word, Hangman, trivia, 20 Questions, decks and Pictionary; `Pressable` keys and options with
     haptics and key-clicks; tile pop and colour fades; the boards spec extended with the daily word and Hangman at six

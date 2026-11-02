@@ -63,13 +63,14 @@ The document never scrolls. `html`/`body` are clamped in `globals.css`; `AppShel
 
 ## Mirrored summaries (how Home stays cheap)
 
-Home may subscribe only to `pair/main`, `users/{friend}`, today's `checkins`, today's two `moods`, today's `dailyQuestions` doc and the latest message. So small summaries are mirrored onto `pair/main` by the client that writes the source:
+Home may subscribe only to `pair/main`, `users/{friend}`, today's `checkins`, today's two `moods`, today's `dailyQuestions` doc, the latest message and (phase 27) today's `snaps/{dateKey}` summary — the one listener the daily snap added; notes and the Home layout ride on the two user docs, and today's snap minute on `pair/main`. So small summaries are mirrored onto `pair/main` by the client that writes the source:
 
 - `milestonesSummary[]` → Home "Next up" card
 - `tripsSummary[]` → countdown fallback (Home, Plan hero, tick reminder)
 - `records{}` → Play record strip
 - `garden.stickers{}` → garden unlock toasts
 - `pet{}`, `streak{}`, `plant{}`, `focusSessions{}`, `counters.pings`
+- `snap{ todayKey, todayAt, streak }` → the snap card's state and 🔥 (the tick writes the minute, Home's `useSnapToday` the streak)
 
 ## Metered Firestore
 
@@ -91,4 +92,4 @@ Data-only FCM messages (no `notification` key) so the worker alone decides what 
 
 ## Scheduler
 
-`GET /api/tick` (header `x-tick-secret`) runs idempotent jobs keyed in `tickLog/{jobKey}`: scheduled messages, 20:00 daily-question nudge, 21:00 streak warning, capsule unlocks, 09:00 milestone/meetup reminders, abandoned/finished-game housekeeping (which also drops `gamePrivate/{id}`), pet hunger, the morning digest, the monthly recap, and a daily rules-drift check (live `RULES_VERSION` markers vs the build's; owner push on mismatch). Time-of-day jobs fire inside a 15-minute window. `?dry=1` reports without writing.
+`GET /api/tick` (header `x-tick-secret`) runs idempotent jobs keyed in `tickLog/{jobKey}`: scheduled messages, 20:00 daily-question nudge, 21:00 streak warning, capsule unlocks, 09:00 milestone/meetup reminders, abandoned/finished-game housekeeping (which also drops `gamePrivate/{id}`), pet hunger, the morning digest, the monthly recap, a daily rules-drift check (live `RULES_VERSION` markers vs the build's; owner push on mismatch), and phase 27's daily snap (the minute picked from 00:05, the "Snap time" push at that minute) plus the 03:00 housekeeping (expired notes nulled, snaps older than 60 days swept unless saved). Time-of-day jobs fire inside a 15-minute window. `?dry=1` reports without writing.

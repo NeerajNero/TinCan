@@ -19,6 +19,8 @@ export const NOTIF_KEYS = [
   "meetup",
   "invite",
   "envelopeOpened",
+  "snap",
+  "note",
 ] as const;
 
 export type NotifKey = (typeof NOTIF_KEYS)[number];
@@ -53,6 +55,8 @@ export const NOTIF_LABELS: Record<NotifKey, string> = {
   meetup: "Meetup countdown (7 and 1 day)",
   invite: "Game invites",
   envelopeOpened: "Friend opened your envelope",
+  snap: "Snap time (daily photo)",
+  note: "Friend posted a note",
 };
 
 /* ── users/{uid} ───────────────────────────────────────────────────────── */
@@ -61,6 +65,22 @@ export interface ChatBgPref {
   id: string;
   photoUrl?: string | null;
   photoPublicId?: string | null;
+}
+
+/** More → Home layout: the card order and the hidden cards (ids from `lib/homeCards.ts`). */
+export interface HomeCardsPref {
+  order: string[];
+  hidden: string[];
+}
+
+/** A 24-hour note shown in a speech bubble over the avatar on Home (phase 27). */
+export interface UserNote {
+  /** ≤ 60 chars. */
+  text: string;
+  emoji?: string;
+  at: Timestamp | null;
+  /** `at` + 24 h; clients hide the note after this, the 03:00 tick nulls it. */
+  expiresAt: Timestamp;
 }
 
 export interface UserDoc {
@@ -88,6 +108,10 @@ export interface UserDoc {
   wordleSolved?: number;
   /** Legacy (before phase 22b the wallpaper was per user); read once for the migration, never written. */
   chatBg?: ChatBgPref | null;
+  /** Home card order and hidden cards; absent = the default layout. */
+  homeCards?: HomeCardsPref;
+  /** The current note, or null once cleared / expired. */
+  note?: UserNote | null;
   createdAt: Timestamp | null;
 }
 
@@ -115,6 +139,22 @@ export interface Streak {
   shields?: number;
   /** The missed day the last shield covered, or null. */
   shieldUsedOn?: DateKey | null;
+}
+
+/** Daily snap (phase 27): today's minute, chosen by the tick, and the both-posted streak. */
+export interface SnapStreak {
+  /** Consecutive room-days on which both posted. */
+  count: number;
+  lastDateKey: DateKey;
+  best: number;
+}
+
+export interface SnapSchedule {
+  /** The room-day `todayAt` belongs to. */
+  todayKey: DateKey;
+  /** Epoch ms of today's snap minute (09:00–22:00 ROOM_TZ); the window is the 2 minutes after it. */
+  todayAt: number;
+  streak?: SnapStreak;
 }
 
 export interface Plant {
@@ -155,6 +195,8 @@ export interface PairDoc {
   chatBgBy?: string;
   /** Play tab usage shared by both: last opened (≤ 8) and pinned (≤ 6) games / activities. */
   play?: PlayUsage;
+  /** Daily snap schedule (written by the tick) and streak (client transaction). */
+  snap?: SnapSchedule;
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }
@@ -240,6 +282,10 @@ export interface MessageDoc {
   /** System lines only (see src/lib/chat/systemKinds.ts). Older lines have neither. */
   kind?: string;
   meta?: Record<string, string | number>;
+  /** A photo or voice note the recipient may open once (phase 27); the server destroys the asset on open. */
+  viewOnce?: boolean;
+  /** Set by the recipient when they open a view-once message. */
+  viewedAt?: Timestamp | null;
 }
 
 /** A message as the chat renders it. */
@@ -432,6 +478,34 @@ export interface MemoryDoc {
   /** The asset also belongs to a chat message; deleting the memory must not destroy it. */
   sharedAsset?: boolean;
   createdAt: Timestamp | null;
+}
+
+/* ── snaps/{dateKey} (+ entries/{uid}) ─────────────────────────────────── */
+
+/** The day's summary, merged by each poster (own keys only); readable by both. */
+export interface SnapSummaryDoc {
+  /** Equals the doc id, so the Memories grid can order by it. */
+  dateKey: DateKey;
+  posted?: Record<string, boolean>;
+  /** The poster's w320 variant, for the Home row and the Memories grid. */
+  thumbs?: Record<string, string>;
+  late?: Record<string, boolean>;
+}
+
+/** One person's snap for a day; the other person may read it only once their own entry exists. */
+export interface SnapEntryDoc {
+  url: string;
+  publicId: string;
+  variants?: MediaVariants;
+  w: number;
+  h: number;
+  /** ≤ 60 chars. */
+  caption: string;
+  at: Timestamp | null;
+  late: boolean;
+  lateByMin: number;
+  /** Copied into the photo timeline; the 60-day sweep keeps it. */
+  savedToMemories: boolean;
 }
 
 /* ── places/{id} ───────────────────────────────────────────────────────── */

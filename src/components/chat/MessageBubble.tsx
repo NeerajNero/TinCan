@@ -14,6 +14,7 @@ import { Linkify } from "@/lib/linkify";
 import { variantUrl } from "@/lib/mediaUrl";
 import { safeGif } from "@/lib/safeUrl";
 import type { Message } from "@/lib/types";
+import { viewOnceLabel, viewOnceState } from "@/lib/viewOnce";
 
 const LONG_PRESS_MS = 420;
 const SWIPE_REPLY_PX = 56;
@@ -28,6 +29,8 @@ interface MessageBubbleProps {
   onReply: (message: Message) => void;
   onReact: (message: Message, emoji: string) => void;
   onOpenImage: (message: Message) => void;
+  /** The recipient taps a sealed view-once photo or voice note. */
+  onOpenViewOnce: (message: Message) => void;
   /** Delete-for-everyone in flight (server call for media). */
   deleting?: boolean;
 }
@@ -43,6 +46,7 @@ export const MessageBubble = memo(function MessageBubble({
   onReply,
   onReact,
   onOpenImage,
+  onOpenViewOnce,
   deleting = false,
 }: MessageBubbleProps) {
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -74,10 +78,11 @@ export const MessageBubble = memo(function MessageBubble({
 
   const time = formatInTimeZone(new Date(message.createdAtMs), tz, "h:mm a");
   const deleted = message.deletedForEveryone;
+  const once = viewOnceState(message, uid);
   /** Stickers float without a bubble; photos and GIFs fill the bubble edge to edge. */
   const bare = message.type === "sticker" && !deleted;
   const visual =
-    (message.type === "image" || message.type === "gif") && !deleted;
+    (message.type === "image" || message.type === "gif") && !deleted && once === "plain";
 
   const reactions = Object.entries(
     Object.entries(message.reactions).reduce<
@@ -166,6 +171,8 @@ export const MessageBubble = memo(function MessageBubble({
             <p className="text-sm italic text-muted">
               This message was deleted
             </p>
+          ) : once !== "plain" ? (
+            <ViewOnceBody message={message} state={once} tz={tz} onOpen={onOpenViewOnce} />
           ) : (
             <MediaBody
               message={message}
@@ -327,6 +334,24 @@ function MediaBody({
         </p>
       );
   }
+}
+
+/**
+ * A view-once line (phase 27): the recipient gets a tap target while it's
+ * sealed, the sender a "not opened yet", both an "Opened" (the sender with
+ * the time) once it's been viewed. The media itself never renders inline.
+ */
+function ViewOnceBody({ message, state, tz, onOpen }: { message: Message; state: ReturnType<typeof viewOnceState>; tz: string; onOpen: (m: Message) => void }) {
+  const openedAt = message.viewedAt ? formatInTimeZone(message.viewedAt.toDate(), tz, "h:mm a") : null;
+  const label = viewOnceLabel(message.type, state, state === "opened" ? openedAt : null);
+  if (state === "sealed-theirs") {
+    return (
+      <button type="button" onClick={() => onOpen(message)} className="tap flex items-center gap-2 rounded-xl bg-bg/40 px-3 py-2 text-left text-sm font-semibold">
+        {label}
+      </button>
+    );
+  }
+  return <p className={cn("text-sm", state === "opened" ? "italic text-muted" : "font-semibold")}>{label}</p>;
 }
 
 function Placeholder({ label }: { label: string }) {

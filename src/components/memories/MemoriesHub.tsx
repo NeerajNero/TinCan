@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HowToButton } from "@/components/ui/HowTo";
 const SECTIONS = [
   { href: "/memories/photos", emoji: "📷", title: "Photos", blurb: "Your timeline" },
+  { href: "/memories/snaps", emoji: "🤳", title: "Snaps", blurb: "One surprise minute a day", help: "snap" as const },
   { href: "/memories/map", emoji: "🗺️", title: "Map", blurb: "Been & want to go" },
   { href: "/memories/milestones", emoji: "🎉", title: "Milestones", blurb: "Dates that matter" },
   { href: "/memories/journal", emoji: "📓", title: "Journal", blurb: "Both your entries" },

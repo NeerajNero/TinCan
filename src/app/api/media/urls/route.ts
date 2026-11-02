@@ -22,7 +22,8 @@ export async function POST(req: Request) {
   try {
     await guard(req, "urls");
     const { publicId, purpose, format } = await readJson(req, bodySchema);
-    if (purpose === "audio" ? !publicId.startsWith("tincan/audio/") : !publicId.startsWith("tincan/images/")) {
+    const imageFolder = publicId.startsWith("tincan/images/") || publicId.startsWith("tincan/snaps/");
+    if (purpose === "audio" ? !publicId.startsWith("tincan/audio/") : !imageFolder) {
       return NextResponse.json({ error: "bad_request" }, { status: 400 });
     }
     return NextResponse.json({ variants: signedVariants(publicId, purpose, format) });

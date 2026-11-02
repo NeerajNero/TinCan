@@ -17,6 +17,8 @@ export interface DigestInput {
   /** Titles of milestones falling today. */
   milestonesToday: string[];
   unread: number;
+  /** Today's snap minute (plus its window) has passed and this person hasn't posted. */
+  snapWaiting?: boolean;
 }
 
 const PET_LOW = 30;
@@ -30,6 +32,7 @@ export function digestLines(d: DigestInput): string[] {
   if (d.invites > 0) lines.push(d.invites === 1 ? "🎮 a game invite is waiting" : `🎮 ${d.invites} game invites waiting`);
   if (d.unread > 0) lines.push(`💬 ${n(d.unread, "unread message")}`);
   if (d.dailyUnanswered) lines.push("💭 today's question is waiting");
+  if (d.snapWaiting) lines.push("📸 today's snap is still waiting for yours");
   if (d.jarNotes > 0) lines.push(`🫙 ${n(d.jarNotes, "jar note")} to draw`);
   if (d.pet) {
     const needs = [d.pet.food < PET_LOW ? "food" : null, d.pet.joy < PET_LOW ? "a play" : null].filter((x): x is string => x !== null);

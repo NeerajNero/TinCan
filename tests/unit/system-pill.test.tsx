@@ -123,6 +123,7 @@ describe("MessageList with system lines", () => {
         onReply={noop}
         onReact={noop}
         onOpenImage={noop}
+        onOpenViewOnce={() => undefined}
         deletingIds={new Set()}
         uploads={[]}
         onRetryUpload={noop}

@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ChatBackground } from "@/components/chat/ChatBackground";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { Composer } from "@/components/chat/Composer";
 import { ImageViewer, ViewerButton } from "@/components/chat/media/ImageViewer";
+import { ViewOnceVoice } from "@/components/chat/media/ViewOnceVoice";
 import { MessageList } from "@/components/chat/MessageList";
 import { MessageMenu } from "@/components/chat/MessageMenu";
 import { ScheduleSheet } from "@/components/chat/ScheduleSheet";
@@ -17,6 +18,7 @@ import { usePair } from "@/hooks/usePair";
 import { useUploads } from "@/hooks/useUploads";
 import { useVisible } from "@/hooks/useVisible";
 import { authedFetch } from "@/lib/api";
+import { deleteViaServer } from "@/lib/db/deleteViaServer";
 import { findMemoryByPublicId, saveMessageToMemories } from "@/lib/db/memories";
 import {
   deleteForEveryone,
@@ -24,6 +26,7 @@ import {
   editText,
   hasCloudinaryAsset,
   markRead,
+  markViewed,
   replyPreview,
   sendMedia,
   sendText,
@@ -34,10 +37,13 @@ import { getCountFromServer } from "@/lib/firebase/fs";
 import { recordTogetherEvent } from "@/lib/garden";
 import type { Gif } from "@/lib/giphy";
 import type { Recording } from "@/lib/media/recorder";
+import { variantUrl } from "@/lib/mediaUrl";
+import { noteAsMessage } from "@/lib/notes";
 import { notify } from "@/lib/notify";
 import { playSound } from "@/lib/sounds";
 import { swallow } from "@/lib/swallow";
 import type { ChatBgPref, Message } from "@/lib/types";
+import { addPendingViewOnce, viewOnceState } from "@/lib/viewOnce";
 
 export function ChatScreen() {
   const { uid, me, friend, friendUid, loading, pair } = usePair();
@@ -102,6 +108,8 @@ function Thread({ uid, tz, chatBg, friendUid, friendName, friendDoc, needsMessag
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [editing, setEditing] = useState<Message | null>(null);
   const [viewing, setViewing] = useState<Message | null>(null);
+  /** A sealed view-once message the recipient just tapped; closing it marks it viewed and clears the asset. */
+  const [once, setOnce] = useState<Message | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(() => new Set());
   const [schedule, setSchedule] = useState<{ open: boolean; draft: string }>({ open: false, draft: "" });
   const [savedToMemories, setSavedToMemories] = useState<string | null>(null);
@@ -119,6 +127,38 @@ function Thread({ uid, tz, chatBg, friendUid, friendName, friendDoc, needsMessag
     };
   }, [viewingId, viewingPublicId]);
   const uploads = useUploads(uid, friendUid);
+
+  // Reply to the friend's note (Home → tap their bubble → /chat?quoteNote=1): quote it once, then clean the URL.
+  const quoteNote = useSearchParams().get("quoteNote") === "1";
+  const [quotedNote, setQuotedNote] = useState(false);
+  if (quoteNote && !quotedNote) {
+    setQuotedNote(true);
+    // Home only offers Reply on a note it is showing, so expiry was checked a moment ago.
+    const note = friendDoc.note;
+    if (note?.text) {
+      setEditing(null);
+      setReplyTo(noteAsMessage(friendUid, note));
+    }
+  }
+  if (!quoteNote && quotedNote) setQuotedNote(false);
+  useEffect(() => {
+    if (quoteNote) router.replace("/chat");
+  }, [quoteNote, router]);
+
+  const openViewOnce = useCallback(
+    (m: Message) => {
+      if (viewOnceState(m, uid) === "sealed-theirs") setOnce(m);
+    },
+    [uid],
+  );
+  /** Closing the viewer (or the note ending) is the open: stamp viewedAt, then have the server destroy the asset. */
+  const finishViewOnce = useCallback(() => {
+    const m = once;
+    setOnce(null);
+    if (!m) return;
+    markViewed(m.id).catch(swallow);
+    deleteViaServer("message", m.id).catch(() => addPendingViewOnce(m.id));
+  }, [once]);
 
   // Read receipts: only while this screen is mounted and the tab is visible.
   const reading = useRef(new Set<string>());
@@ -164,8 +204,8 @@ function Thread({ uid, tz, chatBg, friendUid, friendName, friendDoc, needsMessag
     return reply;
   }, [replyTo]);
 
-  const sendImages = useCallback((files: File[], caption: string) => uploads.sendImages(files, caption, takeReply()), [uploads, takeReply]);
-  const sendVoice = useCallback((rec: Recording) => uploads.sendVoice(rec, takeReply()), [uploads, takeReply]);
+  const sendImages = useCallback((files: File[], caption: string, viewOnce: boolean) => uploads.sendImages(files, caption, takeReply(), viewOnce), [uploads, takeReply]);
+  const sendVoice = useCallback((rec: Recording, viewOnce: boolean) => uploads.sendVoice(rec, takeReply(), viewOnce), [uploads, takeReply]);
   const sendSticker = useCallback(
     async (stickerId: string) => {
       const id = await sendMedia(uid, "sticker", { stickerId }, "", takeReply());
@@ -222,6 +262,7 @@ function Thread({ uid, tz, chatBg, friendUid, friendName, friendDoc, needsMessag
         onReply={startReply}
         onReact={react}
         onOpenImage={setViewing}
+        onOpenViewOnce={openViewOnce}
         deletingIds={deletingIds}
         backdrop={<ChatBackground pref={chatBg} />}
         uploads={uploads.uploads}
@@ -286,6 +327,9 @@ function Thread({ uid, tz, chatBg, friendUid, friendName, friendDoc, needsMessag
         }
         onClose={() => setViewing(null)}
       />
+      {/* View-once: the plain viewer with no save / share actions, or the play-once sheet. */}
+      <ImageViewer media={once?.type === "image" ? (once.media ?? null) : null} caption={once?.text} meta="👁️ View once · gone after you close this" onClose={finishViewOnce} />
+      <ViewOnceVoice url={once?.type === "voice" ? variantUrl(once.media, "audio") : null} durationMs={once?.media?.durationMs ?? 0} onDone={finishViewOnce} />
       <MessageMenu
         message={menuFor}
         uid={uid}

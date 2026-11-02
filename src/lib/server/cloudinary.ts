@@ -16,7 +16,7 @@ function configureCloudinary(): typeof cloudinary {
 }
 
 /** Only our own folders can be signed. */
-export const PUBLIC_ID_RE = /^tincan\/(images|audio)\/[A-Za-z0-9_-]{1,120}$/;
+export const PUBLIC_ID_RE = /^tincan\/(images|audio|snaps)\/[A-Za-z0-9_-]{1,120}$/;
 export const FORMAT_RE = /^[a-z0-9]{2,5}$/;
 
 /**

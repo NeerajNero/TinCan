@@ -37,7 +37,9 @@ export type HowToKey =
   | "capsules"
   | "envelopes"
   | "daily"
-  | "calls";
+  | "calls"
+  | "snap"
+  | "homeLayout";
 
 export interface HowTo {
   title: string;
@@ -227,6 +229,17 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     title: "Daily question",
     label: "One question a day, for both",
     steps: ["💭 The same question for both of you each day", "✍️ Answer it to see your friend's answer", "🔔 You'll get a ping when they answer", "📚 Past questions and answers live in Memories"],
+  },
+  snap: {
+    title: "Daily snap",
+    label: "One photo a day, same minute for both",
+    steps: ["⏰ Every day a surprise minute between 9:00 and 22:00 — you both get a push", "📸 You have two minutes to snap whatever's in front of you", "👀 Theirs stays blurred until you post yours; late posts get a tag", "🔥 Days you both post build a snap streak; Memories → Snaps keeps 60 days"],
+    tip: "Save to memories keeps a snap in your photo timeline for good.",
+  },
+  homeLayout: {
+    title: "Home layout",
+    label: "Arrange your Home cards",
+    steps: ["↕️ Drag the handle to reorder the cards on Home", "🙈 Switch a card off to hide it — it's your layout, not shared", "📌 Snap time and a game waiting on your move always jump to the top", "🔁 Reset to default puts everything back"],
   },
   calls: {
     title: "Call-time finder",

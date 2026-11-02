@@ -36,6 +36,7 @@ interface MessageListProps {
   onReply: (m: Message) => void;
   onReact: (m: Message, emoji: string) => void;
   onOpenImage: (m: Message) => void;
+  onOpenViewOnce: (m: Message) => void;
   deletingIds: Set<string>;
   uploads: Upload[];
   onRetryUpload: (id: string) => void;
@@ -53,7 +54,7 @@ function dayLabel(key: string, today: string): string {
 }
 
 export function MessageList(props: MessageListProps) {
-  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact, onOpenImage, deletingIds, uploads, onRetryUpload, onDismissUpload, layoutTick, backdrop } = props;
+  const { messages, ready, hasMore, loadingOlder, pageCount, loadOlder, prune, uid, tz, friendName, initialUnread, onOpenMenu, onReply, onReact, onOpenImage, onOpenViewOnce, deletingIds, uploads, onRetryUpload, onDismissUpload, layoutTick, backdrop } = props;
   const scroller = useRef<HTMLDivElement>(null);
   const dividerRef = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
@@ -214,6 +215,7 @@ export function MessageList(props: MessageListProps) {
                     onReply={onReply}
                     onReact={onReact}
                     onOpenImage={onOpenImage}
+                    onOpenViewOnce={onOpenViewOnce}
                     deleting={deletingIds.has(m.id)}
                   />
                 )}

@@ -12,12 +12,16 @@ import { digestPush, type DigestInput } from "@/lib/digest";
 import { adminDb, adminRtdb } from "@/lib/firebase/admin";
 import { resolveCountdown } from "@/lib/meetup";
 import { todaysMilestones, verifyDueIn, yearsLine } from "@/lib/milestones";
+import { noteExpired } from "@/lib/notes";
 import { statFrom } from "@/lib/pet";
 import { favouritePing, recapLine } from "@/lib/recap";
 import { rulesInSync, rulesStatusLine } from "@/lib/rulesVersion";
+import { destroyAsset } from "@/lib/server/cloudinary";
 import { secretMatches } from "@/lib/server/guard";
 import { loadUser, pairUids, postSystemMessageAdmin, sendPushTo, type SendResult, type UserDocLite } from "@/lib/server/push";
 import { liveRulesStatus } from "@/lib/server/rulesDrift";
+import { pickSnapMinute, SNAP_RETENTION_DAYS, SNAP_WINDOW_MS } from "@/lib/snap";
+import { swallow } from "@/lib/swallow";
 import { DEFAULT_DIGEST_HOUR, type MilestoneDoc, type PairDoc } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +33,9 @@ const STREAK_RISK_AT = 21 * 60;
 const REMINDERS_AT = 9 * 60;
 /** Rules drift check: after the 09:00 reminders, once a day. */
 const RULES_CHECK_AT = 9 * 60 + 30;
+/** Daily snap: the minute is drawn from 00:05 on (the first tick after it), the sweep and note expiry run at 03:00. */
+const SNAP_SCHEDULE_FROM = 5;
+const HOUSEKEEPING_AT = 3 * 60;
 const CAPSULE_LOOKBACK_MS = 48 * 60 * 60 * 1000;
 
 interface Action {
@@ -288,6 +295,9 @@ async function morningDigest(ctx: Ctx, pair: PairDoc) {
         db.collection("capsules").where("unlockAt", ">=", dayStart(ctx.today, ctx.roomTz)).where("unlockAt", "<", dayStart(addDays(ctx.today, 1), ctx.roomTz)).limit(10).get(),
         db.collection("messages").where("senderId", "==", friend).where("readAt", "==", null).count().get(),
       ]);
+      // Today's snap minute (plus its two minutes) has passed and this person hasn't posted: one read, only then.
+      const snapDue = pair.snap?.todayKey === ctx.today && ctx.now.getTime() >= pair.snap.todayAt + SNAP_WINDOW_MS;
+      const snapWaiting = snapDue ? !((await db.doc(`snaps/${ctx.today}`).get()).data()?.posted as Record<string, boolean> | undefined)?.[uid] : false;
       const preset = relationshipFor(pair.relationship);
       const input: DigestInput = {
         yourTurn,
@@ -298,6 +308,7 @@ async function morningDigest(ctx: Ctx, pair: PairDoc) {
         capsulesToday: capsules.size,
         milestonesToday: todaysMilestones(pair.milestonesSummary, pair.friendsSince, ctx.today, preset).map((m) => (m.derived && m.years !== null ? yearsLine(m.years, preset.pairNoun) : m.title)),
         unread: unread.data().count,
+        snapWaiting,
       };
       const note = digestPush(ctx.names[uid] ?? "you", input);
       if (!note) return "nothing to say";
@@ -330,6 +341,81 @@ async function rulesDrift(ctx: Ctx, minutes: number) {
     const owner = ctx.uids.find((u) => isOwnerEmail(ctx.users[u]?.email)) ?? ctx.uids[0];
     if (owner !== undefined) await push(ctx, owner, "rules-drift", { body: `CI deploy failed or hasn't run · ${line}` });
     return `rules drift: ${line}`;
+  });
+}
+
+/* ── daily snap (phase 27) ─────────────────────────────────────────────── */
+
+/**
+ * From 00:05 ROOM_TZ, the first tick of a day with no minute yet picks one
+ * uniformly in [09:00, 22:00) (or in what's left of that range when the tick
+ * runs late) and writes `pair/main.snap.todayKey / todayAt`. Once per day.
+ */
+async function snapSchedule(ctx: Ctx, minutes: number, pair: PairDoc) {
+  if (minutes < SNAP_SCHEDULE_FROM || pair.snap?.todayKey === ctx.today) return;
+  await once(ctx, "snap-schedule", `snap-schedule-${ctx.today}`, async () => {
+    const minute = pickSnapMinute(Math.random(), minutes + 1);
+    if (minute === null) return "too late in the day, no snap today";
+    const todayAt = fromZonedTime(`${ctx.today}T00:00:00`, ctx.roomTz).getTime() + minute * 60_000;
+    if (!ctx.dry) await adminDb().doc("pair/main").update({ "snap.todayKey": ctx.today, "snap.todayAt": todayAt });
+    return `snap at ${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")} ${ctx.roomTz}`;
+  });
+}
+
+/** At (or after) today's minute: "📸 Snap time! You have 2 minutes" to both, once. */
+async function snapTime(ctx: Ctx, pair: PairDoc) {
+  const s = pair.snap;
+  if (!s || s.todayKey !== ctx.today || ctx.now.getTime() < s.todayAt) return;
+  await once(ctx, "snap-time", `snap-push-${ctx.today}`, async () => {
+    for (const uid of ctx.uids) await push(ctx, uid, "snap", { data: { url: "/snap" } });
+    return `snap time pushed to ${ctx.uids.length}`;
+  });
+}
+
+const SWEEP_DAYS_PER_RUN = 20;
+
+/**
+ * 03:00 ROOM_TZ housekeeping, once a day: notes past their expiry are
+ * nulled, and snap days older than 60 days lose their entries (Cloudinary
+ * asset + doc) unless an entry was saved to memories; a day with no entries
+ * left loses its summary too.
+ */
+async function housekeeping(ctx: Ctx, minutes: number) {
+  if (!inWindow(minutes, HOUSEKEEPING_AT)) return;
+  await once(ctx, "housekeeping", `housekeeping-${ctx.today}`, async () => {
+    const db = adminDb();
+    const notes: string[] = [];
+    let expiredNotes = 0;
+    for (const uid of ctx.uids) {
+      if (!noteExpired(ctx.users[uid]?.note, ctx.now.getTime())) continue;
+      expiredNotes += 1;
+      if (!ctx.dry) await db.doc(`users/${uid}`).update({ note: null });
+    }
+    if (expiredNotes) notes.push(`${expiredNotes} expired note(s) cleared`);
+
+    const cutoff = addDays(ctx.today, -SNAP_RETENTION_DAYS);
+    const old = await db.collection("snaps").where("dateKey", "<", cutoff).orderBy("dateKey").limit(SWEEP_DAYS_PER_RUN).get();
+    let removed = 0;
+    let kept = 0;
+    for (const day of old.docs) {
+      const entries = await day.ref.collection("entries").get();
+      let remaining = 0;
+      for (const e of entries.docs) {
+        const data = e.data() as { publicId?: string; savedToMemories?: boolean };
+        if (data.savedToMemories === true) {
+          remaining += 1;
+          kept += 1;
+          continue;
+        }
+        removed += 1;
+        if (ctx.dry) continue;
+        if (data.publicId) await destroyAsset(data.publicId, "image").catch(swallow);
+        await e.ref.delete();
+      }
+      if (remaining === 0 && !ctx.dry) await day.ref.delete();
+    }
+    if (old.size) notes.push(`${old.size} snap day(s) before ${cutoff}: ${removed} entries removed, ${kept} kept (saved)`);
+    return notes.length ? notes.join("; ") : "nothing to clean";
   });
 }
 
@@ -413,6 +499,9 @@ export async function GET(req: Request) {
     await morningDigest(ctx, pair);
     await monthlyRecap(ctx, minutes, pair);
     await rulesDrift(ctx, minutes);
+    await snapSchedule(ctx, minutes, pair);
+    await snapTime(ctx, pair);
+    await housekeeping(ctx, minutes);
 
     // A live run answers with counts only: cron-job.org keeps response bodies in its history, and the
     // action details carry nicknames, scheduled-message text and capsule titles. Details: ?dry=1 (pnpm tick:dry).

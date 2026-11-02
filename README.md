@@ -134,6 +134,9 @@ The rules enforce all of this, not just the UI.
 | Profiles, messages, journal, memories metadata, lists, plans, game results, moods, daily answers | Firestore (Google, your chosen region; its transport also fetches a 1-pixel `www.google.com/images/cleardot.gif` to test connectivity) |
 | Presence, typing, pings, lamps, live game boards, canvases, watch/listen state, timers | Realtime Database (Google, `asia-southeast1` if you followed the checklist) |
 | Photos, voice notes, avatars | Cloudinary, **private**: authenticated delivery, loadable only through signed URLs stored on the docs |
+| Daily snaps | Cloudinary (`tincan/snaps`, private like the rest) + Firestore `snaps/{day}`; the other person can read a day's snap only after posting their own; **kept 60 days**, then the tick destroys the asset and the entry unless it was saved to memories |
+| View-once photos and voice notes | Cloudinary like other media, **destroyed by the server when the recipient opens them**; the phone's worker never caches them (`?once=1`) |
+| Notes (the line over your avatar) | Firestore `users/{uid}.note`, cleared by the tick after 24 hours |
 | Static content (questions, decks, word lists) | Bundled with the app |
 | Theme, sounds toggle, weather cache, FCM token | The phone's local storage |
 | Backups | Wherever you keep `./exports/`, and nowhere else |
@@ -143,7 +146,7 @@ The rules enforce all of this, not just the UI.
 | Who | What they see | When |
 | --- | --- | --- |
 | **Google (Firebase)** | Everything stored in Firestore and the Realtime Database; your Google sign-in | Always (it's the database) |
-| **Google (Cloud Messaging)** | Every push's title and body: the sender's nickname and the first 140 characters of a message, or a fixed line like "📷 Photo", "sent you a hug", a capsule or milestone title, the pet's name | Each notification |
+| **Google (Cloud Messaging)** | Every push's title and body: the sender's nickname and the first 140 characters of a message, or a fixed line like "📷 Photo", "sent you a hug", a capsule or milestone title, the pet's name, "📸 Snap time!", or the text of a note ("📝 posted a note: …") | Each notification |
 | **Google (profile photos)** | Your phone's IP, when it loads a Google profile photo (only if you have no custom avatar) | Avatar display |
 | **Cloudinary** | All photos and voice notes (stored and resized) | Upload and view |
 | **Vercel** | Request logs (IP, path, time); server code handles push text and GIF searches in memory | Every page and API call |

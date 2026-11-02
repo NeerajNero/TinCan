@@ -7,6 +7,7 @@ import { CacheableResponsePlugin, CacheFirst, ExpirationPlugin, NetworkOnly, Ser
 
 import { RADIO_HOSTNAMES } from "../lib/radio";
 import { SHARE_CACHE, SHARE_MAX_FILES, shareFileKey, shareMetaKey, type ShareMeta } from "../lib/share";
+import { isOnceRequest } from "../lib/viewOnce";
 
 // `self.__SW_MANIFEST` is replaced with the precache manifest at build time.
 declare global {
@@ -38,6 +39,8 @@ const runtimeCaching: RuntimeCaching[] = [
     matcher: ({ url }) => url.hostname.endsWith(".googleapis.com") || url.hostname.endsWith(".firebaseio.com") || url.hostname.endsWith(".firebasedatabase.app"),
     handler: new NetworkOnly(),
   },
+  // View-once photos and voice notes carry `?once=1`: fetched from the network, never written to a cache.
+  { matcher: ({ url }) => url.hostname === "res.cloudinary.com" && isOnceRequest(url), handler: new NetworkOnly() },
   { matcher: ({ url }) => url.hostname === "res.cloudinary.com", handler: imageCache("tincan-cloudinary", 500, 30 * DAY) },
   { matcher: ({ url }) => url.hostname.endsWith("tile.openstreetmap.org"), handler: imageCache("tincan-osm-tiles", 300, 7 * DAY) },
   { matcher: ({ url }) => url.hostname.endsWith(".giphy.com"), handler: imageCache("tincan-giphy", 150, 7 * DAY) },

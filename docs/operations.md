@@ -72,6 +72,8 @@ A new push cancels the run still going on the same branch or PR (`concurrency`).
 
 ## Routine checks
 
+- **Snaps and notes (phase 27)**: `pnpm tick:dry` after 00:05 room time should list `snap-schedule` (or "too late"), `snap-time` once the minute has passed, and at 03:00 `housekeeping` (expired notes, snap days older than 60 days). Cloudinary → Media Library → `tincan/snaps` should only hold the last 60 days plus saved snaps.
+
 - **Quota**: More → Usage meter on a phone after a normal day. Spark gives 50k reads / 20k writes a day; the app is designed to sit far under that.
 - **RTDB connections**: 100 simultaneous on Spark; the app keeps ≤ ~6 per client. If a screen leaks a listener, `useRtdbValue` with a `null` path on unmount is the pattern.
 - **Push**: More → Notifications → "Send a test". A failure there means the token, the VAPID key or the service worker registration.

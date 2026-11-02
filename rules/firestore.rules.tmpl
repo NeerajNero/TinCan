@@ -49,7 +49,22 @@ service cloud.firestore {
     match /users/{userId} {
       function userFields() {
         return ['name', 'nickname', 'email', 'photoURL', 'avatar', 'previousAvatarPublicId', 'bio',
-                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'createdAt'];
+                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'homeCards', 'note', 'createdAt'];
+      }
+      // Home layout (phase 27): the card order and the hidden ids, short lists of short strings.
+      function homeCardsOk() {
+        return !('homeCards' in incoming()) || (incoming().homeCards is map
+          && incoming().homeCards.keys().hasOnly(['order', 'hidden'])
+          && incoming().homeCards.get('order', []) is list && incoming().homeCards.get('order', []).size() <= 24
+          && incoming().homeCards.get('hidden', []) is list && incoming().homeCards.get('hidden', []).size() <= 24);
+      }
+      // A note (phase 27): one line ≤ 60 chars, optional emoji, written at server time, with its expiry.
+      function noteOk() {
+        return !('note' in incoming()) || incoming().note == null || (incoming().note is map
+          && incoming().note.keys().hasOnly(['text', 'emoji', 'at', 'expiresAt'])
+          && incoming().note.text is string && incoming().note.text.size() >= 1 && incoming().note.text.size() <= 60
+          && strMax(incoming().note, 'emoji', 8)
+          && incoming().note.at is timestamp && incoming().note.expiresAt is timestamp);
       }
       function userShape() {
         return incoming().keys().hasOnly(userFields())
@@ -57,7 +72,8 @@ service cloud.firestore {
           && strMax(incoming(), 'bio', 120) && strMax(incoming(), 'city', 80) && strMax(incoming(), 'name', 120)
           && incoming().tz is string && incoming().tz.size() > 0 && incoming().tz.size() <= 64
           && incoming().fcmTokens is list && incoming().fcmTokens.size() <= 10
-          && (!('avatar' in incoming()) || incoming().avatar == null || (cloudinaryUrl(incoming().avatar.url) && variantsOk(incoming().avatar)));
+          && (!('avatar' in incoming()) || incoming().avatar == null || (cloudinaryUrl(incoming().avatar.url) && variantsOk(incoming().avatar)))
+          && homeCardsOk() && noteOk();
       }
       // The chat wallpaper moved to pair/main.chatBg (phase 22b); a legacy users.chatBg can only be deleted.
       allow read: if allowed();
@@ -90,8 +106,19 @@ service cloud.firestore {
         && uid() in incoming().uids
         && incoming().roomTz is string && incoming().roomTz.size() > 0
         && chatBgOk()
-        && playOk();
+        && playOk()
+        && snapOk();
       allow delete: if false;
+      // Daily snap: the tick (admin) sets todayKey / todayAt; a client may only write the streak.
+      function snapOk() {
+        return !('snap' in incoming()) || (incoming().snap is map
+          && incoming().snap.keys().hasOnly(['todayKey', 'todayAt', 'streak'])
+          && incoming().snap.get('todayKey', null) == existing().get('snap', {}).get('todayKey', null)
+          && incoming().snap.get('todayAt', null) == existing().get('snap', {}).get('todayAt', null)
+          && (!('streak' in incoming().snap) || (incoming().snap.streak is map
+              && incoming().snap.streak.keys().hasOnly(['count', 'lastDateKey', 'best'])
+              && incoming().snap.streak.count is int && incoming().snap.streak.lastDateKey is string)));
+      }
       // Play tab usage: recent (≤ 8 rows) and favourites (≤ 6 ids), nothing else under play.
       function playOk() {
         return !('play' in incoming()) || (incoming().play is map
@@ -113,7 +140,10 @@ service cloud.firestore {
     match /messages/{messageId} {
       function isSender() { return existing().senderId == uid(); }
       function recipientMarks() {
-        return !isSender() && onlyChanges(['deliveredAt', 'readAt', 'status']);
+        return !isSender() && onlyChanges(['deliveredAt', 'readAt', 'status', 'viewedAt'])
+          // Opening a view-once message: only on one, only once, stamped with the server time.
+          && (!changedKeys().hasAny(['viewedAt'])
+              || (existing().get('viewOnce', false) == true && !hasField(existing(), 'viewedAt') && isServerTime(incoming().viewedAt)));
       }
       function senderEdits() {
         return isSender()
@@ -134,7 +164,12 @@ service cloud.firestore {
       function messageFields() {
         return ['senderId', 'type', 'text', 'media', 'replyTo', 'reactions', 'status',
                 'deliveredAt', 'readAt', 'editedAt', 'deletedFor', 'deletedForEveryone', 'createdAt',
-                'kind', 'meta'];
+                'kind', 'meta', 'viewOnce', 'viewedAt'];
+      }
+      // View-once (phase 27): a flag on photos and voice notes only; viewedAt starts empty.
+      function viewOnceOk() {
+        return (!('viewOnce' in incoming()) || (incoming().viewOnce is bool && (!incoming().viewOnce || incoming().type in ['image', 'voice'])))
+          && !hasField(incoming(), 'viewedAt');
       }
       // kind + meta exist on system lines only: a short kind id and a small flat map.
       function systemExtrasOk() {
@@ -169,6 +204,7 @@ service cloud.firestore {
         && incoming().text is string && incoming().text.size() <= 2000
         && mediaOk()
         && systemExtrasOk()
+        && viewOnceOk()
         && isServerTime(incoming().createdAt);
       allow update: if allowed() && (recipientMarks() || senderEdits() || reacts() || hidesForSelf());
       // Deleting is a flag (deletedForEveryone), never a hard delete.
@@ -333,6 +369,45 @@ service cloud.firestore {
             && isServerTime(incoming().drawnAt))
       );
       allow delete: if allowed() && isAuthor() && undrawn();
+    }
+
+    // ── snaps/{dateKey} (+ entries/{uid}): the daily snap (phase 27) ─────
+    match /snaps/{dateKey} {
+      // The summary both read: who posted, their thumbnail, who was late. Each poster merges only its own keys.
+      function summaryKeys() { return ['dateKey', 'posted', 'thumbs', 'late']; }
+      function ownKey(field) { return incoming().get(field, {}).keys().hasOnly([uid()]); }
+      function ownDiff(field) { return mapDiffKeys(field).hasOnly([uid()]); }
+      function thumbOk() { return !(uid() in incoming().get('thumbs', {})) || cloudinaryUrl(incoming().thumbs[uid()]); }
+      allow read: if allowed();
+      allow create: if allowed()
+        && incoming().keys().hasOnly(summaryKeys()) && incoming().dateKey == dateKey
+        && ownKey('posted') && ownKey('thumbs') && ownKey('late') && thumbOk();
+      allow update: if allowed()
+        && incoming().keys().hasOnly(summaryKeys()) && incoming().dateKey == dateKey
+        && ownDiff('posted') && ownDiff('thumbs') && ownDiff('late') && thumbOk();
+      // The 60-day sweep deletes with admin access.
+      allow delete: if false;
+
+      match /entries/{entryUid} {
+        // "Post yours to see theirs": the other person's entry opens only once mine exists.
+        function mineExists() { return exists(/databases/$(database)/documents/snaps/$(dateKey)/entries/$(uid())); }
+        function entryKeys() { return ['url', 'publicId', 'variants', 'w', 'h', 'caption', 'at', 'late', 'lateByMin', 'savedToMemories']; }
+        function withinEditWindow() { return request.time < existing().at + duration.value(10, 'm'); }
+        allow read: if allowed() && (entryUid == uid() || mineExists());
+        allow create: if isMe(entryUid)
+          && incoming().keys().hasOnly(entryKeys())
+          && cloudinaryUrl(incoming().url) && variantsOk(incoming())
+          && strMax(incoming(), 'caption', 60)
+          && isServerTime(incoming().at)
+          && incoming().late is bool && incoming().lateByMin is number && incoming().lateByMin >= 0
+          && incoming().savedToMemories == false;
+        // The owner may fix the caption for ten minutes; either person may keep a snap (savedToMemories → true) any time.
+        allow update: if allowed() && (
+          (entryUid == uid() && withinEditWindow() && onlyChanges(['caption', 'savedToMemories']) && strMax(incoming(), 'caption', 60))
+          || (onlyChanges(['savedToMemories']) && incoming().savedToMemories == true)
+        );
+        allow delete: if false;
+      }
     }
 
     // ── memories & places ────────────────────────────────────────────────

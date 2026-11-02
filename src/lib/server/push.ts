@@ -21,6 +21,8 @@ export interface UserDocLite {
   tz?: string;
   fcmTokens?: string[];
   notif?: Partial<NotifPrefs>;
+  /** The 24-hour note (phase 27); the 03:00 tick nulls it once expired. */
+  note?: { text?: string; emoji?: string; expiresAt?: { toMillis(): number } | null } | null;
 }
 
 export interface SendResult {

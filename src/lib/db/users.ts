@@ -3,10 +3,11 @@ import { BIO_MAX } from "@/components/ui/Avatar";
 import { authedFetch } from "@/lib/api";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { userRef } from "@/lib/db/refs";
-import { deleteField, updateDoc } from "@/lib/firebase/fs";
+import { deleteField, serverTimestamp, Timestamp, updateDoc } from "@/lib/firebase/fs";
 import { compressImage } from "@/lib/media/compress";
+import { NOTE_MAX, NOTE_TTL_MS } from "@/lib/notes";
 import { swallow } from "@/lib/swallow";
-import type { CityPick, UserDoc } from "@/lib/types";
+import type { CityPick, HomeCardsPref, UserDoc } from "@/lib/types";
 export function setNickname(uid: string, nickname: string): Promise<void> {
   return updateDoc(userRef(uid), { nickname: nickname.trim() });
 }
@@ -51,4 +52,27 @@ export async function removeAvatar(uid: string, me: UserDoc): Promise<void> {
   await updateDoc(userRef(uid), { avatar: null, previousAvatarPublicId: me.avatar.publicId });
   await cleanupAvatar();
   await updateDoc(userRef(uid), { previousAvatarPublicId: deleteField() }).catch(swallow);
+}
+
+/* ── Home layout (phase 27) ────────────────────────────────────────────── */
+
+export function setHomeCards(uid: string, pref: HomeCardsPref): Promise<void> {
+  return updateDoc(userRef(uid), { homeCards: pref });
+}
+
+export function resetHomeCards(uid: string): Promise<void> {
+  return updateDoc(userRef(uid), { homeCards: deleteField() });
+}
+
+/* ── Notes (phase 27) ──────────────────────────────────────────────────── */
+
+/** Write (or replace) my note; it expires 24 h from now. */
+export function setNote(uid: string, text: string, emoji: string | null, now = Date.now()): Promise<void> {
+  return updateDoc(userRef(uid), {
+    note: { text: text.trim().slice(0, NOTE_MAX), ...(emoji ? { emoji } : {}), at: serverTimestamp(), expiresAt: Timestamp.fromMillis(now + NOTE_TTL_MS) },
+  });
+}
+
+export function clearNote(uid: string): Promise<void> {
+  return updateDoc(userRef(uid), { note: null });
 }

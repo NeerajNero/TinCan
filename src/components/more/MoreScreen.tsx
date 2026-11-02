@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { ChatBackgroundCard } from "@/components/more/ChatBackgroundCard";
 import { DiagnosticsCard } from "@/components/more/DiagnosticsCard";
+import { HomeLayoutCard } from "@/components/more/HomeLayoutCard";
 import { NotificationsCard } from "@/components/more/NotificationsCard";
 import { PairCard } from "@/components/more/PairCard";
 import { ProfileCard } from "@/components/more/ProfileCard";
@@ -50,6 +51,7 @@ export function MoreScreen() {
         <ThemeSwitch />
       </Card>
       <ChatBackgroundCard />
+      <HomeLayoutCard />
 
       <NotificationsCard />
       <SoundsCard />

@@ -1,9 +1,11 @@
+import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { adminDb } from "@/lib/firebase/admin";
 import { destroyAsset } from "@/lib/server/cloudinary";
 import { errorResponse, guard, readJson } from "@/lib/server/guard";
+import { pairUids } from "@/lib/server/push";
 import { swallow } from "@/lib/swallow";
 const bodySchema = z.union([
   z.object({ kind: z.enum(["message", "memory", "journal", "capsule"]), id: z.string().min(1).max(128) }).strict(),
@@ -57,11 +59,19 @@ export async function DELETE(req: Request) {
       const ref = db.collection("messages").doc(id);
       const snap = await ref.get();
       if (!snap.exists) return NextResponse.json({ error: "not_found" }, { status: 404 });
-      const data = snap.data() as { senderId?: string; type?: string; media?: Media };
-      if (data.senderId !== uid) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+      const data = snap.data() as { senderId?: string; type?: string; media?: Media; viewOnce?: boolean; viewedAt?: unknown };
       const publicId = data.media?.publicId;
+      const isMedia = data.type === "image" || data.type === "voice";
+      if (data.senderId !== uid) {
+        // The recipient opened a view-once photo or voice note: destroy the asset and clear the
+        // media, but leave the line (both bubbles then read "Opened"). Anyone else: forbidden.
+        if (data.viewOnce !== true || !isMedia || !(await pairUids()).includes(uid)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+        const destroyed = publicId ? await destroyAll([publicId], data.type === "voice" ? "video" : "image") : 0;
+        await ref.update({ media: null, ...(data.viewedAt ? {} : { viewedAt: FieldValue.serverTimestamp() }) });
+        return NextResponse.json({ ok: true, destroyed });
+      }
       let destroyed = 0;
-      if (publicId && (data.type === "image" || data.type === "voice") && !(await sharedByMemory(publicId))) {
+      if (publicId && isMedia && !(await sharedByMemory(publicId))) {
         destroyed = await destroyAll([publicId], data.type === "voice" ? "video" : "image");
       }
       await ref.update({ media: null, text: "", deletedForEveryone: true });
