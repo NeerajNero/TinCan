@@ -1,11 +1,12 @@
 "use client";
 
 import { m } from "framer-motion";
-import { Clock, Eye, ImagePlus, Mic, Send, SmilePlus, X } from "lucide-react";
+import { Clock, ImagePlus, Mic, Send, SmilePlus, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { AttachmentStrip } from "@/components/chat/media/AttachmentStrip";
 import { MediaPanel } from "@/components/chat/media/MediaPanel";
+import { ViewOnceToggle } from "@/components/chat/media/ViewOnceToggle";
 import { useTypingWriter } from "@/hooks/useTyping";
 import { cn } from "@/lib/cn";
 import { autoGrow, enterSends } from "@/lib/composerKeys";
@@ -65,6 +66,9 @@ export function Composer(props: ComposerProps) {
   // The parent re-keys this component per edit target, so the initial value is enough.
   const [text, setText] = useState(() => editing?.text ?? "");
   const [files, setFiles] = useState<File[]>([]);
+  /** A voice note recorded but not yet sent: it sits in a preview row (duration, 👁️, discard, send). */
+  const [clip, setClip] = useState<Recording | null>(null);
+  /** View-once lives with the attachment preview; it is reset whenever that preview goes away. */
   const [viewOnce, setViewOnce] = useState(false);
   const [panel, setPanel] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -101,9 +105,29 @@ export function Composer(props: ComposerProps) {
       (trimmed.length > 0 && (!editing || trimmed !== editing.text)));
   const showMic =
     !editing &&
+    !clip &&
     files.length === 0 &&
     trimmed.length === 0 &&
     recordingSupported();
+
+  function sendClip() {
+    if (!clip) return;
+    const once = viewOnce;
+    setClip(null);
+    setViewOnce(false);
+    onSendVoice(clip, once);
+  }
+  function discardClip() {
+    setClip(null);
+    setViewOnce(false);
+  }
+  function removeFile(index: number) {
+    setFiles((f) => {
+      const next = f.filter((_, idx) => idx !== index);
+      if (next.length === 0) setViewOnce(false);
+      return next;
+    });
+  }
 
   async function submit() {
     if (!canSend) return;
@@ -193,32 +217,40 @@ export function Composer(props: ComposerProps) {
             </button>
           </div>
         )}
-        {files.length > 0 && (
+        {files.length > 0 && !clip && (
           <AttachmentStrip
             files={files}
-            onRemove={(i) => setFiles((f) => f.filter((_, idx) => idx !== i))}
+            onRemove={removeFile}
+            viewOnce={viewOnce}
+            onToggleViewOnce={() => setViewOnce((v) => !v)}
           />
-        )}
-        {(files.length > 0 || showMic) && !editing && (
-          <div className="mb-1.5 flex justify-end px-1">
-            <button
-              type="button"
-              onClick={() => setViewOnce((v) => !v)}
-              aria-pressed={viewOnce}
-              aria-label={viewOnce ? "View once is on" : "Send as view once"}
-              className={cn(
-                "tap flex h-7 items-center gap-1 rounded-full border px-2.5 text-[11px] font-bold",
-                viewOnce ? "border-[var(--accent)] bg-accent-soft text-text" : "border-border text-muted",
-              )}
-            >
-              <Eye size={13} aria-hidden />
-              {viewOnce ? "View once · on" : files.length > 0 ? "View once" : "View once (voice)"}
-            </button>
-          </div>
         )}
 
         <div className="flex items-end gap-1.5">
-          {rec.recording ? (
+          {clip ? (
+            <>
+              <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-[22px] bg-surface px-3 text-sm" data-testid="voice-preview" aria-label="Recorded voice note">
+                <Mic size={16} className="shrink-0 text-[var(--accent)]" aria-hidden />
+                <span className="font-bold tabular-nums">{formatClock(clip.durationMs)}</span>
+                <span className="truncate text-muted">voice note</span>
+                <span className="ml-auto flex shrink-0 items-center gap-1">
+                  <ViewOnceToggle on={viewOnce} onToggle={() => setViewOnce((v) => !v)} what="voice note" />
+                  <button type="button" onClick={discardClip} aria-label="Discard voice note" className="tap grid size-9 place-items-center rounded-full text-muted hover:bg-surface-2">
+                    <Trash2 size={16} />
+                  </button>
+                </span>
+              </div>
+              <m.button
+                type="button"
+                onClick={sendClip}
+                aria-label="Send voice note"
+                whileTap={{ scale: 0.9 }}
+                className="tap grid size-11 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-white shadow-md"
+              >
+                <Send size={18} className="-ml-0.5" />
+              </m.button>
+            </>
+          ) : rec.recording ? (
             <div
               className={cn(
                 "flex h-11 min-w-0 flex-1 items-center gap-2 rounded-[22px] px-4 text-sm transition-colors",
@@ -309,15 +341,8 @@ export function Composer(props: ComposerProps) {
               />
             </>
           )}
-          {showMic ? (
-            <RecordButton
-              onRecorded={(clip) => {
-                const once = viewOnce;
-                setViewOnce(false);
-                onSendVoice(clip, once);
-              }}
-              onViewChange={setRec}
-            />
+          {clip ? null : showMic ? (
+            <RecordButton onRecorded={setClip} onViewChange={setRec} />
           ) : (
             <m.button
               type="button"

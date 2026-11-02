@@ -330,7 +330,10 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - Voice: `MediaRecorder` `audio/webm;codecs=opus` at 32 kbps, max 2 min, hold-to-record with
   slide-to-cancel → Cloudinary preset `tincan_audio` (resource_type `video`) → bubble with
   play/pause, duration, simple progress bar, 1×/1.5× speed.
-- View-once (phase 27): with a photo attached (or before a voice note) a "View once 👁️" chip in the composer;
+- View-once (phase 27): a small 👁️ toggle inside the attachment preview — at the end of the picked-photo thumbnails,
+  and in the recorded voice note's preview row (duration · 👁️ · discard · send; releasing the mic now parks the note
+  there instead of sending at once) — off by default, filled with a short "View once" label when on, reset after each
+  send, never shown when the composer holds only text;
   the message stores `viewOnce: true, viewedAt: null` and its stored URLs carry `?once=1` (Cloudinary ignores unknown
   query params on signed URLs; verified against the live cloud), which the service worker never caches. Recipient:
   "👁️ Photo · tap to view once" → the viewer with no Save-to-memories / share, a voice note plays once with no
