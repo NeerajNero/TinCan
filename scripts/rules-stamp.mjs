@@ -25,7 +25,7 @@ if (!project) {
   process.exit(1);
 }
 const version = rulesVersion(root);
-const res = spawnSync("firebase", ["database:set", "-y", "--project", project, "--data", JSON.stringify(version), "/meta/rulesVersion"], { stdio: "inherit", shell: process.platform === "win32" });
+const res = spawnSync("firebase", ["database:set", "--force", "--project", project, "--data", JSON.stringify(version), "/meta/rulesVersion"], { stdio: "inherit", shell: process.platform === "win32" });
 if (res.status !== 0) {
   console.error(`rules-stamp: firebase database:set failed (exit ${res.status ?? "signal"}).`);
   process.exit(res.status ?? 1);
