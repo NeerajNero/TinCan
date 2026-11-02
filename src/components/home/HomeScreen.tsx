@@ -23,6 +23,7 @@ import { SnapCard } from "@/components/home/SnapCard";
 import { StreakPlant } from "@/components/home/StreakPlant";
 import { WaitingCard } from "@/components/home/WaitingCard";
 import { useLiveEvents } from "@/components/live/LiveEventsProvider";
+import { InboxBell } from "@/components/shell/InboxBell";
 import { SnapTakeover } from "@/components/snap/SnapTakeover";
 import { Splash } from "@/components/ui/Splash";
 import { useChatMeta } from "@/hooks/useChatMeta";
@@ -45,9 +46,10 @@ function Header({ nickname }: { nickname: string }) {
       <span className="text-4xl" aria-hidden>
         🥫
       </span>
-      <div>
-        <h1 className="text-3xl font-semibold">Hi, {nickname}</h1>
+      <div className="min-w-0 flex-1">
+        <h1 className="truncate text-3xl font-semibold">Hi, {nickname}</h1>
       </div>
+      <InboxBell />
     </header>
   );
 }

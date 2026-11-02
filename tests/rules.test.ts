@@ -625,3 +625,49 @@ describe("messages: view-once", () => {
     await assertSucceeds(updateDoc(doc(dbB, "messages/v1"), { readAt: serverTimestamp(), status: "read" }));
   });
 });
+
+describe("inbox (phase 28): server-written rows the owner lists and deletes; the owner may only zero the badge", () => {
+  const user = (uid: string, email: string) => ({ name: "n", nickname: "nick", email, photoURL: null, tz: "UTC", city: "c", lat: 0, lng: 0, fcmTokens: [], notif: { enabled: false }, inbox: { unread: 3 }, createdAt: new Date() });
+  const row = { type: "ping", title: "nick", body: "👋 waved at you", url: "/", count: 1, createdAt: new Date() };
+  beforeEach(() =>
+    seed(async (db) => {
+      await setDoc(doc(db, `users/${A}`), user(A, EMAIL_A ?? ""));
+      await setDoc(doc(db, `users/${B}`), user(B, EMAIL_B ?? ""));
+      await setDoc(doc(db, `inbox/${A}/items/i1`), row);
+      await setDoc(doc(db, `inbox/${A}/items/i2`), { ...row, type: "message", title: "nick", body: "hi", count: 2 });
+    }),
+  );
+  it("rows: the owner reads and deletes, never creates or edits; the friend and strangers see nothing", async () => {
+    const a = asA().firestore();
+    await assertSucceeds(getDocs(query(collection(a, `inbox/${A}/items`))));
+    await assertSucceeds(getDoc(doc(a, `inbox/${A}/items/i1`)));
+    await assertSucceeds(deleteDoc(doc(a, `inbox/${A}/items/i1`)));
+    await assertFails(setDoc(doc(a, `inbox/${A}/items/i3`), row));
+    await assertFails(updateDoc(doc(a, `inbox/${A}/items/i2`), { count: 9 }));
+    await assertFails(getDoc(doc(a, `inbox/${A}`)));
+    const b = asB().firestore();
+    await assertFails(getDocs(query(collection(b, `inbox/${A}/items`))));
+    await assertFails(getDoc(doc(b, `inbox/${A}/items/i2`)));
+    await assertFails(deleteDoc(doc(b, `inbox/${A}/items/i2`)));
+    await assertFails(getDocs(query(collection(asStranger().firestore(), `inbox/${A}/items`))));
+  });
+  it("users.inbox: zero + a server-time stamp is the only client write; counts, other keys and the friend's doc are refused", async () => {
+    const a = asA().firestore();
+    // While the count is 3, zeroing without the stamp, or with a bad one, is refused…
+    await assertFails(updateDoc(doc(a, `users/${A}`), { "inbox.unread": 0 }));
+    await assertFails(updateDoc(doc(a, `users/${A}`), { "inbox.unread": 0, "inbox.lastReadAt": "now" }));
+    await assertFails(updateDoc(doc(a, `users/${A}`), { "inbox.unread": 5, "inbox.lastReadAt": serverTimestamp() }));
+    // …and zero + server time is the one allowed write.
+    await assertSucceeds(updateDoc(doc(a, `users/${A}`), { "inbox.unread": 0, "inbox.lastReadAt": serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(a, `users/${A}`), { nickname: "still me" })); // untouched inbox never blocks other edits
+    await assertFails(updateDoc(doc(a, `users/${A}`), { "inbox.unread": 2 }));
+    await assertFails(updateDoc(doc(a, `users/${A}`), { inbox: { unread: 0, lastReadAt: serverTimestamp(), extra: 1 } }));
+    await assertFails(updateDoc(doc(asB().firestore(), `users/${A}`), { "inbox.unread": 0, "inbox.lastReadAt": serverTimestamp() }));
+  });
+  it("users.inbox: a server-bumped count on my own doc never blocks an unrelated edit", async () => {
+    await seed(async (db) => updateDoc(doc(db, `users/${A}`), { "inbox.unread": 12 }));
+    const a = asA().firestore();
+    await assertSucceeds(updateDoc(doc(a, `users/${A}`), { bio: "hello" }));
+    await assertSucceeds(updateDoc(doc(a, `users/${A}`), { "inbox.unread": 0, "inbox.lastReadAt": serverTimestamp() }));
+  });
+});

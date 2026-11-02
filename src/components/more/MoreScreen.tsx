@@ -15,6 +15,7 @@ import { ThemeSwitch } from "@/components/more/ThemeSwitch";
 import { TipsCard } from "@/components/more/TipsCard";
 import { UpdateCard } from "@/components/more/UpdateCard";
 import { UsageCard } from "@/components/more/UsageCard";
+import { InboxBell } from "@/components/shell/InboxBell";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,7 +41,8 @@ export function MoreScreen() {
         <span className="text-4xl" aria-hidden>
           ✨
         </span>
-        <h1 className="text-3xl font-semibold">More</h1>
+        <h1 className="flex-1 text-3xl font-semibold">More</h1>
+        <InboxBell />
       </header>
 
       <ProfileCard />

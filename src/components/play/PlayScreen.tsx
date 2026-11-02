@@ -11,6 +11,7 @@ import { useFriendPresence } from "@/components/live/PresenceProvider";
 import { CloseGameMenu } from "@/components/play/CloseGameMenu";
 import { BigTile, CompactTile, type TileBadge } from "@/components/play/PlayTile";
 import { RecentGamesList } from "@/components/play/RecentGamesList";
+import { InboxBell } from "@/components/shell/InboxBell";
 import { useToast } from "@/components/toast/ToastProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -174,6 +175,7 @@ export function PlayScreen() {
           🎲
         </span>
         <h1 className="flex-1 text-3xl font-semibold">Play</h1>
+        <InboxBell />
         <HowToButton topic="play" />
       </header>
 

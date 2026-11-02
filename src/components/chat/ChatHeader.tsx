@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { ChatBackgroundPicker } from "@/components/chat/ChatBackgroundPicker";
 import { useFriendPresence } from "@/components/live/PresenceProvider";
+import { InboxBell } from "@/components/shell/InboxBell";
 import { Avatar } from "@/components/ui/Avatar";
 import { usePair } from "@/hooks/usePair";
 import { useFriendTyping } from "@/hooks/useTyping";
@@ -43,6 +44,7 @@ export function ChatHeader({ friend, friendUid }: { friend: UserDoc; friendUid: 
           {sub}
         </p>
       </div>
+      <InboxBell />
       <button type="button" onClick={() => setPickerOpen(true)} aria-label="Chat background" className="tap grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2">
         <Palette size={20} />
       </button>

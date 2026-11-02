@@ -1,5 +1,6 @@
 import type { Timestamp } from "@/lib/firebase/fs";
 import type { PlayUsage } from "@/lib/play/usage";
+import type { PushType } from "@/lib/pushTypes";
 
 /* ── Notifications ─────────────────────────────────────────────────────── */
 
@@ -122,6 +123,26 @@ export interface UserDoc {
   note?: UserNote | null;
   /** When Home's digest card was last dismissed (or sat for 30 s): the next open's "since" point. */
   lastOpenAt?: Timestamp | null;
+  /** The notifications bell (phase 28): the server bumps `unread` with every row it adds; opening the sheet zeroes it. */
+  inbox?: InboxPref | null;
+  createdAt: Timestamp | null;
+}
+
+/** `users/{uid}.inbox`: the badge count and when the sheet was last opened (rows newer than it show as unread). */
+interface InboxPref {
+  unread: number;
+  lastReadAt: Timestamp | null;
+}
+
+/** `inbox/{uid}/items/{id}` (phase 28): one row per push the server composed for this person (server-written, owner reads and deletes). */
+export interface InboxItemDoc {
+  type: PushType;
+  title: string;
+  body: string;
+  /** Same-origin deep link, from `composePush`. */
+  url: string;
+  /** > 1 when a burst of the same type collapsed into this row. */
+  count: number;
   createdAt: Timestamp | null;
 }
 

@@ -64,6 +64,18 @@ app should feel like a small hello, not a dashboard.
   person's own tz. `dateKey` = `yyyy-MM-dd` in the relevant tz.
 
 ## Screens (bottom tab bar: Home · Chat · Play · Memories · Plan · More)
+Every tab's header row (emoji + title on the left; on Chat the friend's name) ends with a bell 🔔 (phase 28,
+`components/shell/InboxBell`) carrying an unread badge from `users/{me}.inbox.unread` (hidden at zero, "99+" cap),
+next to the ? help button where a screen has one. Tapping it opens the **Notifications** inbox as the shared Sheet at
+90 % height (grabber drag down, scrim tap or Escape closes; the page beneath keeps its scroll): header "Notifications"
++ "Mark all read", rows newest first (emoji per type, title, body, "×N" for a collapsed burst, relative time, an unread
+dot for rows newer than the `lastReadAt` the sheet opened with), swipe left to delete, "Load older" (30 per page), a
+friendly empty state. Opening writes `inbox.unread = 0` + `inbox.lastReadAt` (only when something was unread). Rows are
+written by the server: every push `sendPushTo` composes (except the test button and the morning digest) lands in
+`inbox/{uid}/items` whether or not the push itself goes out, so the inbox is the in-app record of everything that
+happened while the app was closed; same-type bursts (messages, pings, lamp, your-turn) within 10 minutes collapse
+into one row. There is no swipe-down gesture and no top-anchored panel.
+
 **Home** — the hello screen
 - Layout (phase 27): the cards render in the order saved on `users/{uid}.homeCards = { order, hidden }`
   (ids in `lib/homeCards.ts`: presence, snap, chatPreview, games, pings, lamp, dailyQuestion, mood, onThisDay,
@@ -197,8 +209,12 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
 
 ## Data model — Firestore
 `users/{uid}`: name, nickname, email, photoURL, tz, city, lat, lng, fcmTokens[], notif{...},
-  homeCards{order[], hidden[]}, note{text ≤ 60, emoji?, at, expiresAt} | null, lastOpenAt (the digest's "since"), createdAt
+  homeCards{order[], hidden[]}, note{text ≤ 60, emoji?, at, expiresAt} | null, lastOpenAt (the digest's "since"),
+  inbox{unread (server-bumped), lastReadAt} (the bell), createdAt
   (`chatBg` is legacy: readable, deletable, never written)
+`inbox/{uid}/items/{id}`: { type (push type), title, body, url (same-origin), count, createdAt } — one row per push the
+  server composed for `uid` (admin-written in `sendPushTo`; a same-type burst within 10 min updates the latest unread row's
+  count/body instead); the owner lists (newest first, 30 a page) and deletes; the 03:00 tick keeps the newest 200
 `pair/main`: uids[2], roomTz, friendsSince, nextMeetup{date,label,place}, relationship (preset id,
   default "friends"; see `src/content/relationships.ts`), theme,
   pet{name,species,hungerAt,happyAt,sleepAt,level,bornAt}, plant{stage,lastGrowthDate},
@@ -350,6 +366,9 @@ Every trivia question also carries an `explanation`. Word definitions are static
   morning digest (its own switch + hour picker,
   `notif.digest = { enabled, hour }`, default off / 08:00 in the user's tz) ✓.
 - De-duplicate with `push/{id}` keyed by event (e.g. `pet-hungry-2026-10-12`).
+- Inbox (phase 28): `sendPushTo` records the composed note in `inbox/{toUid}/items` and bumps `users/{toUid}.inbox.unread`
+  before any switch is consulted (skipped for `test`, `digest`, dry runs, and when the recipient is already on the page
+  the push points at), so a person with push off still finds everything under the bell.
 
 ## Scheduler — `GET /api/tick`
 - Secured by header `x-tick-secret === TICK_SECRET`. cron-job.org pings it every 15 min.
@@ -385,8 +404,8 @@ Every trivia question also carries an `explanation`. Word definitions are static
       (default off; the in-app takeover is the prompt).
   13. 03:00 ROOM_TZ housekeeping (`tickLog/housekeeping-{dateKey}`): notes past `expiresAt` are nulled; snap days
       older than 60 days lose their entries (Cloudinary asset + doc) unless `savedToMemories`, and the summary when
-      nothing is left (≤ 20 days per run). The morning digest also mentions today's snap when its window has passed
-      and the person hasn't posted.
+      nothing is left (≤ 20 days per run); each `inbox/{uid}/items` keeps its newest 200 rows. The morning digest also
+      mentions today's snap when its window has passed and the person hasn't posted.
 - Dry run: `pnpm tick:dry` prints what would be sent without sending.
 
 ## Media — Cloudinary
@@ -589,8 +608,11 @@ Every trivia question also carries an `explanation`. Word definitions are static
 - `scheduled`: readable/deletable by sender only; delivery is done by the server (admin).
 - `tickLog`, `push`: admin-only (no client access).
 - `users/{uid}.homeCards` (map of `order` / `hidden` lists ≤ 24), `.note` (null, or text 1–60, emoji ≤ 8, `at`
-  and `expiresAt` timestamps) and `.lastOpenAt` (timestamp or null) are owner-only like the rest of the doc. `pair/main.snap`: a client may write only
-  `streak` (count, lastDateKey, best); `todayKey` / `todayAt` are the tick's.
+  and `expiresAt` timestamps) and `.lastOpenAt` (timestamp or null) are owner-only like the rest of the doc.
+  `.inbox` (phase 28) is a map of `unread` (int ≥ 0) and `lastReadAt` (timestamp | null); when a client write touches
+  it, `unread` must be 0 and `lastReadAt` a timestamp (the server bumps the count; a server-bumped value on my doc
+  never blocks my other edits). `inbox/{uid}/items/{id}`: read and delete by `uid` only, no client create / update.
+  `pair/main.snap`: a client may write only `streak` (count, lastDateKey, best); `todayKey` / `todayAt` are the tick's.
 - `snaps/{dateKey}`: summary keys `dateKey` (== id), `posted`, `thumbs` (our Cloudinary URL), `later`; each poster
   touches only its own uid key. `snaps/{dateKey}/entries/{uid}`: create only by `uid` with the entry shape, server
   `at`, `savedToMemories: false`; read by the owner always and by the other person only if
@@ -814,6 +836,9 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
     Then "chore: snap on open + in-app digest": the snap prompt became a full-screen takeover on open (push opt-in,
     `onTime` / `later`), Home gained the digest card over `users.lastOpenAt`, and every push-only signal got an in-app
     counterpart (envelope-open chat line, jar activity in the digest).
+28. ✅ **Inbox bell + overlay** (commit "chore: inbox bell + overlay") — a notifications inbox: every push the server
+    composes becomes a row in `inbox/{uid}/items` (bursts collapse), `users.inbox.unread` feeds a bell with a badge on
+    every tab header, and the shared Sheet at 90 % shows the list (mark all read, swipe to delete, load older).
 26. ✅ **Game input feel** (commit "phase 26") — the `GameScreen` composite (header, fitted content, docked input) on the
     board games, daily word, Hangman, trivia, 20 Questions, decks and Pictionary; `Pressable` keys and options with
     haptics and key-clicks; tile pop and colour fades; the boards spec extended with the daily word and Hangman at six

@@ -24,6 +24,8 @@ interface SheetProps {
   scroll?: boolean;
   /** Opens at `height`; dragging (or tapping) the grabber up expands to this, down collapses or closes. */
   expandedHeight?: string;
+  /** A fixed-height sheet (the inbox) whose grabber can be dragged down to dismiss it. */
+  dragToClose?: boolean;
 }
 
 /**
@@ -43,7 +45,7 @@ export function useStickyValue<T>(value: T | null): T | null {
  * and stacked above the tab bar, the chat header and Leaflet's panes. Children
  * mount only while open, so per-open state starts fresh. Escape closes it.
  */
-export function Sheet({ open, onClose, label, children, className, tone = "surface", height, maxHeight = "85dvh", scroll = true, expandedHeight }: SheetProps) {
+export function Sheet({ open, onClose, label, children, className, tone = "surface", height, maxHeight = "85dvh", scroll = true, expandedHeight, dragToClose = false }: SheetProps) {
   const [expanded, setExpanded] = useState(false);
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
@@ -54,7 +56,7 @@ export function Sheet({ open, onClose, label, children, className, tone = "surfa
   const panned = useRef(false);
   function onGrabberPan(_: unknown, info: PanInfo) {
     panned.current = true;
-    if (info.offset.y < -30) setExpanded(true);
+    if (info.offset.y < -30 && expandedHeight) setExpanded(true);
     else if (info.offset.y > 60) {
       if (big) setExpanded(false);
       else onClose();
@@ -108,14 +110,14 @@ export function Sheet({ open, onClose, label, children, className, tone = "surfa
               exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 420, damping: 38 }}
             >
-              {expandedHeight ? (
+              {expandedHeight || dragToClose ? (
                 <m.button
                   type="button"
                   onPanEnd={onGrabberPan}
                   onPointerDown={() => (panned.current = false)}
-                  onClick={() => !panned.current && setExpanded((v) => !v)}
-                  aria-label={big ? "Shrink" : "Expand"}
-                  aria-expanded={big}
+                  onClick={() => !panned.current && (expandedHeight ? setExpanded((v) => !v) : onClose())}
+                  aria-label={expandedHeight ? (big ? "Shrink" : "Expand") : "Close"}
+                  aria-expanded={expandedHeight ? big : undefined}
                   className="-mt-3 mb-1 grid h-8 w-full shrink-0 cursor-grab touch-none place-items-center"
                 >
                   <span className="h-1.5 w-10 rounded-full bg-border" aria-hidden />

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { CountdownHero } from "@/components/plan/CountdownHero";
+import { InboxBell } from "@/components/shell/InboxBell";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
 import { roomDateKey } from "@/lib/dates";
@@ -20,7 +21,8 @@ export function PlanScreen() {
         <span className="text-4xl" aria-hidden>
           🗓️
         </span>
-        <h1 className="text-3xl font-semibold">Plan</h1>
+        <h1 className="flex-1 text-3xl font-semibold">Plan</h1>
+        <InboxBell />
       </header>
 
       <CountdownHero today={today} />

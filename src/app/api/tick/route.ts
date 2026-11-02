@@ -10,6 +10,7 @@ import { questionFor } from "@/lib/daily";
 import { addDays, dateKeyIn, dateKeyToLocalDate, daysBetween, minutesIntoDayIn, roomDateKey } from "@/lib/dates";
 import { digestPush, type DigestInput } from "@/lib/digest";
 import { adminDb, adminRtdb } from "@/lib/firebase/admin";
+import { INBOX_KEEP } from "@/lib/inbox";
 import { resolveCountdown } from "@/lib/meetup";
 import { todaysMilestones, verifyDueIn, yearsLine } from "@/lib/milestones";
 import { noteExpired } from "@/lib/notes";
@@ -380,9 +381,9 @@ const SWEEP_DAYS_PER_RUN = 20;
 
 /**
  * 03:00 ROOM_TZ housekeeping, once a day: notes past their expiry are
- * nulled, and snap days older than 60 days lose their entries (Cloudinary
- * asset + doc) unless an entry was saved to memories; a day with no entries
- * left loses its summary too.
+ * nulled, snap days older than 60 days lose their entries (Cloudinary
+ * asset + doc) unless an entry was saved to memories (a day with no entries
+ * left loses its summary too), and each inbox keeps its newest 200 rows.
  */
 async function housekeeping(ctx: Ctx, minutes: number) {
   if (!inWindow(minutes, HOUSEKEEPING_AT)) return;
@@ -419,6 +420,17 @@ async function housekeeping(ctx: Ctx, minutes: number) {
       if (remaining === 0 && !ctx.dry) await day.ref.delete();
     }
     if (old.size) notes.push(`${old.size} snap day(s) before ${cutoff}: ${removed} entries removed, ${kept} kept (saved)`);
+
+    let prunedRows = 0;
+    for (const uid of ctx.uids) {
+      const extra = await db.collection(`inbox/${uid}/items`).orderBy("createdAt", "desc").offset(INBOX_KEEP).limit(INBOX_KEEP).get();
+      prunedRows += extra.size;
+      if (extra.empty || ctx.dry) continue;
+      const batch = db.batch();
+      extra.docs.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+    if (prunedRows) notes.push(`${prunedRows} inbox row(s) beyond the newest ${INBOX_KEEP} removed`);
     return notes.length ? notes.join("; ") : "nothing to clean";
   });
 }

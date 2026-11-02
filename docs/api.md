@@ -32,8 +32,9 @@ Errors go back as `{ error: "<code>" }` with 400/401/403/413/429/500; details ar
 
 `src/lib/server/push.ts → sendPushTo(toUid, type, opts)`:
 
-- Looks up the recipient; returns early when `notif.enabled` is false or the per-type toggle (`TOGGLE_FOR[type]`) is off.
-- Skips when the recipient's RTDB presence `page` already is the target (e.g. chat open and visible).
+- Looks up the recipient and composes the note; skips everything when the recipient's RTDB presence `page` already is the target (e.g. chat open and visible).
+- **Inbox** (phase 28, `recordInbox`): unless the type is `test` / `digest` or this is a dry run, the composed note is recorded in `inbox/{toUid}/items` *before* any switch is consulted — one `orderBy(createdAt desc).limit(1)` read; a bursty type (`message`, `scheduled`, `ping`, `lamp`, `yourTurn`) within 10 min of the latest row of the same type that is still unread (`createdAt > users.inbox.lastReadAt`) updates that row (`count + 1`, latest title/body/url, `createdAt` now), otherwise a batch adds the row and increments `users/{toUid}.inbox.unread`. Pure rule: `lib/inbox.shouldCollapse`. A failure here is logged and never blocks the push.
+- Returns early when `notif.enabled` is false or the per-type toggle (`TOGGLE_FOR[type]`) is off.
 - Composes title/body/url via `composePush` in `src/lib/pushTypes.ts`; sends **data-only** FCM messages; prunes tokens that fail with `registration-token-not-registered`.
 - Logs to `push/{id}` (pruned to ~200) for de-duplication of event-keyed pushes.
 - `postSystemMessageAdmin(senderId, text)` writes a `system` chat message with the admin SDK (used by the tick).
@@ -57,7 +58,7 @@ Each job runs inside `once(ctx, job, key, body)` which checks and writes `tickLo
 | morningDigest | per user, at `notif.digest.hour` in their tz | `digest-{uid}-{localDateKey}` | your-turn games / invites (RTDB `games` open index), undrawn jar notes (≤ 10), unanswered daily question, pet food/joy < 30, capsules unlocking today, milestones today, unread count, and (one read, only once today's snap minute + 2 min has passed) "📸 today's snap is still waiting for yours" → one `digest` push (`lib/digest.digestPush`), or nothing |
 | snapSchedule | from 00:05, the first tick of a day without a minute | `snap-schedule-{dateKey}` | `lib/snap.pickSnapMinute(Math.random(), minutes + 1)`: uniform in [09:00, 22:00) or what is left of it → `pair/main.snap.todayKey / todayAt`; "too late" after 22:00 |
 | snapTime | every tick once `now ≥ snap.todayAt` | `snap-push-{dateKey}` | `snap` push ("📸 Snap time! You have 2 minutes", url `/snap`) to whoever opted into the toggle (default off: the Home takeover is the prompt) |
-| housekeeping | 03:00 | `housekeeping-{dateKey}` | `users/{uid}.note` past `expiresAt` → null (`lib/notes.noteExpired`); `snaps` with `dateKey < today − 60` (≤ 20 days per run, a single-field range): entries not `savedToMemories` → `destroyAsset` + delete, the summary deleted when no entry is left |
+| housekeeping | 03:00 | `housekeeping-{dateKey}` | `users/{uid}.note` past `expiresAt` → null (`lib/notes.noteExpired`); `snaps` with `dateKey < today − 60` (≤ 20 days per run, a single-field range): entries not `savedToMemories` → `destroyAsset` + delete, the summary deleted when no entry is left; each `inbox/{uid}/items` keeps its newest 200 rows (`offset(200)` + batch delete, phase 28) |
 | monthlyRecap | 1st of the month, 09:00 | `recap-{yyyy-MM}` | 2 `count()` on messages (senderId + createdAt range), 3 on gameResults (winnerId + endedAt range), stickers from `pair.garden`, `streak.monthBest`, favourite ping from `counters.pingCounts` − `pair.recap.pingCounts` → `recap` system line (`lib/recap.recapLine`); then resets `streak.monthBest` and snapshots the ping counts on `pair.recap`. No push |
 
 `pnpm tick:dry` calls `?dry=1` (set `TICK_URL` to target a deployment) and prints the actions without writing or sending.

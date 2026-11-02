@@ -49,7 +49,7 @@ service cloud.firestore {
     match /users/{userId} {
       function userFields() {
         return ['name', 'nickname', 'email', 'photoURL', 'avatar', 'previousAvatarPublicId', 'bio',
-                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'homeCards', 'note', 'lastOpenAt', 'createdAt'];
+                'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'homeCards', 'note', 'lastOpenAt', 'inbox', 'createdAt'];
       }
       // Home layout (phase 27): the card order and the hidden ids, short lists of short strings.
       function homeCardsOk() {
@@ -66,6 +66,17 @@ service cloud.firestore {
           && strMax(incoming().note, 'emoji', 8)
           && incoming().note.at is timestamp && incoming().note.expiresAt is timestamp);
       }
+      // The notifications bell (phase 28): the server bumps `unread`; the owner may only zero it and stamp `lastReadAt`.
+      function inboxOk() {
+        return !('inbox' in incoming()) || incoming().inbox == null || (incoming().inbox is map
+          && incoming().inbox.keys().hasOnly(['unread', 'lastReadAt'])
+          && incoming().inbox.get('unread', 0) is int && incoming().inbox.get('unread', 0) >= 0
+          && (incoming().inbox.get('lastReadAt', null) == null || incoming().inbox.lastReadAt is timestamp));
+      }
+      function inboxOnlyRead() {
+        return !('inbox' in changedKeys()) || incoming().inbox == null
+          || (incoming().inbox.get('unread', 1) == 0 && incoming().inbox.lastReadAt is timestamp);
+      }
       function userShape() {
         return incoming().keys().hasOnly(userFields())
           && incoming().nickname is string && incoming().nickname.size() > 0 && incoming().nickname.size() <= 24
@@ -73,7 +84,7 @@ service cloud.firestore {
           && incoming().tz is string && incoming().tz.size() > 0 && incoming().tz.size() <= 64
           && incoming().fcmTokens is list && incoming().fcmTokens.size() <= 10
           && (!('avatar' in incoming()) || incoming().avatar == null || (cloudinaryUrl(incoming().avatar.url) && variantsOk(incoming().avatar)))
-          && homeCardsOk() && noteOk()
+          && homeCardsOk() && noteOk() && inboxOk()
           && (!('lastOpenAt' in incoming()) || incoming().lastOpenAt == null || incoming().lastOpenAt is timestamp);
       }
       // The chat wallpaper moved to pair/main.chatBg (phase 22b); a legacy users.chatBg can only be deleted.
@@ -87,8 +98,18 @@ service cloud.firestore {
       allow update: if isMe(userId)
         && incoming().email == existing().email
         && incoming().createdAt == existing().createdAt
-        && userShape();
+        && userShape() && inboxOnlyRead();
       allow delete: if false;
+    }
+
+    // ── inbox/{uid}/items (phase 28) ─────────────────────────────────────
+    // One row per push the server composed for this person (admin writes). The owner lists and deletes; nobody else sees them.
+    match /inbox/{userId} {
+      allow read, write: if false;
+      match /items/{itemId} {
+        allow read, delete: if isMe(userId);
+        allow create, update: if false;
+      }
     }
 
     // ── pair/main ────────────────────────────────────────────────────────

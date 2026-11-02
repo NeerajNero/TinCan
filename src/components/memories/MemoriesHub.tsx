@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { InboxBell } from "@/components/shell/InboxBell";
 import { HowToButton } from "@/components/ui/HowTo";
 const SECTIONS = [
   { href: "/memories/photos", emoji: "📷", title: "Photos", blurb: "Your timeline" },
@@ -24,7 +25,8 @@ export function MemoriesHub() {
         <span className="text-4xl" aria-hidden>
           📸
         </span>
-        <h1 className="text-3xl font-semibold">Memories</h1>
+        <h1 className="flex-1 text-3xl font-semibold">Memories</h1>
+        <InboxBell />
       </header>
       <div className="grid grid-cols-2 gap-3">
         {SECTIONS.map((s) => (
