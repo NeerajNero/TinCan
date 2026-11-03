@@ -117,14 +117,15 @@ for (const screen of ["word", "hangman"]) {
         expect.soft(doc.scroll, "no horizontal overflow").toBeLessThanOrEqual(doc.client);
 
         // Collapse: the dock slides out, the content area grows by its height, the floating button sits inside the viewport above the tab bar.
+        const wrapHeight = () => page.evaluate(() => document.querySelector<HTMLElement>("[data-game-dock-wrap]")!.getBoundingClientRect().height);
         await page.getByRole("button", { name: "Hide keyboard" }).click();
-        await page.waitForTimeout(600);
+        await expect.poll(wrapHeight, { message: "the dock is out of the layout", timeout: 5_000 }).toBeLessThan(1);
+        await expect(page.locator("[data-show-keyboard]")).toBeVisible();
         const c = await page.evaluate(() => {
           const r = (el: HTMLElement) => el.getBoundingClientRect();
-          const fab = document.querySelector<HTMLElement>("[data-show-keyboard]");
+          const fab = r(document.querySelector<HTMLElement>("[data-show-keyboard]")!);
           return {
-            fab: fab ? r(fab) : null,
-            dockWrapHeight: r(document.querySelector<HTMLElement>("[data-game-dock-wrap]")!).height,
+            fab: { left: fab.left, right: fab.right, top: fab.top, bottom: fab.bottom, width: fab.width, height: fab.height },
             contentClient: document.querySelector<HTMLElement>("[data-game-content]")!.clientHeight,
             tabbarTop: r(document.querySelector<HTMLElement>("[data-tabbar]")!).top,
             docScrollW: document.documentElement.scrollWidth,
@@ -133,25 +134,20 @@ for (const screen of ["word", "hangman"]) {
             mainClient: document.querySelector<HTMLElement>("[data-main]")!.clientHeight,
           };
         });
-        expect.soft(c.dockWrapHeight, "the dock is out of the layout").toBeLessThan(1);
         expect.soft(Math.abs(c.contentClient - m.contentClient - m.dockWrapHeight), "the content area grew by the dock's height").toBeLessThanOrEqual(1.5);
         expect.soft(c.docScrollW, "collapsed: no horizontal overflow").toBeLessThanOrEqual(c.docClientW);
         expect.soft(c.mainScroll, "collapsed: <main> still does not scroll").toBeLessThanOrEqual(c.mainClient + 1);
-        expect(c.fab, "the floating show-keyboard button is there").not.toBeNull();
-        const fab = c.fab!;
-        expect.soft(fab.left, "button starts inside the viewport").toBeGreaterThanOrEqual(0);
-        expect.soft(fab.right, "button ends inside the viewport").toBeLessThanOrEqual(width + 0.5);
-        expect.soft(fab.top, "button top inside the viewport").toBeGreaterThanOrEqual(0);
-        expect.soft(fab.bottom, "button sits 12 px above the tab bar").toBeLessThanOrEqual(c.tabbarTop - 12 + 0.5);
-        expect.soft(fab.width, "a 56 px round button").toBeCloseTo(56, 0);
-        expect.soft(fab.height, "a 56 px round button").toBeCloseTo(56, 0);
+        expect.soft(c.fab.left, "button starts inside the viewport").toBeGreaterThanOrEqual(0);
+        expect.soft(c.fab.right, "button ends inside the viewport").toBeLessThanOrEqual(width + 0.5);
+        expect.soft(c.fab.top, "button top inside the viewport").toBeGreaterThanOrEqual(0);
+        expect.soft(c.fab.bottom, "button sits 12 px above the tab bar").toBeLessThanOrEqual(c.tabbarTop - 12 + 0.5);
+        expect.soft(Math.abs(c.fab.width - 56), "a 56 px round button").toBeLessThanOrEqual(1);
+        expect.soft(Math.abs(c.fab.height - 56), "a 56 px round button").toBeLessThanOrEqual(1);
         // And back.
         await page.getByRole("button", { name: "Show keyboard" }).click();
-        await page.waitForTimeout(600);
-        const back = await page.evaluate(() => document.querySelector<HTMLElement>("[data-game-dock-wrap]")!.getBoundingClientRect().height);
-        expect.soft(Math.abs(back - m.dockWrapHeight), "the dock is back at its height").toBeLessThanOrEqual(1.5);
+        await expect.poll(wrapHeight, { message: "the dock is back at its height", timeout: 5_000 }).toBeGreaterThanOrEqual(m.dockWrapHeight - 1.5);
         await expect(page.getByRole("button", { name: "Hide keyboard" })).toBeVisible();
-        expect(page.locator("[data-show-keyboard]")).toHaveCount(0);
+        await expect(page.locator("[data-show-keyboard]")).toHaveCount(0);
         expect(errors).toEqual([]);
       });
     }

@@ -75,8 +75,8 @@ export function GameScreen({ header, children, dock, collapsible, contentClassNa
       >
         <m.div ref={setDockEl} initial={false} animate={reduce ? { opacity: hidden ? 0 : 1 } : { y: hidden ? "100%" : 0 }} transition={reduce ? FADE : SPRING} className="flex flex-col gap-2 pt-1 pb-2 empty:hidden" data-game-dock>
           {cfg && hasDock && (
-            <div className="-mb-1.5 flex justify-end">
-              <button type="button" aria-label="Hide keyboard" onClick={() => toggle(true)} className="relative grid h-6 w-11 place-items-center rounded-full text-muted after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']">
+            <div className="-mb-2 flex justify-end">
+              <button type="button" aria-label="Hide keyboard" onClick={() => toggle(true)} className="relative grid h-5 w-11 place-items-center rounded-full text-muted after:absolute after:-inset-x-1 after:-inset-y-3 after:content-['']">
                 <ChevronDown size={18} aria-hidden />
               </button>
             </div>
