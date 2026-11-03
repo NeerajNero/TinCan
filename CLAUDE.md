@@ -219,6 +219,17 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
   exactly, so the page never scrolls; only the content area may, and only when it truly doesn't fit. Keyboards,
   option / vote / answer buttons, inputs and the reaction row live in the dock, through the `dock` prop or from
   anywhere inside the content with `<Dock>`. The board-game screen is `BoardGameScreen`.
+- Collapsible keyboard: a dock holding a letter keyboard (daily word, Hangman) is collapsible (`collapsible={{ key,
+  roundActive, stackAbove? }}` on `GameScreen` or on `<Dock>`; state in `lib/dock.ts`). A small "Hide keyboard" chevron
+  in the dock's top-right corner slides the dock down and out (spring, 200 ms; a fade under `prefers-reduced-motion`),
+  the content area takes the freed height, and a round 56 px accent "Show keyboard" `Pressable` with a shadow appears
+  bottom-right, 12 px above the tab bar inside the safe area (`stackAbove` lifts it over a chat-drawer or
+  jump-to-bottom FAB on a screen that has one); only that button expands it again — tiles and the content area never
+  do. Defaults: expanded while a round is in progress, collapsed automatically when it ends (the comparison, meaning
+  and history are then in view); the manual choice is remembered per screen for the session until the round state
+  next changes. The daily word keeps its keyboard mounted (keys disabled) once finished; Hangman's guesser keeps it
+  while the setter's word is shown. Guarded by `tests/e2e/boards.spec.ts` (collapsed: no horizontal overflow, the
+  button fully inside the viewport above the tab bar at 320 / 360 / 411 px, the content area grown by the dock's height).
 - Pressable (`components/ui/Pressable.tsx`) is the one primitive for keys and option / vote / answer buttons: pressed on
   pointerdown, released on pointerup / cancel / leave (90 ms spring to scale 0.94), a 10 ms haptic on press, an optional
   key-click under the Sounds toggle, `touch-action: manipulation`, no selection, no long-press callout. Disabled and

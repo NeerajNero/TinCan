@@ -29,13 +29,14 @@ export function GameScreenHarness({ screen }: { screen: "word" | "hangman" }) {
     <div className="fixed inset-0 mx-auto flex w-full max-w-[480px] flex-col">
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-4 pt-4 pb-6" data-main>
         {screen === "word" ? (
-          <GameScreen header={header} dock={<LetterKeyboard withActions label="Keyboard" states={{ c: "absent", r: "present", a: "correct", n: "absent", e: "absent", s: "absent", l: "correct", t: "present" }} onKey={(k) => setDraft((d) => (k === "back" ? d.slice(0, -1) : k === "enter" ? "" : (d + k).slice(0, 5)))} />}>
+          <GameScreen header={header} collapsible={{ key: "e2e-word", roundActive: true }} dock={<LetterKeyboard withActions label="Keyboard" states={{ c: "absent", r: "present", a: "correct", n: "absent", e: "absent", s: "absent", l: "correct", t: "present" }} onKey={(k) => setDraft((d) => (k === "back" ? d.slice(0, -1) : k === "enter" ? "" : (d + k).slice(0, 5)))} />}>
             <div className="relative">
               <WordleGrid guesses={["crane", "slate"]} draft={draft} answer="plant" shake={0} reveal />
             </div>
           </GameScreen>
         ) : (
           <GameScreen
+            collapsible={{ key: "e2e-hangman", roundActive: true }}
             header={
               <>
                 {header}

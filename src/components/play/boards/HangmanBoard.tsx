@@ -153,12 +153,12 @@ function Guessing({ game, state, round, iAmSetter, myWord, canGuess, setterName 
       </p>
       {iAmSetter && <p className="text-center text-xs text-muted">Only you can see the letters. {state.phase === "guessing" ? "Sit tight while they guess." : ""}</p>}
       {!iAmSetter && !canGuess && <p className="text-center text-xs text-muted">{setterName}&apos;s word — the round is theirs to watch.</p>}
-      {canGuess && (
-        <Dock>
+      {!iAmSetter && (
+        <Dock collapsible={{ key: "hangman", roundActive: canGuess }}>
         <LetterKeyboard
           states={Object.fromEntries(round.guessed.split("").map((k) => [k, round.mask.includes(k) ? "correct" : "absent"]))}
           isDisabled={(k) => round.guessed.includes(k)}
-          disabled={busy !== null}
+          disabled={busy !== null || !canGuess}
           pending={busy}
           onKey={(k) => void guess(k)}
           keyLabel={(k) => `Guess ${k.toUpperCase()}`}

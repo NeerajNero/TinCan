@@ -147,7 +147,8 @@ export function WordleScreen() {
   return (
     <GameScreen
       header={<SubHeader help="word" emoji="🟩" title="Daily word" back="/play" screenName="Daily word" invite={{ activity: "word", route: "/play/word", label: "the Daily word" }} />}
-      dock={mine !== undefined && !done ? <LetterKeyboard withActions label="Keyboard" states={keyStates} onKey={onKey} /> : undefined}
+      dock={mine !== undefined ? <LetterKeyboard withActions label="Keyboard" states={keyStates} onKey={onKey} disabled={done} /> : undefined}
+      collapsible={mine !== undefined ? { key: "word", roundActive: !done } : undefined}
     >
       {mine === undefined && <Card className="py-8 text-center text-muted">Loading…</Card>}
 

@@ -91,7 +91,7 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     title: "Hangman",
     label: "Best of three words",
     steps: ["📨 Invite from the tile — the inviter sets the first word", "✍️ Type a word or short phrase, or tap Random for a daily-word pick", "🔤 The guesser taps letters; six misses and the figure is complete", "🔁 Roles swap each round; first to two rounds wins"],
-    tip: "Your word stays private until the round ends, then both see it with its meaning.",
+    tip: "Your word stays private until the round ends. ⌄ tucks the keys away; ⌨️ brings them back.",
   },
   battleship: {
     title: "Battleship",
@@ -121,7 +121,7 @@ export const HOWTO: Record<HowToKey, HowTo> = {
     title: "Daily word",
     label: "Same word for both · 6 tries",
     steps: ["🔤 One five-letter word a day, the same for both of you", "🟩 Green: right letter, right spot · 🟨 yellow: wrong spot", "6️⃣ Six guesses on your own — no peeking (Invite nudges them to play)", "🏆 Both finished? Fewer guesses wins · tap “What does it mean?”"],
-    tip: "Share my grid posts your emoji grid to chat. Scoreboard and history sit below.",
+    tip: "Share my grid posts it to chat. The keys tuck away when you finish; ⌄ hides, ⌨️ shows.",
   },
   twenty: {
     title: "20 Questions",

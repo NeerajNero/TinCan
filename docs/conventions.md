@@ -53,7 +53,7 @@ There is one header, `components/app-header.tsx`, mounted once by `AppShell` abo
 
 ## Game screens
 
-Anything with game input renders `components/play/GameScreen` (an optional pinned strip such as a board game's seats card — the page header is the app header, declared with `SubHeader` — · fitted content · dock above the tab bar) and never its own scroller; put keyboards, option / vote / answer buttons and inputs in the dock (`dock` prop or `<Dock>` from inside). Keys and option buttons are `components/ui/Pressable`; result feedback is `lib/haptics` (`tap` / `success` / `error`). Boards are the `board` utility with `aspect-square` (or another ratio) so they fit the content height. Guarded by `tests/e2e/boards.spec.ts`.
+Anything with game input renders `components/play/GameScreen` (an optional pinned strip such as a board game's seats card — the page header is the app header, declared with `SubHeader` — · fitted content · dock above the tab bar) and never its own scroller; put keyboards, option / vote / answer buttons and inputs in the dock (`dock` prop or `<Dock>` from inside); a dock holding a letter keyboard declares `collapsible={{ key, roundActive }}` so the person can tuck it away (chevron / floating button, state in `lib/dock`). Keys and option buttons are `components/ui/Pressable`; result feedback is `lib/haptics` (`tap` / `success` / `error`). Boards are the `board` utility with `aspect-square` (or another ratio) so they fit the content height. Guarded by `tests/e2e/boards.spec.ts`.
 
 ## Design tokens
 

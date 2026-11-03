@@ -64,12 +64,15 @@ for (const width of [320, 360, 411]) {
  * phone widths and heights the dock's bottom edge stays inside the viewport
  * (above the tab-bar row), the page and <main> do not scroll (only the content
  * area may), the board fits the content area, and the keyboard never scrolls
- * sideways.
+ * sideways. Collapsing the keyboard (chore: collapsible keyboard) frees the
+ * dock's height for the content area, leaves no horizontal overflow and puts
+ * the floating "show keyboard" button fully inside the viewport, 12 px above
+ * the tab bar; tapping it brings the keyboard back.
  */
 for (const screen of ["word", "hangman"]) {
   for (const width of [320, 360, 411]) {
     for (const height of [740, 826]) {
-      test(`${screen} on GameScreen at ${width}×${height}: dock in view, no page scroll, keyboard fits`, async ({ page }) => {
+      test(`${screen} on GameScreen at ${width}×${height}: dock in view, no page scroll, keyboard fits, collapses`, async ({ page }) => {
         await page.setViewportSize({ width, height });
         const errors = collectErrors(page);
         await page.goto(`/e2e/game-screen?screen=${screen}`);
@@ -77,6 +80,7 @@ for (const screen of ["word", "hangman"]) {
         await page.waitForTimeout(300);
         const m = await page.evaluate(() => {
           const dock = document.querySelector<HTMLElement>("[data-game-dock]")!;
+          const dockWrap = document.querySelector<HTMLElement>("[data-game-dock-wrap]")!;
           const main = document.querySelector<HTMLElement>("[data-main]")!;
           const content = document.querySelector<HTMLElement>("[data-game-content]")!;
           const tabbar = document.querySelector<HTMLElement>("[data-tabbar]")!;
@@ -86,6 +90,7 @@ for (const screen of ["word", "hangman"]) {
           return {
             dockBottom: r(dock).bottom,
             dockHeight: r(dock).height,
+            dockWrapHeight: r(dockWrap).height,
             tabbarTop: r(tabbar).top,
             viewport: window.innerHeight,
             docScroll: document.documentElement.scrollHeight,
@@ -110,6 +115,43 @@ for (const screen of ["word", "hangman"]) {
         if (screen === "word") expect.soft(Math.abs(m.gridW / m.gridH - 5 / 6), "word grid keeps 5:6").toBeLessThan(0.05);
         const doc = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
         expect.soft(doc.scroll, "no horizontal overflow").toBeLessThanOrEqual(doc.client);
+
+        // Collapse: the dock slides out, the content area grows by its height, the floating button sits inside the viewport above the tab bar.
+        await page.getByRole("button", { name: "Hide keyboard" }).click();
+        await page.waitForTimeout(600);
+        const c = await page.evaluate(() => {
+          const r = (el: HTMLElement) => el.getBoundingClientRect();
+          const fab = document.querySelector<HTMLElement>("[data-show-keyboard]");
+          return {
+            fab: fab ? r(fab) : null,
+            dockWrapHeight: r(document.querySelector<HTMLElement>("[data-game-dock-wrap]")!).height,
+            contentClient: document.querySelector<HTMLElement>("[data-game-content]")!.clientHeight,
+            tabbarTop: r(document.querySelector<HTMLElement>("[data-tabbar]")!).top,
+            docScrollW: document.documentElement.scrollWidth,
+            docClientW: document.documentElement.clientWidth,
+            mainScroll: document.querySelector<HTMLElement>("[data-main]")!.scrollHeight,
+            mainClient: document.querySelector<HTMLElement>("[data-main]")!.clientHeight,
+          };
+        });
+        expect.soft(c.dockWrapHeight, "the dock is out of the layout").toBeLessThan(1);
+        expect.soft(Math.abs(c.contentClient - m.contentClient - m.dockWrapHeight), "the content area grew by the dock's height").toBeLessThanOrEqual(1.5);
+        expect.soft(c.docScrollW, "collapsed: no horizontal overflow").toBeLessThanOrEqual(c.docClientW);
+        expect.soft(c.mainScroll, "collapsed: <main> still does not scroll").toBeLessThanOrEqual(c.mainClient + 1);
+        expect(c.fab, "the floating show-keyboard button is there").not.toBeNull();
+        const fab = c.fab!;
+        expect.soft(fab.left, "button starts inside the viewport").toBeGreaterThanOrEqual(0);
+        expect.soft(fab.right, "button ends inside the viewport").toBeLessThanOrEqual(width + 0.5);
+        expect.soft(fab.top, "button top inside the viewport").toBeGreaterThanOrEqual(0);
+        expect.soft(fab.bottom, "button sits 12 px above the tab bar").toBeLessThanOrEqual(c.tabbarTop - 12 + 0.5);
+        expect.soft(fab.width, "a 56 px round button").toBeCloseTo(56, 0);
+        expect.soft(fab.height, "a 56 px round button").toBeCloseTo(56, 0);
+        // And back.
+        await page.getByRole("button", { name: "Show keyboard" }).click();
+        await page.waitForTimeout(600);
+        const back = await page.evaluate(() => document.querySelector<HTMLElement>("[data-game-dock-wrap]")!.getBoundingClientRect().height);
+        expect.soft(Math.abs(back - m.dockWrapHeight), "the dock is back at its height").toBeLessThanOrEqual(1.5);
+        await expect(page.getByRole("button", { name: "Hide keyboard" })).toBeVisible();
+        expect(page.locator("[data-show-keyboard]")).toHaveCount(0);
         expect(errors).toEqual([]);
       });
     }
