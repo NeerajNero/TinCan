@@ -108,13 +108,8 @@ into one row. There is no swipe-down gesture and no top-anchored panel.
   (localStorage `tincan:snap-dismissed` = dateKey), a full-screen Snap takeover covers Home with a 2-minute
   countdown from the moment it appears; posting inside it marks `onTime: true`, after it `later: true`. "Not now"
   dismisses for the day and leaves the card's "Post today's snap". The friend's blur rule and the streak are unchanged.
-- Digest card (phase 27b, card id `digest`, first by default after the pinned cards): on open, from data Home already
-  holds and `users/{me}.lastOpenAt`: unread messages, the friend's snap posted today, their new note, games on my
-  move / invites waiting, jar notes added or drawn by the friend (`pair.jar` mirror), the friend's daily answer,
-  a milestone or festival today, the pet needing food. One friendly sentence ("☀️ Since you were last here — 3
-  things happened:") with tappable chips that deep-link, hidden when nothing happened. Dismissing it, tapping a
-  chip, or 30 s on screen writes `lastOpenAt`, so the next open starts from there. The items come from the
-  morning-digest builder (`lib/digest.digestItems`), so the push and the card stay in sync.
+- There is no "while you were away" digest card (removed 2026-11-03): the Notifications inbox under the bell is the
+  one place for what happened while the app was closed. The morning-digest push (`lib/digest`) is unchanged.
 - Ping row: 4 big bouncy buttons — Thinking of you 💭, Hug 🤗, High-five ✋, Wave 👋.
   Sending animates on both screens, vibrates the receiver (`navigator.vibrate`), sends push.
 - Lamp: tap my lamp → friend's lamp glows the same colour for 10 min (RTDB). Long-press picks colour.
@@ -169,9 +164,8 @@ Open-when envelopes, Mood history (calendar for both).
   their screens. "Add" opens the editor (title ≤ 60, emoji chip, date, optional end date or time, Me / friend / Both,
   note ≤ 200, "Count down to this"); "Mark busy" creates an all-day "Busy" event for me over a chosen range in one tap.
 - Countdowns: any event with `countdown: true` counts down; the writer mirrors the nearest one onto
-  `pair/main.nextCountdown` (and the last add onto `pair.eventAdded`), so Home reads it with no extra listener. Adding an
-  event sends the `event-added` push (toggle, default on) → inbox row, and Home's digest shows "📅 Shravya added:
-  Exam · 14 Nov".
+  `pair/main.nextCountdown`, so Home reads it with no extra listener. Adding an event sends the `event-added` push
+  (toggle, default on) → inbox row "📅 added: Exam · 14 Nov".
 - Listener budget: Plan opens exactly one new bounded listener (`events` where `date ≥ today`, by date, limit 50), only
   while a Plan screen is mounted; lists and trips still load only when opened.
 - Removed in phase 29: the Call-time finder (`availability`), Gift ideas and To-do (`scripts/cleanup-plan.mjs` deletes
@@ -238,9 +232,9 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
 
 ## Data model — Firestore
 `users/{uid}`: name, nickname, email, photoURL, tz, city, lat, lng, fcmTokens[], notif{...},
-  homeCards{order[], hidden[]}, note{text ≤ 60, emoji?, at, expiresAt} | null, lastOpenAt (the digest's "since"),
+  homeCards{order[], hidden[]}, note{text ≤ 60, emoji?, at, expiresAt} | null,
   inbox{unread (server-bumped), lastReadAt} (the bell), createdAt
-  (`chatBg` is legacy: readable, deletable, never written)
+  (`chatBg` and `lastOpenAt` are legacy: readable, deletable, never written; Home deletes a leftover `lastOpenAt` once)
 `inbox/{uid}/items/{id}`: { type (push type), title, body, url (same-origin), count, createdAt } — one row per push the
   server composed for `uid` (admin-written in `sendPushTo`; a same-type burst within 10 min updates the latest unread row's
   count/body instead); the owner lists (newest first, 30 a page) and deletes; the 03:00 tick keeps the newest 200
@@ -249,8 +243,8 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
   pet{name,species,hungerAt,happyAt,sleepAt,level,bornAt}, plant{stage,lastGrowthDate},
   garden{stickers[]}, streak{count,lastDateKey,best,monthBest,shields,shieldUsedOn}, chatBg, chatBgBy,
   play{recent[{id,at (client ms),by}] ≤ 8, favourites[id] ≤ 6} (Play tab usage; ids are `lib/play/catalog.ts` ids),
-  snap{todayKey, todayAt (ms, written by the tick), streak{count, lastDateKey, best} (client transaction)},
-  jar{addedAt, addedBy, drawnAt, drawnBy} (client ms, mirrored by the jar writes for the Home digest)
+  snap{todayKey, todayAt (ms, written by the tick), streak{count, lastDateKey, best} (client transaction)}
+  (`jar` and `eventAdded` mirrors fed the removed digest card; Home deletes leftovers once, nothing writes them)
 `messages/{id}`: senderId, type(text|image|voice|gif|sticker|system), text,
   media{url,publicId,variants{w320,w640,w800,blur,original|audio},w,h,durationMs,bytes},
   replyTo{id,preview,senderId,type},
@@ -279,7 +273,7 @@ Diagnostics (incl. "Last tab switch: 420 ms (cold: no)", tap → content paint, 
 `events/{id}` (phase 29): title ≤ 60, emoji?, date (yyyy-MM-dd), endDate?, time? ("HH:mm"), who (uid | "both"),
   note ≤ 200, countdown (bool), createdBy, createdAt — either person adds, edits or deletes any event; the writer
   mirrors `pair/main.nextCountdown { id, title, emoji?, date, endDate?, who }` (the nearest countdown event with a day
-  left, or null) and `pair/main.eventAdded { at (client ms), by, title, date, emoji? }`
+  left, or null)
 `gameResults/{id}`: game, players[], winnerId|null, score{}, startedAt, endedAt
 `quizzes/{id}`: authorId, questions[{q, answer, decoys[3]}], takenBy{uid:{score,answers[],at}}
 `wordle/{dateKey}_{uid}`: guesses[], solved, at
@@ -647,10 +641,11 @@ Every trivia question also carries an `explanation`. Word definitions are static
   with `createdBy` / `createdAt` unchanged; delete by either; shape: keys title / emoji / date / endDate / time / who /
   note / countdown / createdBy / createdAt only, title 1–60, emoji ≤ 8 (or null), `date` and `endDate` yyyy-MM-dd with
   `endDate ≥ date`, `time` HH:mm, `who` 1–128, note ≤ 200, countdown bool. `pair/main.nextCountdown` (map with id /
-  title ≤ 60 / emoji / date / endDate / who, or null) and `pair/main.eventAdded` (at number, by, title ≤ 60, date,
-  emoji) are shape-checked; `lists/{kind}` accepts only `bucket` and `wishlist`; `availability` has no rule any more.
-- `users/{uid}.homeCards` (map of `order` / `hidden` lists ≤ 24), `.note` (null, or text 1–60, emoji ≤ 8, `at`
-  and `expiresAt` timestamps) and `.lastOpenAt` (timestamp or null) are owner-only like the rest of the doc.
+  title ≤ 60 / emoji / date / endDate / who, or null) is shape-checked (`eventAddedOk` is gone with the digest card);
+  `lists/{kind}` accepts only `bucket` and `wishlist`; `availability` has no rule any more.
+- `users/{uid}.homeCards` (map of `order` / `hidden` lists ≤ 24) and `.note` (null, or text 1–60, emoji ≤ 8, `at`
+  and `expiresAt` timestamps) are owner-only like the rest of the doc. `.lastOpenAt` is legacy (`lastOpenAtLegacy`):
+  a value already on the doc may stay or be deleted, never written or changed.
   `.inbox` (phase 28) is a map of `unread` (int ≥ 0) and `lastReadAt` (timestamp | null); when a client write touches
   it, `unread` must be 0 and `lastReadAt` a timestamp (the server bumps the count; a server-bumped value on my doc
   never blocks my other edits). `inbox/{uid}/items/{id}`: read and delete by `uid` only, no client create / update.
@@ -878,15 +873,16 @@ E2E_HARNESS=                         # tests only: 1 serves /e2e/* harness pages
     entries, streak, Memories → Snaps, 60-day sweep); 24-hour notes over the avatars with a chat reply; view-once
     photos and voice notes (`?once=1` URLs the worker never caches, recipient-only `viewedAt`, server-side destroy).
     Then "chore: snap on open + in-app digest": the snap prompt became a full-screen takeover on open (push opt-in,
-    `onTime` / `later`), Home gained the digest card over `users.lastOpenAt`, and every push-only signal got an in-app
-    counterpart (envelope-open chat line, jar activity in the digest).
+    `onTime` / `later`), Home gained a digest card over `users.lastOpenAt` (removed again on 2026-11-03, "chore: remove
+    digest card": the inbox is the one place for history), and every push-only signal got an in-app counterpart
+    (envelope-open chat line).
 28. ✅ **Inbox bell + overlay** (commit "chore: inbox bell + overlay") — a notifications inbox: every push the server
     composes becomes a row in `inbox/{uid}/items` (bursts collapse), `users.inbox.unread` feeds a bell with a badge on
     every tab header, and the shared Sheet at 90 % shows the list (mark all read, swipe to delete, load older).
 29. ✅ **Plan tab rework** (commit "phase 29: plan tab rework") — removed the Call-time finder, Gift ideas and To-do
     (+ `scripts/cleanup-plan.mjs`); added Upcoming: `events/*` merged with milestones, festivals and trips into a
     day-grouped agenda, "Mark busy", countdown events with a mirrored `pair.nextCountdown`, one shared countdown
-    selector for Plan's hero and Home's card, the `event-added` push / inbox row / digest chip.
+    selector for Plan's hero and Home's card, the `event-added` push / inbox row.
 26. ✅ **Game input feel** (commit "phase 26") — the `GameScreen` composite (header, fitted content, docked input) on the
     board games, daily word, Hangman, trivia, 20 Questions, decks and Pictionary; `Pressable` keys and options with
     haptics and key-clicks; tile pop and colour fades; the boards spec extended with the daily word and Hangman at six

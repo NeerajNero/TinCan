@@ -215,7 +215,7 @@ describe("events (phase 29: Plan → Upcoming)", () => {
     await assertFails(setDoc(doc(a, "events/x"), { ...ev, extra: 1 }));
     await assertSucceeds(setDoc(doc(a, "events/x"), { ...ev, endDate: "2026-11-14", time: "23:59", note: "n".repeat(200) }));
   });
-  it("pair.nextCountdown and pair.eventAdded mirrors are shaped", async () => {
+  it("pair.nextCountdown mirror is shaped", async () => {
     const a = asA().firestore();
     await assertSucceeds(updateDoc(doc(a, "pair/main"), { nextCountdown: { id: "e1", title: "Exam", emoji: "📚", date: "2026-11-14", who: A } }));
     await assertSucceeds(updateDoc(doc(a, "pair/main"), { nextCountdown: { id: "e2", title: "Trip", date: "2026-12-01", endDate: "2026-12-05", who: "both" } }));
@@ -223,9 +223,6 @@ describe("events (phase 29: Plan → Upcoming)", () => {
     await assertFails(updateDoc(doc(a, "pair/main"), { nextCountdown: { id: "e1", title: "Exam", date: "2026-11-14", who: A, extra: 1 } }));
     await assertFails(updateDoc(doc(a, "pair/main"), { nextCountdown: { id: "e1", title: "Exam", date: "soon", who: A } }));
     await assertFails(updateDoc(doc(a, "pair/main"), { nextCountdown: "e1" }));
-    await assertSucceeds(updateDoc(doc(a, "pair/main"), { eventAdded: { at: 1700000000000, by: A, title: "Exam", date: "2026-11-14", emoji: "📚" } }));
-    await assertFails(updateDoc(doc(a, "pair/main"), { eventAdded: { at: "now", by: A, title: "Exam", date: "2026-11-14" } }));
-    await assertFails(updateDoc(doc(a, "pair/main"), { eventAdded: { at: 1, by: A, title: "Exam", date: "2026-11-14", note: "x" } }));
   });
 });
 
@@ -620,11 +617,20 @@ describe("users: homeCards and note are owner-only and shaped", () => {
       await setDoc(doc(db, `users/${B}`), user(B, EMAIL_B ?? ""));
     }),
   );
-  it("homeCards: order and hidden lists, nothing else, only on my own doc; lastOpenAt is a timestamp", async () => {
+  it("lastOpenAt (the removed digest card's field) may only stay or be deleted, never written", async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, `users/${A}`), { ...user(A, EMAIL_A ?? ""), lastOpenAt: new Date() });
+    });
     const db = asA().firestore();
-    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { lastOpenAt: serverTimestamp() }));
-    await assertFails(updateDoc(doc(db, `users/${A}`), { lastOpenAt: "now" }));
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { nickname: "still me" }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { lastOpenAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db, `users/${A}`), { lastOpenAt: null }));
+    await assertSucceeds(updateDoc(doc(db, `users/${A}`), { lastOpenAt: deleteField() }));
     await assertFails(updateDoc(doc(db, `users/${B}`), { lastOpenAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(db, `users/${B}`), { lastOpenAt: deleteField() }));
+  });
+  it("homeCards: order and hidden lists, nothing else, only on my own doc", async () => {
+    const db = asA().firestore();
     await assertSucceeds(updateDoc(doc(db, `users/${A}`), { homeCards: { order: ["pet", "presence"], hidden: ["lamp"] } }));
     await assertSucceeds(updateDoc(doc(db, `users/${A}`), { homeCards: deleteField() }));
     await assertFails(updateDoc(doc(db, `users/${A}`), { homeCards: { order: ["pet"], hidden: [], extra: 1 } }));

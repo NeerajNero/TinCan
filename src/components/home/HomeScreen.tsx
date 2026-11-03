@@ -1,11 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Fragment, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 
 import { CountdownCard } from "@/components/home/CountdownCard";
 import { DailyQuestionCard } from "@/components/home/DailyQuestionCard";
-import { DigestCard } from "@/components/home/DigestCard";
 import { GameInvitesCard } from "@/components/home/GameInvitesCard";
 import { Lamps } from "@/components/home/Lamps";
 import { LastMessageCard } from "@/components/home/LastMessageCard";
@@ -26,19 +25,17 @@ import { useLiveEvents } from "@/components/live/LiveEventsProvider";
 import { useHeader } from "@/components/shell/HeaderProvider";
 import { SnapTakeover } from "@/components/snap/SnapTakeover";
 import { Splash } from "@/components/ui/Splash";
-import { useChatMeta } from "@/hooks/useChatMeta";
 import { useHomeData, type HomeData } from "@/hooks/useHomeData";
 import { useMilestoneDay } from "@/hooks/useMilestoneDay";
 import { useNow } from "@/hooks/useNow";
 import { usePair } from "@/hooks/usePair";
-import { useRelationship } from "@/hooks/useRelationship";
 import { useSnapToday } from "@/hooks/useSnapToday";
 import { isMyMove } from "@/lib/db/games";
+import { clearDigestLeftovers } from "@/lib/db/users";
 import { homeCardOrder, type HomeCardId } from "@/lib/homeCards";
-import { homeDigestInput } from "@/lib/homeDigest";
 import { readPref, writePref } from "@/lib/localPref";
-import { yearsLine } from "@/lib/milestones";
 import { SNAP_DISMISS_KEY, snapCardState, snapPinned, snapTakeoverDue } from "@/lib/snap";
+import { swallow } from "@/lib/swallow";
 
 export function HomeScreen() {
   const { me, friend, friendUid, pair } = usePair();
@@ -77,46 +74,27 @@ export function HomeScreen() {
  */
 function Cards({ data, friendUid, pingShortcut }: { data: HomeData; friendUid: string; pingShortcut: boolean }) {
   const { uid, me, friend, pair, loading } = usePair();
-  const { games, daily } = useLiveEvents();
-  const { unreadCount } = useChatMeta();
+  const { games } = useLiveEvents();
   const milestoneDay = useMilestoneDay();
-  const preset = useRelationship();
   const party = milestoneDay.milestones.length > 0;
   const now = useNow(30_000).getTime();
   const snapSummary = useSnapToday(data.today);
-  // The digest's "since" point is read once per Home mount, so moving lastOpenAt forward doesn't empty the card under the reader.
-  const [sinceMs] = useState<number | null>(() => me.lastOpenAt?.toMillis?.() ?? null);
   // Today's snap prompt: shown until posted or dismissed on this device (localStorage by room day).
   const [dismissedFor, setDismissedFor] = useState<string | null>(() => readPref(SNAP_DISMISS_KEY));
+
+  // One-time tidy-up after the digest card was removed: drop the fields only it read (own doc + pair mirrors).
+  useEffect(() => {
+    if (!loading) clearDigestLeftovers(uid, me, pair).catch(swallow);
+  }, [loading, uid, me, pair]);
 
   if (loading || !friend) return <Splash label="Finding your friend…" inline />;
 
   const snapState = snapCardState(pair.snap, snapSummary, uid, friendUid, data.today, now);
   const myTurn = games.filter((g) => isMyMove(g, uid)).length;
-  const invites = games.filter((g) => g.status === "invited" && g.createdBy !== uid).length;
   const order = homeCardOrder(me.homeCards, { snap: snapPinned(snapState), games: myTurn > 0 });
   const takeover = snapTakeoverDue({ schedule: pair.snap, summary: snapSummary, uid, today: data.today, now, dismissedFor });
-  const digestInput = homeDigestInput({
-    uid,
-    friendUid,
-    sinceMs,
-    now,
-    today: data.today,
-    unread: unreadCount,
-    snapSummary,
-    schedule: pair.snap,
-    friendNote: friend.note,
-    daily,
-    myTurn,
-    invites,
-    jar: pair.jar,
-    milestonesToday: milestoneDay.milestones.map((m) => (m.derived && m.years !== null ? yearsLine(m.years, preset.pairNoun) : m.title)),
-    pet: pair.pet,
-    eventAdded: pair.eventAdded,
-  });
 
   const cards: Record<HomeCardId, ReactNode> = {
-    digest: <DigestCard uid={uid} friendName={friend.nickname} input={digestInput} sinceMs={sinceMs} now={now} />,
     presence: <PresenceCard friend={friend} />,
     snap: <SnapCard state={snapState} schedule={pair.snap} summary={snapSummary} uid={uid} friendUid={friendUid} friendName={friend.nickname} />,
     chatPreview: <LastMessageCard friendName={friend.nickname} />,

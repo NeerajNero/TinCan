@@ -1,7 +1,5 @@
-import { pairRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
 import { addDoc, collection, doc, getDocs, limit, query, serverTimestamp, updateDoc, where, type CollectionReference, type Query } from "@/lib/firebase/fs";
-import { swallow } from "@/lib/swallow";
 import type { JarDoc } from "@/lib/types";
 
 const jarCol = () => collection(getDb(), "jar") as CollectionReference<JarDoc>;
@@ -13,8 +11,6 @@ export const jarByMe = (uid: string): Query<JarDoc> => query(jarCol(), where("au
 
 export async function addJarNote(authorId: string, forUid: string, text: string): Promise<string> {
   const ref = await addDoc(jarCol(), { authorId, forUid, text: text.trim().slice(0, 500), drawnAt: null, createdAt: serverTimestamp() });
-  // Mirrored on pair/main so Home's digest can say "dropped a note in your jar" without a jar listener.
-  void updateDoc(pairRef(), { "jar.addedAt": Date.now(), "jar.addedBy": authorId }).catch(swallow);
   return ref.id;
 }
 
@@ -25,6 +21,5 @@ export async function drawJarNote(uid: string): Promise<(JarDoc & { id: string }
   const pick = snap.docs[Math.floor(Math.random() * snap.docs.length)];
   if (pick === undefined) return null;
   await updateDoc(doc(getDb(), "jar", pick.id), { drawnAt: serverTimestamp() });
-  void updateDoc(pairRef(), { "jar.drawnAt": Date.now(), "jar.drawnBy": uid }).catch(swallow);
   return { id: pick.id, ...pick.data() };
 }

@@ -16,11 +16,10 @@ export function eventsQuery(today: DateKey, after: QueryDocumentSnapshot<EventDo
 }
 
 /** The writer keeps `pair/main.nextCountdown` current from the list it already holds, so Home needs no events listener. */
-async function mirror(events: EventWithId[], today: DateKey, prev: CountdownSummary | null | undefined, extra: Record<string, unknown> = {}): Promise<void> {
+async function mirror(events: EventWithId[], today: DateKey, prev: CountdownSummary | null | undefined): Promise<void> {
   const next = countdownSummaryFrom(events, today);
-  const changed = summaryChanged(prev, next);
-  if (!changed && Object.keys(extra).length === 0) return;
-  await updateDoc(pairRef(), { ...(changed ? { nextCountdown: next } : {}), ...extra });
+  if (!summaryChanged(prev, next)) return;
+  await updateDoc(pairRef(), { nextCountdown: next });
 }
 
 export interface EventContext {
@@ -30,14 +29,12 @@ export interface EventContext {
   prevSummary: CountdownSummary | null | undefined;
 }
 
-/** Add an event, mirror the countdown summary + "added" marker, and tell the friend (push type `event-added`). */
+/** Add an event, mirror the countdown summary, and tell the friend (push type `event-added` → inbox row). */
 export async function addEvent(uid: string, input: EventFields, ctx: EventContext): Promise<string> {
   const data = cleanEvent(input);
   const ref = await addDoc(eventsCol(), { ...data, createdBy: uid, createdAt: serverTimestamp() });
   const added: EventWithId = { ...data, id: ref.id, createdBy: uid, createdAt: null };
-  await mirror([...ctx.current.filter((e) => e.id !== ref.id), added], ctx.today, ctx.prevSummary, {
-    eventAdded: { at: Date.now(), by: uid, title: data.title, date: data.date, ...(data.emoji ? { emoji: data.emoji } : {}) },
-  });
+  await mirror([...ctx.current.filter((e) => e.id !== ref.id), added], ctx.today, ctx.prevSummary);
   void notify("event-added", { body: eventLine(data) }).catch(swallow);
   return ref.id;
 }

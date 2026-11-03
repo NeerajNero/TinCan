@@ -234,7 +234,7 @@ export function nearestCountdown(pair: Pick<PairDoc, "nextMeetup" | "tripsSummar
 
 /* ── wording ───────────────────────────────────────────────────────────── */
 
-/** "Exam · 14 Nov" (with "– 16 Nov" for a span): the push body, digest chip and inbox row. */
+/** "Exam · 14 Nov" (with "– 16 Nov" for a span): the push body and inbox row. */
 export function eventLine(ev: Pick<EventDoc, "title" | "date" | "endDate">): string {
   if (!isDateKey(ev.date)) return ev.title;
   const start = format(dateKeyToLocalDate(ev.date), "d MMM");

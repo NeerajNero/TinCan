@@ -123,8 +123,6 @@ export interface UserDoc {
   homeCards?: HomeCardsPref;
   /** The current note, or null once cleared / expired. */
   note?: UserNote | null;
-  /** When Home's digest card was last dismissed (or sat for 30 s): the next open's "since" point. */
-  lastOpenAt?: Timestamp | null;
   /** The notifications bell (phase 28): the server bumps `unread` with every row it adds; opening the sheet zeroes it. */
   inbox?: InboxPref | null;
   createdAt: Timestamp | null;
@@ -230,12 +228,8 @@ export interface PairDoc {
   play?: PlayUsage;
   /** Daily snap schedule (written by the tick) and streak (client transaction). */
   snap?: SnapSchedule;
-  /** Jar activity mirrored by the jar writes (client ms), so Home's digest needs no jar listener. */
-  jar?: { addedAt?: number; addedBy?: string; drawnAt?: number; drawnBy?: string };
   /** The nearest upcoming event with `countdown: true`, mirrored by the event writes (phase 29) so Home needs no events listener. */
   nextCountdown?: CountdownSummary | null;
-  /** The last event added (client ms, who, what), mirrored by `addEvent` for Home's digest chip. */
-  eventAdded?: EventAddedMirror;
   createdAt: Timestamp | null;
   // pet, garden and theme are added by later phases.
 }
@@ -582,15 +576,6 @@ export interface CountdownSummary {
   date: DateKey;
   endDate?: DateKey;
   who: string;
-}
-
-/** `pair/main.eventAdded`: who added what, last (for the digest chip). */
-interface EventAddedMirror {
-  at: number;
-  by: string;
-  title: string;
-  date: DateKey;
-  emoji?: string;
 }
 
 /* ── places/{id} ───────────────────────────────────────────────────────── */

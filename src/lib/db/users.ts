@@ -2,12 +2,12 @@
 import { BIO_MAX } from "@/components/ui/Avatar";
 import { authedFetch } from "@/lib/api";
 import { uploadToCloudinary } from "@/lib/cloudinary";
-import { userRef } from "@/lib/db/refs";
+import { pairRef, userRef } from "@/lib/db/refs";
 import { deleteField, serverTimestamp, Timestamp, updateDoc } from "@/lib/firebase/fs";
 import { compressImage } from "@/lib/media/compress";
 import { NOTE_MAX, NOTE_TTL_MS } from "@/lib/notes";
 import { swallow } from "@/lib/swallow";
-import type { CityPick, HomeCardsPref, UserDoc } from "@/lib/types";
+import type { CityPick, HomeCardsPref, PairDoc, UserDoc } from "@/lib/types";
 export function setNickname(uid: string, nickname: string): Promise<void> {
   return updateDoc(userRef(uid), { nickname: nickname.trim() });
 }
@@ -77,9 +77,15 @@ export function clearNote(uid: string): Promise<void> {
   return updateDoc(userRef(uid), { note: null });
 }
 
-/* ── Home digest (phase 27b) ───────────────────────────────────────────── */
+/* ── Leftovers of the Home digest card (removed 2026-11-03) ───────────── */
 
-/** The next open's "since" point: written when the digest card is dismissed or has sat for 30 s. */
-export function touchLastOpen(uid: string): Promise<void> {
-  return updateDoc(userRef(uid), { lastOpenAt: serverTimestamp() });
+/**
+ * The digest card kept `users/{me}.lastOpenAt` and the `pair.jar` / `pair.eventAdded`
+ * mirrors; nothing reads them now. Each is deleted once when still present
+ * (the rule lets a legacy `lastOpenAt` go but never come back).
+ */
+export async function clearDigestLeftovers(uid: string, me: UserDoc, pair: PairDoc): Promise<void> {
+  if ("lastOpenAt" in me) await updateDoc(userRef(uid), { lastOpenAt: deleteField() });
+  const stale = (["jar", "eventAdded"] as const).filter((k) => k in pair);
+  if (stale.length) await updateDoc(pairRef(), Object.fromEntries(stale.map((k) => [k, deleteField()])));
 }

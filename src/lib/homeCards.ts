@@ -6,7 +6,6 @@
 import type { HomeCardsPref } from "@/lib/types";
 
 export const HOME_CARDS = [
-  { id: "digest", label: "Since you were last here", emoji: "☀️" },
   { id: "presence", label: "Friend, time & notes", emoji: "👋" },
   { id: "snap", label: "Daily snap", emoji: "📸" },
   { id: "chatPreview", label: "Latest message", emoji: "💬" },

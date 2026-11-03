@@ -51,6 +51,10 @@ service cloud.firestore {
         return ['name', 'nickname', 'email', 'photoURL', 'avatar', 'previousAvatarPublicId', 'bio',
                 'tz', 'city', 'lat', 'lng', 'fcmTokens', 'notif', 'wordleSolved', 'homeCards', 'note', 'lastOpenAt', 'inbox', 'createdAt'];
       }
+      // `lastOpenAt` fed the Home digest card (removed 2026-11-03): a value still on a doc may stay or be deleted, never written.
+      function lastOpenAtLegacy() {
+        return !('lastOpenAt' in incoming()) || incoming().lastOpenAt == existing().lastOpenAt;
+      }
       // Home layout (phase 27): the card order and the hidden ids, short lists of short strings.
       function homeCardsOk() {
         return !('homeCards' in incoming()) || (incoming().homeCards is map
@@ -84,8 +88,7 @@ service cloud.firestore {
           && incoming().tz is string && incoming().tz.size() > 0 && incoming().tz.size() <= 64
           && incoming().fcmTokens is list && incoming().fcmTokens.size() <= 10
           && (!('avatar' in incoming()) || incoming().avatar == null || (cloudinaryUrl(incoming().avatar.url) && variantsOk(incoming().avatar)))
-          && homeCardsOk() && noteOk() && inboxOk()
-          && (!('lastOpenAt' in incoming()) || incoming().lastOpenAt == null || incoming().lastOpenAt is timestamp);
+          && homeCardsOk() && noteOk() && inboxOk() && lastOpenAtLegacy();
       }
       // The chat wallpaper moved to pair/main.chatBg (phase 22b); a legacy users.chatBg can only be deleted.
       allow read: if allowed();
@@ -130,10 +133,9 @@ service cloud.firestore {
         && chatBgOk()
         && playOk()
         && snapOk()
-        && nextCountdownOk()
-        && eventAddedOk();
+        && nextCountdownOk();
       allow delete: if false;
-      // Upcoming (phase 29): the nearest countdown event and the last event added, mirrored by the event writes.
+      // Upcoming (phase 29): the nearest countdown event, mirrored by the event writes.
       function nextCountdownOk() {
         return !('nextCountdown' in incoming()) || incoming().nextCountdown == null || (incoming().nextCountdown is map
           && incoming().nextCountdown.keys().hasOnly(['id', 'title', 'emoji', 'date', 'endDate', 'who'])
@@ -141,13 +143,6 @@ service cloud.firestore {
           && incoming().nextCountdown.date is string && incoming().nextCountdown.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
           && strMax(incoming().nextCountdown, 'emoji', 8) && strMax(incoming().nextCountdown, 'endDate', 10)
           && incoming().nextCountdown.who is string);
-      }
-      function eventAddedOk() {
-        return !('eventAdded' in incoming()) || (incoming().eventAdded is map
-          && incoming().eventAdded.keys().hasOnly(['at', 'by', 'title', 'date', 'emoji'])
-          && incoming().eventAdded.at is number && incoming().eventAdded.by is string
-          && incoming().eventAdded.title is string && incoming().eventAdded.title.size() <= 60
-          && incoming().eventAdded.date is string && strMax(incoming().eventAdded, 'emoji', 8));
       }
       // Daily snap: the tick (admin) sets todayKey / todayAt; a client may only write the streak.
       function snapOk() {
