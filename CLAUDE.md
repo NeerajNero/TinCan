@@ -325,7 +325,12 @@ Every trivia question also carries an `explanation`. Word definitions are static
   writable by that uid only (a separate top-level node: RTDB read rules cascade, so nothing private can live under the
   readable `games`); the tick removes it when it unlists or abandons the game
 `cards/{deck}`: {index, flippedBy, at} — shared current card for deck games
-`pictionary/{gameId}`: {drawerUid, word, startedAt, strokes…, guesses[], solvedAt}
+`pictionary/{gameId}`: {players, status, open, round, rounds, drawerUid, wordOptions, word, roundStartedAt, guesses, scores, solvedAt,
+  solvedBy, roundOver} — the round node only; `strokes` / `live` are refused here (`.validate: false`)
+`pictionaryStrokes/{gameId}`: {strokes/{id}: stroke as whiteboard, live/{uid}} — the canvas, a **sibling** of the round node: an RTDB
+  transaction retries whenever anything under its path changes, and the drawer streams a point every 80 ms, so a canvas under
+  `pictionary/{id}` invalidated the round / guess transactions until `maxretry`. `nextRound` and `closePictionary` remove it after
+  their commit; the tick removes it when it unlists a finished round (6 h) or calls off one idle for 7 days (`status: declined`)
 `watch/main`: {videoId, playing, positionSec, updatedAt, by, title}
 `listen/main`: same shape; `radio/main`: {stationId, playing, by}
 `timer/main`: {mode(focus|break), endsAt, startedBy, running}
@@ -759,8 +764,10 @@ of a task must say which docs were updated.
   `firebase/firestore` or `firebase/database` directly (ESLint `no-restricted-imports`, lifted only under
   `src/lib/firebase`, tests and scripts). Both wrappers report every rejected write (set/update/remove/
   push/transaction/onDisconnect, setDoc/updateDoc/addDoc/deleteDoc/batch/transaction) and every denied
-  read or listener (get/getDoc/getDocs, onValue/onChildAdded/onSnapshot, even without a caller error
-  callback) to the Diagnostics log as `[write] op path → code: message` / `[read] …`; in development a
+  read or listener (get/getDoc/getDocs,   callback) to the Diagnostics log as `[write] op path → code: message` / `[read] …`; a Firestore transaction also logs every
+  retry as `[warn] transaction pair/main: attempt 2 …` naming the documents it read (a read-only pass still commits a
+  `verify`, so it contends like a write), and an RTDB transaction that hit `maxretry` logs `[warn] transaction path gave up …`
+  (contention, not a refusal; the caller still gets the rejection and must show it); in development a
   permission-denied also shows as a toast (`WriteFailureToasts`). Never attach a listener that can't fail
   visibly. A listener cancelled with PERMISSION_DENIED is never re-attached (one log line, then stop); only
   transport cancels may retry, from a single listener per screen. `tests/unit/rules-coverage.test.ts` (part of `pnpm test`) scans those wrappers' call sites and

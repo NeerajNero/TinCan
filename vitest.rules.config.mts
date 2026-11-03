@@ -6,7 +6,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   test: {
-    include: ["tests/rules.test.ts", "tests/trivia-live.test.ts"],
+    include: ["tests/rules.test.ts", "tests/trivia-live.test.ts", "tests/pictionary-live.test.ts"],
     testTimeout: 20_000,
     hookTimeout: 30_000,
     fileParallelism: false,

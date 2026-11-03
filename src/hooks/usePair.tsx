@@ -6,6 +6,7 @@ import { OnboardingScreen } from "@/components/onboarding/OnboardingScreen";
 import { PairFullScreen } from "@/components/pair/PairFullScreen";
 import { Splash } from "@/components/ui/Splash";
 import { useAuth } from "@/hooks/useAuth";
+import { rememberPair } from "@/lib/db/pairCache";
 import { pairRef, userRef } from "@/lib/db/refs";
 import { onSnapshot, type DocumentSnapshot } from "@/lib/firebase/fs";
 import { recordFirestoreSnapshot } from "@/lib/firestoreHealth";
@@ -75,12 +76,14 @@ export function PairProvider({ children }: { children: React.ReactNode }) {
       { includeMetadataChanges: true },
       (snap) => {
         recordFirestoreSnapshot(snap);
+        rememberPair(snap.exists() ? snap.data() : null);
         setPair(settle(snap));
       },
       (err) => setError(err.message),
     );
     return () => {
       unsub();
+      rememberPair(null);
       setPair({ state: "pending" });
     };
   }, [uid]);

@@ -3,7 +3,7 @@
  * cursors, the 32×32 pixel grid, radio, and the focus timer.
  */
 import { getRtdb } from "@/lib/firebase/client";
-import { limitToLast, onValue, orderByKey, push, query, ref, remove, runTransaction, serverTimestamp, set, update } from "@/lib/firebase/rt";
+import { limitToLast, onValue, orderByKey, push, query, ref, remove, runTransaction, serverTimestamp, set, update, type Database } from "@/lib/firebase/rt";
 import { swallow } from "@/lib/swallow";
 export interface Stroke {
   uid: string;
@@ -23,12 +23,14 @@ export interface CursorNode {
 }
 
 const MAX_STROKES = 500;
-const r = (p: string) => ref(getRtdb(), p);
+const r = (p: string, db: Database = getRtdb()) => ref(db, p);
 
-/* ── strokes (base = "whiteboard" or "pictionary/{id}") ────────────────── */
+/* ── strokes (base = "whiteboard" or "pictionaryStrokes/{id}") ─────────── */
+// Pictionary strokes sit beside the round node, never under it: a transaction on
+// pictionary/{id} would otherwise retry on every streamed point (see lib/db/pictionary).
 
-export function subscribeStrokes(base: string, cb: (strokes: Array<Stroke & { id: string }>) => void): () => void {
-  const q = query(r(`${base}/strokes`), orderByKey(), limitToLast(MAX_STROKES));
+export function subscribeStrokes(base: string, cb: (strokes: Array<Stroke & { id: string }>) => void, db?: Database): () => void {
+  const q = query(r(`${base}/strokes`, db), orderByKey(), limitToLast(MAX_STROKES));
   return onValue(q, (snap) => {
     const list: Array<Stroke & { id: string }> = [];
     snap.forEach((c) => {
@@ -38,20 +40,20 @@ export function subscribeStrokes(base: string, cb: (strokes: Array<Stroke & { id
   });
 }
 
-export function subscribeLive(base: string, cb: (live: Record<string, LiveStroke>) => void): () => void {
-  return onValue(r(`${base}/live`), (snap) => cb((snap.val() as Record<string, LiveStroke> | null) ?? {}));
+export function subscribeLive(base: string, cb: (live: Record<string, LiveStroke>) => void, db?: Database): () => void {
+  return onValue(r(`${base}/live`, db), (snap) => cb((snap.val() as Record<string, LiveStroke> | null) ?? {}));
 }
 
-export async function addStroke(base: string, stroke: Stroke, currentCount: number, oldestId: string | null): Promise<string> {
-  const node = push(r(`${base}/strokes`));
+export async function addStroke(base: string, stroke: Stroke, currentCount: number, oldestId: string | null, db?: Database): Promise<string> {
+  const node = push(r(`${base}/strokes`, db));
   await set(node, stroke);
-  if (currentCount >= MAX_STROKES && oldestId) await remove(r(`${base}/strokes/${oldestId}`)).catch(swallow);
+  if (currentCount >= MAX_STROKES && oldestId) await remove(r(`${base}/strokes/${oldestId}`, db)).catch(swallow);
   return node.key as string;
 }
 
-export const removeStroke = (base: string, id: string) => remove(r(`${base}/strokes/${id}`));
-export const clearStrokes = (base: string) => set(r(`${base}/strokes`), null);
-export const streamLive = (base: string, uid: string, stroke: Stroke | null) => set(r(`${base}/live/${uid}`), stroke ? { ...stroke, at: serverTimestamp() } : null);
+export const removeStroke = (base: string, id: string, db?: Database) => remove(r(`${base}/strokes/${id}`, db));
+export const clearStrokes = (base: string, db?: Database) => set(r(`${base}/strokes`, db), null);
+export const streamLive = (base: string, uid: string, stroke: Stroke | null, db?: Database) => set(r(`${base}/live/${uid}`, db), stroke ? { ...stroke, at: serverTimestamp() } : null);
 
 /* ── cursors ───────────────────────────────────────────────────────────── */
 

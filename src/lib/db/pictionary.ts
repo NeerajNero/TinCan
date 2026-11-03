@@ -1,8 +1,14 @@
-/** Pictionary rounds at RTDB pictionary/{id}; strokes live under pictionary/{id}/strokes. */
+/**
+ * Pictionary rounds at RTDB pictionary/{id}. Strokes and the live in-progress
+ * stroke live in the sibling node pictionaryStrokes/{id} (`lib/db/together`),
+ * never under the round node: a transaction retries whenever anything under
+ * its path changes, and the drawer streams a point every 80 ms, so a round
+ * transaction sharing the node with the canvas hit `maxretry` mid-drawing.
+ */
 
 import words from "@/content/pictionary-words.json";
 import { getRtdb } from "@/lib/firebase/client";
-import { equalTo, onValue, orderByChild, push, query, ref, runTransaction, serverTimestamp, set, update } from "@/lib/firebase/rt";
+import { equalTo, onValue, orderByChild, push, query, ref, remove, runTransaction, serverTimestamp, set, update, type Database } from "@/lib/firebase/rt";
 import { advanceRound, DEFAULT_ROUNDS, pointsFor, ROUND_MS, type RoundCount } from "@/lib/pictionary";
 
 export { ROUND_MS, ROUND_OPTIONS, roundsOf } from "@/lib/pictionary";
@@ -38,8 +44,10 @@ export interface LivePictionary extends PictionaryNode {
   id: string;
 }
 
-const r = (p: string) => ref(getRtdb(), p);
+const r = (p: string, db: Database = getRtdb()) => ref(db, p);
 export const pictRoute = (id: string) => `/play/pictionary/${id}`;
+/** The canvas node for a game: the `base` SharedCanvas draws on. */
+export const pictStrokesBase = (id: string) => `pictionaryStrokes/${id}`;
 
 const offer = () => {
   const picks = new Set<string>();
@@ -62,27 +70,33 @@ export const parseOptions = (n: PictionaryNode | null): string[] => {
   }
 };
 
-export function subscribeOpenPictionary(cb: (list: LivePictionary[]) => void): () => void {
-  return onValue(query(r("pictionary"), orderByChild("open"), equalTo(true)), (snap) => {
+/** Games from before the move may still carry a canvas under the round node; a rewrite drops it (the rules refuse it now). */
+function withoutCanvas<T extends object>(node: T): T {
+  const copy = { ...node } as Record<string, unknown>;
+  delete copy.strokes;
+  delete copy.live;
+  return copy as T;
+}
+
+export function subscribeOpenPictionary(cb: (list: LivePictionary[]) => void, db?: Database): () => void {
+  return onValue(query(r("pictionary", db), orderByChild("open"), equalTo(true)), (snap) => {
     const list: LivePictionary[] = [];
     snap.forEach((c) => {
-      const v = c.val() as PictionaryNode & { strokes?: unknown; live?: unknown };
-      list.push({ id: c.key as string, ...v });
+      list.push({ id: c.key as string, ...withoutCanvas(c.val() as PictionaryNode) });
     });
     cb(list.sort((a, b) => b.createdAt - a.createdAt));
   });
 }
 
-export function subscribePictionary(id: string, cb: (n: LivePictionary | null) => void): () => void {
-  return onValue(r(`pictionary/${id}`), (snap) => {
+export function subscribePictionary(id: string, cb: (n: LivePictionary | null) => void, db?: Database): () => void {
+  return onValue(r(`pictionary/${id}`, db), (snap) => {
     if (!snap.exists()) return cb(null);
-    const v = snap.val() as PictionaryNode;
-    cb({ id, ...v });
+    cb({ id, ...withoutCanvas(snap.val() as PictionaryNode) });
   });
 }
 
-export async function invitePictionary(me: string, friend: string, rounds: RoundCount = DEFAULT_ROUNDS): Promise<string> {
-  const node = push(r("pictionary"));
+export async function invitePictionary(me: string, friend: string, rounds: RoundCount = DEFAULT_ROUNDS, db?: Database): Promise<string> {
+  const node = push(r("pictionary", db));
   const data: Omit<PictionaryNode, "createdAt"> = {
     players: { first: me, second: friend },
     status: "invited",
@@ -105,46 +119,59 @@ export async function invitePictionary(me: string, friend: string, rounds: Round
   return node.key as string;
 }
 
-export const acceptPictionary = (id: string) => update(r(`pictionary/${id}`), { status: "active" });
-export const declinePictionary = (id: string) => update(r(`pictionary/${id}`), { status: "declined", open: false });
+export const acceptPictionary = (id: string, db?: Database) => update(r(`pictionary/${id}`, db), { status: "active" });
+export const declinePictionary = (id: string, db?: Database) => update(r(`pictionary/${id}`, db), { status: "declined", open: false });
 
 /** The round clock is server time, so neither phone's clock can end a round early or late. */
-export function chooseWord(id: string, word: string): Promise<void> {
-  return update(r(`pictionary/${id}`), { word, roundStartedAt: serverTimestamp(), guesses: "[]", solvedAt: null, solvedBy: null, roundOver: false });
+export function chooseWord(id: string, word: string, db?: Database): Promise<void> {
+  return update(r(`pictionary/${id}`, db), { word, roundStartedAt: serverTimestamp(), guesses: "[]", solvedAt: null, solvedBy: null, roundOver: false });
 }
 
 /** Append a guess; on a match award points inside the same transaction. `nowMs` is server time (RTDB offset applied). */
-export async function submitGuess(game: LivePictionary, uid: string, text: string, nowMs: number): Promise<boolean> {
+export async function submitGuess(game: LivePictionary, uid: string, text: string, nowMs: number, db?: Database): Promise<boolean> {
   let solved = false;
-  await runTransaction(r(`pictionary/${game.id}`), (cur: PictionaryNode | null) => {
+  await runTransaction(r(`pictionary/${game.id}`, db), (cur: PictionaryNode | null) => {
     if (!cur || cur.status !== "active" || !cur.word || cur.roundOver) return cur;
     const list = parseGuesses(cur);
     list.push({ uid, text: text.trim().slice(0, 60), at: nowMs });
     const hit = normalise(text) === normalise(cur.word);
-    if (!hit) return { ...cur, guesses: JSON.stringify(list) };
+    if (!hit) return withoutCanvas({ ...cur, guesses: JSON.stringify(list) });
     const left = Math.max(0, cur.roundStartedAt + ROUND_MS - nowMs);
     const pts = pointsFor(left);
     const scores = { ...cur.scores };
     scores[uid] = (scores[uid] ?? 0) + pts;
     scores[cur.drawerUid] = (scores[cur.drawerUid] ?? 0) + Math.ceil(pts / 2);
     solved = true;
-    return { ...cur, guesses: JSON.stringify(list), solvedAt: nowMs, solvedBy: uid, scores, roundOver: true };
+    return withoutCanvas({ ...cur, guesses: JSON.stringify(list), solvedAt: nowMs, solvedBy: uid, scores, roundOver: true });
   });
   return solved;
 }
 
-export const endRound = (id: string) => update(r(`pictionary/${id}`), { roundOver: true });
+export const endRound = (id: string, db?: Database) => update(r(`pictionary/${id}`, db), { roundOver: true });
 
 /**
- * Next round (or finish after the last): clears the canvas, swaps the drawer,
- * offers new words. A transaction from the round the tapper saw, so a stale
- * or double tap (both phones press "Next round") is a no-op, never a skip.
+ * Next round (or finish after the last): swaps the drawer, offers new words,
+ * then clears the canvas node. A transaction from the round the tapper saw, so
+ * a stale or double tap (both phones press "Next round") is a no-op, never a
+ * skip. Resolves true when this tap advanced the round. Rejects (`maxretry`
+ * after 25 contested attempts, or a rules refusal) are the caller's to show.
  */
-export async function nextRound(game: LivePictionary): Promise<void> {
-  await runTransaction(r(`pictionary/${game.id}`), (cur: PictionaryNode | null) => {
+export async function nextRound(game: LivePictionary, db?: Database): Promise<boolean> {
+  let advanced = false;
+  const res = await runTransaction(r(`pictionary/${game.id}`, db), (cur: PictionaryNode | null) => {
+    if (cur === null) return null; // nothing cached yet (no listener): the SDK retries with the server value
     const patch = advanceRound(cur, game.round, offer);
-    return patch ? { ...cur, ...patch } : undefined;
+    if (!patch) return undefined; // stale tap: abort
+    advanced = true;
+    return withoutCanvas({ ...cur, ...patch });
   });
+  const done = advanced && res.committed;
+  if (done) await remove(r(pictStrokesBase(game.id), db));
+  return done;
 }
 
-export const closePictionary = (id: string) => update(r(`pictionary/${id}`), { open: false });
+/** Unlist a finished game and drop its canvas. */
+export async function closePictionary(id: string, db?: Database): Promise<void> {
+  await update(r(`pictionary/${id}`, db), { open: false });
+  await remove(r(pictStrokesBase(id), db));
+}

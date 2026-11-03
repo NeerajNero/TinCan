@@ -8,7 +8,7 @@ import { authedFetch } from "@/lib/api";
 import { createSystemMessage } from "@/lib/chat/system";
 import { pairRef } from "@/lib/db/refs";
 import { getDb, getRtdb } from "@/lib/firebase/client";
-import { collection, doc, getDocs, limit, orderBy, query, runTransaction as fsTransaction, serverTimestamp, setDoc, Timestamp, type CollectionReference, type Query } from "@/lib/firebase/fs";
+import { collection, doc, FieldPath, getDocs, increment, limit, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, type CollectionReference, type Query } from "@/lib/firebase/fs";
 import { onValue, orderByChild, push as rtdbPush, query as rtdbQuery, ref, runTransaction, serverTimestamp as rtdbNow, equalTo, set, update } from "@/lib/firebase/rt";
 import { initialStateFor, loadEngine, optionsOf, other, type GameOptions, type GameType } from "@/lib/games";
 import { battleshipMyMove, fleetValid, markReady, type BattleshipState, type Ship, type ShotResult } from "@/lib/games/battleship";
@@ -275,8 +275,16 @@ export async function loadRecentResults(): Promise<Array<GameResultDoc & { id: s
 }
 
 /**
+ * `pair/main.records[game][winner | "draws"] += 1` as one merge write: the create-once
+ * `gameResults` doc already guarantees a single bump per game, so no transaction is
+ * needed, and a transaction here used to contend with the sticker checks and the
+ * other phone's writes on the same document (failed-precondition retries).
+ */
+const bumpRecord = (game: string, winnerId: string | null): Promise<void> => updateDoc(pairRef(), new FieldPath("records", game, winnerId ?? "draws"), increment(1)).catch(swallow);
+
+/**
  * gameResults/{gameId} (create-only, so a second finaliser is a harmless no-op),
- * pair/main.records[game] in a transaction, confetti is the caller's, and a
+ * pair/main.records[game] as a merge write, confetti is the caller's, and a
  * system line in chat.
  */
 async function recordResult(game: LiveGame, by: string, nameOf: (uid: string) => string): Promise<void> {
@@ -295,16 +303,7 @@ async function recordResult(game: LiveGame, by: string, nameOf: (uid: string) =>
   } catch {
     return; // already recorded by the other client
   }
-  await fsTransaction(getDb(), async (tx) => {
-    const snap = await tx.get(pairRef());
-    const pair = snap.data() as PairDoc | undefined;
-    const records = { ...(pair?.records ?? {}) };
-    const rec = { ...(records[game.type] ?? {}) };
-    if (game.winnerId) rec[game.winnerId] = (rec[game.winnerId] ?? 0) + 1;
-    else rec.draws = (rec.draws ?? 0) + 1;
-    records[game.type] = rec;
-    tx.update(pairRef(), { records });
-  }).catch(swallow);
+  await bumpRecord(game.type, game.winnerId);
   createSystemMessage("game-result", describeResult(game, nameOf), { game: gameInfo(game.type).name }).catch(swallow);
   if (game.winnerId && game.type === "chess") void recordTogetherEvent("chess-win", by);
   if (game.winnerId && game.type === "connectfour") void recordTogetherEvent("c4-win", by);
@@ -326,16 +325,7 @@ export async function recordGenericResult(game: Exclude<ResultGame, GameType>, p
   } catch {
     return;
   }
-  await fsTransaction(getDb(), async (tx) => {
-    const snap = await tx.get(pairRef());
-    const pair = snap.data() as PairDoc | undefined;
-    const records = { ...(pair?.records ?? {}) };
-    const rec = { ...(records[game] ?? {}) };
-    if (winnerId) rec[winnerId] = (rec[winnerId] ?? 0) + 1;
-    else rec.draws = (rec.draws ?? 0) + 1;
-    records[game] = rec;
-    tx.update(pairRef(), { records });
-  }).catch(swallow);
+  await bumpRecord(game, winnerId);
   const [host] = players;
   if (host === undefined) return;
   createSystemMessage("game-result", resultLine(game, winnerId ? nameOf(winnerId) : null), { game: gameInfo(game).name }).catch(swallow);

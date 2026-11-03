@@ -726,3 +726,36 @@ describe("inbox (phase 28): server-written rows the owner lists and deletes; the
     await assertSucceeds(updateDoc(doc(a, `users/${A}`), { "inbox.unread": 0, "inbox.lastReadAt": serverTimestamp() }));
   });
 });
+
+describe("rtdb pictionaryStrokes: the canvas beside the round node", () => {
+  const stroke = (uid: string) => ({ uid, points: "[[0.1,0.1],[0.2,0.2]]", color: "#ff6b6b", width: 7 });
+
+  it("accepts strokes and the live stroke as yourself, refuses the other person's uid and unknown children", async () => {
+    const dbA = asA().database();
+    const dbB = asB().database();
+    await assertSucceeds(set(ref(dbA, "pictionaryStrokes/g1/strokes/s1"), stroke(A)));
+    await assertFails(set(ref(dbA, "pictionaryStrokes/g1/strokes/s2"), stroke(B)));
+    await assertFails(set(ref(dbA, "pictionaryStrokes/g1/strokes/s3"), { ...stroke(A), color: "red" }));
+    await assertSucceeds(set(ref(dbA, `pictionaryStrokes/g1/live/${A}`), { ...stroke(A), at: rtdbServerTimestamp() }));
+    await assertFails(set(ref(dbA, `pictionaryStrokes/g1/live/${B}`), { ...stroke(A), at: 1 }));
+    await assertFails(set(ref(dbA, "pictionaryStrokes/g1/word"), "cat"));
+    // Either player reads, clears (Clear all) and removes the whole canvas (next round, close, the tick).
+    await assertSucceeds(get(ref(dbB, "pictionaryStrokes/g1")));
+    await assertSucceeds(set(ref(dbB, "pictionaryStrokes/g1/strokes"), null));
+    await assertSucceeds(remove(ref(dbB, "pictionaryStrokes/g1")));
+    await assertFails(get(ref(asStranger().database(), "pictionaryStrokes/g1")));
+  });
+
+  it("refuses a canvas under the round node (the old layout) while the round itself still updates", async () => {
+    await env$.withSecurityRulesDisabled(async (ctx) => {
+      await set(ref(ctx.database(), "pictionary/g2"), { players: { first: A, second: B }, status: "active", open: true, createdBy: A, createdAt: 1, round: 1, drawerUid: A, wordOptions: "[]", word: "cat", roundStartedAt: 1, guesses: "[]", scores: { [A]: 0, [B]: 0 }, solvedAt: null, solvedBy: null, roundOver: false });
+    });
+    const dbA = asA().database();
+    await assertFails(set(ref(dbA, "pictionary/g2/strokes/s1"), stroke(A)));
+    await assertFails(set(ref(dbA, `pictionary/g2/live/${A}`), { ...stroke(A), at: 1 }));
+    await assertSucceeds(update(ref(dbA, "pictionary/g2"), { roundOver: true }));
+    // A leftover canvas from before the move may still be deleted.
+    await env$.withSecurityRulesDisabled(async (ctx) => set(ref(ctx.database(), "pictionary/g2/strokes/old"), stroke(A)));
+    await assertSucceeds(remove(ref(dbA, "pictionary/g2/strokes")));
+  });
+});

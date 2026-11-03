@@ -9,7 +9,7 @@
  */
 import * as D from "firebase/database";
 
-import { noteFirebaseFailure } from "@/lib/diagLog";
+import { noteDiag, noteFirebaseFailure } from "@/lib/diagLog";
 
 export * from "firebase/database";
 
@@ -34,8 +34,23 @@ const reportWrite = <T>(op: string, target: unknown, p: Promise<T>): Promise<T> 
 export const set = (ref: D.DatabaseReference, value: unknown): Promise<void> => reportWrite("set", ref, D.set(ref, value));
 export const update = (ref: D.DatabaseReference, values: object): Promise<void> => reportWrite("update", ref, D.update(ref, values));
 export const remove = (ref: D.DatabaseReference): Promise<void> => reportWrite("remove", ref, D.remove(ref));
+/**
+ * A transaction the SDK gave up on after 25 contested attempts rejects with
+ * `Error("maxretry")`: contention on the node (something under the path kept
+ * changing), not a refusal, so it is logged as a `[warn]` line with the path
+ * rather than a `[write]` failure; every other rejection is reported as usual.
+ * The caller still receives the rejection and must show it (nothing here swallows).
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const runTransaction = (ref: D.DatabaseReference, fn: (currentData: any) => unknown, options?: D.TransactionOptions): Promise<D.TransactionResult> => reportWrite("transaction", ref, D.runTransaction(ref, fn, options));
+export const runTransaction = (ref: D.DatabaseReference, fn: (currentData: any) => unknown, options?: D.TransactionOptions): Promise<D.TransactionResult> =>
+  D.runTransaction(ref, fn, options).catch((err: unknown) => {
+    if (isMaxRetry(err)) noteDiag("warn", `transaction ${rtdbPath(ref)} gave up: the node kept changing under it (maxretry)`);
+    else noteFirebaseFailure("write", "transaction", rtdbPath(ref), err);
+    throw err;
+  });
+
+/** The RTDB SDK's "too many retries" rejection (`Error: maxretry`, no code). */
+const isMaxRetry = (err: unknown): boolean => err instanceof Error && err.message === "maxretry";
 export const get = (query: D.Query): Promise<D.DataSnapshot> =>
   D.get(query).catch((err: unknown) => {
     noteFirebaseFailure("read", "get", rtdbPath(query), err);

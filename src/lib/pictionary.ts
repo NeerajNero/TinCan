@@ -26,10 +26,12 @@ export interface RoundState {
  * What `nextRound` writes, computed inside a transaction from the *current*
  * node: null when the tap is stale (the round already advanced, the round
  * isn't over, or the game isn't active), so two taps can never skip a round.
+ * The canvas is a sibling node (`pictionaryStrokes/{id}`) and is cleared by
+ * the caller after the commit, so the patch never touches it.
  */
 export function advanceRound(cur: RoundState | null, fromRound: number, offer: () => string): Record<string, unknown> | null {
   if (!cur || cur.status !== "active" || !cur.roundOver || cur.round !== fromRound) return null;
-  if (cur.round >= roundsOf(cur)) return { status: "finished", open: false, strokes: null, live: null };
+  if (cur.round >= roundsOf(cur)) return { status: "finished", open: false };
   const drawerUid = cur.drawerUid === cur.players.first ? cur.players.second : cur.players.first;
-  return { round: cur.round + 1, drawerUid, wordOptions: offer(), word: null, roundStartedAt: 0, guesses: "[]", solvedAt: null, solvedBy: null, roundOver: false, strokes: null, live: null };
+  return { round: cur.round + 1, drawerUid, wordOptions: offer(), word: null, roundStartedAt: 0, guesses: "[]", solvedAt: null, solvedBy: null, roundOver: false };
 }

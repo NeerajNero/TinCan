@@ -9,6 +9,7 @@ import { Confetti } from "@/components/plan/Confetti";
 import { GameScreen } from "@/components/play/GameScreen";
 import { CANVAS_COLORS, CANVAS_WIDTHS, SharedCanvas, type Tool } from "@/components/play/together/SharedCanvas";
 import { ToolBtn } from "@/components/play/together/WhiteboardScreen";
+import { useToast } from "@/components/toast/ToastProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -18,7 +19,7 @@ import { useRtdbValue } from "@/hooks/useRtdbValue";
 import { useStartInvite } from "@/hooks/useStartInvite";
 import { cn } from "@/lib/cn";
 import { recordGenericResult } from "@/lib/db/games";
-import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRound, invitePictionary, nextRound, parseGuesses, parseOptions, pictRoute, ROUND_MS, ROUND_OPTIONS, roundsOf, submitGuess, subscribeOpenPictionary, subscribePictionary, type LivePictionary } from "@/lib/db/pictionary";
+import { acceptPictionary, chooseWord, closePictionary, declinePictionary, endRound, invitePictionary, nextRound, parseGuesses, parseOptions, pictRoute, pictStrokesBase, ROUND_MS, ROUND_OPTIONS, roundsOf, submitGuess, subscribeOpenPictionary, subscribePictionary, type LivePictionary } from "@/lib/db/pictionary";
 import { clearStrokes } from "@/lib/db/together";
 import { recordTogetherEvent } from "@/lib/garden";
 import { haptic } from "@/lib/haptics";
@@ -86,6 +87,7 @@ export function PictionaryGame({ id }: { id: string }) {
   const { uid, me, friend } = usePair();
   const router = useRouter();
   const autoJoin = useSearchParams().get("join") === "1";
+  const { toast } = useToast();
   const [game, setGame] = useState<LivePictionary | null | undefined>(undefined);
   const { value: offset } = useRtdbValue<number>(".info/serverTimeOffset");
   const now = useNow(250);
@@ -151,7 +153,15 @@ export function PictionaryGame({ id }: { id: string }) {
     if (!game || !guess.trim()) return;
     const text = guess;
     setGuess("");
-    const hit = await submitGuess(game, uid, text, serverNow);
+    let hit = false;
+    try {
+      hit = await submitGuess(game, uid, text, serverNow);
+    } catch {
+      // A contested or refused transaction (maxretry, rules): keep the text so one tap resends it.
+      setGuess(text);
+      toast({ emoji: "🎨", title: "Couldn't send that guess, try again" });
+      return;
+    }
     if (hit) {
       haptic("success");
       setBurst((b) => b + 1);
@@ -230,7 +240,7 @@ export function PictionaryGame({ id }: { id: string }) {
       {game.status === "active" && game.word && (
         <>
           {drawer && <p className="text-center text-sm">Draw: <strong>{game.word}</strong></p>}
-          <SharedCanvas base={`pictionary/${game.id}`} canDraw={drawer && !game.roundOver} tool={tool} color={color} width={width} page={pictRoute(game.id)} />
+          <SharedCanvas base={pictStrokesBase(game.id)} canDraw={drawer && !game.roundOver} tool={tool} color={color} width={width} page={pictRoute(game.id)} />
           {drawer && !game.roundOver && (
             <div className="card flex flex-col gap-2 rounded-[20px] p-2">
               <div className="flex items-center gap-1">
@@ -252,7 +262,7 @@ export function PictionaryGame({ id }: { id: string }) {
                     <button type="button" onClick={() => setConfirmClear(false)} className="tap rounded-full px-2 text-xs font-bold text-muted">
                       Keep
                     </button>
-                    <button type="button" onClick={() => { void clearStrokes(`pictionary/${game.id}`); setConfirmClear(false); }} className="tap rounded-full bg-red-500 px-3 text-xs font-bold text-white">
+                    <button type="button" onClick={() => { void clearStrokes(pictStrokesBase(game.id)); setConfirmClear(false); }} className="tap rounded-full bg-red-500 px-3 text-xs font-bold text-white">
                       Clear all
                     </button>
                   </span>
@@ -281,12 +291,19 @@ export function PictionaryGame({ id }: { id: string }) {
               <p className="min-w-0 flex-1 text-sm">
                 {game.solvedBy ? `${nameOf(game.solvedBy)} got it — “${game.word}”!` : `Time's up. It was “${game.word}”.`}
               </p>
-              <Button onClick={() => void nextRound(game)} className="px-4 py-2 text-sm">
+              <Button onClick={() => void nextRound(game).catch(() => toast({ emoji: "🎨", title: "Couldn't advance the round, try again" }))} className="px-4 py-2 text-sm">
                 {game.round >= rounds ? "See results" : "Next round"}
               </Button>
             </Card>
           )}
         </>
+      )}
+
+      {game.status === "declined" && (
+        <Card className="flex flex-col items-center gap-2 text-center">
+          <p className="text-sm text-muted">This game was called off.</p>
+          <Button onClick={() => router.push("/play/pictionary")}>Back to lobby</Button>
+        </Card>
       )}
 
       {game.status === "finished" && (

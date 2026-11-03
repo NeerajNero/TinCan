@@ -8,7 +8,7 @@
  */
 import * as F from "firebase/firestore";
 
-import { noteFirebaseFailure } from "@/lib/diagLog";
+import { noteDiag, noteFirebaseFailure } from "@/lib/diagLog";
 
 export * from "firebase/firestore";
 
@@ -129,10 +129,33 @@ export const writeBatch = ((db: F.Firestore) => {
   return batch;
 }) as typeof F.writeBatch;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const runTransaction: typeof F.runTransaction = (async (...args: any[]) => {
+/**
+ * Transactions report every retry, not only the final failure. The SDK re-runs
+ * the update function (five attempts by default) whenever a document it read
+ * changed before the commit; a pass that read and wrote nothing still commits a
+ * `verify` precondition on what it read, so even a no-op pass contends. Each
+ * retry lands in Diagnostics as a `[warn]` line naming the documents the
+ * previous attempt read (collected from `tx.get`), and a final failure names
+ * them instead of a bare "transaction".
+ */
+export const runTransaction: typeof F.runTransaction = (async (db: F.Firestore, fn: (tx: F.Transaction) => Promise<unknown>, options?: F.TransactionOptions) => {
   bump("reads", 1);
   bump("writes", 1);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return reportWrite("transaction", "transaction", (F.runTransaction as any)(...args));
+  let attempt = 0;
+  const paths = new Set<string>();
+  const label = () => (paths.size ? [...paths].join(", ") : "transaction");
+  const wrapped = (tx: F.Transaction) => {
+    attempt += 1;
+    if (attempt > 1) noteDiag("warn", `transaction ${label()}: attempt ${attempt} (a concurrent write changed what it read)`);
+    const get = tx.get.bind(tx);
+    tx.get = ((ref: F.DocumentReference) => {
+      paths.add(fsPath(ref));
+      return get(ref);
+    }) as typeof tx.get;
+    return fn(tx);
+  };
+  return F.runTransaction(db, wrapped, options).catch((err: unknown) => {
+    noteFirebaseFailure("write", "transaction", label(), err);
+    throw err;
+  });
 }) as typeof F.runTransaction;

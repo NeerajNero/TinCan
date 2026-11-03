@@ -485,6 +485,7 @@ describe("rules coverage", () => {
     expect(fs.has("capsules/*/private")).toBe(true);
     expect(rt.has("presence")).toBe(true);
     expect(rt.has("whiteboard")).toBe(true); // only reachable through `${base}` + a JSX prop
+    expect(rt.has("pictionaryStrokes")).toBe(true); // the canvas node beside pictionary/{id}, through the `pictStrokesBase` helper
     expect(rt.has("watch")).toBe(true); // `${kind}/main` through a union type
   });
 

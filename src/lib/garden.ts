@@ -7,6 +7,7 @@
 
 import { STICKER_BY_ID, type GardenEvent } from "@/content/garden";
 import { createSystemMessage } from "@/lib/chat/system";
+import { currentPair } from "@/lib/db/pairCache";
 import { pairRef } from "@/lib/db/refs";
 import { getDb } from "@/lib/firebase/client";
 import { runTransaction, serverTimestamp } from "@/lib/firebase/fs";
@@ -19,6 +20,9 @@ export type { GardenEvent };
 export async function recordTogetherEvent(kind: GardenEvent, by: string): Promise<boolean> {
   const sticker = STICKER_BY_ID[kind];
   if (!sticker) return false;
+  // Already unlocked by the pair doc this phone holds → no transaction at all (a read-only pass would still
+  // commit a verify on pair/main and contend with whatever else writes it, e.g. the records bump at a game's end).
+  if (currentPair()?.garden?.stickers?.[kind]) return false;
   let unlocked = false;
   try {
     await runTransaction(getDb(), async (tx) => {

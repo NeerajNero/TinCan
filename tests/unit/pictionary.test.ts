@@ -14,7 +14,9 @@ describe("pictionary rounds", () => {
 
   it("advances one round and swaps the drawer, finishing after the last", () => {
     const next = advanceRound(game(), 1, () => '["x","y","z"]');
-    expect(next).toMatchObject({ round: 2, drawerUid: "b", word: null, roundOver: false, strokes: null });
+    expect(next).toMatchObject({ round: 2, drawerUid: "b", word: null, roundOver: false });
+    expect(next).not.toHaveProperty("strokes"); // the canvas is a sibling node, cleared after the commit
+    expect(next).not.toHaveProperty("live");
     expect(advanceRound(game({ round: 3, drawerUid: "a" }), 3, () => "[]")).toMatchObject({ status: "finished", open: false });
     expect(advanceRound(game({ round: 3, rounds: 5 }), 3, () => "[]")).toMatchObject({ round: 4 });
     expect(advanceRound(game({ round: 5, rounds: 5 }), 5, () => "[]")).toMatchObject({ status: "finished" });

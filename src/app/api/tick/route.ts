@@ -229,6 +229,19 @@ async function abandonStaleGames(ctx: Ctx) {
     ctx.actions.push({ job: "abandon-game", key: id, detail: `${g.type ?? "game"} (${g.status ?? "?"}) idle since ${new Date(last).toISOString()}` });
     if (!ctx.dry) await closeGame(id, { status: "finished", open: false, endReason: "abandoned", winnerId: null });
   }
+  // Pictionary keeps its own open index; a round nobody touched for a week is called off, a finished one unlisted,
+  // and the canvas node beside it (`pictionaryStrokes/{id}`) dropped either way.
+  const pict = await adminRtdb().ref("pictionary").orderByChild("open").equalTo(true).get();
+  const rounds = (pict.val() ?? {}) as Record<string, { status?: string; createdAt?: number; roundStartedAt?: number; solvedAt?: number }>;
+  for (const [id, g] of Object.entries(rounds)) {
+    const last = Math.max(g.createdAt ?? 0, g.roundStartedAt ?? 0, g.solvedAt ?? 0);
+    const over = g.status === "finished" || g.status === "declined";
+    if (ctx.now.getTime() - last < (over ? FINISHED_LISTED_MS : ABANDON_MS)) continue;
+    ctx.actions.push({ job: over ? "close-game" : "abandon-game", key: id, detail: `pictionary (${g.status ?? "?"}) idle since ${new Date(last).toISOString()}` });
+    if (ctx.dry) continue;
+    await adminRtdb().ref(`pictionary/${id}`).update(over ? { open: false } : { status: "declined", open: false });
+    await adminRtdb().ref(`pictionaryStrokes/${id}`).remove();
+  }
 }
 
 /** Unlist or abandon a game and drop its owner-only subtree (Hangman words, Battleship fleets), which nothing needs afterwards. */
